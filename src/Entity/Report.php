@@ -1,0 +1,166 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Entity;
+
+use Doctrine\DBAL\Types\Types;
+use Doctrine\ORM\Mapping as ORM;
+
+#[ORM\Entity]
+#[ORM\Table(name: 'reports')]
+class Report
+{
+    
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(name: 'report_id', type: Types::INTEGER, options: ['unsigned' => true])]
+    private ?int $reportId = null;
+    
+    #[ORM\Column(name: 'reporter_user_id', type: Types::INTEGER, options: ['unsigned' => true])]
+    private int $reporterUserId;
+    
+    #[ORM\Column(name: 'target_type', type: Types::STRING, length: 7)]
+    private string $targetType;
+    
+    #[ORM\Column(name: 'target_id', type: Types::BIGINT, options: ['unsigned' => true])]
+    private string $targetId;
+    
+    #[ORM\Column(name: 'reason', type: Types::TEXT)]
+    private string $reason;
+    
+    #[ORM\Column(name: 'status', type: Types::STRING, length: 9, options: ['default' => 'OPEN'])]
+    private string $status = 'OPEN';
+    
+    #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE)]
+    private \DateTimeInterface $createdAt;
+    
+    #[ORM\Column(name: 'handled_by_admin_id', type: Types::INTEGER, nullable: true, options: ['unsigned' => true])]
+    private ?int $handledByAdminId = null;
+    
+    #[ORM\Column(name: 'handled_at', type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $handledAt = null;
+    
+    #[ORM\Column(name: 'admin_note', type: Types::TEXT, nullable: true)]
+    private ?string $adminNote = null;
+
+    public function getReportId(): ?int
+    {
+        return $this->reportId;
+    }
+
+    public function setReportId(?int $reportId): static
+    {
+        $this->reportId = $reportId;
+
+        return $this;
+    }
+
+    public function getReporterUserId(): int
+    {
+        return $this->reporterUserId;
+    }
+
+    public function setReporterUserId(int $reporterUserId): static
+    {
+        $this->reporterUserId = $reporterUserId;
+
+        return $this;
+    }
+
+    public function getTargetType(): string
+    {
+        return $this->targetType;
+    }
+
+    public function setTargetType(string $targetType): static
+    {
+        $this->targetType = $targetType;
+
+        return $this;
+    }
+
+    public function getTargetId(): string
+    {
+        return $this->targetId;
+    }
+
+    public function setTargetId(string $targetId): static
+    {
+        $this->targetId = $targetId;
+
+        return $this;
+    }
+
+    public function getReason(): string
+    {
+        return $this->reason;
+    }
+
+    public function setReason(string $reason): static
+    {
+        $this->reason = $reason;
+
+        return $this;
+    }
+
+    public function getStatus(): string
+    {
+        return $this->status;
+    }
+
+    public function setStatus(string $status): static
+    {
+        $this->status = $status;
+
+        return $this;
+    }
+
+    public function getCreatedAt(): \DateTimeInterface
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTimeInterface $createdAt): static
+    {
+        $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getHandledByAdminId(): ?int
+    {
+        return $this->handledByAdminId;
+    }
+
+    public function setHandledByAdminId(?int $handledByAdminId): static
+    {
+        $this->handledByAdminId = $handledByAdminId;
+
+        return $this;
+    }
+
+    public function getHandledAt(): ?\DateTimeInterface
+    {
+        return $this->handledAt;
+    }
+
+    public function setHandledAt(?\DateTimeInterface $handledAt): static
+    {
+        $this->handledAt = $handledAt;
+
+        return $this;
+    }
+
+    public function getAdminNote(): ?string
+    {
+        return $this->adminNote;
+    }
+
+    public function setAdminNote(?string $adminNote): static
+    {
+        $this->adminNote = $adminNote;
+
+        return $this;
+    }
+}
