@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use Doctrine\DBAL\Types\Types;
+use App\Repository\GameRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: GameRepository::class)]
 #[ORM\Table(name: 'games')]
 class Game
 {

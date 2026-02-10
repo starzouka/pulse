@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use Doctrine\DBAL\Types\Types;
+use App\Repository\TeamJoinRequestRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: TeamJoinRequestRepository::class)]
 #[ORM\Table(name: 'team_join_requests')]
 class TeamJoinRequest
 {

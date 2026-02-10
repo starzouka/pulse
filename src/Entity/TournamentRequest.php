@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use Doctrine\DBAL\Types\Types;
+use App\Repository\TournamentRequestRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: TournamentRequestRepository::class)]
 #[ORM\Table(name: 'tournament_requests')]
 class TournamentRequest
 {
