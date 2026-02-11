@@ -1,0 +1,50 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}PULSE - Demandes tournois{% endblock %}
+
+{% block admin_content %}
+
+        
+  <div class="pageHeader">
+    <div>
+      <h2>Demandes tournois</h2>
+      <div class="pageSub">tournament_requests PENDING/ACCEPTED/REFUSED.</div>
+    </div>
+    
+  </div>
+  
+  <div class="filtersBar">
+    <div class="filterGroup"><label>Status</label><select><option>ALL</option><option>PENDING</option><option>ACCEPTED</option><option>REFUSED</option></select></div>
+<div class="filterGroup"><label>Game</label><input type="text" placeholder="Valorant" /></div>
+  </div>
+  <section class="panel">
+    <div class="panelHeader"><h3 class="panelTitle">LISTE</h3></div>
+    
+  <div class="dataTableWrap">
+    <table class="dataTable">
+      <thead><tr><th>request_id</th><th>title</th><th>organizer</th><th>game</th><th>start_date</th><th>prize_pool</th><th>status</th><th>Actions</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Pulse Invitational</td><td>—</td><td>Valorant</td><td>2026-02-05</td><td>—</td><td><span class="badge badge--warning">PENDING</span></td><td><a class="btn btnTiny" href="{{ path('admin_tournament_request_detail') }}">Voir</a></td></tr>
+        <tr><td>1</td><td>Pulse Invitational</td><td>—</td><td>Valorant</td><td>2026-02-05</td><td>—</td><td><span class="badge badge--warning">PENDING</span></td><td><a class="btn btnTiny" href="{{ path('admin_tournament_request_detail') }}">Voir</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+    
+  </section>
+  
+  <section class="panel">
+    <div class="panelHeader">
+      <div>
+        <h3 class="panelTitle">SCHEMA UTILISE</h3>
+        <div class="panelDesc">Tables et colonnes principales.</div>
+      </div>
+    </div>
+    <div class="list">
+      <div class="listItem"><span><b>tournament_requests</b></span><span class="listMeta">request_id, title, organizer, game, start_date, prize_pool, status</span></div>
+    </div>
+  </section>
+
+
+      
+{% endblock %}
+

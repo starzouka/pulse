@@ -1,0 +1,49 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}PULSE - Detail match{% endblock %}
+
+{% block admin_content %}
+
+        
+  <div class="pageHeader">
+    <div>
+      <h2>Detail match</h2>
+      <div class="pageSub">Teams + scores + actions.</div>
+    </div>
+    
+  </div>
+  
+  <div class="tabs" data-tabs="match">
+    <button class="tab isActive" data-tab="info">Infos</button>
+<button class="tab" data-tab="teams">Teams</button>
+  </div>
+  <div class="tabPanels" data-panels="match">
+    <div class="tabPanel isActive" data-panel="info"><section class="panel"><div class="list"><div class="listItem"><span>match_id</span><span class="listMeta">1</span></div><div class="listItem"><span>tournament_id</span><span class="listMeta">1</span></div><div class="listItem"><span>round_name</span><span class="listMeta">—</span></div><div class="listItem"><span>status</span><span class="listMeta"><span class="badge badge--warning">PENDING</span></span></div></div></section></div>
+<div class="tabPanel" data-panel="teams"><section class="panel">
+  <div class="dataTableWrap">
+    <table class="dataTable">
+      <thead><tr><th>team_id</th><th>score</th><th>is_winner</th></tr></thead>
+      <tbody>
+        <tr><td>Nebula Five</td><td>2</td><td>—</td></tr>
+        <tr><td>Nebula Five</td><td>2</td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div></section></div>
+  </div>
+
+  
+  <section class="panel">
+    <div class="panelHeader">
+      <div>
+        <h3 class="panelTitle">SCHEMA UTILISE</h3>
+        <div class="panelDesc">Tables et colonnes principales.</div>
+      </div>
+    </div>
+    <div class="list">
+      <div class="listItem"><span><b>matches</b></span><span class="listMeta">match_id, tournament_id, round_name, status, team_id, score, is_winner</span></div>
+    </div>
+  </section>
+
+
+      
+{% endblock %}

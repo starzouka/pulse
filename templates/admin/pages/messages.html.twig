@@ -1,0 +1,50 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}PULSE - Gestion messages{% endblock %}
+
+{% block admin_content %}
+
+        
+  <div class="pageHeader">
+    <div>
+      <h2>Gestion messages</h2>
+      <div class="pageSub">messages (option moderation).</div>
+    </div>
+    
+  </div>
+  
+  <div class="filtersBar">
+    <div class="filterGroup"><label>Sender</label><input type="text" placeholder="username" /></div>
+<div class="filterGroup"><label>Receiver</label><input type="text" placeholder="username" /></div>
+<div class="filterGroup"><label>is_read</label><select><option>ALL</option><option>true</option><option>false</option></select></div>
+  </div>
+  <section class="panel">
+    <div class="panelHeader"><h3 class="panelTitle">LISTE</h3></div>
+    
+  <div class="dataTableWrap">
+    <table class="dataTable">
+      <thead><tr><th>message_id</th><th>sender</th><th>receiver</th><th>extrait</th><th>created_at</th><th>is_read</th><th>Actions</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>—</td><td>—</td><td>—</td><td>2026-02-05</td><td>—</td><td><button class="btn btnTiny">Action</button></td></tr>
+        <tr><td>1</td><td>—</td><td>—</td><td>—</td><td>2026-02-05</td><td>—</td><td><button class="btn btnTiny">Action</button></td></tr>
+      </tbody>
+    </table>
+  </div>
+    
+  </section>
+  
+  <section class="panel">
+    <div class="panelHeader">
+      <div>
+        <h3 class="panelTitle">SCHEMA UTILISE</h3>
+        <div class="panelDesc">Tables et colonnes principales.</div>
+      </div>
+    </div>
+    <div class="list">
+      <div class="listItem"><span><b>messages</b></span><span class="listMeta">message_id, sender, receiver, extrait, created_at, is_read</span></div>
+    </div>
+  </section>
+
+
+      
+{% endblock %}

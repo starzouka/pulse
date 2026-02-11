@@ -1,0 +1,71 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}PULSE - Detail tournoi{% endblock %}
+
+{% block admin_content %}
+
+        
+  <div class="pageHeader">
+    <div>
+      <h2>Detail tournoi</h2>
+      <div class="pageSub">Infos + inscriptions + matchs + classement.</div>
+    </div>
+    
+  </div>
+  
+  <div class="tabs" data-tabs="tournament">
+    <button class="tab isActive" data-tab="info">Infos</button>
+<button class="tab" data-tab="teams">Inscriptions</button>
+<button class="tab" data-tab="matches">Matchs</button>
+<button class="tab" data-tab="results">Classement</button>
+  </div>
+  <div class="tabPanels" data-panels="tournament">
+    <div class="tabPanel isActive" data-panel="info"><section class="panel"><div class="list"><div class="listItem"><span>title</span><span class="listMeta">Pulse Invitational</span></div><div class="listItem"><span>status</span><span class="listMeta"><span class="badge badge--warning">PENDING</span></span></div><div class="listItem"><span>format</span><span class="listMeta">BO3</span></div><div class="listItem"><span>prize_pool</span><span class="listMeta">—</span></div></div></section></div>
+<div class="tabPanel" data-panel="teams"><section class="panel">
+  <div class="dataTableWrap">
+    <table class="dataTable">
+      <thead><tr><th>team</th><th>status</th><th>seed</th></tr></thead>
+      <tbody>
+        <tr><td>Nebula Five</td><td><span class="badge badge--warning">PENDING</span></td><td>1</td></tr>
+        <tr><td>Nebula Five</td><td><span class="badge badge--warning">PENDING</span></td><td>1</td></tr>
+      </tbody>
+    </table>
+  </div></section></div>
+<div class="tabPanel" data-panel="matches"><section class="panel">
+  <div class="dataTableWrap">
+    <table class="dataTable">
+      <thead><tr><th>match_id</th><th>round_name</th><th>scheduled_at</th><th>status</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>—</td><td>—</td><td><span class="badge badge--warning">PENDING</span></td></tr>
+        <tr><td>1</td><td>—</td><td>—</td><td><span class="badge badge--warning">PENDING</span></td></tr>
+      </tbody>
+    </table>
+  </div></section></div>
+<div class="tabPanel" data-panel="results"><section class="panel">
+  <div class="dataTableWrap">
+    <table class="dataTable">
+      <thead><tr><th>team</th><th>W</th><th>L</th><th>points</th></tr></thead>
+      <tbody>
+        <tr><td>Nebula Five</td><td>—</td><td>—</td><td>—</td></tr>
+        <tr><td>Nebula Five</td><td>—</td><td>—</td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div></section></div>
+  </div>
+
+  
+  <section class="panel">
+    <div class="panelHeader">
+      <div>
+        <h3 class="panelTitle">SCHEMA UTILISE</h3>
+        <div class="panelDesc">Tables et colonnes principales.</div>
+      </div>
+    </div>
+    <div class="list">
+      <div class="listItem"><span><b>tournaments</b></span><span class="listMeta">title, status, format, prize_pool, team, status, seed, match_id, round_name, scheduled_at, status, team, W, L, points</span></div>
+    </div>
+  </section>
+
+
+      
+{% endblock %}

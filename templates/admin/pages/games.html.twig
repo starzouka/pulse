@@ -1,0 +1,50 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}PULSE - Gestion jeux{% endblock %}
+
+{% block admin_content %}
+
+        
+  <div class="pageHeader">
+    <div>
+      <h2>Gestion jeux</h2>
+      <div class="pageSub">games + cover image.</div>
+    </div>
+    <div class="formActions"><a class="btn btnPrimary" href="{{ path('admin_game_form') }}">+ Nouveau jeu</a></div>
+  </div>
+  
+  <div class="filtersBar">
+    <div class="filterGroup"><label>Recherche</label><input type="text" placeholder="name, publisher" /></div>
+<div class="filterGroup"><label>Category</label><select><option>ALL</option><option>FPS</option><option>MOBA</option></select></div>
+  </div>
+  <section class="panel">
+    <div class="panelHeader"><h3 class="panelTitle">LISTE</h3></div>
+    
+  <div class="dataTableWrap">
+    <table class="dataTable">
+      <thead><tr><th>cover</th><th>game_id</th><th>name</th><th>category</th><th>publisher</th><th>created_at</th><th>Actions</th></tr></thead>
+      <tbody>
+        <tr><td><span class="avatarSmall">A</span></td><td>Valorant</td><td>—</td><td>—</td><td>—</td><td>2026-02-05</td><td><a class="btn btnTiny" href="{{ path('admin_game_detail') }}">Voir</a></td></tr>
+        <tr><td><span class="avatarSmall">A</span></td><td>Valorant</td><td>—</td><td>—</td><td>—</td><td>2026-02-05</td><td><a class="btn btnTiny" href="{{ path('admin_game_detail') }}">Voir</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+    
+  </section>
+  
+  <section class="panel">
+    <div class="panelHeader">
+      <div>
+        <h3 class="panelTitle">SCHEMA UTILISE</h3>
+        <div class="panelDesc">Tables et colonnes principales.</div>
+      </div>
+    </div>
+    <div class="list">
+      <div class="listItem"><span><b>games</b></span><span class="listMeta">game_id, name, category, publisher, created_at</span></div>
+    </div>
+  </section>
+
+
+      
+{% endblock %}
+

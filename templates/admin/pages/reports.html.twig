@@ -1,0 +1,51 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}PULSE - Gestion signalements{% endblock %}
+
+{% block admin_content %}
+
+        
+  <div class="pageHeader">
+    <div>
+      <h2>Gestion signalements</h2>
+      <div class="pageSub">reports OPEN/IN_REVIEW/CLOSED.</div>
+    </div>
+    
+  </div>
+  
+  <div class="filtersBar">
+    <div class="filterGroup"><label>Status</label><select><option>ALL</option><option>OPEN</option><option>IN_REVIEW</option><option>CLOSED</option></select></div>
+<div class="filterGroup"><label>Target</label><select><option>ALL</option><option>POST</option><option>COMMENT</option><option>USER</option><option>TEAM</option></select></div>
+<div class="filterGroup"><label>Recherche</label><input type="text" placeholder="reason, reporter" /></div>
+  </div>
+  <section class="panel">
+    <div class="panelHeader"><h3 class="panelTitle">LISTE</h3></div>
+    
+  <div class="dataTableWrap">
+    <table class="dataTable">
+      <thead><tr><th>report_id</th><th>reporter</th><th>target_type</th><th>target_id</th><th>status</th><th>created_at</th><th>Actions</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>—</td><td>—</td><td>1</td><td><span class="badge badge--warning">PENDING</span></td><td>2026-02-05</td><td><a class="btn btnTiny" href="{{ path('admin_report_detail') }}">Voir</a></td></tr>
+        <tr><td>1</td><td>—</td><td>—</td><td>1</td><td><span class="badge badge--warning">PENDING</span></td><td>2026-02-05</td><td><a class="btn btnTiny" href="{{ path('admin_report_detail') }}">Voir</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+    
+  </section>
+  
+  <section class="panel">
+    <div class="panelHeader">
+      <div>
+        <h3 class="panelTitle">SCHEMA UTILISE</h3>
+        <div class="panelDesc">Tables et colonnes principales.</div>
+      </div>
+    </div>
+    <div class="list">
+      <div class="listItem"><span><b>reports</b></span><span class="listMeta">report_id, reporter, target_type, target_id, status, created_at</span></div>
+    </div>
+  </section>
+
+
+      
+{% endblock %}
+

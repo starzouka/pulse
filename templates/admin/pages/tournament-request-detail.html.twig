@@ -1,0 +1,40 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}PULSE - Detail demande tournoi{% endblock %}
+
+{% block admin_content %}
+
+        
+  <div class="pageHeader">
+    <div>
+      <h2>Detail demande tournoi</h2>
+      <div class="pageSub">Accepter / Refuser + admin_note.</div>
+    </div>
+    
+  </div>
+  
+  <div class="tabs" data-tabs="trequest">
+    <button class="tab isActive" data-tab="info">Infos</button>
+<button class="tab" data-tab="admin">Admin</button>
+  </div>
+  <div class="tabPanels" data-panels="trequest">
+    <div class="tabPanel isActive" data-panel="info"><section class="panel"><div class="list"><div class="listItem"><span>title</span><span class="listMeta">Pulse Invitational</span></div><div class="listItem"><span>game_id</span><span class="listMeta">Valorant</span></div><div class="listItem"><span>format</span><span class="listMeta">BO3</span></div><div class="listItem"><span>max_teams</span><span class="listMeta">Nebula Five</span></div></div></section></div>
+<div class="tabPanel" data-panel="admin"><section class="panel"><div class="list"><div class="listItem"><span>status</span><span class="listMeta"><span class="badge badge--warning">PENDING</span></span></div><div class="listItem"><span>admin_response_note</span><span class="listMeta">—</span></div><div class="listItem"><span>reviewed_at</span><span class="listMeta">—</span></div></div></section></div>
+  </div>
+
+  
+  <section class="panel">
+    <div class="panelHeader">
+      <div>
+        <h3 class="panelTitle">SCHEMA UTILISE</h3>
+        <div class="panelDesc">Tables et colonnes principales.</div>
+      </div>
+    </div>
+    <div class="list">
+      <div class="listItem"><span><b>tournament_requests</b></span><span class="listMeta">title, game_id, format, max_teams, status, admin_response_note, reviewed_at</span></div>
+    </div>
+  </section>
+
+
+      
+{% endblock %}

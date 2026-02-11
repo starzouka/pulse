@@ -1,0 +1,60 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}PULSE - Detail post{% endblock %}
+
+{% block admin_content %}
+
+        
+  <div class="pageHeader">
+    <div>
+      <h2>Detail post</h2>
+      <div class="pageSub">Post + commentaires + moderation.</div>
+    </div>
+    
+  </div>
+  
+  <div class="tabs" data-tabs="post">
+    <button class="tab isActive" data-tab="post">Post</button>
+<button class="tab" data-tab="comments">Commentaires</button>
+<button class="tab" data-tab="reports">Signalements</button>
+  </div>
+  <div class="tabPanels" data-panels="post">
+    <div class="tabPanel isActive" data-panel="post"><section class="panel"><div class="list"><div class="listItem"><span>post_id</span><span class="listMeta">1</span></div><div class="listItem"><span>author_user_id</span><span class="listMeta">zed_99</span></div><div class="listItem"><span>visibility</span><span class="listMeta">—</span></div><div class="listItem"><span>is_deleted</span><span class="listMeta">—</span></div></div></section></div>
+<div class="tabPanel" data-panel="comments"><section class="panel">
+  <div class="dataTableWrap">
+    <table class="dataTable">
+      <thead><tr><th>comment_id</th><th>author</th><th>content_text</th><th>created_at</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>—</td><td>—</td><td>2026-02-05</td></tr>
+        <tr><td>1</td><td>—</td><td>—</td><td>2026-02-05</td></tr>
+      </tbody>
+    </table>
+  </div></section></div>
+<div class="tabPanel" data-panel="reports"><section class="panel">
+  <div class="dataTableWrap">
+    <table class="dataTable">
+      <thead><tr><th>report_id</th><th>status</th><th>created_at</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td><span class="badge badge--warning">PENDING</span></td><td>2026-02-05</td></tr>
+        <tr><td>1</td><td><span class="badge badge--warning">PENDING</span></td><td>2026-02-05</td></tr>
+      </tbody>
+    </table>
+  </div></section></div>
+  </div>
+
+  
+  <section class="panel">
+    <div class="panelHeader">
+      <div>
+        <h3 class="panelTitle">SCHEMA UTILISE</h3>
+        <div class="panelDesc">Tables et colonnes principales.</div>
+      </div>
+    </div>
+    <div class="list">
+      <div class="listItem"><span><b>posts</b></span><span class="listMeta">post_id, author_user_id, visibility, is_deleted, comment_id, author, content_text, created_at, report_id, status, created_at</span></div>
+    </div>
+  </section>
+
+
+      
+{% endblock %}

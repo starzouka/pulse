@@ -1,0 +1,51 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}PULSE - Gestion produits{% endblock %}
+
+{% block admin_content %}
+
+        
+  <div class="pageHeader">
+    <div>
+      <h2>Gestion produits</h2>
+      <div class="pageSub">Produits + images + stock.</div>
+    </div>
+    <div class="formActions"><a class="btn btnPrimary" href="{{ path('admin_product_form') }}">+ Nouveau produit</a></div>
+  </div>
+  
+  <div class="filtersBar">
+    <div class="filterGroup"><label>Recherche</label><input type="text" placeholder="name, sku" /></div>
+<div class="filterGroup"><label>Team</label><input type="text" placeholder="team" /></div>
+<div class="filterGroup"><label>Actif</label><select><option>ALL</option><option>true</option><option>false</option></select></div>
+  </div>
+  <section class="panel">
+    <div class="panelHeader"><h3 class="panelTitle">LISTE</h3></div>
+    
+  <div class="dataTableWrap">
+    <table class="dataTable">
+      <thead><tr><th>image</th><th>product_id</th><th>name</th><th>team</th><th>price</th><th>stock_qty</th><th>is_active</th><th>Actions</th></tr></thead>
+      <tbody>
+        <tr><td><span class="avatarSmall">A</span></td><td>1</td><td>—</td><td>Nebula Five</td><td>120 DT</td><td>—</td><td>—</td><td><a class="btn btnTiny" href="{{ path('admin_product_detail') }}">Voir</a></td></tr>
+        <tr><td><span class="avatarSmall">A</span></td><td>1</td><td>—</td><td>Nebula Five</td><td>120 DT</td><td>—</td><td>—</td><td><a class="btn btnTiny" href="{{ path('admin_product_detail') }}">Voir</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+    
+  </section>
+  
+  <section class="panel">
+    <div class="panelHeader">
+      <div>
+        <h3 class="panelTitle">SCHEMA UTILISE</h3>
+        <div class="panelDesc">Tables et colonnes principales.</div>
+      </div>
+    </div>
+    <div class="list">
+      <div class="listItem"><span><b>products</b></span><span class="listMeta">product_id, name, team, price, stock_qty, is_active</span></div>
+    </div>
+  </section>
+
+
+      
+{% endblock %}
+

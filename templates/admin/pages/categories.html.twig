@@ -1,0 +1,46 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}PULSE - Gestion categories{% endblock %}
+
+{% block admin_content %}
+
+        
+  <div class="pageHeader">
+    <div>
+      <h2>Gestion categories</h2>
+      <div class="pageSub">categories + nb jeux.</div>
+    </div>
+    <div class="formActions"><a class="btn btnPrimary" href="{{ path('admin_category_form') }}">+ Nouvelle categorie</a></div>
+  </div>
+  
+  <section class="panel">
+    <div class="panelHeader"><h3 class="panelTitle">LISTE</h3></div>
+    
+  <div class="dataTableWrap">
+    <table class="dataTable">
+      <thead><tr><th>category_id</th><th>name</th><th>description</th><th>created_at</th><th>nb jeux</th><th>Actions</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>—</td><td>—</td><td>2026-02-05</td><td>—</td><td><a class="btn btnTiny" href="{{ path('admin_category_form') }}">Voir</a></td></tr>
+        <tr><td>1</td><td>—</td><td>—</td><td>2026-02-05</td><td>—</td><td><a class="btn btnTiny" href="{{ path('admin_category_form') }}">Voir</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+    
+  </section>
+  
+  <section class="panel">
+    <div class="panelHeader">
+      <div>
+        <h3 class="panelTitle">SCHEMA UTILISE</h3>
+        <div class="panelDesc">Tables et colonnes principales.</div>
+      </div>
+    </div>
+    <div class="list">
+      <div class="listItem"><span><b>categories</b></span><span class="listMeta">category_id, name, description, created_at, nb jeux</span></div>
+    </div>
+  </section>
+
+
+      
+{% endblock %}
+

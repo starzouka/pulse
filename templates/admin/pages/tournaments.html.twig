@@ -1,0 +1,50 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}PULSE - Gestion tournois{% endblock %}
+
+{% block admin_content %}
+
+        
+  <div class="pageHeader">
+    <div>
+      <h2>Gestion tournois</h2>
+      <div class="pageSub">CRUD tournaments + filtres.</div>
+    </div>
+    <div class="formActions"><a class="btn btnPrimary" href="{{ path('admin_tournament_form') }}">+ Nouveau tournoi</a></div>
+  </div>
+  
+  <div class="filtersBar">
+    <div class="filterGroup"><label>Status</label><select><option>ALL</option><option>OPEN</option><option>ONGOING</option><option>FINISHED</option></select></div>
+<div class="filterGroup"><label>Game</label><input type="text" placeholder="Valorant" /></div>
+  </div>
+  <section class="panel">
+    <div class="panelHeader"><h3 class="panelTitle">LISTE</h3></div>
+    
+  <div class="dataTableWrap">
+    <table class="dataTable">
+      <thead><tr><th>tournament_id</th><th>title</th><th>game</th><th>organizer</th><th>status</th><th>start_date</th><th>prize_pool</th><th>Actions</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Pulse Invitational</td><td>Valorant</td><td>—</td><td><span class="badge badge--warning">PENDING</span></td><td>2026-02-05</td><td>—</td><td><a class="btn btnTiny" href="{{ path('admin_tournament_detail') }}">Voir</a></td></tr>
+        <tr><td>1</td><td>Pulse Invitational</td><td>Valorant</td><td>—</td><td><span class="badge badge--warning">PENDING</span></td><td>2026-02-05</td><td>—</td><td><a class="btn btnTiny" href="{{ path('admin_tournament_detail') }}">Voir</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+    
+  </section>
+  
+  <section class="panel">
+    <div class="panelHeader">
+      <div>
+        <h3 class="panelTitle">SCHEMA UTILISE</h3>
+        <div class="panelDesc">Tables et colonnes principales.</div>
+      </div>
+    </div>
+    <div class="list">
+      <div class="listItem"><span><b>tournaments</b></span><span class="listMeta">tournament_id, title, game, organizer, status, start_date, prize_pool</span></div>
+    </div>
+  </section>
+
+
+      
+{% endblock %}
+

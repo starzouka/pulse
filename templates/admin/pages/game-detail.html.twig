@@ -1,0 +1,49 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}PULSE - Detail jeu{% endblock %}
+
+{% block admin_content %}
+
+        
+  <div class="pageHeader">
+    <div>
+      <h2>Detail jeu</h2>
+      <div class="pageSub">Infos + tournois associes.</div>
+    </div>
+    
+  </div>
+  
+  <div class="tabs" data-tabs="game">
+    <button class="tab isActive" data-tab="info">Infos</button>
+<button class="tab" data-tab="tournois">Tournois</button>
+  </div>
+  <div class="tabPanels" data-panels="game">
+    <div class="tabPanel isActive" data-panel="info"><section class="panel"><div class="list"><div class="listItem"><span>name</span><span class="listMeta">—</span></div><div class="listItem"><span>category</span><span class="listMeta">—</span></div><div class="listItem"><span>publisher</span><span class="listMeta">—</span></div></div></section></div>
+<div class="tabPanel" data-panel="tournois"><section class="panel">
+  <div class="dataTableWrap">
+    <table class="dataTable">
+      <thead><tr><th>tournament_id</th><th>status</th><th>start_date</th><th>prize_pool</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td><span class="badge badge--warning">PENDING</span></td><td>2026-02-05</td><td>—</td></tr>
+        <tr><td>1</td><td><span class="badge badge--warning">PENDING</span></td><td>2026-02-05</td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div></section></div>
+  </div>
+
+  
+  <section class="panel">
+    <div class="panelHeader">
+      <div>
+        <h3 class="panelTitle">SCHEMA UTILISE</h3>
+        <div class="panelDesc">Tables et colonnes principales.</div>
+      </div>
+    </div>
+    <div class="list">
+      <div class="listItem"><span><b>games</b></span><span class="listMeta">name, category, publisher, tournament_id, status, start_date, prize_pool</span></div>
+    </div>
+  </section>
+
+
+      
+{% endblock %}

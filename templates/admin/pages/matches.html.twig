@@ -1,0 +1,50 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}PULSE - Gestion matchs{% endblock %}
+
+{% block admin_content %}
+
+        
+  <div class="pageHeader">
+    <div>
+      <h2>Gestion matchs</h2>
+      <div class="pageSub">Liste + filtres.</div>
+    </div>
+    
+  </div>
+  
+  <div class="filtersBar">
+    <div class="filterGroup"><label>Status</label><select><option>ALL</option><option>SCHEDULED</option><option>ONGOING</option><option>FINISHED</option></select></div>
+<div class="filterGroup"><label>Round</label><input type="text" placeholder="Quarterfinal" /></div>
+  </div>
+  <section class="panel">
+    <div class="panelHeader"><h3 class="panelTitle">LISTE</h3></div>
+    
+  <div class="dataTableWrap">
+    <table class="dataTable">
+      <thead><tr><th>match_id</th><th>tournament</th><th>round_name</th><th>scheduled_at</th><th>status</th><th>Actions</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>—</td><td>—</td><td>—</td><td><span class="badge badge--warning">PENDING</span></td><td><a class="btn btnTiny" href="{{ path('admin_match_detail') }}">Voir</a></td></tr>
+        <tr><td>1</td><td>—</td><td>—</td><td>—</td><td><span class="badge badge--warning">PENDING</span></td><td><a class="btn btnTiny" href="{{ path('admin_match_detail') }}">Voir</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+    
+  </section>
+  
+  <section class="panel">
+    <div class="panelHeader">
+      <div>
+        <h3 class="panelTitle">SCHEMA UTILISE</h3>
+        <div class="panelDesc">Tables et colonnes principales.</div>
+      </div>
+    </div>
+    <div class="list">
+      <div class="listItem"><span><b>matches</b></span><span class="listMeta">match_id, tournament, round_name, scheduled_at, status</span></div>
+    </div>
+  </section>
+
+
+      
+{% endblock %}
+

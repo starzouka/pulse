@@ -1,0 +1,33 @@
+<header class="topbar">
+  <div class="topLinks">
+    <a class="topLink" href="{{ path('admin_dashboard') }}"><svg class="icon iconSmall"><use href="#i-home"></use></svg> Dashboard</a>
+    <a class="topLink" href="{{ path('admin_users') }}"> Utilisateurs</a>
+    <a class="topLink" href="{{ path('admin_orders') }}"> Commandes</a>
+    <a class="topLink" href="{{ path('admin_tournaments') }}"> Tournois</a>
+    <a class="topLink" href="{{ path('admin_reports') }}"> Signalements</a>
+  </div>
+  <div class="topActions">
+    <div class="searchBox">
+      <svg class="icon iconSmall muted"><use href="#i-search"></use></svg>
+      <input id="globalSearch" type="text" placeholder="Search..." autocomplete="off" />
+    </div>
+    <div class="profileWrap">
+      <button class="profileBtn" id="profileBtn" type="button" aria-haspopup="menu" aria-expanded="false">
+        <span class="avatar">A</span>
+        <span class="profileName">Admin</span>
+        <svg class="icon iconSmall muted"><use href="#i-chevron"></use></svg>
+      </button>
+      <div class="dropdown" id="profileMenu" role="menu" aria-hidden="true">
+        <a role="menuitem" href="#">Mon profil</a>
+        <a role="menuitem" href="#">Parametres</a>
+        <div class="sep"></div>
+        <a role="menuitem" href="#">Deconnexion</a>
+      </div>
+    </div>
+    <button class="iconBtn" type="button" aria-label="Notifications">
+      <svg class="icon"><use href="#i-bell"></use></svg>
+      <span class="badgeDot"></span>
+    </button>
+  </div>
+</header>
+

@@ -1,0 +1,51 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}PULSE - Gestion posts{% endblock %}
+
+{% block admin_content %}
+
+        
+  <div class="pageHeader">
+    <div>
+      <h2>Gestion posts</h2>
+      <div class="pageSub">posts + stats (images, comments, likes).</div>
+    </div>
+    
+  </div>
+  
+  <div class="filtersBar">
+    <div class="filterGroup"><label>Recherche</label><input type="text" placeholder="keyword" /></div>
+<div class="filterGroup"><label>Visibility</label><select><option>ALL</option><option>PUBLIC</option><option>FRIENDS</option><option>TEAM_ONLY</option></select></div>
+<div class="filterGroup"><label>Deleted</label><select><option>ALL</option><option>false</option><option>true</option></select></div>
+  </div>
+  <section class="panel">
+    <div class="panelHeader"><h3 class="panelTitle">LISTE</h3></div>
+    
+  <div class="dataTableWrap">
+    <table class="dataTable">
+      <thead><tr><th>post_id</th><th>Auteur</th><th>Extrait</th><th>visibility</th><th>created_at</th><th>is_deleted</th><th>nb images</th><th>nb comments</th><th>nb likes</th><th>Actions</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>—</td><td>—</td><td>—</td><td>2026-02-05</td><td>—</td><td><span class="avatarSmall">A</span></td><td>—</td><td>—</td><td><a class="btn btnTiny" href="{{ path('admin_post_detail') }}">Voir</a></td></tr>
+        <tr><td>1</td><td>—</td><td>—</td><td>—</td><td>2026-02-05</td><td>—</td><td><span class="avatarSmall">A</span></td><td>—</td><td>—</td><td><a class="btn btnTiny" href="{{ path('admin_post_detail') }}">Voir</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+    
+  </section>
+  
+  <section class="panel">
+    <div class="panelHeader">
+      <div>
+        <h3 class="panelTitle">SCHEMA UTILISE</h3>
+        <div class="panelDesc">Tables et colonnes principales.</div>
+      </div>
+    </div>
+    <div class="list">
+      <div class="listItem"><span><b>posts</b></span><span class="listMeta">post_id, Auteur, Extrait, visibility, created_at, is_deleted, nb comments, nb likes</span></div>
+    </div>
+  </section>
+
+
+      
+{% endblock %}
+

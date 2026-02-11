@@ -1,0 +1,49 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}PULSE - Gestion images{% endblock %}
+
+{% block admin_content %}
+
+        
+  <div class="pageHeader">
+    <div>
+      <h2>Gestion images</h2>
+      <div class="pageSub">Media + contraintes FK.</div>
+    </div>
+    
+  </div>
+  
+  <div class="filtersBar">
+    <div class="filterGroup"><label>mime_type</label><input type="text" placeholder="image/png" /></div>
+<div class="filterGroup"><label>uploaded_by</label><input type="text" placeholder="user" /></div>
+  </div>
+  <section class="panel">
+    <div class="panelHeader"><h3 class="panelTitle">LISTE</h3></div>
+    
+  <div class="dataTableWrap">
+    <table class="dataTable">
+      <thead><tr><th>image_id</th><th>file_url</th><th>mime_type</th><th>size_bytes</th><th>uploaded_by</th><th>created_at</th></tr></thead>
+      <tbody>
+        <tr><td><span class="avatarSmall">A</span></td><td>—</td><td>—</td><td>—</td><td>—</td><td>2026-02-05</td></tr>
+        <tr><td><span class="avatarSmall">A</span></td><td>—</td><td>—</td><td>—</td><td>—</td><td>2026-02-05</td></tr>
+      </tbody>
+    </table>
+  </div>
+    
+  </section>
+  
+  <section class="panel">
+    <div class="panelHeader">
+      <div>
+        <h3 class="panelTitle">SCHEMA UTILISE</h3>
+        <div class="panelDesc">Tables et colonnes principales.</div>
+      </div>
+    </div>
+    <div class="list">
+      <div class="listItem"><span><b>images</b></span><span class="listMeta">file_url, mime_type, size_bytes, uploaded_by, created_at</span></div>
+    </div>
+  </section>
+
+
+      
+{% endblock %}

@@ -1,0 +1,113 @@
+<aside class="sidebar">
+  <div class="brand">
+    <span class="brandMark">
+      <svg class="icon"><use href="#i-logo"></use></svg>
+    </span>
+    <span class="brandText">PULSE</span>
+  </div>
+  <nav class="sideNav" aria-label="Navigation principale">
+    <div class="sideGroupTitle">Dashboard</div>
+    <a class="navItem" href="{{ path('admin_dashboard') }}">
+      <svg class="icon"><use href="#i-home"></use></svg>
+      <span>Dashboard</span>
+    </a>
+
+    <div class="sideGroupTitle">Utilisateurs</div>
+    <a class="navItem" href="{{ path('admin_users') }}">
+      <svg class="icon"><use href="#i-users"></use></svg>
+      <span>Utilisateurs</span>
+    </a>
+    <a class="navItem" href="{{ path('admin_add_user') }}">
+      <svg class="icon"><use href="#i-users"></use></svg>
+      <span>Ajouter utilisateur</span>
+    </a>
+
+    <div class="sideGroupTitle">Social & Moderation</div>
+    <a class="navItem" href="{{ path('admin_posts') }}">
+      <svg class="icon"><use href="#i-flag"></use></svg>
+      <span>Posts</span>
+    </a>
+    <a class="navItem" href="{{ path('admin_comments') }}">
+      <svg class="icon"><use href="#i-flag"></use></svg>
+      <span>Commentaires</span>
+    </a>
+    <a class="navItem" href="{{ path('admin_reports') }}">
+      <svg class="icon"><use href="#i-flag"></use></svg>
+      <span>Signalements</span>
+    </a>
+    <a class="navItem" href="{{ path('admin_messages') }}">
+      <svg class="icon"><use href="#i-flag"></use></svg>
+      <span>Messages</span>
+    </a>
+
+    <div class="sideGroupTitle">Jeux & Categories</div>
+    <a class="navItem" href="{{ path('admin_categories') }}">
+      <svg class="icon"><use href="#i-game"></use></svg>
+      <span>Categories</span>
+    </a>
+    <a class="navItem" href="{{ path('admin_games') }}">
+      <svg class="icon"><use href="#i-game"></use></svg>
+      <span>Jeux</span>
+    </a>
+
+    <div class="sideGroupTitle">Equipes</div>
+    <a class="navItem" href="{{ path('admin_teams') }}">
+      <svg class="icon"><use href="#i-users"></use></svg>
+      <span>Equipes</span>
+    </a>
+
+    <div class="sideGroupTitle">Boutique & Commandes</div>
+    <a class="navItem" href="{{ path('admin_products') }}">
+      <svg class="icon"><use href="#i-cart"></use></svg>
+      <span>Produits</span>
+    </a>
+    <a class="navItem" href="{{ path('admin_orders') }}">
+      <svg class="icon"><use href="#i-cart"></use></svg>
+      <span>Commandes</span>
+    </a>
+    <a class="navItem" href="{{ path('admin_carts') }}">
+      <svg class="icon"><use href="#i-cart"></use></svg>
+      <span>Paniers</span>
+    </a>
+
+    <div class="sideGroupTitle">Tournois</div>
+    <a class="navItem" href="{{ path('admin_tournament_requests') }}">
+      <svg class="icon"><use href="#i-trophy"></use></svg>
+      <span>Demandes</span>
+    </a>
+    <a class="navItem" href="{{ path('admin_tournaments') }}">
+      <svg class="icon"><use href="#i-trophy"></use></svg>
+      <span>Tournois</span>
+    </a>
+    <a class="navItem" href="{{ path('admin_matches') }}">
+      <svg class="icon"><use href="#i-trophy"></use></svg>
+      <span>Matchs</span>
+    </a>
+
+    <div class="sideGroupTitle">Systeme</div>
+    <a class="navItem" href="{{ path('admin_notifications') }}">
+      <svg class="icon"><use href="#i-gear"></use></svg>
+      <span>Notifications</span>
+    </a>
+    <a class="navItem" href="{{ path('admin_images') }}">
+      <svg class="icon"><use href="#i-gear"></use></svg>
+      <span>Images</span>
+    </a>
+  </nav>
+  <div class="sideFooter">
+    <div class="presence">
+      <div class="presenceRow">
+        <span class="dot dotLive"></span><span>LIVE</span>
+      </div>
+      <div class="presenceRow">
+        <span class="dot dotOff"></span><span>OFFLINE</span>
+      </div>
+    </div>
+    <button class="userMini" id="sidebarUserBtn" type="button" aria-haspopup="menu" aria-expanded="false">
+      <span class="avatar avatarSmall">A</span>
+      <span class="userMiniText">Admin</span>
+      <svg class="icon iconSmall"><use href="#i-chevron"></use></svg>
+    </button>
+  </div>
+</aside>
+

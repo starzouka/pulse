@@ -1,0 +1,51 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}PULSE - Gestion commandes{% endblock %}
+
+{% block admin_content %}
+
+        
+  <div class="pageHeader">
+    <div>
+      <h2>Gestion commandes</h2>
+      <div class="pageSub">Orders + filtres + export.</div>
+    </div>
+    
+  </div>
+  
+  <div class="filtersBar">
+    <div class="filterGroup"><label>Recherche</label><input type="text" placeholder="order_number" /></div>
+<div class="filterGroup"><label>Status</label><select><option>ALL</option><option>PENDING</option><option>PAID</option><option>SHIPPED</option></select></div>
+<div class="filterGroup"><label>Payment</label><select><option>ALL</option><option>UNPAID</option><option>PAID</option></select></div>
+  </div>
+  <section class="panel">
+    <div class="panelHeader"><h3 class="panelTitle">LISTE</h3></div>
+    
+  <div class="dataTableWrap">
+    <table class="dataTable">
+      <thead><tr><th>order_number</th><th>user</th><th>status</th><th>payment_status</th><th>payment_method</th><th>total_amount</th><th>created_at</th><th>Actions</th></tr></thead>
+      <tbody>
+        <tr><td>ORD-2026-001</td><td>zed_99</td><td><span class="badge badge--warning">PENDING</span></td><td><span class="badge badge--warning">PENDING</span></td><td>—</td><td>120 DT</td><td>2026-02-05</td><td><a class="btn btnTiny" href="{{ path('admin_order_detail') }}">Voir</a></td></tr>
+        <tr><td>ORD-2026-001</td><td>zed_99</td><td><span class="badge badge--warning">PENDING</span></td><td><span class="badge badge--warning">PENDING</span></td><td>—</td><td>120 DT</td><td>2026-02-05</td><td><a class="btn btnTiny" href="{{ path('admin_order_detail') }}">Voir</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+    
+  </section>
+  
+  <section class="panel">
+    <div class="panelHeader">
+      <div>
+        <h3 class="panelTitle">SCHEMA UTILISE</h3>
+        <div class="panelDesc">Tables et colonnes principales.</div>
+      </div>
+    </div>
+    <div class="list">
+      <div class="listItem"><span><b>orders</b></span><span class="listMeta">order_number, user, status, payment_status, payment_method, total_amount, created_at</span></div>
+    </div>
+  </section>
+
+
+      
+{% endblock %}
+

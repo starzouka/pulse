@@ -1,0 +1,51 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}PULSE - Gestion equipes{% endblock %}
+
+{% block admin_content %}
+
+        
+  <div class="pageHeader">
+    <div>
+      <h2>Gestion equipes</h2>
+      <div class="pageSub">teams + captain + stats.</div>
+    </div>
+    
+  </div>
+  
+  <div class="filtersBar">
+    <div class="filterGroup"><label>Recherche</label><input type="text" placeholder="name, captain" /></div>
+<div class="filterGroup"><label>Region</label><input type="text" placeholder="EU" /></div>
+<div class="filterGroup"><label>Avec produits</label><select><option>ALL</option><option>Oui</option><option>Non</option></select></div>
+  </div>
+  <section class="panel">
+    <div class="panelHeader"><h3 class="panelTitle">LISTE</h3></div>
+    
+  <div class="dataTableWrap">
+    <table class="dataTable">
+      <thead><tr><th>logo</th><th>team_id</th><th>name</th><th>region</th><th>captain</th><th>members</th><th>products</th><th>Actions</th></tr></thead>
+      <tbody>
+        <tr><td><span class="avatarSmall">A</span></td><td>Nebula Five</td><td>—</td><td>TN</td><td>—</td><td>—</td><td>—</td><td><a class="btn btnTiny" href="{{ path('admin_team_detail') }}">Voir</a></td></tr>
+        <tr><td><span class="avatarSmall">A</span></td><td>Nebula Five</td><td>—</td><td>TN</td><td>—</td><td>—</td><td>—</td><td><a class="btn btnTiny" href="{{ path('admin_team_detail') }}">Voir</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+    
+  </section>
+  
+  <section class="panel">
+    <div class="panelHeader">
+      <div>
+        <h3 class="panelTitle">SCHEMA UTILISE</h3>
+        <div class="panelDesc">Tables et colonnes principales.</div>
+      </div>
+    </div>
+    <div class="list">
+      <div class="listItem"><span><b>teams</b></span><span class="listMeta">team_id, name, region, captain, members, products</span></div>
+    </div>
+  </section>
+
+
+      
+{% endblock %}
+

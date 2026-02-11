@@ -1,0 +1,40 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}PULSE - Detail signalement{% endblock %}
+
+{% block admin_content %}
+
+        
+  <div class="pageHeader">
+    <div>
+      <h2>Detail signalement</h2>
+      <div class="pageSub">Actions admin + apercu cible.</div>
+    </div>
+    
+  </div>
+  
+  <div class="tabs" data-tabs="report">
+    <button class="tab isActive" data-tab="info">Infos</button>
+<button class="tab" data-tab="target">Cible</button>
+  </div>
+  <div class="tabPanels" data-panels="report">
+    <div class="tabPanel isActive" data-panel="info"><section class="panel"><div class="list"><div class="listItem"><span>report_id</span><span class="listMeta">1</span></div><div class="listItem"><span>target_type</span><span class="listMeta">—</span></div><div class="listItem"><span>target_id</span><span class="listMeta">1</span></div><div class="listItem"><span>status</span><span class="listMeta"><span class="badge badge--warning">PENDING</span></span></div></div></section></div>
+<div class="tabPanel" data-panel="target"><section class="panel"><div class="list"><div class="listItem"><span>preview</span><span class="listMeta">—</span></div><div class="listItem"><span>actions</span><span class="listMeta"><button class="btn btnTiny">Action</button></span></div></div></section></div>
+  </div>
+
+  
+  <section class="panel">
+    <div class="panelHeader">
+      <div>
+        <h3 class="panelTitle">SCHEMA UTILISE</h3>
+        <div class="panelDesc">Tables et colonnes principales.</div>
+      </div>
+    </div>
+    <div class="list">
+      <div class="listItem"><span><b>reports</b></span><span class="listMeta">report_id, target_type, target_id, status, preview</span></div>
+    </div>
+  </section>
+
+
+      
+{% endblock %}

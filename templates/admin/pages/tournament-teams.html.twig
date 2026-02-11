@@ -1,0 +1,45 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}PULSE - Inscriptions equipes{% endblock %}
+
+{% block admin_content %}
+
+        
+  <div class="pageHeader">
+    <div>
+      <h2>Inscriptions equipes</h2>
+      <div class="pageSub">tournament_teams.</div>
+    </div>
+    
+  </div>
+  
+  <section class="panel">
+    <div class="panelHeader"><h3 class="panelTitle">LISTE</h3></div>
+    
+  <div class="dataTableWrap">
+    <table class="dataTable">
+      <thead><tr><th>team</th><th>status</th><th>seed</th><th>registered_at</th><th>checked_in</th><th>Actions</th></tr></thead>
+      <tbody>
+        <tr><td>Nebula Five</td><td><span class="badge badge--warning">PENDING</span></td><td>1</td><td>—</td><td>—</td><td><button class="btn btnTiny">Action</button></td></tr>
+        <tr><td>Nebula Five</td><td><span class="badge badge--warning">PENDING</span></td><td>1</td><td>—</td><td>—</td><td><button class="btn btnTiny">Action</button></td></tr>
+      </tbody>
+    </table>
+  </div>
+    
+  </section>
+  
+  <section class="panel">
+    <div class="panelHeader">
+      <div>
+        <h3 class="panelTitle">SCHEMA UTILISE</h3>
+        <div class="panelDesc">Tables et colonnes principales.</div>
+      </div>
+    </div>
+    <div class="list">
+      <div class="listItem"><span><b>tournament_teams</b></span><span class="listMeta">team, status, seed, registered_at, checked_in</span></div>
+    </div>
+  </section>
+
+
+      
+{% endblock %}

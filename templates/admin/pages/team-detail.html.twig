@@ -1,0 +1,93 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}PULSE - Detail equipe{% endblock %}
+
+{% block admin_content %}
+
+        
+  <div class="pageHeader">
+    <div>
+      <h2>Detail equipe</h2>
+      <div class="pageSub">Infos + membres + produits + tournois.</div>
+    </div>
+    
+  </div>
+  
+  <div class="tabs" data-tabs="team">
+    <button class="tab isActive" data-tab="info">Infos</button>
+<button class="tab" data-tab="members">Membres</button>
+<button class="tab" data-tab="requests">Demandes</button>
+<button class="tab" data-tab="invites">Invitations</button>
+<button class="tab" data-tab="products">Produits</button>
+<button class="tab" data-tab="tournaments">Tournois</button>
+  </div>
+  <div class="tabPanels" data-panels="team">
+    <div class="tabPanel isActive" data-panel="info"><section class="panel"><div class="list"><div class="listItem"><span>name</span><span class="listMeta">—</span></div><div class="listItem"><span>region</span><span class="listMeta">TN</span></div><div class="listItem"><span>captain_user_id</span><span class="listMeta">zed_99</span></div></div></section></div>
+<div class="tabPanel" data-panel="members"><section class="panel">
+  <div class="dataTableWrap">
+    <table class="dataTable">
+      <thead><tr><th>user</th><th>joined_at</th><th>is_active</th></tr></thead>
+      <tbody>
+        <tr><td>zed_99</td><td>—</td><td>—</td></tr>
+        <tr><td>zed_99</td><td>—</td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div></section></div>
+<div class="tabPanel" data-panel="requests"><section class="panel">
+  <div class="dataTableWrap">
+    <table class="dataTable">
+      <thead><tr><th>request_id</th><th>user</th><th>status</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>zed_99</td><td><span class="badge badge--warning">PENDING</span></td></tr>
+        <tr><td>1</td><td>zed_99</td><td><span class="badge badge--warning">PENDING</span></td></tr>
+      </tbody>
+    </table>
+  </div></section></div>
+<div class="tabPanel" data-panel="invites"><section class="panel">
+  <div class="dataTableWrap">
+    <table class="dataTable">
+      <thead><tr><th>invite_id</th><th>invited_user</th><th>status</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>zed_99</td><td><span class="badge badge--warning">PENDING</span></td></tr>
+        <tr><td>1</td><td>zed_99</td><td><span class="badge badge--warning">PENDING</span></td></tr>
+      </tbody>
+    </table>
+  </div></section></div>
+<div class="tabPanel" data-panel="products"><section class="panel">
+  <div class="dataTableWrap">
+    <table class="dataTable">
+      <thead><tr><th>product_id</th><th>name</th><th>price</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>—</td><td>120 DT</td></tr>
+        <tr><td>1</td><td>—</td><td>120 DT</td></tr>
+      </tbody>
+    </table>
+  </div></section></div>
+<div class="tabPanel" data-panel="tournaments"><section class="panel">
+  <div class="dataTableWrap">
+    <table class="dataTable">
+      <thead><tr><th>tournament_id</th><th>status</th><th>seed</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td><span class="badge badge--warning">PENDING</span></td><td>1</td></tr>
+        <tr><td>1</td><td><span class="badge badge--warning">PENDING</span></td><td>1</td></tr>
+      </tbody>
+    </table>
+  </div></section></div>
+  </div>
+
+  
+  <section class="panel">
+    <div class="panelHeader">
+      <div>
+        <h3 class="panelTitle">SCHEMA UTILISE</h3>
+        <div class="panelDesc">Tables et colonnes principales.</div>
+      </div>
+    </div>
+    <div class="list">
+      <div class="listItem"><span><b>teams</b></span><span class="listMeta">name, region, captain_user_id, user, joined_at, is_active, request_id, user, status, invite_id, invited_user, status, product_id, name, price, tournament_id, status, seed</span></div>
+    </div>
+  </section>
+
+
+      
+{% endblock %}
