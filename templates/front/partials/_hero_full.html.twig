@@ -1,0 +1,40 @@
+<header class="heroFull">
+  <div class="heroFull__bg" id="heroBg" data-bg="{{ hero_bg|default(asset('assets/template_fo/img/ll.png')) }}"></div>
+  <div class="heroFull__overlay"></div>
+
+  {% include 'front/partials/_top_nav.html.twig' %}
+
+  <div class="heroCenter">
+    <div class="heroKicker">{{ hero_kicker|default('VOTRE PLATEFORME E-SPORT') }}</div>
+    <h1 class="heroTitle">{{ hero_title|default('PULSE') }}</h1>
+    <div class="heroSub">
+      {{ hero_sub|default('Creez des equipes, participez aux tournois, suivez les matchs et gagnez des recompenses.') }}
+    </div>
+
+    <div class="heroCtas">
+      <a class="cta cta--green" href="{{ path('front_contact') }}">CONTACT US</a>
+      <a class="cta cta--glass" href="{{ path('front_tournaments') }}">VOIR TOURNOIS</a>
+      <a class="cta cta--glass" href="{{ path('front_games') }}">VOIR JEUX</a>
+      <a class="cta cta--glass" href="{{ path('front_shop') }}">BOUTIQUE</a>
+    </div>
+
+    {% if show_widgets|default(false) %}
+      <div class="heroWidgets">
+        <div class="widget">
+          <div class="widget__value" id="heroStatMatches">{{ hero_stat_matches|default('3200') }}</div>
+          <div class="widget__label">Matches played</div>
+        </div>
+        <div class="widget">
+          <div class="widget__value" id="heroStatTournaments">{{ hero_stat_tournaments|default('235') }}</div>
+          <div class="widget__label">Tournaments held</div>
+        </div>
+        <div class="widget">
+          <div class="widget__value" id="heroStatPlayers">{{ hero_stat_players|default('566') }}</div>
+          <div class="widget__label">Players</div>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="heroSlash" aria-hidden="true"></div>
+</header>

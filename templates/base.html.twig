@@ -13,7 +13,21 @@
     <body class="antialiased">
         {% block body %}{% endblock %}
 
+        {% if app.request.attributes.get('_route') starts with 'front_' %}
+            {% include 'front/partials/_account_sidebar.html.twig' %}
+        {% endif %}
+
         {% block javascripts %}
+            <script>
+                window.PULSE_ROUTES = {
+                    tournamentDetail: "{{ path('front_tournament_detail') }}",
+                    gameDetail: "{{ path('front_game_detail') }}",
+                    matchDetail: "{{ path('front_match_detail') }}",
+                    teamDetail: "{{ path('front_team_detail') }}",
+                    playerDetail: "{{ path('front_player_profile') }}",
+                    productDetail: "{{ path('front_product_detail') }}"
+                };
+            </script>
             <script src="{{ asset('assets/template_fo/js/app.js') }}"></script>
         {% endblock %}
     </body>

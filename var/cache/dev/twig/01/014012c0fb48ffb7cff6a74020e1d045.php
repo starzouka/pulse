@@ -99,161 +99,11 @@ class __TwigTemplate_63f230fb5d2b8010eaa66aab2fd7c33c extends Template
         // line 6
         yield "
   <!-- HERO FULL (comme ta capture) -->
-  <header class=\"heroFull\">
-    <div class=\"heroFull__bg\" id=\"heroBg\" data-bg=\"";
-        // line 9
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\AssetExtension']->getAssetUrl("assets/template_fo/img/ll.png"), "html", null, true);
-        yield "\"></div>
-    <div class=\"heroFull__overlay\"></div>
-
-    <!-- Top row: brand left / nav center / sign-in right -->
-    <div class=\"heroTop\">
-      <!-- BRAND (hors topbar) -->
-      <a class=\"brand\" href=\"";
-        // line 15
-        yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_home");
-        yield "\" aria-label=\"Pulse\">
-        <span class=\"brand__logo\" aria-hidden=\"true\">
-          <svg viewBox=\"0 0 24 24\" class=\"ico\">
-            <path d=\"M4 4h16v16H4V4zm3 3v10h10V7H7zm2 2h6v6H9V9z\"/>
-          </svg>
-        </span>
-        <span class=\"brand__text\">
-          <span class=\"brand__name\">PULSE</span>
-          <span class=\"brand__small\">e-sport arena</span>
-        </span>
-      </a>
-
-      <!-- TOPBAR (glassy / blur) -->
-      <nav class=\"topbar\" aria-label=\"Navigation principale\">
-        <a class=\"topbar__item is-active\" href=\"";
-        // line 29
-        yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_home");
-        yield "\">
-          <span class=\"topbar__icon\">
-            <svg viewBox=\"0 0 24 24\" class=\"ico\"><path d=\"M12 3l9 8h-3v10h-5v-6H11v6H6V11H3l9-8z\"/></svg>
-          </span>
-          <span class=\"topbar__label\">Accueil</span>
-        </a>
-
-        <a class=\"topbar__item\" href=\"";
-        // line 36
-        yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_tournaments");
-        yield "\">
-          <span class=\"topbar__icon\">
-            <svg viewBox=\"0 0 24 24\" class=\"ico\"><path d=\"M6 4h12v2H6V4zm2 4h8l1 4H7l1-4zm-2 6h12v2H6v-2zm2 4h8v2H8v-2z\"/></svg>
-          </span>
-          <span class=\"topbar__label\">Tournois</span>
-        </a>
-
-        <a class=\"topbar__item\" href=\"";
-        // line 43
-        yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_games");
-        yield "\">
-          <span class=\"topbar__icon\">
-            <svg viewBox=\"0 0 24 24\" class=\"ico\"><path d=\"M7 6h10a4 4 0 014 4v2a4 4 0 01-4 4h-1l-2 2H10l-2-2H7a4 4 0 01-4-4v-2a4 4 0 014-4zm2 5a1 1 0 100 2 1 1 0 000-2zm6 0a1 1 0 100 2 1 1 0 000-2z\"/></svg>
-          </span>
-          <span class=\"topbar__label\">Jeux</span>
-        </a>
-
-        <a class=\"topbar__item\" href=\"";
-        // line 50
-        yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_matches");
-        yield "\">
-          <span class=\"topbar__icon\">
-            <svg viewBox=\"0 0 24 24\" class=\"ico\"><path d=\"M7 3h10v2H7V3zm2 6h6v2H9V9zm-2 5h10v2H7v-2zm2 5h6v2H9v-2z\"/></svg>
-          </span>
-          <span class=\"topbar__label\">Matchs</span>
-        </a>
-
-        <a class=\"topbar__item\" href=\"";
-        // line 57
-        yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_shop");
-        yield "\">
-          <span class=\"topbar__icon\">
-            <svg viewBox=\"0 0 24 24\" class=\"ico\"><path d=\"M7 18c-1.1 0-2-.9-2-2V6h2v10h12v2H7zM9 6h10v10H9V6zm2 2v6h6V8h-6z\"/></svg>
-          </span>
-          <span class=\"topbar__label\">Boutique</span>
-        </a>
-
-        <a class=\"topbar__item\" href=\"";
-        // line 64
-        yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_teams");
-        yield "\">
-          <span class=\"topbar__icon\">
-            <svg viewBox=\"0 0 24 24\" class=\"ico\"><path d=\"M16 11c1.66 0 3-1.34 3-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zM8 11c1.66 0 3-1.34 3-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.95 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z\"/></svg>
-          </span>
-          <span class=\"topbar__label\">Équipe</span>
-        </a>
-      </nav>
-
-      <!-- SIGN IN (hors topbar) -->
-      <div class=\"heroTop__right\">
-        <a class=\"btn btn--ghost\" href=\"";
-        // line 74
-        yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_register");
-        yield "\">S'INSCRIRE</a>
-        <button class=\"signInBtn\" id=\"btnOpenAuth\" type=\"button\">
-          <span class=\"signInBtn__icon\" aria-hidden=\"true\">
-            <svg viewBox=\"0 0 24 24\" class=\"ico\">
-              <path d=\"M10 17l1.4-1.4-2.6-2.6H20v-2H8.8l2.6-2.6L10 7l-7 7 7 7zm-6 4h6v-2H4V5h6V3H4a2 2 0 00-2 2v14a2 2 0 002 2z\"/>
-            </svg>
-          </span>
-          <span class=\"signInBtn__text\">SIGN IN</span>
-        </button>
-
-        <button class=\"menuBtn\" type=\"button\" aria-label=\"Menu\">
-          <span></span><span></span><span></span>
-        </button>
-      </div>
-    </div>
-
-    <!-- CENTER TITLE (comme la capture) -->
-    <div class=\"heroCenter\">
-      <div class=\"heroKicker\">VOTRE PLATEFORME E-SPORT</div>
-      <h1 class=\"heroTitle\">PULSE</h1>
-      <div class=\"heroSub\">Créez des équipes, participez aux tournois, suivez les matchs et gagnez des récompenses.</div>
-
-      <div class=\"heroCtas\">
-        <a class=\"cta cta--green\" href=\"";
-        // line 97
-        yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_contact");
-        yield "\">CONTACT US</a>
-        <a class=\"cta cta--glass\" href=\"";
-        // line 98
-        yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_tournaments");
-        yield "\">VOIR TOURNOIS</a>
-        <a class=\"cta cta--glass\" href=\"";
-        // line 99
-        yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_games");
-        yield "\">VOIR JEUX</a>
-        <a class=\"cta cta--glass\" href=\"";
-        // line 100
-        yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_shop");
-        yield "\">BOUTIQUE</a>
-      </div>
-
-      <!-- mini widgets glassy (optionnel mais dans le style) -->
-      <div class=\"heroWidgets\">
-        <div class=\"widget\">
-          <div class=\"widget__value\" id=\"heroStatMatches\">3200</div>
-          <div class=\"widget__label\">Matches played</div>
-        </div>
-        <div class=\"widget\">
-          <div class=\"widget__value\" id=\"heroStatTournaments\">235</div>
-          <div class=\"widget__label\">Tournaments held</div>
-        </div>
-        <div class=\"widget\">
-          <div class=\"widget__value\" id=\"heroStatPlayers\">566</div>
-          <div class=\"widget__label\">Players</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- optional diagonal strip -->
-    <div class=\"heroSlash\" aria-hidden=\"true\"></div>
-  </header>
-
+  ";
+        // line 8
+        yield from $this->load("front/partials/_hero_full.html.twig", 8)->unwrap()->yield(CoreExtension::merge($context, ["show_widgets" => true, "hero_kicker" => "VOTRE PLATEFORME E-SPORT", "hero_title" => "PULSE", "hero_sub" => "Creez des equipes, participez aux tournois, suivez les matchs et gagnez des recompenses."]));
+        // line 14
+        yield "
   <!-- CONTENU -->
   <main class=\"page\">
     <section class=\"belowHero\">
@@ -371,7 +221,7 @@ class __TwigTemplate_63f230fb5d2b8010eaa66aab2fd7c33c extends Template
           </div>
         </div>
 
-        <div class=\"cardsGrid cardsGrid--tournaments\" id=\"weekTournamentsGrid\"></div>
+        <div class=\"cardsGrid cardsGrid--tournaments cardsScroller hide-scrollbar overflow-x-scroll\" id=\"weekTournamentsGrid\"></div>
       </section>
 
       <!-- ===================== -->
@@ -390,7 +240,7 @@ class __TwigTemplate_63f230fb5d2b8010eaa66aab2fd7c33c extends Template
           </div>
         </div>
 
-        <div class=\"cardsGrid cardsGrid--champions\" id=\"championsGrid\"></div>
+        <div class=\"cardsGrid cardsGrid--champions cardsScroller hide-scrollbar overflow-x-scroll\" id=\"championsGrid\"></div>
       </section>
 
       <!-- ===================== -->
@@ -409,7 +259,7 @@ class __TwigTemplate_63f230fb5d2b8010eaa66aab2fd7c33c extends Template
           </div>
         </div>
 
-        <div class=\"cardsGrid cardsGrid--products\" id=\"bestSellersGrid\"></div>
+        <div class=\"cardsGrid cardsGrid--products cardsScroller hide-scrollbar overflow-x-scroll\" id=\"bestSellersGrid\"></div>
       </section>
 
       <!-- ===================== -->
@@ -428,7 +278,7 @@ class __TwigTemplate_63f230fb5d2b8010eaa66aab2fd7c33c extends Template
           </div>
         </div>
 
-        <div class=\"cardsGrid cardsGrid--games\" id=\"popularGamesGrid\"></div>
+        <div class=\"cardsGrid cardsGrid--games cardsScroller hide-scrollbar overflow-x-scroll\" id=\"popularGamesGrid\"></div>
       </section>
 
       <!-- ===================== -->
@@ -448,7 +298,7 @@ class __TwigTemplate_63f230fb5d2b8010eaa66aab2fd7c33c extends Template
           </div>
         </div>
 
-        <div class=\"cardsGrid cardsGrid--teams\" id=\"topTeamsGrid\"></div>
+        <div class=\"cardsGrid cardsGrid--teams cardsScroller hide-scrollbar overflow-x-scroll\" id=\"topTeamsGrid\"></div>
       </section>
 
       <!-- ===================== -->
@@ -468,71 +318,22 @@ class __TwigTemplate_63f230fb5d2b8010eaa66aab2fd7c33c extends Template
           </div>
         </div>
 
-        <div class=\"cardsGrid cardsGrid--members\" id=\"newPlayersGrid\"></div>
+        <div class=\"cardsGrid cardsGrid--members cardsScroller hide-scrollbar overflow-x-scroll\" id=\"newPlayersGrid\"></div>
       </section>
 
-      <footer class=\"footer\">
-        <div>© 2026 Pulse — Template</div>
-        <div class=\"footer__links\">
-          <a href=\"";
-        // line 344
-        yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_about");
-        yield "\">À propos</a>
-          <a href=\"";
-        // line 345
-        yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_contact");
-        yield "\">Contact</a>
-          <a href=\"";
-        // line 346
-        yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_faq");
-        yield "\">FAQ</a>
-        </div>
-      </footer>
-    </section>
+      ";
+        // line 232
+        yield from $this->load("front/partials/_footer.html.twig", 232)->unwrap()->yield($context);
+        // line 233
+        yield "    </section>
   </main>
 
   <!-- AUTH MODAL -->
-  <div class=\"authModal\" id=\"authModal\" aria-hidden=\"true\">
-    <div class=\"authModal__backdrop\" data-close=\"true\"></div>
-
-    <div class=\"authCard\" role=\"dialog\" aria-modal=\"true\" aria-label=\"Connexion\">
-      <div class=\"authCard__head\">
-        <div>
-          <div class=\"authCard__title\">Connexion</div>
-          <div class=\"authCard__sub\">Email + mot de passe, puis “mot de passe oublié”.</div>
-        </div>
-        <button class=\"iconBtn\" data-close=\"true\" aria-label=\"Fermer\">
-          <svg viewBox=\"0 0 24 24\" class=\"ico\">
-            <path d=\"M18.3 5.7L12 12l6.3 6.3-1.4 1.4L10.6 13.4 4.3 19.7 2.9 18.3 9.2 12 2.9 5.7 4.3 4.3l6.3 6.3 6.3-6.3 1.4 1.4z\"/>
-          </svg>
-        </button>
-      </div>
-
-      <form class=\"authForm\" id=\"loginForm\">
-        <label class=\"field\">
-          <span class=\"field__label\">Email</span>
-          <input type=\"email\" name=\"email\" placeholder=\"ex: you@email.com\" required />
-        </label>
-
-        <label class=\"field\">
-          <span class=\"field__label\">Mot de passe</span>
-          <input type=\"password\" name=\"password\" placeholder=\"••••••••\" required minlength=\"6\" />
-        </label>
-
-        <button class=\"btn btn--primary authForm__submit\" type=\"submit\">Se connecter</button>
-
-        <div class=\"authForm__bottom\">
-          <a class=\"authLink\" href=\"";
-        // line 383
-        yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_forgot_password");
-        yield "\" id=\"forgotLink\">Mot de passe oublié ?</a>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  
-
+  ";
+        // line 237
+        yield from $this->load("front/partials/_auth_modal.html.twig", 237)->unwrap()->yield($context);
+        // line 238
+        yield "
 ";
         
         $__internal_6f47bbe9983af81f1e7450e9a3e3768f->leave($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof);
@@ -564,7 +365,7 @@ class __TwigTemplate_63f230fb5d2b8010eaa66aab2fd7c33c extends Template
      */
     public function getDebugInfo(): array
     {
-        return array (  527 => 383,  487 => 346,  483 => 345,  479 => 344,  232 => 100,  228 => 99,  224 => 98,  220 => 97,  194 => 74,  181 => 64,  171 => 57,  161 => 50,  151 => 43,  141 => 36,  131 => 29,  114 => 15,  105 => 9,  100 => 6,  87 => 5,  64 => 3,  41 => 1,);
+        return array (  336 => 238,  334 => 237,  328 => 233,  326 => 232,  106 => 14,  104 => 8,  100 => 6,  87 => 5,  64 => 3,  41 => 1,);
     }
 
     public function getSourceContext(): Source
@@ -576,121 +377,12 @@ class __TwigTemplate_63f230fb5d2b8010eaa66aab2fd7c33c extends Template
 {% block body %}
 
   <!-- HERO FULL (comme ta capture) -->
-  <header class=\"heroFull\">
-    <div class=\"heroFull__bg\" id=\"heroBg\" data-bg=\"{{ asset('assets/template_fo/img/ll.png') }}\"></div>
-    <div class=\"heroFull__overlay\"></div>
-
-    <!-- Top row: brand left / nav center / sign-in right -->
-    <div class=\"heroTop\">
-      <!-- BRAND (hors topbar) -->
-      <a class=\"brand\" href=\"{{ path('front_home') }}\" aria-label=\"Pulse\">
-        <span class=\"brand__logo\" aria-hidden=\"true\">
-          <svg viewBox=\"0 0 24 24\" class=\"ico\">
-            <path d=\"M4 4h16v16H4V4zm3 3v10h10V7H7zm2 2h6v6H9V9z\"/>
-          </svg>
-        </span>
-        <span class=\"brand__text\">
-          <span class=\"brand__name\">PULSE</span>
-          <span class=\"brand__small\">e-sport arena</span>
-        </span>
-      </a>
-
-      <!-- TOPBAR (glassy / blur) -->
-      <nav class=\"topbar\" aria-label=\"Navigation principale\">
-        <a class=\"topbar__item is-active\" href=\"{{ path('front_home') }}\">
-          <span class=\"topbar__icon\">
-            <svg viewBox=\"0 0 24 24\" class=\"ico\"><path d=\"M12 3l9 8h-3v10h-5v-6H11v6H6V11H3l9-8z\"/></svg>
-          </span>
-          <span class=\"topbar__label\">Accueil</span>
-        </a>
-
-        <a class=\"topbar__item\" href=\"{{ path('front_tournaments') }}\">
-          <span class=\"topbar__icon\">
-            <svg viewBox=\"0 0 24 24\" class=\"ico\"><path d=\"M6 4h12v2H6V4zm2 4h8l1 4H7l1-4zm-2 6h12v2H6v-2zm2 4h8v2H8v-2z\"/></svg>
-          </span>
-          <span class=\"topbar__label\">Tournois</span>
-        </a>
-
-        <a class=\"topbar__item\" href=\"{{ path('front_games') }}\">
-          <span class=\"topbar__icon\">
-            <svg viewBox=\"0 0 24 24\" class=\"ico\"><path d=\"M7 6h10a4 4 0 014 4v2a4 4 0 01-4 4h-1l-2 2H10l-2-2H7a4 4 0 01-4-4v-2a4 4 0 014-4zm2 5a1 1 0 100 2 1 1 0 000-2zm6 0a1 1 0 100 2 1 1 0 000-2z\"/></svg>
-          </span>
-          <span class=\"topbar__label\">Jeux</span>
-        </a>
-
-        <a class=\"topbar__item\" href=\"{{ path('front_matches') }}\">
-          <span class=\"topbar__icon\">
-            <svg viewBox=\"0 0 24 24\" class=\"ico\"><path d=\"M7 3h10v2H7V3zm2 6h6v2H9V9zm-2 5h10v2H7v-2zm2 5h6v2H9v-2z\"/></svg>
-          </span>
-          <span class=\"topbar__label\">Matchs</span>
-        </a>
-
-        <a class=\"topbar__item\" href=\"{{ path('front_shop') }}\">
-          <span class=\"topbar__icon\">
-            <svg viewBox=\"0 0 24 24\" class=\"ico\"><path d=\"M7 18c-1.1 0-2-.9-2-2V6h2v10h12v2H7zM9 6h10v10H9V6zm2 2v6h6V8h-6z\"/></svg>
-          </span>
-          <span class=\"topbar__label\">Boutique</span>
-        </a>
-
-        <a class=\"topbar__item\" href=\"{{ path('front_teams') }}\">
-          <span class=\"topbar__icon\">
-            <svg viewBox=\"0 0 24 24\" class=\"ico\"><path d=\"M16 11c1.66 0 3-1.34 3-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zM8 11c1.66 0 3-1.34 3-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.95 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z\"/></svg>
-          </span>
-          <span class=\"topbar__label\">Équipe</span>
-        </a>
-      </nav>
-
-      <!-- SIGN IN (hors topbar) -->
-      <div class=\"heroTop__right\">
-        <a class=\"btn btn--ghost\" href=\"{{ path('front_register') }}\">S'INSCRIRE</a>
-        <button class=\"signInBtn\" id=\"btnOpenAuth\" type=\"button\">
-          <span class=\"signInBtn__icon\" aria-hidden=\"true\">
-            <svg viewBox=\"0 0 24 24\" class=\"ico\">
-              <path d=\"M10 17l1.4-1.4-2.6-2.6H20v-2H8.8l2.6-2.6L10 7l-7 7 7 7zm-6 4h6v-2H4V5h6V3H4a2 2 0 00-2 2v14a2 2 0 002 2z\"/>
-            </svg>
-          </span>
-          <span class=\"signInBtn__text\">SIGN IN</span>
-        </button>
-
-        <button class=\"menuBtn\" type=\"button\" aria-label=\"Menu\">
-          <span></span><span></span><span></span>
-        </button>
-      </div>
-    </div>
-
-    <!-- CENTER TITLE (comme la capture) -->
-    <div class=\"heroCenter\">
-      <div class=\"heroKicker\">VOTRE PLATEFORME E-SPORT</div>
-      <h1 class=\"heroTitle\">PULSE</h1>
-      <div class=\"heroSub\">Créez des équipes, participez aux tournois, suivez les matchs et gagnez des récompenses.</div>
-
-      <div class=\"heroCtas\">
-        <a class=\"cta cta--green\" href=\"{{ path('front_contact') }}\">CONTACT US</a>
-        <a class=\"cta cta--glass\" href=\"{{ path('front_tournaments') }}\">VOIR TOURNOIS</a>
-        <a class=\"cta cta--glass\" href=\"{{ path('front_games') }}\">VOIR JEUX</a>
-        <a class=\"cta cta--glass\" href=\"{{ path('front_shop') }}\">BOUTIQUE</a>
-      </div>
-
-      <!-- mini widgets glassy (optionnel mais dans le style) -->
-      <div class=\"heroWidgets\">
-        <div class=\"widget\">
-          <div class=\"widget__value\" id=\"heroStatMatches\">3200</div>
-          <div class=\"widget__label\">Matches played</div>
-        </div>
-        <div class=\"widget\">
-          <div class=\"widget__value\" id=\"heroStatTournaments\">235</div>
-          <div class=\"widget__label\">Tournaments held</div>
-        </div>
-        <div class=\"widget\">
-          <div class=\"widget__value\" id=\"heroStatPlayers\">566</div>
-          <div class=\"widget__label\">Players</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- optional diagonal strip -->
-    <div class=\"heroSlash\" aria-hidden=\"true\"></div>
-  </header>
+  {% include 'front/partials/_hero_full.html.twig' with {
+  show_widgets: true,
+  hero_kicker: 'VOTRE PLATEFORME E-SPORT',
+  hero_title: 'PULSE',
+  hero_sub: 'Creez des equipes, participez aux tournois, suivez les matchs et gagnez des recompenses.'
+} %}
 
   <!-- CONTENU -->
   <main class=\"page\">
@@ -809,7 +501,7 @@ class __TwigTemplate_63f230fb5d2b8010eaa66aab2fd7c33c extends Template
           </div>
         </div>
 
-        <div class=\"cardsGrid cardsGrid--tournaments\" id=\"weekTournamentsGrid\"></div>
+        <div class=\"cardsGrid cardsGrid--tournaments cardsScroller hide-scrollbar overflow-x-scroll\" id=\"weekTournamentsGrid\"></div>
       </section>
 
       <!-- ===================== -->
@@ -828,7 +520,7 @@ class __TwigTemplate_63f230fb5d2b8010eaa66aab2fd7c33c extends Template
           </div>
         </div>
 
-        <div class=\"cardsGrid cardsGrid--champions\" id=\"championsGrid\"></div>
+        <div class=\"cardsGrid cardsGrid--champions cardsScroller hide-scrollbar overflow-x-scroll\" id=\"championsGrid\"></div>
       </section>
 
       <!-- ===================== -->
@@ -847,7 +539,7 @@ class __TwigTemplate_63f230fb5d2b8010eaa66aab2fd7c33c extends Template
           </div>
         </div>
 
-        <div class=\"cardsGrid cardsGrid--products\" id=\"bestSellersGrid\"></div>
+        <div class=\"cardsGrid cardsGrid--products cardsScroller hide-scrollbar overflow-x-scroll\" id=\"bestSellersGrid\"></div>
       </section>
 
       <!-- ===================== -->
@@ -866,7 +558,7 @@ class __TwigTemplate_63f230fb5d2b8010eaa66aab2fd7c33c extends Template
           </div>
         </div>
 
-        <div class=\"cardsGrid cardsGrid--games\" id=\"popularGamesGrid\"></div>
+        <div class=\"cardsGrid cardsGrid--games cardsScroller hide-scrollbar overflow-x-scroll\" id=\"popularGamesGrid\"></div>
       </section>
 
       <!-- ===================== -->
@@ -886,7 +578,7 @@ class __TwigTemplate_63f230fb5d2b8010eaa66aab2fd7c33c extends Template
           </div>
         </div>
 
-        <div class=\"cardsGrid cardsGrid--teams\" id=\"topTeamsGrid\"></div>
+        <div class=\"cardsGrid cardsGrid--teams cardsScroller hide-scrollbar overflow-x-scroll\" id=\"topTeamsGrid\"></div>
       </section>
 
       <!-- ===================== -->
@@ -906,58 +598,15 @@ class __TwigTemplate_63f230fb5d2b8010eaa66aab2fd7c33c extends Template
           </div>
         </div>
 
-        <div class=\"cardsGrid cardsGrid--members\" id=\"newPlayersGrid\"></div>
+        <div class=\"cardsGrid cardsGrid--members cardsScroller hide-scrollbar overflow-x-scroll\" id=\"newPlayersGrid\"></div>
       </section>
 
-      <footer class=\"footer\">
-        <div>© 2026 Pulse — Template</div>
-        <div class=\"footer__links\">
-          <a href=\"{{ path('front_about') }}\">À propos</a>
-          <a href=\"{{ path('front_contact') }}\">Contact</a>
-          <a href=\"{{ path('front_faq') }}\">FAQ</a>
-        </div>
-      </footer>
+      {% include 'front/partials/_footer.html.twig' %}
     </section>
   </main>
 
   <!-- AUTH MODAL -->
-  <div class=\"authModal\" id=\"authModal\" aria-hidden=\"true\">
-    <div class=\"authModal__backdrop\" data-close=\"true\"></div>
-
-    <div class=\"authCard\" role=\"dialog\" aria-modal=\"true\" aria-label=\"Connexion\">
-      <div class=\"authCard__head\">
-        <div>
-          <div class=\"authCard__title\">Connexion</div>
-          <div class=\"authCard__sub\">Email + mot de passe, puis “mot de passe oublié”.</div>
-        </div>
-        <button class=\"iconBtn\" data-close=\"true\" aria-label=\"Fermer\">
-          <svg viewBox=\"0 0 24 24\" class=\"ico\">
-            <path d=\"M18.3 5.7L12 12l6.3 6.3-1.4 1.4L10.6 13.4 4.3 19.7 2.9 18.3 9.2 12 2.9 5.7 4.3 4.3l6.3 6.3 6.3-6.3 1.4 1.4z\"/>
-          </svg>
-        </button>
-      </div>
-
-      <form class=\"authForm\" id=\"loginForm\">
-        <label class=\"field\">
-          <span class=\"field__label\">Email</span>
-          <input type=\"email\" name=\"email\" placeholder=\"ex: you@email.com\" required />
-        </label>
-
-        <label class=\"field\">
-          <span class=\"field__label\">Mot de passe</span>
-          <input type=\"password\" name=\"password\" placeholder=\"••••••••\" required minlength=\"6\" />
-        </label>
-
-        <button class=\"btn btn--primary authForm__submit\" type=\"submit\">Se connecter</button>
-
-        <div class=\"authForm__bottom\">
-          <a class=\"authLink\" href=\"{{ path('front_forgot_password') }}\" id=\"forgotLink\">Mot de passe oublié ?</a>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  
+  {% include 'front/partials/_auth_modal.html.twig' %}
 
 {% endblock %}
 

@@ -49,6 +49,9 @@ class Tournament
     
     #[ORM\Column(name: 'format', type: Types::STRING, length: 3, options: ['default' => 'BO1'])]
     private string $format = 'BO1';
+
+    #[ORM\Column(name: 'registration_mode', type: Types::STRING, length: 8, options: ['default' => 'OPEN'])]
+    private string $registrationMode = 'OPEN';
     
     #[ORM\Column(name: 'prize_pool', type: Types::DECIMAL, precision: 12, scale: 2, options: ['default' => '0.00'])]
     private string $prizePool = '0.00';
@@ -58,6 +61,9 @@ class Tournament
     
     #[ORM\Column(name: 'status', type: Types::STRING, length: 9, options: ['default' => 'DRAFT'])]
     private string $status = 'DRAFT';
+
+    #[ORM\Column(name: 'photo_path', type: Types::STRING, length: 255, nullable: true)]
+    private ?string $photoPath = null;
     
     #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE)]
     private \DateTimeInterface $createdAt;
@@ -221,6 +227,18 @@ class Tournament
         return $this;
     }
 
+    public function getRegistrationMode(): ?string
+    {
+        return $this->registrationMode;
+    }
+
+    public function setRegistrationMode(string $registrationMode): static
+    {
+        $this->registrationMode = $registrationMode;
+
+        return $this;
+    }
+
     public function getStatus(): ?string
     {
         return $this->status;
@@ -229,6 +247,18 @@ class Tournament
     public function setStatus(string $status): static
     {
         $this->status = $status;
+
+        return $this;
+    }
+
+    public function getPhotoPath(): ?string
+    {
+        return $this->photoPath;
+    }
+
+    public function setPhotoPath(?string $photoPath): static
+    {
+        $this->photoPath = $photoPath;
 
         return $this;
     }

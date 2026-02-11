@@ -25,6 +25,18 @@ const FALLBACK_SVG = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`
 // Helpers DOM
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
+const ROUTES = window.PULSE_ROUTES || {};
+
+const CARD_DETAIL_BY_TYPE = {
+  tournament: ROUTES.tournamentDetail,
+  champion: ROUTES.teamDetail,
+  game: ROUTES.gameDetail,
+  match: ROUTES.matchDetail,
+  team: ROUTES.teamDetail,
+  member: ROUTES.playerDetail,
+  player: ROUTES.playerDetail,
+  product: ROUTES.productDetail
+};
 
 // Safe BG loader
 function setBgSafe(el, url) {
@@ -100,7 +112,8 @@ function wireTabs(){
 
 function wireSideNav(){
   const sideNav = document.querySelector(".sideNav");
-  const toggleBtn = document.querySelector(".menuBtn");
+  const toggleBtn = document.querySelector(".sideNavToggle")
+    || (!document.querySelector(".heroTop .topbar") ? document.querySelector(".menuBtn") : null);
   if (!sideNav || !toggleBtn) return;
 
   const media = window.matchMedia("(min-width: 981px)");
@@ -154,7 +167,108 @@ function wireSideNav(){
 }
 
 // =====================
-// Modal login (inchangé)
+// Navigation + cards
+// =====================
+function wireAccountSidebar(){
+  const sidebar = document.querySelector(".accountSidebar");
+  const backdrop = document.querySelector(".accountSidebarBackdrop");
+  const toggleBtn = document.querySelector(".menuBtn");
+  if (!sidebar || !backdrop || !toggleBtn) return;
+
+  if (!sidebar.id) sidebar.id = "accountSidebar";
+  toggleBtn.setAttribute("aria-controls", sidebar.id);
+  toggleBtn.setAttribute("aria-expanded", "false");
+
+  const setOpen = (open) => {
+    document.body.classList.toggle("accountSidebar-open", open);
+    sidebar.setAttribute("aria-hidden", open ? "false" : "true");
+    toggleBtn.setAttribute("aria-expanded", open ? "true" : "false");
+  };
+
+  toggleBtn.addEventListener("click", () => {
+    setOpen(!document.body.classList.contains("accountSidebar-open"));
+  });
+
+  backdrop.addEventListener("click", () => setOpen(false));
+  sidebar.addEventListener("click", (e) => {
+    if (e.target.closest('[data-account-close="true"]')) setOpen(false);
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") setOpen(false);
+  });
+
+  sidebar.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", () => setOpen(false));
+  });
+}
+
+function getCardHrefByType(type){
+  return CARD_DETAIL_BY_TYPE[type] || "";
+}
+
+function decorateCardLinks(scope = document){
+  scope.querySelectorAll(".card[data-type]").forEach((card) => {
+    const href = card.dataset.href || getCardHrefByType(card.dataset.type);
+    if (!href) return;
+    card.dataset.href = href;
+    card.classList.add("is-clickable");
+    card.setAttribute("role", "link");
+    if (!card.hasAttribute("tabindex")) card.setAttribute("tabindex", "0");
+  });
+}
+
+function wireCardLinks(){
+  const navigateFromCard = (card) => {
+    const href = card?.dataset?.href;
+    if (!href) return;
+    window.location.href = href;
+  };
+
+  document.addEventListener("click", (e) => {
+    const card = e.target.closest(".card[data-href]");
+    if (!card) return;
+    if (e.target.closest("a,button,input,select,textarea,label")) return;
+    navigateFromCard(card);
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    const card = e.target.closest(".card[data-href]");
+    if (!card) return;
+    e.preventDefault();
+    navigateFromCard(card);
+  });
+}
+
+function wireHorizontalSectionScroll(){
+  const pairs = [
+    ["weekTournamentsGrid", "weekTournamentsPrev", "weekTournamentsNext"],
+    ["championsGrid", "championsPrev", "championsNext"],
+    ["bestSellersGrid", "bestSellersPrev", "bestSellersNext"],
+    ["popularGamesGrid", "popularGamesPrev", "popularGamesNext"],
+    ["topTeamsGrid", "topTeamsPrev", "topTeamsNext"],
+    ["newPlayersGrid", "newPlayersPrev", "newPlayersNext"]
+  ];
+
+  const scrollByCardBatch = (container, direction) => {
+    const delta = Math.max(260, container.clientWidth * 0.82) * direction;
+    container.scrollBy({ left: delta, behavior: "smooth" });
+  };
+
+  pairs.forEach(([gridId, prevId, nextId]) => {
+    const grid = document.getElementById(gridId);
+    const prev = document.getElementById(prevId);
+    const next = document.getElementById(nextId);
+    if (!grid || !prev || !next) return;
+
+    prev.addEventListener("click", () => scrollByCardBatch(grid, -1));
+    next.addEventListener("click", () => scrollByCardBatch(grid, 1));
+  });
+}
+
+// =====================
+// Modal login
 // =====================
 function openAuth(){ $("#authModal").setAttribute("aria-hidden","false"); }
 function closeAuth(){ $("#authModal").setAttribute("aria-hidden","true"); }
@@ -163,33 +277,23 @@ function wireAuth(){
   const openBtn = $("#btnOpenAuth");
   const modal = $("#authModal");
   const form = $("#loginForm");
-  const forgot = $("#forgotLink");
 
-  if (!openBtn || !modal || !form) return;
+  if (!openBtn || !modal) return;
 
   openBtn.addEventListener("click", openAuth);
 
   modal.addEventListener("click", (e) => {
-    if (e.target?.dataset?.close === "true") closeAuth();
+    if (e.target.closest('[data-close="true"]')) closeAuth();
   });
 
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeAuth();
   });
 
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const data = new FormData(e.currentTarget);
-    alert(`Template login: ${data.get("email")} (à connecter au backend)`);
+  if (!form) return;
+  form.addEventListener("submit", () => {
     closeAuth();
   });
-
-  if (forgot){
-    forgot.addEventListener("click", (e) => {
-      e.preventDefault();
-      alert("Template: redirection Mot de passe oublié.");
-    });
-  }
 }
 
 // =========================
@@ -691,6 +795,8 @@ function renderSearchResults(query){
     if (el.dataset.avatar) setBgSafe(el, el.dataset.avatar);
   });
 
+  decorateCardLinks(wrap);
+
   // afficher la section
   $("#searchResultsSection").hidden = false;
 
@@ -705,7 +811,7 @@ function renderSearchCardByType(typeKey, item){
   // Tout est “template” : tu connecteras plus tard aux vraies tables.
   if (typeKey === "tournaments"){
     return `
-      <article class="card card--tournament">
+      <article class="card card--tournament" data-type="tournament" data-id="${item.id}">
         <div class="card__media" data-bg="${item.img}">
           <div class="card__chips">
             <span class="chip chip--status">${item.status}</span>
@@ -724,7 +830,7 @@ function renderSearchCardByType(typeKey, item){
 
   if (typeKey === "champions"){
     return `
-      <article class="card card--champion">
+      <article class="card card--champion" data-type="champion" data-id="${item.id}">
         <div class="card__media" data-bg="${item.img}">
           <div class="card__chips">
             <span class="chip chip--trophy">CHAMPION</span>
@@ -749,7 +855,7 @@ function renderSearchCardByType(typeKey, item){
 
   if (typeKey === "products"){
     return `
-      <article class="card card--product">
+      <article class="card card--product" data-type="product" data-id="${item.id}">
         <div class="card__media" data-bg="${item.img}">
           <div class="card__chips">
             <span class="chip chip--price">${item.price}</span>
@@ -767,7 +873,7 @@ function renderSearchCardByType(typeKey, item){
 
   if (typeKey === "games"){
     return `
-      <article class="card card--game">
+      <article class="card card--game" data-type="game" data-id="${item.id}">
         <div class="card__media" data-bg="${item.img}">
           <div class="card__chips">
             <span class="chip chip--category">${item.category}</span>
@@ -784,7 +890,7 @@ function renderSearchCardByType(typeKey, item){
 
   if (typeKey === "teams"){
     return `
-      <article class="card card--team">
+      <article class="card card--team" data-type="team" data-id="${item.id}">
         <div class="card__media" data-bg="${item.img}">
           <div class="card__chips">
             <span class="chip chip--region">${item.region}</span>
@@ -808,7 +914,7 @@ function renderSearchCardByType(typeKey, item){
 
   if (typeKey === "players"){
     return `
-      <article class="card card--member">
+      <article class="card card--member" data-type="member" data-id="${item.id}">
         <div class="card__media" data-bg="${item.img}">
           <div class="card__chips">
             <span class="chip chip--role">${item.role}</span>
@@ -833,7 +939,7 @@ function renderSearchCardByType(typeKey, item){
 
   // matches
   return `
-    <article class="card card--tournament">
+    <article class="card card--tournament" data-type="match" data-id="${item.id}">
       <div class="card__media" data-bg="${item.img}">
         <div class="card__chips">
           <span class="chip">${item.status}</span>
@@ -932,7 +1038,10 @@ function init(){
 
   // Wire auth + search
   wireAuth();
+  wireAccountSidebar();
   wireGlobalSearch();
+  wireCardLinks();
+  wireHorizontalSectionScroll();
   wireSideNav();
   wireTabs();
   applyDatasetBackgrounds();
@@ -944,6 +1053,7 @@ function init(){
   renderPopularGames();
   renderTopTeams();
   renderNewPlayers();
+  decorateCardLinks(document);
 
   // Keep old call (no-op now unless #tournamentsGrid existe)
   renderCards();

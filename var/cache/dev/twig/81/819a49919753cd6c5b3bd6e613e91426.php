@@ -72,8 +72,19 @@ class __TwigTemplate_432d7a90ff9bba53cdbd01282f208e1b extends Template
         yield "
         ";
         // line 16
-        yield from $this->unwrap()->yieldBlock('javascripts', $context, $blocks);
+        if ((is_string($_v0 = CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, (isset($context["app"]) || array_key_exists("app", $context) ? $context["app"] : (function () { throw new RuntimeError('Variable "app" does not exist.', 16, $this->source); })()), "request", [], "any", false, false, false, 16), "attributes", [], "any", false, false, false, 16), "get", ["_route"], "method", false, false, false, 16)) && is_string($_v1 = "front_") && str_starts_with($_v0, $_v1))) {
+            // line 17
+            yield "            ";
+            yield from $this->load("front/partials/_account_sidebar.html.twig", 17)->unwrap()->yield($context);
+            // line 18
+            yield "        ";
+        }
         // line 19
+        yield "
+        ";
+        // line 20
+        yield from $this->unwrap()->yieldBlock('javascripts', $context, $blocks);
+        // line 33
         yield "    </body>
 </html>
 
@@ -163,7 +174,7 @@ class __TwigTemplate_432d7a90ff9bba53cdbd01282f208e1b extends Template
         yield from [];
     }
 
-    // line 16
+    // line 20
     /**
      * @return iterable<null|scalar|\Stringable>
      */
@@ -176,8 +187,37 @@ class __TwigTemplate_432d7a90ff9bba53cdbd01282f208e1b extends Template
         $__internal_6f47bbe9983af81f1e7450e9a3e3768f = $this->extensions["Symfony\\Bridge\\Twig\\Extension\\ProfilerExtension"];
         $__internal_6f47bbe9983af81f1e7450e9a3e3768f->enter($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof = new \Twig\Profiler\Profile($this->getTemplateName(), "block", "javascripts"));
 
-        // line 17
-        yield "            <script src=\"";
+        // line 21
+        yield "            <script>
+                window.PULSE_ROUTES = {
+                    tournamentDetail: \"";
+        // line 23
+        yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_tournament_detail");
+        yield "\",
+                    gameDetail: \"";
+        // line 24
+        yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_game_detail");
+        yield "\",
+                    matchDetail: \"";
+        // line 25
+        yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_match_detail");
+        yield "\",
+                    teamDetail: \"";
+        // line 26
+        yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_team_detail");
+        yield "\",
+                    playerDetail: \"";
+        // line 27
+        yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_player_profile");
+        yield "\",
+                    productDetail: \"";
+        // line 28
+        yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_product_detail");
+        yield "\"
+                };
+            </script>
+            <script src=\"";
+        // line 31
         yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\AssetExtension']->getAssetUrl("assets/template_fo/js/app.js"), "html", null, true);
         yield "\"></script>
         ";
@@ -201,9 +241,17 @@ class __TwigTemplate_432d7a90ff9bba53cdbd01282f208e1b extends Template
     /**
      * @codeCoverageIgnore
      */
+    public function isTraitable(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @codeCoverageIgnore
+     */
     public function getDebugInfo(): array
     {
-        return array (  180 => 17,  167 => 16,  145 => 14,  132 => 10,  127 => 9,  114 => 8,  91 => 6,  77 => 19,  75 => 16,  72 => 15,  70 => 14,  66 => 12,  64 => 8,  59 => 6,  52 => 1,);
+        return array (  221 => 31,  215 => 28,  211 => 27,  207 => 26,  203 => 25,  199 => 24,  195 => 23,  191 => 21,  178 => 20,  156 => 14,  143 => 10,  138 => 9,  125 => 8,  102 => 6,  88 => 33,  86 => 20,  83 => 19,  80 => 18,  77 => 17,  75 => 16,  72 => 15,  70 => 14,  66 => 12,  64 => 8,  59 => 6,  52 => 1,);
     }
 
     public function getSourceContext(): Source
@@ -223,7 +271,21 @@ class __TwigTemplate_432d7a90ff9bba53cdbd01282f208e1b extends Template
     <body class=\"antialiased\">
         {% block body %}{% endblock %}
 
+        {% if app.request.attributes.get('_route') starts with 'front_' %}
+            {% include 'front/partials/_account_sidebar.html.twig' %}
+        {% endif %}
+
         {% block javascripts %}
+            <script>
+                window.PULSE_ROUTES = {
+                    tournamentDetail: \"{{ path('front_tournament_detail') }}\",
+                    gameDetail: \"{{ path('front_game_detail') }}\",
+                    matchDetail: \"{{ path('front_match_detail') }}\",
+                    teamDetail: \"{{ path('front_team_detail') }}\",
+                    playerDetail: \"{{ path('front_player_profile') }}\",
+                    productDetail: \"{{ path('front_product_detail') }}\"
+                };
+            </script>
             <script src=\"{{ asset('assets/template_fo/js/app.js') }}\"></script>
         {% endblock %}
     </body>

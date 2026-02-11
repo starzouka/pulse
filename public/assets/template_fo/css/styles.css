@@ -511,6 +511,32 @@ button, input, select{ font: inherit; }
   gap:14px;
 }
 
+.cardsScroller.cardsGrid{
+  display:flex;
+  gap: 14px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x proximity;
+  scroll-padding-inline: 4px;
+  padding: 2px 4px 8px;
+}
+
+.cardsScroller.cardsGrid .card{
+  flex: 0 0 clamp(255px, 29vw, 340px);
+  scroll-snap-align: start;
+}
+
+.hide-scrollbar{
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar{
+  width: 0;
+  height: 0;
+  display: none;
+}
+
 /* =============================== */
 /* NOUVEAU SYSTÈME DE CARDS (UI)   */
 /* =============================== */
@@ -529,6 +555,15 @@ button, input, select{ font: inherit; }
   border-color: rgba(255,255,255,.16);
   background: rgba(255,255,255,.04);
   box-shadow: var(--shadow2);
+}
+
+.card.is-clickable{
+  cursor: pointer;
+}
+
+.card.is-clickable:focus-visible{
+  outline: 2px solid rgba(43,210,255,.44);
+  outline-offset: 2px;
 }
 
 /* media */
@@ -1037,6 +1072,175 @@ textarea:focus-visible{
 body.sideNav-open .sideNavBackdrop{
   opacity: 1;
   pointer-events: auto;
+}
+
+/* Account sidebar (front office menu button) */
+.accountSidebarBackdrop{
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 8, 16, .62);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .24s ease;
+  z-index: 78;
+}
+
+.accountSidebar{
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: min(420px, 100vw);
+  height: 100vh;
+  transform: translateX(104%);
+  transition: transform .30s cubic-bezier(.22, .65, .2, 1);
+  z-index: 79;
+  border-left: 1px solid rgba(255,255,255,.14);
+  background: linear-gradient(180deg, rgba(7,20,34,.97), rgba(9,26,43,.97));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: -26px 0 48px rgba(0,0,0,.42);
+  display: flex;
+  flex-direction: column;
+}
+
+body.accountSidebar-open .accountSidebarBackdrop{
+  opacity: 1;
+  pointer-events: auto;
+}
+
+body.accountSidebar-open .accountSidebar{
+  transform: translateX(0);
+}
+
+body.accountSidebar-open{
+  overflow: hidden;
+}
+
+.accountSidebar__head{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 14px 14px 12px;
+  border-bottom: 1px solid rgba(255,255,255,.12);
+}
+
+.accountSidebar__identity{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.accountSidebar__avatar{
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+  letter-spacing: .02em;
+  border: 1px solid rgba(255,255,255,.16);
+  background: rgba(255,255,255,.08);
+}
+
+.accountSidebar__name{
+  font-size: 13px;
+  font-weight: 900;
+  color: rgba(233,242,255,.95);
+}
+
+.accountSidebar__role{
+  margin-top: 3px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 3px 9px;
+  border: 1px solid rgba(255,255,255,.14);
+  color: rgba(233,242,255,.90);
+  font-size: 10px;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+
+.accountSidebar__role.role--player{
+  background: rgba(43,210,255,.14);
+  border-color: rgba(43,210,255,.36);
+}
+
+.accountSidebar__role.role--captain{
+  background: rgba(40,255,138,.14);
+  border-color: rgba(40,255,138,.34);
+}
+
+.accountSidebar__role.role--organizer{
+  background: rgba(255,210,74,.20);
+  border-color: rgba(255,210,74,.38);
+  color: #1c1400;
+}
+
+.accountSidebar__role.role--admin{
+  background: rgba(255,130,130,.16);
+  border-color: rgba(255,130,130,.36);
+}
+
+.accountSidebar__role.role--guest{
+  background: rgba(255,255,255,.10);
+  border-color: rgba(255,255,255,.20);
+}
+
+.accountSidebar__content{
+  flex: 1;
+  overflow: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.accountSidebar__section{
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.11);
+  background: rgba(255,255,255,.03);
+  padding: 10px;
+}
+
+.accountSidebar__title{
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .12em;
+  color: rgba(233,242,255,.80);
+  text-transform: uppercase;
+}
+
+.accountSidebar__links{
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.accountSidebar__link{
+  display: flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  color: rgba(233,242,255,.88);
+  background: rgba(255,255,255,.02);
+  transition: background .12s ease, border-color .12s ease, transform .12s ease;
+}
+
+.accountSidebar__link:hover{
+  transform: translateY(-1px);
+  background: rgba(255,255,255,.06);
+  border-color: rgba(255,255,255,.15);
+}
+
+.accountSidebar__link.is-active{
+  background: rgba(40,255,138,.14);
+  border-color: rgba(40,255,138,.30);
+  color: rgba(233,242,255,.96);
 }
 
 .list{ display:flex; flex-direction:column; gap:10px; }

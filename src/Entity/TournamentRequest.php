@@ -61,6 +61,9 @@ class TournamentRequest
     
     #[ORM\Column(name: 'status', type: Types::STRING, length: 8, options: ['default' => 'PENDING'])]
     private string $status = 'PENDING';
+
+    #[ORM\Column(name: 'photo_path', type: Types::STRING, length: 255, nullable: true)]
+    private ?string $photoPath = null;
     
     #[ORM\Column(name: 'admin_response_note', type: Types::TEXT, nullable: true)]
     private ?string $adminResponseNote = null;
@@ -251,6 +254,18 @@ class TournamentRequest
     public function setStatus(string $status): static
     {
         $this->status = $status;
+
+        return $this;
+    }
+
+    public function getPhotoPath(): ?string
+    {
+        return $this->photoPath;
+    }
+
+    public function setPhotoPath(?string $photoPath): static
+    {
+        $this->photoPath = $photoPath;
 
         return $this;
     }
