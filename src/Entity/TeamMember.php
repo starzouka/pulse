@@ -14,12 +14,14 @@ class TeamMember
 {
     
     #[ORM\Id]
-    #[ORM\Column(name: 'team_id', type: Types::INTEGER, options: ['unsigned' => true])]
-    private int $teamId;
+    #[ORM\ManyToOne(targetEntity: Team::class)]
+    #[ORM\JoinColumn(name: 'team_id', referencedColumnName: 'team_id', nullable: false, onDelete: 'CASCADE')]
+    private Team $teamId;
     
     #[ORM\Id]
-    #[ORM\Column(name: 'user_id', type: Types::INTEGER, options: ['unsigned' => true])]
-    private int $userId;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'user_id', nullable: false, onDelete: 'CASCADE')]
+    private User $userId;
     
     #[ORM\Column(name: 'joined_at', type: Types::DATETIME_MUTABLE)]
     private \DateTimeInterface $joinedAt;
@@ -30,43 +32,43 @@ class TeamMember
     #[ORM\Column(name: 'left_at', type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $leftAt = null;
 
-    public function getTeamId(): int
+    public function getTeamId(): ?Team
     {
         return $this->teamId;
     }
 
-    public function setTeamId(int $teamId): static
+    public function setTeamId(?Team $teamId): static
     {
         $this->teamId = $teamId;
 
         return $this;
     }
 
-    public function getUserId(): int
+    public function getUserId(): ?User
     {
         return $this->userId;
     }
 
-    public function setUserId(int $userId): static
+    public function setUserId(?User $userId): static
     {
         $this->userId = $userId;
 
         return $this;
     }
 
-    public function getJoinedAt(): \DateTimeInterface
+    public function getJoinedAt(): ?\DateTime
     {
         return $this->joinedAt;
     }
 
-    public function setJoinedAt(\DateTimeInterface $joinedAt): static
+    public function setJoinedAt(\DateTime $joinedAt): static
     {
         $this->joinedAt = $joinedAt;
 
         return $this;
     }
 
-    public function isActive(): bool
+    public function isActive(): ?bool
     {
         return $this->isActive;
     }
@@ -78,12 +80,12 @@ class TeamMember
         return $this;
     }
 
-    public function getLeftAt(): ?\DateTimeInterface
+    public function getLeftAt(): ?\DateTime
     {
         return $this->leftAt;
     }
 
-    public function setLeftAt(?\DateTimeInterface $leftAt): static
+    public function setLeftAt(?\DateTime $leftAt): static
     {
         $this->leftAt = $leftAt;
 

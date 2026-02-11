@@ -18,14 +18,17 @@ class Comment
     #[ORM\Column(name: 'comment_id', type: Types::INTEGER, options: ['unsigned' => true])]
     private ?int $commentId = null;
     
-    #[ORM\Column(name: 'post_id', type: Types::INTEGER, options: ['unsigned' => true])]
-    private int $postId;
+    #[ORM\ManyToOne(targetEntity: Post::class)]
+    #[ORM\JoinColumn(name: 'post_id', referencedColumnName: 'post_id', nullable: false, onDelete: 'CASCADE')]
+    private Post $postId;
     
-    #[ORM\Column(name: 'author_user_id', type: Types::INTEGER, options: ['unsigned' => true])]
-    private int $authorUserId;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'author_user_id', referencedColumnName: 'user_id', nullable: false, onDelete: 'CASCADE')]
+    private User $authorUserId;
     
-    #[ORM\Column(name: 'parent_comment_id', type: Types::INTEGER, nullable: true, options: ['unsigned' => true])]
-    private ?int $parentCommentId = null;
+    #[ORM\ManyToOne(targetEntity: Comment::class)]
+    #[ORM\JoinColumn(name: 'parent_comment_id', referencedColumnName: 'comment_id', nullable: true, onDelete: 'SET NULL')]
+    private ?Comment $parentCommentId;
     
     #[ORM\Column(name: 'content_text', type: Types::TEXT)]
     private string $contentText;
@@ -51,43 +54,43 @@ class Comment
         return $this;
     }
 
-    public function getPostId(): int
+    public function getPostId(): ?Post
     {
         return $this->postId;
     }
 
-    public function setPostId(int $postId): static
+    public function setPostId(?Post $postId): static
     {
         $this->postId = $postId;
 
         return $this;
     }
 
-    public function getAuthorUserId(): int
+    public function getAuthorUserId(): ?User
     {
         return $this->authorUserId;
     }
 
-    public function setAuthorUserId(int $authorUserId): static
+    public function setAuthorUserId(?User $authorUserId): static
     {
         $this->authorUserId = $authorUserId;
 
         return $this;
     }
 
-    public function getParentCommentId(): ?int
+    public function getParentCommentId(): ?self
     {
         return $this->parentCommentId;
     }
 
-    public function setParentCommentId(?int $parentCommentId): static
+    public function setParentCommentId(?self $parentCommentId): static
     {
         $this->parentCommentId = $parentCommentId;
 
         return $this;
     }
 
-    public function getContentText(): string
+    public function getContentText(): ?string
     {
         return $this->contentText;
     }
@@ -99,7 +102,7 @@ class Comment
         return $this;
     }
 
-    public function isDeleted(): bool
+    public function isDeleted(): ?bool
     {
         return $this->isDeleted;
     }
@@ -111,24 +114,24 @@ class Comment
         return $this;
     }
 
-    public function getCreatedAt(): \DateTimeInterface
+    public function getCreatedAt(): ?\DateTime
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeInterface $createdAt): static
+    public function setCreatedAt(\DateTime $createdAt): static
     {
         $this->createdAt = $createdAt;
 
         return $this;
     }
 
-    public function getUpdatedAt(): \DateTimeInterface
+    public function getUpdatedAt(): ?\DateTime
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTimeInterface $updatedAt): static
+    public function setUpdatedAt(\DateTime $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
 

@@ -18,11 +18,13 @@ class Message
     #[ORM\Column(name: 'message_id', type: Types::INTEGER, options: ['unsigned' => true])]
     private ?int $messageId = null;
     
-    #[ORM\Column(name: 'sender_user_id', type: Types::INTEGER, options: ['unsigned' => true])]
-    private int $senderUserId;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'sender_user_id', referencedColumnName: 'user_id', nullable: false, onDelete: 'CASCADE')]
+    private User $senderUserId;
     
-    #[ORM\Column(name: 'receiver_user_id', type: Types::INTEGER, options: ['unsigned' => true])]
-    private int $receiverUserId;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'receiver_user_id', referencedColumnName: 'user_id', nullable: false, onDelete: 'CASCADE')]
+    private User $receiverUserId;
     
     #[ORM\Column(name: 'body_text', type: Types::TEXT)]
     private string $bodyText;
@@ -54,31 +56,31 @@ class Message
         return $this;
     }
 
-    public function getSenderUserId(): int
+    public function getSenderUserId(): ?User
     {
         return $this->senderUserId;
     }
 
-    public function setSenderUserId(int $senderUserId): static
+    public function setSenderUserId(?User $senderUserId): static
     {
         $this->senderUserId = $senderUserId;
 
         return $this;
     }
 
-    public function getReceiverUserId(): int
+    public function getReceiverUserId(): ?User
     {
         return $this->receiverUserId;
     }
 
-    public function setReceiverUserId(int $receiverUserId): static
+    public function setReceiverUserId(?User $receiverUserId): static
     {
         $this->receiverUserId = $receiverUserId;
 
         return $this;
     }
 
-    public function getBodyText(): string
+    public function getBodyText(): ?string
     {
         return $this->bodyText;
     }
@@ -90,19 +92,19 @@ class Message
         return $this;
     }
 
-    public function getCreatedAt(): \DateTimeInterface
+    public function getCreatedAt(): ?\DateTime
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeInterface $createdAt): static
+    public function setCreatedAt(\DateTime $createdAt): static
     {
         $this->createdAt = $createdAt;
 
         return $this;
     }
 
-    public function isRead(): bool
+    public function isRead(): ?bool
     {
         return $this->isRead;
     }
@@ -114,19 +116,19 @@ class Message
         return $this;
     }
 
-    public function getReadAt(): ?\DateTimeInterface
+    public function getReadAt(): ?\DateTime
     {
         return $this->readAt;
     }
 
-    public function setReadAt(?\DateTimeInterface $readAt): static
+    public function setReadAt(?\DateTime $readAt): static
     {
         $this->readAt = $readAt;
 
         return $this;
     }
 
-    public function isDeletedBySender(): bool
+    public function isDeletedBySender(): ?bool
     {
         return $this->isDeletedBySender;
     }
@@ -138,7 +140,7 @@ class Message
         return $this;
     }
 
-    public function isDeletedByReceiver(): bool
+    public function isDeletedByReceiver(): ?bool
     {
         return $this->isDeletedByReceiver;
     }

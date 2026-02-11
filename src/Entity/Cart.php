@@ -18,8 +18,9 @@ class Cart
     #[ORM\Column(name: 'cart_id', type: Types::INTEGER, options: ['unsigned' => true])]
     private ?int $cartId = null;
     
-    #[ORM\Column(name: 'user_id', type: Types::INTEGER, options: ['unsigned' => true])]
-    private int $userId;
+    #[ORM\OneToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'user_id', nullable: false, onDelete: 'CASCADE', unique: true)]
+    private User $userId;
     
     #[ORM\Column(name: 'status', type: Types::STRING, length: 7, options: ['default' => 'OPEN'])]
     private string $status = 'OPEN';
@@ -45,19 +46,19 @@ class Cart
         return $this;
     }
 
-    public function getUserId(): int
+    public function getUserId(): ?User
     {
         return $this->userId;
     }
 
-    public function setUserId(int $userId): static
+    public function setUserId(User $userId): static
     {
         $this->userId = $userId;
 
         return $this;
     }
 
-    public function getStatus(): string
+    public function getStatus(): ?string
     {
         return $this->status;
     }
@@ -69,36 +70,36 @@ class Cart
         return $this;
     }
 
-    public function getCreatedAt(): \DateTimeInterface
+    public function getCreatedAt(): ?\DateTime
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeInterface $createdAt): static
+    public function setCreatedAt(\DateTime $createdAt): static
     {
         $this->createdAt = $createdAt;
 
         return $this;
     }
 
-    public function getUpdatedAt(): \DateTimeInterface
+    public function getUpdatedAt(): ?\DateTime
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTimeInterface $updatedAt): static
+    public function setUpdatedAt(\DateTime $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
 
         return $this;
     }
 
-    public function getLockedAt(): ?\DateTimeInterface
+    public function getLockedAt(): ?\DateTime
     {
         return $this->lockedAt;
     }
 
-    public function setLockedAt(?\DateTimeInterface $lockedAt): static
+    public function setLockedAt(?\DateTime $lockedAt): static
     {
         $this->lockedAt = $lockedAt;
 

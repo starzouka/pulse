@@ -14,41 +14,43 @@ class PostImage
 {
     
     #[ORM\Id]
-    #[ORM\Column(name: 'post_id', type: Types::INTEGER, options: ['unsigned' => true])]
-    private int $postId;
+    #[ORM\ManyToOne(targetEntity: Post::class)]
+    #[ORM\JoinColumn(name: 'post_id', referencedColumnName: 'post_id', nullable: false, onDelete: 'CASCADE')]
+    private Post $postId;
     
     #[ORM\Id]
-    #[ORM\Column(name: 'image_id', type: Types::INTEGER, options: ['unsigned' => true])]
-    private int $imageId;
+    #[ORM\ManyToOne(targetEntity: Image::class)]
+    #[ORM\JoinColumn(name: 'image_id', referencedColumnName: 'image_id', nullable: false, onDelete: 'RESTRICT')]
+    private Image $imageId;
     
     #[ORM\Column(name: 'position', type: Types::INTEGER, options: ['unsigned' => true, 'default' => 1])]
     private int $position = 1;
 
-    public function getPostId(): int
+    public function getPostId(): ?Post
     {
         return $this->postId;
     }
 
-    public function setPostId(int $postId): static
+    public function setPostId(?Post $postId): static
     {
         $this->postId = $postId;
 
         return $this;
     }
 
-    public function getImageId(): int
+    public function getImageId(): ?Image
     {
         return $this->imageId;
     }
 
-    public function setImageId(int $imageId): static
+    public function setImageId(?Image $imageId): static
     {
         $this->imageId = $imageId;
 
         return $this;
     }
 
-    public function getPosition(): int
+    public function getPosition(): ?int
     {
         return $this->position;
     }

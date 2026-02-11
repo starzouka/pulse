@@ -18,8 +18,9 @@ class Post
     #[ORM\Column(name: 'post_id', type: Types::INTEGER, options: ['unsigned' => true])]
     private ?int $postId = null;
     
-    #[ORM\Column(name: 'author_user_id', type: Types::INTEGER, options: ['unsigned' => true])]
-    private int $authorUserId;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'author_user_id', referencedColumnName: 'user_id', nullable: false, onDelete: 'CASCADE')]
+    private User $authorUserId;
     
     #[ORM\Column(name: 'content_text', type: Types::TEXT, nullable: true)]
     private ?string $contentText = null;
@@ -51,12 +52,12 @@ class Post
         return $this;
     }
 
-    public function getAuthorUserId(): int
+    public function getAuthorUserId(): ?User
     {
         return $this->authorUserId;
     }
 
-    public function setAuthorUserId(int $authorUserId): static
+    public function setAuthorUserId(?User $authorUserId): static
     {
         $this->authorUserId = $authorUserId;
 
@@ -75,7 +76,7 @@ class Post
         return $this;
     }
 
-    public function getVisibility(): string
+    public function getVisibility(): ?string
     {
         return $this->visibility;
     }
@@ -87,7 +88,7 @@ class Post
         return $this;
     }
 
-    public function isDeleted(): bool
+    public function isDeleted(): ?bool
     {
         return $this->isDeleted;
     }
@@ -99,36 +100,36 @@ class Post
         return $this;
     }
 
-    public function getDeletedAt(): ?\DateTimeInterface
+    public function getDeletedAt(): ?\DateTime
     {
         return $this->deletedAt;
     }
 
-    public function setDeletedAt(?\DateTimeInterface $deletedAt): static
+    public function setDeletedAt(?\DateTime $deletedAt): static
     {
         $this->deletedAt = $deletedAt;
 
         return $this;
     }
 
-    public function getCreatedAt(): \DateTimeInterface
+    public function getCreatedAt(): ?\DateTime
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeInterface $createdAt): static
+    public function setCreatedAt(\DateTime $createdAt): static
     {
         $this->createdAt = $createdAt;
 
         return $this;
     }
 
-    public function getUpdatedAt(): \DateTimeInterface
+    public function getUpdatedAt(): ?\DateTime
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTimeInterface $updatedAt): static
+    public function setUpdatedAt(\DateTime $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
 

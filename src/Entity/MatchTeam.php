@@ -14,12 +14,14 @@ class MatchTeam
 {
     
     #[ORM\Id]
-    #[ORM\Column(name: 'match_id', type: Types::INTEGER, options: ['unsigned' => true])]
-    private int $matchId;
+    #[ORM\ManyToOne(targetEntity: TournamentMatch::class)]
+    #[ORM\JoinColumn(name: 'match_id', referencedColumnName: 'match_id', nullable: false, onDelete: 'CASCADE')]
+    private TournamentMatch $matchId;
     
     #[ORM\Id]
-    #[ORM\Column(name: 'team_id', type: Types::INTEGER, options: ['unsigned' => true])]
-    private int $teamId;
+    #[ORM\ManyToOne(targetEntity: Team::class)]
+    #[ORM\JoinColumn(name: 'team_id', referencedColumnName: 'team_id', nullable: false, onDelete: 'CASCADE')]
+    private Team $teamId;
     
     #[ORM\Column(name: 'score', type: Types::INTEGER, nullable: true, options: ['unsigned' => true])]
     private ?int $score = null;
@@ -27,24 +29,24 @@ class MatchTeam
     #[ORM\Column(name: 'is_winner', type: Types::BOOLEAN, nullable: true)]
     private ?bool $isWinner = null;
 
-    public function getMatchId(): int
+    public function getMatchId(): ?TournamentMatch
     {
         return $this->matchId;
     }
 
-    public function setMatchId(int $matchId): static
+    public function setMatchId(?TournamentMatch $matchId): static
     {
         $this->matchId = $matchId;
 
         return $this;
     }
 
-    public function getTeamId(): int
+    public function getTeamId(): ?Team
     {
         return $this->teamId;
     }
 
-    public function setTeamId(int $teamId): static
+    public function setTeamId(?Team $teamId): static
     {
         $this->teamId = $teamId;
 

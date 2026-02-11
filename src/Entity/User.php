@@ -57,8 +57,9 @@ class User
     #[ORM\Column(name: 'last_login_at', type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $lastLoginAt = null;
     
-    #[ORM\Column(name: 'profile_image_id', type: Types::INTEGER, nullable: true, options: ['unsigned' => true])]
-    private ?int $profileImageId = null;
+    #[ORM\ManyToOne(targetEntity: Image::class)]
+    #[ORM\JoinColumn(name: 'profile_image_id', referencedColumnName: 'image_id', nullable: true, onDelete: 'SET NULL')]
+    private ?Image $profileImageId;
     
     #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE)]
     private \DateTimeInterface $createdAt;
@@ -78,7 +79,7 @@ class User
         return $this;
     }
 
-    public function getUsername(): string
+    public function getUsername(): ?string
     {
         return $this->username;
     }
@@ -90,7 +91,7 @@ class User
         return $this;
     }
 
-    public function getEmail(): string
+    public function getEmail(): ?string
     {
         return $this->email;
     }
@@ -102,7 +103,7 @@ class User
         return $this;
     }
 
-    public function getPasswordHash(): string
+    public function getPasswordHash(): ?string
     {
         return $this->passwordHash;
     }
@@ -114,7 +115,7 @@ class User
         return $this;
     }
 
-    public function getRole(): string
+    public function getRole(): ?string
     {
         return $this->role;
     }
@@ -126,7 +127,7 @@ class User
         return $this;
     }
 
-    public function getDisplayName(): string
+    public function getDisplayName(): ?string
     {
         return $this->displayName;
     }
@@ -174,12 +175,12 @@ class User
         return $this;
     }
 
-    public function getBirthDate(): ?\DateTimeInterface
+    public function getBirthDate(): ?\DateTime
     {
         return $this->birthDate;
     }
 
-    public function setBirthDate(?\DateTimeInterface $birthDate): static
+    public function setBirthDate(?\DateTime $birthDate): static
     {
         $this->birthDate = $birthDate;
 
@@ -198,7 +199,7 @@ class User
         return $this;
     }
 
-    public function isEmailVerified(): bool
+    public function isEmailVerified(): ?bool
     {
         return $this->emailVerified;
     }
@@ -210,7 +211,7 @@ class User
         return $this;
     }
 
-    public function isActive(): bool
+    public function isActive(): ?bool
     {
         return $this->isActive;
     }
@@ -222,48 +223,48 @@ class User
         return $this;
     }
 
-    public function getLastLoginAt(): ?\DateTimeInterface
+    public function getLastLoginAt(): ?\DateTime
     {
         return $this->lastLoginAt;
     }
 
-    public function setLastLoginAt(?\DateTimeInterface $lastLoginAt): static
+    public function setLastLoginAt(?\DateTime $lastLoginAt): static
     {
         $this->lastLoginAt = $lastLoginAt;
 
         return $this;
     }
 
-    public function getProfileImageId(): ?int
+    public function getProfileImageId(): ?Image
     {
         return $this->profileImageId;
     }
 
-    public function setProfileImageId(?int $profileImageId): static
+    public function setProfileImageId(?Image $profileImageId): static
     {
         $this->profileImageId = $profileImageId;
 
         return $this;
     }
 
-    public function getCreatedAt(): \DateTimeInterface
+    public function getCreatedAt(): ?\DateTime
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeInterface $createdAt): static
+    public function setCreatedAt(\DateTime $createdAt): static
     {
         $this->createdAt = $createdAt;
 
         return $this;
     }
 
-    public function getUpdatedAt(): \DateTimeInterface
+    public function getUpdatedAt(): ?\DateTime
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTimeInterface $updatedAt): static
+    public function setUpdatedAt(\DateTime $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
 

@@ -14,12 +14,14 @@ class TournamentTeam
 {
     
     #[ORM\Id]
-    #[ORM\Column(name: 'tournament_id', type: Types::INTEGER, options: ['unsigned' => true])]
-    private int $tournamentId;
+    #[ORM\ManyToOne(targetEntity: Tournament::class)]
+    #[ORM\JoinColumn(name: 'tournament_id', referencedColumnName: 'tournament_id', nullable: false, onDelete: 'CASCADE')]
+    private Tournament $tournamentId;
     
     #[ORM\Id]
-    #[ORM\Column(name: 'team_id', type: Types::INTEGER, options: ['unsigned' => true])]
-    private int $teamId;
+    #[ORM\ManyToOne(targetEntity: Team::class)]
+    #[ORM\JoinColumn(name: 'team_id', referencedColumnName: 'team_id', nullable: false, onDelete: 'CASCADE')]
+    private Team $teamId;
     
     #[ORM\Column(name: 'status', type: Types::STRING, length: 9, options: ['default' => 'PENDING'])]
     private string $status = 'PENDING';
@@ -33,8 +35,9 @@ class TournamentTeam
     #[ORM\Column(name: 'decided_at', type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $decidedAt = null;
     
-    #[ORM\Column(name: 'decided_by_user_id', type: Types::INTEGER, nullable: true, options: ['unsigned' => true])]
-    private ?int $decidedByUserId = null;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'decided_by_user_id', referencedColumnName: 'user_id', nullable: true, onDelete: 'SET NULL')]
+    private ?User $decidedByUserId;
     
     #[ORM\Column(name: 'checked_in', type: Types::BOOLEAN, options: ['default' => false])]
     private bool $checkedIn = false;
@@ -42,31 +45,31 @@ class TournamentTeam
     #[ORM\Column(name: 'checkin_at', type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $checkinAt = null;
 
-    public function getTournamentId(): int
+    public function getTournamentId(): ?Tournament
     {
         return $this->tournamentId;
     }
 
-    public function setTournamentId(int $tournamentId): static
+    public function setTournamentId(?Tournament $tournamentId): static
     {
         $this->tournamentId = $tournamentId;
 
         return $this;
     }
 
-    public function getTeamId(): int
+    public function getTeamId(): ?Team
     {
         return $this->teamId;
     }
 
-    public function setTeamId(int $teamId): static
+    public function setTeamId(?Team $teamId): static
     {
         $this->teamId = $teamId;
 
         return $this;
     }
 
-    public function getStatus(): string
+    public function getStatus(): ?string
     {
         return $this->status;
     }
@@ -90,43 +93,43 @@ class TournamentTeam
         return $this;
     }
 
-    public function getRegisteredAt(): \DateTimeInterface
+    public function getRegisteredAt(): ?\DateTime
     {
         return $this->registeredAt;
     }
 
-    public function setRegisteredAt(\DateTimeInterface $registeredAt): static
+    public function setRegisteredAt(\DateTime $registeredAt): static
     {
         $this->registeredAt = $registeredAt;
 
         return $this;
     }
 
-    public function getDecidedAt(): ?\DateTimeInterface
+    public function getDecidedAt(): ?\DateTime
     {
         return $this->decidedAt;
     }
 
-    public function setDecidedAt(?\DateTimeInterface $decidedAt): static
+    public function setDecidedAt(?\DateTime $decidedAt): static
     {
         $this->decidedAt = $decidedAt;
 
         return $this;
     }
 
-    public function getDecidedByUserId(): ?int
+    public function getDecidedByUserId(): ?User
     {
         return $this->decidedByUserId;
     }
 
-    public function setDecidedByUserId(?int $decidedByUserId): static
+    public function setDecidedByUserId(?User $decidedByUserId): static
     {
         $this->decidedByUserId = $decidedByUserId;
 
         return $this;
     }
 
-    public function isCheckedIn(): bool
+    public function isCheckedIn(): ?bool
     {
         return $this->checkedIn;
     }
@@ -138,12 +141,12 @@ class TournamentTeam
         return $this;
     }
 
-    public function getCheckinAt(): ?\DateTimeInterface
+    public function getCheckinAt(): ?\DateTime
     {
         return $this->checkinAt;
     }
 
-    public function setCheckinAt(?\DateTimeInterface $checkinAt): static
+    public function setCheckinAt(?\DateTime $checkinAt): static
     {
         $this->checkinAt = $checkinAt;
 

@@ -18,8 +18,9 @@ class TournamentMatch
     #[ORM\Column(name: 'match_id', type: Types::INTEGER, options: ['unsigned' => true])]
     private ?int $matchId = null;
     
-    #[ORM\Column(name: 'tournament_id', type: Types::INTEGER, options: ['unsigned' => true])]
-    private int $tournamentId;
+    #[ORM\ManyToOne(targetEntity: Tournament::class)]
+    #[ORM\JoinColumn(name: 'tournament_id', referencedColumnName: 'tournament_id', nullable: false, onDelete: 'CASCADE')]
+    private Tournament $tournamentId;
     
     #[ORM\Column(name: 'scheduled_at', type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $scheduledAt = null;
@@ -39,8 +40,9 @@ class TournamentMatch
     #[ORM\Column(name: 'updated_at', type: Types::DATETIME_MUTABLE)]
     private \DateTimeInterface $updatedAt;
     
-    #[ORM\Column(name: 'result_submitted_by_user_id', type: Types::INTEGER, nullable: true, options: ['unsigned' => true])]
-    private ?int $resultSubmittedByUserId = null;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'result_submitted_by_user_id', referencedColumnName: 'user_id', nullable: true, onDelete: 'SET NULL')]
+    private ?User $resultSubmittedByUserId;
 
     public function getMatchId(): ?int
     {
@@ -54,24 +56,24 @@ class TournamentMatch
         return $this;
     }
 
-    public function getTournamentId(): int
+    public function getTournamentId(): ?Tournament
     {
         return $this->tournamentId;
     }
 
-    public function setTournamentId(int $tournamentId): static
+    public function setTournamentId(?Tournament $tournamentId): static
     {
         $this->tournamentId = $tournamentId;
 
         return $this;
     }
 
-    public function getScheduledAt(): ?\DateTimeInterface
+    public function getScheduledAt(): ?\DateTime
     {
         return $this->scheduledAt;
     }
 
-    public function setScheduledAt(?\DateTimeInterface $scheduledAt): static
+    public function setScheduledAt(?\DateTime $scheduledAt): static
     {
         $this->scheduledAt = $scheduledAt;
 
@@ -102,7 +104,7 @@ class TournamentMatch
         return $this;
     }
 
-    public function getStatus(): string
+    public function getStatus(): ?string
     {
         return $this->status;
     }
@@ -114,36 +116,36 @@ class TournamentMatch
         return $this;
     }
 
-    public function getCreatedAt(): \DateTimeInterface
+    public function getCreatedAt(): ?\DateTime
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeInterface $createdAt): static
+    public function setCreatedAt(\DateTime $createdAt): static
     {
         $this->createdAt = $createdAt;
 
         return $this;
     }
 
-    public function getUpdatedAt(): \DateTimeInterface
+    public function getUpdatedAt(): ?\DateTime
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTimeInterface $updatedAt): static
+    public function setUpdatedAt(\DateTime $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
 
         return $this;
     }
 
-    public function getResultSubmittedByUserId(): ?int
+    public function getResultSubmittedByUserId(): ?User
     {
         return $this->resultSubmittedByUserId;
     }
 
-    public function setResultSubmittedByUserId(?int $resultSubmittedByUserId): static
+    public function setResultSubmittedByUserId(?User $resultSubmittedByUserId): static
     {
         $this->resultSubmittedByUserId = $resultSubmittedByUserId;
 

@@ -27,11 +27,13 @@ class Team
     #[ORM\Column(name: 'region', type: Types::STRING, length: 80, nullable: true)]
     private ?string $region = null;
     
-    #[ORM\Column(name: 'logo_image_id', type: Types::INTEGER, nullable: true, options: ['unsigned' => true])]
-    private ?int $logoImageId = null;
+    #[ORM\ManyToOne(targetEntity: Image::class)]
+    #[ORM\JoinColumn(name: 'logo_image_id', referencedColumnName: 'image_id', nullable: true, onDelete: 'SET NULL')]
+    private ?Image $logoImageId;
     
-    #[ORM\Column(name: 'captain_user_id', type: Types::INTEGER, options: ['unsigned' => true])]
-    private int $captainUserId;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'captain_user_id', referencedColumnName: 'user_id', nullable: false, onDelete: 'RESTRICT')]
+    private User $captainUserId;
     
     #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE)]
     private \DateTimeInterface $createdAt;
@@ -51,7 +53,7 @@ class Team
         return $this;
     }
 
-    public function getName(): string
+    public function getName(): ?string
     {
         return $this->name;
     }
@@ -87,48 +89,48 @@ class Team
         return $this;
     }
 
-    public function getLogoImageId(): ?int
+    public function getLogoImageId(): ?Image
     {
         return $this->logoImageId;
     }
 
-    public function setLogoImageId(?int $logoImageId): static
+    public function setLogoImageId(?Image $logoImageId): static
     {
         $this->logoImageId = $logoImageId;
 
         return $this;
     }
 
-    public function getCaptainUserId(): int
+    public function getCaptainUserId(): ?User
     {
         return $this->captainUserId;
     }
 
-    public function setCaptainUserId(int $captainUserId): static
+    public function setCaptainUserId(?User $captainUserId): static
     {
         $this->captainUserId = $captainUserId;
 
         return $this;
     }
 
-    public function getCreatedAt(): \DateTimeInterface
+    public function getCreatedAt(): ?\DateTime
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeInterface $createdAt): static
+    public function setCreatedAt(\DateTime $createdAt): static
     {
         $this->createdAt = $createdAt;
 
         return $this;
     }
 
-    public function getUpdatedAt(): \DateTimeInterface
+    public function getUpdatedAt(): ?\DateTime
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTimeInterface $updatedAt): static
+    public function setUpdatedAt(\DateTime $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
 

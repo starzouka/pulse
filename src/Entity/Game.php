@@ -18,8 +18,9 @@ class Game
     #[ORM\Column(name: 'game_id', type: Types::INTEGER, options: ['unsigned' => true])]
     private ?int $gameId = null;
     
-    #[ORM\Column(name: 'category_id', type: Types::INTEGER, options: ['unsigned' => true])]
-    private int $categoryId;
+    #[ORM\ManyToOne(targetEntity: Category::class)]
+    #[ORM\JoinColumn(name: 'category_id', referencedColumnName: 'category_id', nullable: false, onDelete: 'RESTRICT')]
+    private Category $categoryId;
     
     #[ORM\Column(name: 'name', type: Types::STRING, length: 120)]
     private string $name;
@@ -30,8 +31,9 @@ class Game
     #[ORM\Column(name: 'publisher', type: Types::STRING, length: 120, nullable: true)]
     private ?string $publisher = null;
     
-    #[ORM\Column(name: 'cover_image_id', type: Types::INTEGER, nullable: true, options: ['unsigned' => true])]
-    private ?int $coverImageId = null;
+    #[ORM\ManyToOne(targetEntity: Image::class)]
+    #[ORM\JoinColumn(name: 'cover_image_id', referencedColumnName: 'image_id', nullable: true, onDelete: 'SET NULL')]
+    private ?Image $coverImageId;
     
     #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE)]
     private \DateTimeInterface $createdAt;
@@ -48,19 +50,19 @@ class Game
         return $this;
     }
 
-    public function getCategoryId(): int
+    public function getCategoryId(): ?Category
     {
         return $this->categoryId;
     }
 
-    public function setCategoryId(int $categoryId): static
+    public function setCategoryId(?Category $categoryId): static
     {
         $this->categoryId = $categoryId;
 
         return $this;
     }
 
-    public function getName(): string
+    public function getName(): ?string
     {
         return $this->name;
     }
@@ -96,24 +98,24 @@ class Game
         return $this;
     }
 
-    public function getCoverImageId(): ?int
+    public function getCoverImageId(): ?Image
     {
         return $this->coverImageId;
     }
 
-    public function setCoverImageId(?int $coverImageId): static
+    public function setCoverImageId(?Image $coverImageId): static
     {
         $this->coverImageId = $coverImageId;
 
         return $this;
     }
 
-    public function getCreatedAt(): \DateTimeInterface
+    public function getCreatedAt(): ?\DateTime
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeInterface $createdAt): static
+    public function setCreatedAt(\DateTime $createdAt): static
     {
         $this->createdAt = $createdAt;
 

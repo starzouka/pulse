@@ -21,11 +21,13 @@ class Order
     #[ORM\Column(name: 'order_number', type: Types::STRING, length: 30)]
     private string $orderNumber;
     
-    #[ORM\Column(name: 'cart_id', type: Types::INTEGER, options: ['unsigned' => true])]
-    private int $cartId;
+    #[ORM\OneToOne(targetEntity: Cart::class)]
+    #[ORM\JoinColumn(name: 'cart_id', referencedColumnName: 'cart_id', nullable: false, onDelete: 'RESTRICT', unique: true)]
+    private Cart $cartId;
     
-    #[ORM\Column(name: 'user_id', type: Types::INTEGER, options: ['unsigned' => true])]
-    private int $userId;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'user_id', nullable: false, onDelete: 'RESTRICT')]
+    private User $userId;
     
     #[ORM\Column(name: 'status', type: Types::STRING, length: 9, options: ['default' => 'PENDING'])]
     private string $status = 'PENDING';
@@ -69,7 +71,7 @@ class Order
         return $this;
     }
 
-    public function getOrderNumber(): string
+    public function getOrderNumber(): ?string
     {
         return $this->orderNumber;
     }
@@ -81,31 +83,31 @@ class Order
         return $this;
     }
 
-    public function getCartId(): int
+    public function getCartId(): ?Cart
     {
         return $this->cartId;
     }
 
-    public function setCartId(int $cartId): static
+    public function setCartId(Cart $cartId): static
     {
         $this->cartId = $cartId;
 
         return $this;
     }
 
-    public function getUserId(): int
+    public function getUserId(): ?User
     {
         return $this->userId;
     }
 
-    public function setUserId(int $userId): static
+    public function setUserId(?User $userId): static
     {
         $this->userId = $userId;
 
         return $this;
     }
 
-    public function getStatus(): string
+    public function getStatus(): ?string
     {
         return $this->status;
     }
@@ -129,7 +131,7 @@ class Order
         return $this;
     }
 
-    public function getPaymentStatus(): string
+    public function getPaymentStatus(): ?string
     {
         return $this->paymentStatus;
     }
@@ -141,7 +143,7 @@ class Order
         return $this;
     }
 
-    public function getTotalAmount(): string
+    public function getTotalAmount(): ?string
     {
         return $this->totalAmount;
     }
@@ -177,48 +179,48 @@ class Order
         return $this;
     }
 
-    public function getCreatedAt(): \DateTimeInterface
+    public function getCreatedAt(): ?\DateTime
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeInterface $createdAt): static
+    public function setCreatedAt(\DateTime $createdAt): static
     {
         $this->createdAt = $createdAt;
 
         return $this;
     }
 
-    public function getPaidAt(): ?\DateTimeInterface
+    public function getPaidAt(): ?\DateTime
     {
         return $this->paidAt;
     }
 
-    public function setPaidAt(?\DateTimeInterface $paidAt): static
+    public function setPaidAt(?\DateTime $paidAt): static
     {
         $this->paidAt = $paidAt;
 
         return $this;
     }
 
-    public function getShippedAt(): ?\DateTimeInterface
+    public function getShippedAt(): ?\DateTime
     {
         return $this->shippedAt;
     }
 
-    public function setShippedAt(?\DateTimeInterface $shippedAt): static
+    public function setShippedAt(?\DateTime $shippedAt): static
     {
         $this->shippedAt = $shippedAt;
 
         return $this;
     }
 
-    public function getDeliveredAt(): ?\DateTimeInterface
+    public function getDeliveredAt(): ?\DateTime
     {
         return $this->deliveredAt;
     }
 
-    public function setDeliveredAt(?\DateTimeInterface $deliveredAt): static
+    public function setDeliveredAt(?\DateTime $deliveredAt): static
     {
         $this->deliveredAt = $deliveredAt;
 

@@ -18,8 +18,9 @@ class Notification
     #[ORM\Column(name: 'notification_id', type: Types::INTEGER, options: ['unsigned' => true])]
     private ?int $notificationId = null;
     
-    #[ORM\Column(name: 'user_id', type: Types::INTEGER, options: ['unsigned' => true])]
-    private int $userId;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'user_id', nullable: false, onDelete: 'CASCADE')]
+    private User $userId;
     
     #[ORM\Column(name: 'type', type: Types::STRING, length: 25)]
     private string $type;
@@ -54,19 +55,19 @@ class Notification
         return $this;
     }
 
-    public function getUserId(): int
+    public function getUserId(): ?User
     {
         return $this->userId;
     }
 
-    public function setUserId(int $userId): static
+    public function setUserId(?User $userId): static
     {
         $this->userId = $userId;
 
         return $this;
     }
 
-    public function getType(): string
+    public function getType(): ?string
     {
         return $this->type;
     }
@@ -102,7 +103,7 @@ class Notification
         return $this;
     }
 
-    public function getContent(): string
+    public function getContent(): ?string
     {
         return $this->content;
     }
@@ -114,7 +115,7 @@ class Notification
         return $this;
     }
 
-    public function isRead(): bool
+    public function isRead(): ?bool
     {
         return $this->isRead;
     }
@@ -126,24 +127,24 @@ class Notification
         return $this;
     }
 
-    public function getReadAt(): ?\DateTimeInterface
+    public function getReadAt(): ?\DateTime
     {
         return $this->readAt;
     }
 
-    public function setReadAt(?\DateTimeInterface $readAt): static
+    public function setReadAt(?\DateTime $readAt): static
     {
         $this->readAt = $readAt;
 
         return $this;
     }
 
-    public function getCreatedAt(): \DateTimeInterface
+    public function getCreatedAt(): ?\DateTime
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeInterface $createdAt): static
+    public function setCreatedAt(\DateTime $createdAt): static
     {
         $this->createdAt = $createdAt;
 

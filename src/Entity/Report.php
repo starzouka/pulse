@@ -18,8 +18,9 @@ class Report
     #[ORM\Column(name: 'report_id', type: Types::INTEGER, options: ['unsigned' => true])]
     private ?int $reportId = null;
     
-    #[ORM\Column(name: 'reporter_user_id', type: Types::INTEGER, options: ['unsigned' => true])]
-    private int $reporterUserId;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'reporter_user_id', referencedColumnName: 'user_id', nullable: false, onDelete: 'CASCADE')]
+    private User $reporterUserId;
     
     #[ORM\Column(name: 'target_type', type: Types::STRING, length: 7)]
     private string $targetType;
@@ -36,8 +37,9 @@ class Report
     #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE)]
     private \DateTimeInterface $createdAt;
     
-    #[ORM\Column(name: 'handled_by_admin_id', type: Types::INTEGER, nullable: true, options: ['unsigned' => true])]
-    private ?int $handledByAdminId = null;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'handled_by_admin_id', referencedColumnName: 'user_id', nullable: true, onDelete: 'SET NULL')]
+    private ?User $handledByAdminId;
     
     #[ORM\Column(name: 'handled_at', type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $handledAt = null;
@@ -57,19 +59,19 @@ class Report
         return $this;
     }
 
-    public function getReporterUserId(): int
+    public function getReporterUserId(): ?User
     {
         return $this->reporterUserId;
     }
 
-    public function setReporterUserId(int $reporterUserId): static
+    public function setReporterUserId(?User $reporterUserId): static
     {
         $this->reporterUserId = $reporterUserId;
 
         return $this;
     }
 
-    public function getTargetType(): string
+    public function getTargetType(): ?string
     {
         return $this->targetType;
     }
@@ -81,7 +83,7 @@ class Report
         return $this;
     }
 
-    public function getTargetId(): string
+    public function getTargetId(): ?string
     {
         return $this->targetId;
     }
@@ -93,7 +95,7 @@ class Report
         return $this;
     }
 
-    public function getReason(): string
+    public function getReason(): ?string
     {
         return $this->reason;
     }
@@ -105,7 +107,7 @@ class Report
         return $this;
     }
 
-    public function getStatus(): string
+    public function getStatus(): ?string
     {
         return $this->status;
     }
@@ -117,36 +119,36 @@ class Report
         return $this;
     }
 
-    public function getCreatedAt(): \DateTimeInterface
+    public function getCreatedAt(): ?\DateTime
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeInterface $createdAt): static
+    public function setCreatedAt(\DateTime $createdAt): static
     {
         $this->createdAt = $createdAt;
 
         return $this;
     }
 
-    public function getHandledByAdminId(): ?int
+    public function getHandledByAdminId(): ?User
     {
         return $this->handledByAdminId;
     }
 
-    public function setHandledByAdminId(?int $handledByAdminId): static
+    public function setHandledByAdminId(?User $handledByAdminId): static
     {
         $this->handledByAdminId = $handledByAdminId;
 
         return $this;
     }
 
-    public function getHandledAt(): ?\DateTimeInterface
+    public function getHandledAt(): ?\DateTime
     {
         return $this->handledAt;
     }
 
-    public function setHandledAt(?\DateTimeInterface $handledAt): static
+    public function setHandledAt(?\DateTime $handledAt): static
     {
         $this->handledAt = $handledAt;
 

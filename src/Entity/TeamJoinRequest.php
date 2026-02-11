@@ -18,11 +18,13 @@ class TeamJoinRequest
     #[ORM\Column(name: 'request_id', type: Types::INTEGER, options: ['unsigned' => true])]
     private ?int $requestId = null;
     
-    #[ORM\Column(name: 'team_id', type: Types::INTEGER, options: ['unsigned' => true])]
-    private int $teamId;
+    #[ORM\ManyToOne(targetEntity: Team::class)]
+    #[ORM\JoinColumn(name: 'team_id', referencedColumnName: 'team_id', nullable: false, onDelete: 'CASCADE')]
+    private Team $teamId;
     
-    #[ORM\Column(name: 'user_id', type: Types::INTEGER, options: ['unsigned' => true])]
-    private int $userId;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'user_id', nullable: false, onDelete: 'CASCADE')]
+    private User $userId;
     
     #[ORM\Column(name: 'status', type: Types::STRING, length: 9, options: ['default' => 'PENDING'])]
     private string $status = 'PENDING';
@@ -36,8 +38,9 @@ class TeamJoinRequest
     #[ORM\Column(name: 'responded_at', type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $respondedAt = null;
     
-    #[ORM\Column(name: 'responded_by_captain_id', type: Types::INTEGER, nullable: true, options: ['unsigned' => true])]
-    private ?int $respondedByCaptainId = null;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'responded_by_captain_id', referencedColumnName: 'user_id', nullable: true, onDelete: 'SET NULL')]
+    private ?User $respondedByCaptainId;
 
     public function getRequestId(): ?int
     {
@@ -51,31 +54,31 @@ class TeamJoinRequest
         return $this;
     }
 
-    public function getTeamId(): int
+    public function getTeamId(): ?Team
     {
         return $this->teamId;
     }
 
-    public function setTeamId(int $teamId): static
+    public function setTeamId(?Team $teamId): static
     {
         $this->teamId = $teamId;
 
         return $this;
     }
 
-    public function getUserId(): int
+    public function getUserId(): ?User
     {
         return $this->userId;
     }
 
-    public function setUserId(int $userId): static
+    public function setUserId(?User $userId): static
     {
         $this->userId = $userId;
 
         return $this;
     }
 
-    public function getStatus(): string
+    public function getStatus(): ?string
     {
         return $this->status;
     }
@@ -99,36 +102,36 @@ class TeamJoinRequest
         return $this;
     }
 
-    public function getCreatedAt(): \DateTimeInterface
+    public function getCreatedAt(): ?\DateTime
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeInterface $createdAt): static
+    public function setCreatedAt(\DateTime $createdAt): static
     {
         $this->createdAt = $createdAt;
 
         return $this;
     }
 
-    public function getRespondedAt(): ?\DateTimeInterface
+    public function getRespondedAt(): ?\DateTime
     {
         return $this->respondedAt;
     }
 
-    public function setRespondedAt(?\DateTimeInterface $respondedAt): static
+    public function setRespondedAt(?\DateTime $respondedAt): static
     {
         $this->respondedAt = $respondedAt;
 
         return $this;
     }
 
-    public function getRespondedByCaptainId(): ?int
+    public function getRespondedByCaptainId(): ?User
     {
         return $this->respondedByCaptainId;
     }
 
-    public function setRespondedByCaptainId(?int $respondedByCaptainId): static
+    public function setRespondedByCaptainId(?User $respondedByCaptainId): static
     {
         $this->respondedByCaptainId = $respondedByCaptainId;
 

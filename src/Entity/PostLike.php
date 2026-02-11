@@ -14,46 +14,48 @@ class PostLike
 {
     
     #[ORM\Id]
-    #[ORM\Column(name: 'post_id', type: Types::INTEGER, options: ['unsigned' => true])]
-    private int $postId;
+    #[ORM\ManyToOne(targetEntity: Post::class)]
+    #[ORM\JoinColumn(name: 'post_id', referencedColumnName: 'post_id', nullable: false, onDelete: 'CASCADE')]
+    private Post $postId;
     
     #[ORM\Id]
-    #[ORM\Column(name: 'user_id', type: Types::INTEGER, options: ['unsigned' => true])]
-    private int $userId;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'user_id', nullable: false, onDelete: 'CASCADE')]
+    private User $userId;
     
     #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE)]
     private \DateTimeInterface $createdAt;
 
-    public function getPostId(): int
+    public function getPostId(): ?Post
     {
         return $this->postId;
     }
 
-    public function setPostId(int $postId): static
+    public function setPostId(?Post $postId): static
     {
         $this->postId = $postId;
 
         return $this;
     }
 
-    public function getUserId(): int
+    public function getUserId(): ?User
     {
         return $this->userId;
     }
 
-    public function setUserId(int $userId): static
+    public function setUserId(?User $userId): static
     {
         $this->userId = $userId;
 
         return $this;
     }
 
-    public function getCreatedAt(): \DateTimeInterface
+    public function getCreatedAt(): ?\DateTime
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeInterface $createdAt): static
+    public function setCreatedAt(\DateTime $createdAt): static
     {
         $this->createdAt = $createdAt;
 

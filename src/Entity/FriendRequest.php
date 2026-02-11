@@ -18,11 +18,13 @@ class FriendRequest
     #[ORM\Column(name: 'request_id', type: Types::INTEGER, options: ['unsigned' => true])]
     private ?int $requestId = null;
     
-    #[ORM\Column(name: 'from_user_id', type: Types::INTEGER, options: ['unsigned' => true])]
-    private int $fromUserId;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'from_user_id', referencedColumnName: 'user_id', nullable: false, onDelete: 'CASCADE')]
+    private User $fromUserId;
     
-    #[ORM\Column(name: 'to_user_id', type: Types::INTEGER, options: ['unsigned' => true])]
-    private int $toUserId;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'to_user_id', referencedColumnName: 'user_id', nullable: false, onDelete: 'CASCADE')]
+    private User $toUserId;
     
     #[ORM\Column(name: 'status', type: Types::STRING, length: 9, options: ['default' => 'PENDING'])]
     private string $status = 'PENDING';
@@ -48,31 +50,31 @@ class FriendRequest
         return $this;
     }
 
-    public function getFromUserId(): int
+    public function getFromUserId(): ?User
     {
         return $this->fromUserId;
     }
 
-    public function setFromUserId(int $fromUserId): static
+    public function setFromUserId(?User $fromUserId): static
     {
         $this->fromUserId = $fromUserId;
 
         return $this;
     }
 
-    public function getToUserId(): int
+    public function getToUserId(): ?User
     {
         return $this->toUserId;
     }
 
-    public function setToUserId(int $toUserId): static
+    public function setToUserId(?User $toUserId): static
     {
         $this->toUserId = $toUserId;
 
         return $this;
     }
 
-    public function getStatus(): string
+    public function getStatus(): ?string
     {
         return $this->status;
     }
@@ -96,24 +98,24 @@ class FriendRequest
         return $this;
     }
 
-    public function getCreatedAt(): \DateTimeInterface
+    public function getCreatedAt(): ?\DateTime
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeInterface $createdAt): static
+    public function setCreatedAt(\DateTime $createdAt): static
     {
         $this->createdAt = $createdAt;
 
         return $this;
     }
 
-    public function getRespondedAt(): ?\DateTimeInterface
+    public function getRespondedAt(): ?\DateTime
     {
         return $this->respondedAt;
     }
 
-    public function setRespondedAt(?\DateTimeInterface $respondedAt): static
+    public function setRespondedAt(?\DateTime $respondedAt): static
     {
         $this->respondedAt = $respondedAt;
 

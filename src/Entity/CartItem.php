@@ -14,12 +14,14 @@ class CartItem
 {
     
     #[ORM\Id]
-    #[ORM\Column(name: 'cart_id', type: Types::INTEGER, options: ['unsigned' => true])]
-    private int $cartId;
+    #[ORM\ManyToOne(targetEntity: Cart::class)]
+    #[ORM\JoinColumn(name: 'cart_id', referencedColumnName: 'cart_id', nullable: false, onDelete: 'CASCADE')]
+    private Cart $cartId;
     
     #[ORM\Id]
-    #[ORM\Column(name: 'product_id', type: Types::INTEGER, options: ['unsigned' => true])]
-    private int $productId;
+    #[ORM\ManyToOne(targetEntity: Product::class)]
+    #[ORM\JoinColumn(name: 'product_id', referencedColumnName: 'product_id', nullable: false, onDelete: 'RESTRICT')]
+    private Product $productId;
     
     #[ORM\Column(name: 'quantity', type: Types::INTEGER, options: ['unsigned' => true, 'default' => 1])]
     private int $quantity = 1;
@@ -33,31 +35,31 @@ class CartItem
     #[ORM\Column(name: 'updated_at', type: Types::DATETIME_MUTABLE)]
     private \DateTimeInterface $updatedAt;
 
-    public function getCartId(): int
+    public function getCartId(): ?Cart
     {
         return $this->cartId;
     }
 
-    public function setCartId(int $cartId): static
+    public function setCartId(?Cart $cartId): static
     {
         $this->cartId = $cartId;
 
         return $this;
     }
 
-    public function getProductId(): int
+    public function getProductId(): ?Product
     {
         return $this->productId;
     }
 
-    public function setProductId(int $productId): static
+    public function setProductId(?Product $productId): static
     {
         $this->productId = $productId;
 
         return $this;
     }
 
-    public function getQuantity(): int
+    public function getQuantity(): ?int
     {
         return $this->quantity;
     }
@@ -69,7 +71,7 @@ class CartItem
         return $this;
     }
 
-    public function getUnitPriceAtAdd(): string
+    public function getUnitPriceAtAdd(): ?string
     {
         return $this->unitPriceAtAdd;
     }
@@ -81,24 +83,24 @@ class CartItem
         return $this;
     }
 
-    public function getAddedAt(): \DateTimeInterface
+    public function getAddedAt(): ?\DateTime
     {
         return $this->addedAt;
     }
 
-    public function setAddedAt(\DateTimeInterface $addedAt): static
+    public function setAddedAt(\DateTime $addedAt): static
     {
         $this->addedAt = $addedAt;
 
         return $this;
     }
 
-    public function getUpdatedAt(): \DateTimeInterface
+    public function getUpdatedAt(): ?\DateTime
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTimeInterface $updatedAt): static
+    public function setUpdatedAt(\DateTime $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
 

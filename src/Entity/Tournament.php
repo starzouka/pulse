@@ -18,11 +18,13 @@ class Tournament
     #[ORM\Column(name: 'tournament_id', type: Types::INTEGER, options: ['unsigned' => true])]
     private ?int $tournamentId = null;
     
-    #[ORM\Column(name: 'organizer_user_id', type: Types::INTEGER, options: ['unsigned' => true])]
-    private int $organizerUserId;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'organizer_user_id', referencedColumnName: 'user_id', nullable: false, onDelete: 'RESTRICT')]
+    private User $organizerUserId;
     
-    #[ORM\Column(name: 'game_id', type: Types::INTEGER, options: ['unsigned' => true])]
-    private int $gameId;
+    #[ORM\ManyToOne(targetEntity: Game::class)]
+    #[ORM\JoinColumn(name: 'game_id', referencedColumnName: 'game_id', nullable: false, onDelete: 'RESTRICT')]
+    private Game $gameId;
     
     #[ORM\Column(name: 'title', type: Types::STRING, length: 180)]
     private string $title;
@@ -75,31 +77,31 @@ class Tournament
         return $this;
     }
 
-    public function getOrganizerUserId(): int
+    public function getOrganizerUserId(): ?User
     {
         return $this->organizerUserId;
     }
 
-    public function setOrganizerUserId(int $organizerUserId): static
+    public function setOrganizerUserId(?User $organizerUserId): static
     {
         $this->organizerUserId = $organizerUserId;
 
         return $this;
     }
 
-    public function getGameId(): int
+    public function getGameId(): ?Game
     {
         return $this->gameId;
     }
 
-    public function setGameId(int $gameId): static
+    public function setGameId(?Game $gameId): static
     {
         $this->gameId = $gameId;
 
         return $this;
     }
 
-    public function getTitle(): string
+    public function getTitle(): ?string
     {
         return $this->title;
     }
@@ -135,43 +137,43 @@ class Tournament
         return $this;
     }
 
-    public function getStartDate(): \DateTimeInterface
+    public function getStartDate(): ?\DateTime
     {
         return $this->startDate;
     }
 
-    public function setStartDate(\DateTimeInterface $startDate): static
+    public function setStartDate(\DateTime $startDate): static
     {
         $this->startDate = $startDate;
 
         return $this;
     }
 
-    public function getEndDate(): \DateTimeInterface
+    public function getEndDate(): ?\DateTime
     {
         return $this->endDate;
     }
 
-    public function setEndDate(\DateTimeInterface $endDate): static
+    public function setEndDate(\DateTime $endDate): static
     {
         $this->endDate = $endDate;
 
         return $this;
     }
 
-    public function getRegistrationDeadline(): ?\DateTimeInterface
+    public function getRegistrationDeadline(): ?\DateTime
     {
         return $this->registrationDeadline;
     }
 
-    public function setRegistrationDeadline(?\DateTimeInterface $registrationDeadline): static
+    public function setRegistrationDeadline(?\DateTime $registrationDeadline): static
     {
         $this->registrationDeadline = $registrationDeadline;
 
         return $this;
     }
 
-    public function getMaxTeams(): int
+    public function getMaxTeams(): ?int
     {
         return $this->maxTeams;
     }
@@ -183,7 +185,7 @@ class Tournament
         return $this;
     }
 
-    public function getFormat(): string
+    public function getFormat(): ?string
     {
         return $this->format;
     }
@@ -195,7 +197,7 @@ class Tournament
         return $this;
     }
 
-    public function getPrizePool(): string
+    public function getPrizePool(): ?string
     {
         return $this->prizePool;
     }
@@ -219,7 +221,7 @@ class Tournament
         return $this;
     }
 
-    public function getStatus(): string
+    public function getStatus(): ?string
     {
         return $this->status;
     }
@@ -231,24 +233,24 @@ class Tournament
         return $this;
     }
 
-    public function getCreatedAt(): \DateTimeInterface
+    public function getCreatedAt(): ?\DateTime
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeInterface $createdAt): static
+    public function setCreatedAt(\DateTime $createdAt): static
     {
         $this->createdAt = $createdAt;
 
         return $this;
     }
 
-    public function getUpdatedAt(): \DateTimeInterface
+    public function getUpdatedAt(): ?\DateTime
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTimeInterface $updatedAt): static
+    public function setUpdatedAt(\DateTime $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
 

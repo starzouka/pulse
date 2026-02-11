@@ -36,8 +36,9 @@ class Image
     #[ORM\Column(name: 'alt_text', type: Types::STRING, length: 255, nullable: true)]
     private ?string $altText = null;
     
-    #[ORM\Column(name: 'uploaded_by_user_id', type: Types::INTEGER, nullable: true, options: ['unsigned' => true])]
-    private ?int $uploadedByUserId = null;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'uploaded_by_user_id', referencedColumnName: 'user_id', nullable: true, onDelete: 'SET NULL')]
+    private ?User $uploadedByUserId;
     
     #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE)]
     private \DateTimeInterface $createdAt;
@@ -54,7 +55,7 @@ class Image
         return $this;
     }
 
-    public function getFileUrl(): string
+    public function getFileUrl(): ?string
     {
         return $this->fileUrl;
     }
@@ -66,7 +67,7 @@ class Image
         return $this;
     }
 
-    public function getMimeType(): string
+    public function getMimeType(): ?string
     {
         return $this->mimeType;
     }
@@ -78,7 +79,7 @@ class Image
         return $this;
     }
 
-    public function getSizeBytes(): string
+    public function getSizeBytes(): ?string
     {
         return $this->sizeBytes;
     }
@@ -126,24 +127,24 @@ class Image
         return $this;
     }
 
-    public function getUploadedByUserId(): ?int
+    public function getUploadedByUserId(): ?User
     {
         return $this->uploadedByUserId;
     }
 
-    public function setUploadedByUserId(?int $uploadedByUserId): static
+    public function setUploadedByUserId(?User $uploadedByUserId): static
     {
         $this->uploadedByUserId = $uploadedByUserId;
 
         return $this;
     }
 
-    public function getCreatedAt(): \DateTimeInterface
+    public function getCreatedAt(): ?\DateTime
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeInterface $createdAt): static
+    public function setCreatedAt(\DateTime $createdAt): static
     {
         $this->createdAt = $createdAt;
 
