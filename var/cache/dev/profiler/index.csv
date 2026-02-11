@@ -68,3 +68,8 @@ e03539,127.0.0.1,GET,http://127.0.0.1:8000/pages/tournaments,1770803215,,200,req
 b5a6bf,127.0.0.1,GET,http://127.0.0.1:8000/pages/games,1770803220,,200,request
 b7dbde,127.0.0.1,GET,http://127.0.0.1:8000/home,1770805125,,200,request
 1a256e,127.0.0.1,GET,http://127.0.0.1:8000/admin/games,1770805129,,200,request
+f9dd41,127.0.0.1,GET,http://127.0.0.1:8000/,1770805914,,200,request
+a80441,127.0.0.1,GET,http://127.0.0.1:8000/admin/games,1770805916,,200,request
+05bbcc,127.0.0.1,GET,http://127.0.0.1:8000/home,1770805922,,200,request
+ca4dd7,127.0.0.1,GET,http://127.0.0.1:8000/admin/games,1770805927,,200,request
+649123,127.0.0.1,GET,http://127.0.0.1:8000/admin,1770805929,,200,request
