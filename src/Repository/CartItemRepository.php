@@ -121,4 +121,40 @@ class CartItemRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * @param list<int> $cartIds
+     * @return array<int, int>
+     */
+    public function countByCartIds(array $cartIds): array
+    {
+        $filteredCartIds = array_values(array_unique(array_filter(
+            $cartIds,
+            static fn (mixed $cartId): bool => is_int($cartId) && $cartId > 0
+        )));
+        if ($filteredCartIds === []) {
+            return [];
+        }
+
+        $rows = $this->createQueryBuilder('cartItem')
+            ->select('IDENTITY(cartItem.cartId) AS cartId')
+            ->addSelect('COUNT(cartItem.productId) AS itemsCount')
+            ->andWhere('IDENTITY(cartItem.cartId) IN (:cartIds)')
+            ->setParameter('cartIds', $filteredCartIds)
+            ->groupBy('cartItem.cartId')
+            ->getQuery()
+            ->getArrayResult();
+
+        $countsByCartId = [];
+        foreach ($rows as $row) {
+            $cartId = (int) ($row['cartId'] ?? 0);
+            if ($cartId <= 0) {
+                continue;
+            }
+
+            $countsByCartId[$cartId] = (int) ($row['itemsCount'] ?? 0);
+        }
+
+        return $countsByCartId;
+    }
 }

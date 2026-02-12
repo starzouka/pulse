@@ -12,7 +12,7 @@
 
   <main class="page">
     <section class="belowHero">
-      {{ form_start(registrationForm, {attr: {class: 'panel'}}) }}
+      {{ form_start(registrationForm, {attr: {class: 'panel', novalidate: 'novalidate'}}) }}
         {% for label, messages in app.flashes %}
           {% for message in messages %}
             <div class="listItem">

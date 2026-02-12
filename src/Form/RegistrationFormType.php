@@ -20,6 +20,7 @@ use Symfony\Component\Validator\Constraints\IsTrue;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Choice;
+use Symfony\Component\Validator\Constraints\Regex;
 
 final class RegistrationFormType extends AbstractType
 {
@@ -38,6 +39,7 @@ final class RegistrationFormType extends AbstractType
                 'constraints' => [
                     new NotBlank(message: "L'email est obligatoire."),
                     new Email(message: "L'email n'est pas valide."),
+                    new Length(max: 190, maxMessage: "L'email ne doit pas depasser {{ limit }} caracteres."),
                 ],
             ])
             ->add('role', ChoiceType::class, [
@@ -65,14 +67,27 @@ final class RegistrationFormType extends AbstractType
                 'label' => 'Display name',
                 'required' => false,
                 'empty_data' => '',
+                'constraints' => [
+                    new Length(min: 2, max: 80),
+                ],
             ])
             ->add('country', TextType::class, [
                 'label' => 'Pays',
                 'required' => false,
+                'constraints' => [
+                    new Length(max: 80),
+                ],
             ])
             ->add('phone', TextType::class, [
                 'label' => 'Telephone',
                 'required' => false,
+                'constraints' => [
+                    new Length(max: 30),
+                    new Regex(
+                        pattern: '/^$|^[0-9+\-\s().]{6,30}$/',
+                        message: 'Telephone invalide.',
+                    ),
+                ],
             ])
             ->add('birthDate', DateType::class, [
                 'label' => 'Date de naissance',
@@ -89,6 +104,12 @@ final class RegistrationFormType extends AbstractType
                     'Non precise' => 'UNKNOWN',
                 ],
                 'required' => false,
+                'constraints' => [
+                    new Choice(
+                        choices: ['UNKNOWN', 'MALE', 'FEMALE', 'OTHER'],
+                        message: 'Genre invalide.',
+                    ),
+                ],
             ])
             ->add('plainPassword', RepeatedType::class, [
                 'type' => PasswordType::class,

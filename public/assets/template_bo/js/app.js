@@ -31,6 +31,7 @@ profileBtn?.addEventListener("click", (e) => {
 
 wireTabs();
 wireSidebar();
+wireLiveFilters();
 
 document.addEventListener("click", () => closeProfileMenu());
 document.addEventListener("keydown", (e) => {
@@ -139,3 +140,36 @@ function wireReveal() {
 }
 
 wireReveal();
+
+function wireLiveFilters() {
+  const forms = Array.from(document.querySelectorAll("form.js-live-filters[method='get']"));
+  if (!forms.length) return;
+
+  forms.forEach((form) => {
+    let timer = null;
+    const submit = () => {
+      if (typeof form.requestSubmit === "function") {
+        form.requestSubmit();
+      } else {
+        form.submit();
+      }
+    };
+
+    form
+      .querySelectorAll("select, input:not([type='hidden']):not([type='submit']):not([type='button']):not([type='reset'])")
+      .forEach((field) => {
+        const tagName = field.tagName.toLowerCase();
+        const fieldType = String(field.getAttribute("type") || "").toLowerCase();
+
+        if (tagName === "input" && (fieldType === "search" || fieldType === "text")) {
+          field.addEventListener("input", () => {
+            if (timer) window.clearTimeout(timer);
+            timer = window.setTimeout(submit, 300);
+          });
+          return;
+        }
+
+        field.addEventListener("change", submit);
+      });
+  });
+}

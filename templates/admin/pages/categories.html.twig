@@ -1,46 +1,130 @@
 {% extends 'admin/base_admin.html.twig' %}
 
+{% macro sort_link(route_name, filters, field, label) %}
+  {% set current_sort = filters.sort|default('name') %}
+  {% set current_direction = filters.direction|default('asc') %}
+  {% set is_current = current_sort == field %}
+  {% set next_direction = is_current and current_direction == 'asc' ? 'desc' : 'asc' %}
+  {% set marker = is_current ? (current_direction == 'asc' ? ' (ASC)' : ' (DESC)') : '' %}
+  <a href="{{ path(route_name, filters|merge({sort: field, direction: next_direction})) }}" style="color:inherit;text-decoration:none;">
+    {{ label }}{{ marker }}
+  </a>
+{% endmacro %}
+
+{% import _self as sorter %}
+
 {% block title %}PULSE - Gestion categories{% endblock %}
 
 {% block admin_content %}
-
-        
   <div class="pageHeader">
     <div>
       <h2>Gestion categories</h2>
-      <div class="pageSub">categories + nb jeux.</div>
+      <div class="pageSub">CRUD complet + filtres DB + export.</div>
     </div>
-    <div class="formActions"><a class="btn btnPrimary" href="{{ path('admin_category_form') }}">+ Nouvelle categorie</a></div>
+    <div class="formActions">
+      <a class="btn btnGhost" href="{{ path('admin_categories_export', filters|merge({format: 'pdf'})) }}">Exporter PDF</a>
+      <a class="btn btnGhost" href="{{ path('admin_categories_export', filters|merge({format: 'excel'})) }}">Exporter Excel</a>
+    </div>
   </div>
-  
-  <section class="panel">
-    <div class="panelHeader"><h3 class="panelTitle">LISTE</h3></div>
-    
-  <div class="dataTableWrap">
-    <table class="dataTable">
-      <thead><tr><th>category_id</th><th>name</th><th>description</th><th>created_at</th><th>nb jeux</th><th>Actions</th></tr></thead>
-      <tbody>
-        <tr><td>1</td><td>—</td><td>—</td><td>2026-02-05</td><td>—</td><td><a class="btn btnTiny" href="{{ path('admin_category_form') }}">Voir</a></td></tr>
-        <tr><td>1</td><td>—</td><td>—</td><td>2026-02-05</td><td>—</td><td><a class="btn btnTiny" href="{{ path('admin_category_form') }}">Voir</a></td></tr>
-      </tbody>
-    </table>
-  </div>
-    
-  </section>
-  
+
+  {% for label, messages in app.flashes %}
+    {% for message in messages %}
+      <div class="listItem">
+        <span>{{ message }}</span>
+        <span class="badge {{ label == 'error' ? 'badge--danger' : 'badge--success' }}">{{ label|upper }}</span>
+      </div>
+    {% endfor %}
+  {% endfor %}
+
   <section class="panel">
     <div class="panelHeader">
-      <div>
-        <h3 class="panelTitle">SCHEMA UTILISE</h3>
-        <div class="panelDesc">Tables et colonnes principales.</div>
+      <h3 class="panelTitle">{{ editingCategory ? 'MODIFIER CATEGORIE #' ~ editingCategory.categoryId : 'NOUVELLE CATEGORIE' }}</h3>
+    </div>
+
+    <form method="post">
+      <input type="hidden" name="_token" value="{{ csrf_token('admin_category_form') }}" />
+      <input type="hidden" name="category_id" value="{{ editingCategory ? editingCategory.categoryId : '' }}" />
+
+      <div class="formGrid">
+        <div class="field">
+          <label for="category_name">Nom categorie *</label>
+          <input id="category_name" type="text" name="name" required value="{{ editingCategory ? editingCategory.name : '' }}" />
+        </div>
+
+        <div class="field" style="grid-column: 1 / -1;">
+          <label for="category_description">Description</label>
+          <textarea id="category_description" name="description">{{ editingCategory ? editingCategory.description : '' }}</textarea>
+        </div>
       </div>
-    </div>
-    <div class="list">
-      <div class="listItem"><span><b>categories</b></span><span class="listMeta">category_id, name, description, created_at, nb jeux</span></div>
-    </div>
+
+      <div class="formActions" style="margin-top:12px;">
+        <button class="btn btnPrimary" type="submit">{{ editingCategory ? 'Mettre a jour' : 'Creer categorie' }}</button>
+        {% if editingCategory %}
+          <a class="btn btnGhost" href="{{ path('admin_categories') }}">Annuler edition</a>
+        {% endif %}
+      </div>
+    </form>
   </section>
 
+  <form class="filtersBar js-live-filters" method="get" action="{{ path('admin_categories') }}">
+    <input type="hidden" name="sort" value="{{ filters.sort|default('name') }}" />
+    <input type="hidden" name="direction" value="{{ filters.direction|default('asc') }}" />
 
-      
+    <div class="filterGroup">
+      <label>Recherche</label>
+      <input type="search" name="q" value="{{ filters.q }}" placeholder="name, description" />
+    </div>
+
+    <div class="formActions">
+      <button class="btn btnPrimary" type="submit">Filtrer</button>
+      <a class="btn btnGhost" href="{{ path('admin_categories') }}">Reset</a>
+    </div>
+  </form>
+
+  <section class="panel">
+    <div class="panelHeader">
+      <h3 class="panelTitle">LISTE</h3>
+      <span class="listMeta">{{ categories|length }} resultat(s)</span>
+    </div>
+
+    <div class="dataTableWrap">
+      <table class="dataTable">
+        <thead>
+          <tr>
+            <th>{{ sorter.sort_link('admin_categories', filters, 'id', 'ID') }}</th>
+            <th>{{ sorter.sort_link('admin_categories', filters, 'name', 'Nom') }}</th>
+            <th>Description</th>
+            <th>{{ sorter.sort_link('admin_categories', filters, 'games', 'Nb jeux') }}</th>
+            <th>{{ sorter.sort_link('admin_categories', filters, 'created_at', 'Cree le') }}</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for category in categories %}
+            {% set categoryId = category.categoryId ?? 0 %}
+            <tr>
+              <td>#{{ categoryId }}</td>
+              <td>{{ category.name }}</td>
+              <td>{{ category.description ? category.description|slice(0, 80) : '-' }}</td>
+              <td>{{ gamesByCategoryId[categoryId]|default(0) }}</td>
+              <td>{{ category.createdAt ? category.createdAt|date('d/m/Y H:i') : '-' }}</td>
+              <td>
+                <div class="formActions">
+                  <a class="btn btnTiny" href="{{ path('admin_categories', {edit: categoryId}) }}">Update</a>
+                  <form method="post" action="{{ path('admin_category_delete', {id: categoryId}) }}" onsubmit="return confirm('Supprimer cette categorie ?');" style="display:inline-block;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete_category_' ~ categoryId) }}" />
+                    <button class="btn btnTiny" type="submit">Delete</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="6" class="listMeta">Aucune categorie trouvee.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
 {% endblock %}
-

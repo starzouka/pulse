@@ -27,6 +27,7 @@
 
           <section class="panel">
             {{ form_start(matchForm, {attr: {novalidate: 'novalidate'}}) }}
+              {{ form_errors(matchForm) }}
               {% include 'shared/_organizer_match_form_fields.html.twig' with {form: matchForm} %}
               <div class="formActions" style="margin-top:12px;">
                 <button class="btn btn--primary" type="submit">Creer match</button>

@@ -7,9 +7,12 @@ namespace App\Entity;
 use Doctrine\DBAL\Types\Types;
 use App\Repository\ProductRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
 #[ORM\Table(name: 'products')]
+#[UniqueEntity(fields: ['sku'], message: 'Ce SKU existe deja.')]
 class Product
 {
     
@@ -20,21 +23,28 @@ class Product
     
     #[ORM\ManyToOne(targetEntity: Team::class)]
     #[ORM\JoinColumn(name: 'team_id', referencedColumnName: 'team_id', nullable: false, onDelete: 'CASCADE')]
+    #[Assert\NotNull(message: "L'equipe vendeuse est obligatoire.")]
     private Team $teamId;
     
     #[ORM\Column(name: 'name', type: Types::STRING, length: 150)]
+    #[Assert\NotBlank(message: 'Le nom du produit est obligatoire.')]
+    #[Assert\Length(min: 2, max: 150)]
     private string $name;
     
     #[ORM\Column(name: 'description', type: Types::TEXT, nullable: true)]
+    #[Assert\Length(max: 5000)]
     private ?string $description = null;
     
     #[ORM\Column(name: 'price', type: Types::DECIMAL, precision: 10, scale: 2)]
+    #[Assert\PositiveOrZero(message: 'Le prix doit etre superieur ou egal a 0.')]
     private string $price;
     
     #[ORM\Column(name: 'stock_qty', type: Types::INTEGER, options: ['unsigned' => true, 'default' => 0])]
+    #[Assert\PositiveOrZero(message: 'Le stock doit etre superieur ou egal a 0.')]
     private int $stockQty = 0;
     
     #[ORM\Column(name: 'sku', type: Types::STRING, length: 64, nullable: true)]
+    #[Assert\Length(max: 64)]
     private ?string $sku = null;
     
     #[ORM\Column(name: 'is_active', type: Types::BOOLEAN, options: ['default' => true])]

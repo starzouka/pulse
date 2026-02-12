@@ -10,6 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: 'users')]
@@ -28,33 +29,50 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $userId = null;
 
     #[ORM\Column(name: 'username', type: Types::STRING, length: 50)]
+    #[Assert\NotBlank(message: 'Le username est obligatoire.')]
+    #[Assert\Length(min: 3, max: 50)]
     private string $username = '';
 
     #[ORM\Column(name: 'email', type: Types::STRING, length: 190)]
+    #[Assert\NotBlank(message: "L'email est obligatoire.")]
+    #[Assert\Email(message: "L'email n'est pas valide.")]
+    #[Assert\Length(max: 190)]
     private string $email = '';
 
     #[ORM\Column(name: 'password_hash', type: Types::STRING, length: 255)]
+    #[Assert\NotBlank(message: 'Le mot de passe est obligatoire.')]
+    #[Assert\Length(min: 8, max: 255)]
     private string $passwordHash = '';
 
     #[ORM\Column(name: 'role', type: Types::STRING, length: 9, options: ['default' => self::DOMAIN_ROLE_PLAYER])]
+    #[Assert\NotBlank(message: 'Le role est obligatoire.')]
+    #[Assert\Choice(choices: [self::DOMAIN_ROLE_PLAYER, self::DOMAIN_ROLE_CAPTAIN, self::DOMAIN_ROLE_ORGANIZER, self::DOMAIN_ROLE_ADMIN], message: 'Role invalide.')]
     private string $role = self::DOMAIN_ROLE_PLAYER;
 
     #[ORM\Column(name: 'display_name', type: Types::STRING, length: 80)]
+    #[Assert\NotBlank(message: 'Le display name est obligatoire.')]
+    #[Assert\Length(min: 2, max: 80)]
     private string $displayName = '';
 
     #[ORM\Column(name: 'bio', type: Types::TEXT, nullable: true)]
+    #[Assert\Length(max: 2000)]
     private ?string $bio = null;
 
     #[ORM\Column(name: 'phone', type: Types::STRING, length: 30, nullable: true)]
+    #[Assert\Length(max: 30)]
+    #[Assert\Regex(pattern: '/^$|^[0-9+\-\s().]{6,30}$/', message: 'Telephone invalide.')]
     private ?string $phone = null;
 
     #[ORM\Column(name: 'country', type: Types::STRING, length: 80, nullable: true)]
+    #[Assert\Length(max: 80)]
     private ?string $country = null;
 
     #[ORM\Column(name: 'birth_date', type: Types::DATE_MUTABLE, nullable: true)]
+    #[Assert\LessThan('today', message: 'La date de naissance doit etre dans le passe.')]
     private ?\DateTimeInterface $birthDate = null;
 
     #[ORM\Column(name: 'gender', type: Types::STRING, length: 7, nullable: true, options: ['default' => 'UNKNOWN'])]
+    #[Assert\Choice(choices: ['UNKNOWN', 'MALE', 'FEMALE', 'OTHER'], message: 'Genre invalide.')]
     private ?string $gender = 'UNKNOWN';
 
     #[ORM\Column(name: 'email_verified', type: Types::BOOLEAN, options: ['default' => false])]

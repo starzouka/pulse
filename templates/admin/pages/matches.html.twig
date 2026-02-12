@@ -28,6 +28,7 @@
     </div>
 
     {{ form_start(matchForm, {attr: {novalidate: 'novalidate'}}) }}
+      {{ form_errors(matchForm) }}
       {% include 'shared/_organizer_match_form_fields.html.twig' with {form: matchForm} %}
 
       {% if participantRows is not empty %}
@@ -76,7 +77,7 @@
     {{ form_end(matchForm) }}
   </section>
 
-  <form class="filtersBar" method="get" action="{{ path('admin_matches') }}">
+  <form class="filtersBar js-live-filters" method="get" action="{{ path('admin_matches') }}">
     <div class="filterGroup">
       <label>Recherche</label>
       <input type="search" name="q" value="{{ filters.q|default('') }}" placeholder="Round, tournoi, jeu..." />
@@ -211,4 +212,3 @@
     </div>
   </section>
 {% endblock %}
-

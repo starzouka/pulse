@@ -13,6 +13,9 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\Choice;
+use Symfony\Component\Validator\Constraints\Length;
+use Symfony\Component\Validator\Constraints\NotBlank;
 
 class PostType extends AbstractType
 {
@@ -22,18 +25,28 @@ class PostType extends AbstractType
             $builder->add('authorUserId', EntityType::class, [
                 'class' => User::class,
                 'choice_label' => static fn (User $user): string => sprintf('#%d - %s', (int) $user->getUserId(), (string) $user->getUsername()),
+                'constraints' => [
+                    new NotBlank(message: "L'auteur est obligatoire."),
+                ],
             ]);
         }
 
         $builder
             ->add('contentText', TextareaType::class, [
                 'required' => false,
+                'constraints' => [
+                    new Length(max: 5000, maxMessage: 'Le contenu ne doit pas depasser {{ limit }} caracteres.'),
+                ],
             ])
             ->add('visibility', ChoiceType::class, [
                 'choices' => [
                     'PUBLIC' => 'PUBLIC',
                     'FRIENDS' => 'FRIENDS',
                     'TEAM_ONLY' => 'TEAM_ONLY',
+                ],
+                'constraints' => [
+                    new NotBlank(message: 'La visibilite est obligatoire.'),
+                    new Choice(choices: ['PUBLIC', 'FRIENDS', 'TEAM_ONLY'], message: 'Visibilite invalide.'),
                 ],
             ]);
 

@@ -14,6 +14,11 @@ use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\Choice;
+use Symfony\Component\Validator\Constraints\Count;
+use Symfony\Component\Validator\Constraints\Length;
+use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Range;
 
 class TournamentMatchType extends AbstractType
 {
@@ -30,10 +35,16 @@ class TournamentMatchType extends AbstractType
                 'choices' => $options['tournament_choices'],
                 'label' => 'tournoi*',
                 'disabled' => (bool) $options['tournament_locked'],
+                'constraints' => [
+                    new NotBlank(message: 'Le tournoi est obligatoire.'),
+                ],
             ])
             ->add('roundName', TextType::class, [
                 'label' => 'round_name',
                 'required' => false,
+                'constraints' => [
+                    new Length(max: 80, maxMessage: 'Le round ne doit pas depasser {{ limit }} caracteres.'),
+                ],
             ])
             ->add('scheduledAt', DateTimeType::class, [
                 'label' => 'scheduled_at',
@@ -50,6 +61,10 @@ class TournamentMatchType extends AbstractType
                     'BO3' => 3,
                     'BO5' => 5,
                 ],
+                'constraints' => [
+                    new Choice(choices: [1, 3, 5], message: 'Le format BO est invalide.'),
+                    new Range(min: 1, max: 5),
+                ],
             ])
             ->add('status', ChoiceType::class, [
                 'label' => 'status*',
@@ -58,6 +73,13 @@ class TournamentMatchType extends AbstractType
                     'ONGOING' => 'ONGOING',
                     'FINISHED' => 'FINISHED',
                     'CANCELLED' => 'CANCELLED',
+                ],
+                'constraints' => [
+                    new NotBlank(message: 'Le statut est obligatoire.'),
+                    new Choice(
+                        choices: ['SCHEDULED', 'ONGOING', 'FINISHED', 'CANCELLED'],
+                        message: 'Statut invalide.',
+                    ),
                 ],
             ])
             ->add('participantTeams', EntityType::class, [
@@ -70,6 +92,9 @@ class TournamentMatchType extends AbstractType
                 'required' => true,
                 'label' => 'equipes_participantes*',
                 'help' => 'Selectionnez au moins deux equipes.',
+                'constraints' => [
+                    new Count(min: 2, minMessage: 'Selectionnez au moins {{ limit }} equipes.'),
+                ],
             ])
         ;
     }

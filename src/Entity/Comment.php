@@ -7,6 +7,7 @@ namespace App\Entity;
 use Doctrine\DBAL\Types\Types;
 use App\Repository\CommentRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CommentRepository::class)]
 #[ORM\Table(name: 'comments')]
@@ -20,10 +21,12 @@ class Comment
     
     #[ORM\ManyToOne(targetEntity: Post::class)]
     #[ORM\JoinColumn(name: 'post_id', referencedColumnName: 'post_id', nullable: false, onDelete: 'CASCADE')]
+    #[Assert\NotNull(message: 'Le post est obligatoire.')]
     private Post $postId;
     
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(name: 'author_user_id', referencedColumnName: 'user_id', nullable: false, onDelete: 'CASCADE')]
+    #[Assert\NotNull(message: "L'auteur est obligatoire.")]
     private User $authorUserId;
     
     #[ORM\ManyToOne(targetEntity: Comment::class)]
@@ -31,6 +34,8 @@ class Comment
     private ?Comment $parentCommentId;
     
     #[ORM\Column(name: 'content_text', type: Types::TEXT)]
+    #[Assert\NotBlank(message: 'Le commentaire est obligatoire.')]
+    #[Assert\Length(max: 5000)]
     private string $contentText;
     
     #[ORM\Column(name: 'is_deleted', type: Types::BOOLEAN, options: ['default' => false])]

@@ -34,6 +34,7 @@
             </div>
 
             {{ form_start(matchForm, {attr: {novalidate: 'novalidate'}}) }}
+              {{ form_errors(matchForm) }}
               {% include 'shared/_organizer_match_form_fields.html.twig' with {form: matchForm} %}
 
               <div class="panelDesc" style="margin-top:10px;">

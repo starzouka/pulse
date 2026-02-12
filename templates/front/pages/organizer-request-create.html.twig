@@ -27,6 +27,7 @@
 
           <section class="panel">
             {{ form_start(tournamentRequestForm, {attr: {novalidate: 'novalidate'}}) }}
+              {{ form_errors(tournamentRequestForm) }}
               {% include 'shared/_tournament_form_fields.html.twig' with {form: tournamentRequestForm} %}
               <div class="formActions" style="margin-top:12px;">
                 <button class="btn btn--primary" type="submit">Envoyer</button>

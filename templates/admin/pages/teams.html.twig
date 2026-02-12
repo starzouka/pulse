@@ -1,51 +1,190 @@
 {% extends 'admin/base_admin.html.twig' %}
 
+{% macro sort_link(route_name, filters, field, label) %}
+  {% set current_sort = filters.sort|default('created_at') %}
+  {% set current_direction = filters.direction|default('desc') %}
+  {% set is_current = current_sort == field %}
+  {% set next_direction = is_current and current_direction == 'asc' ? 'desc' : 'asc' %}
+  {% set marker = is_current ? (current_direction == 'asc' ? ' (ASC)' : ' (DESC)') : '' %}
+  <a href="{{ path(route_name, filters|merge({sort: field, direction: next_direction})) }}" style="color:inherit;text-decoration:none;">
+    {{ label }}{{ marker }}
+  </a>
+{% endmacro %}
+
+{% import _self as sorter %}
+
 {% block title %}PULSE - Gestion equipes{% endblock %}
 
 {% block admin_content %}
-
-        
   <div class="pageHeader">
     <div>
       <h2>Gestion equipes</h2>
-      <div class="pageSub">teams + captain + stats.</div>
+      <div class="pageSub">CRUD complet + filtres DB + export.</div>
     </div>
-    
+    <div class="formActions">
+      <a class="btn btnGhost" href="{{ path('admin_teams_export', filters|merge({format: 'pdf'})) }}">Exporter PDF</a>
+      <a class="btn btnGhost" href="{{ path('admin_teams_export', filters|merge({format: 'excel'})) }}">Exporter Excel</a>
+    </div>
   </div>
-  
-  <div class="filtersBar">
-    <div class="filterGroup"><label>Recherche</label><input type="text" placeholder="name, captain" /></div>
-<div class="filterGroup"><label>Region</label><input type="text" placeholder="EU" /></div>
-<div class="filterGroup"><label>Avec produits</label><select><option>ALL</option><option>Oui</option><option>Non</option></select></div>
-  </div>
-  <section class="panel">
-    <div class="panelHeader"><h3 class="panelTitle">LISTE</h3></div>
-    
-  <div class="dataTableWrap">
-    <table class="dataTable">
-      <thead><tr><th>logo</th><th>team_id</th><th>name</th><th>region</th><th>captain</th><th>members</th><th>products</th><th>Actions</th></tr></thead>
-      <tbody>
-        <tr><td><span class="avatarSmall">A</span></td><td>Nebula Five</td><td>—</td><td>TN</td><td>—</td><td>—</td><td>—</td><td><a class="btn btnTiny" href="{{ path('admin_team_detail') }}">Voir</a></td></tr>
-        <tr><td><span class="avatarSmall">A</span></td><td>Nebula Five</td><td>—</td><td>TN</td><td>—</td><td>—</td><td>—</td><td><a class="btn btnTiny" href="{{ path('admin_team_detail') }}">Voir</a></td></tr>
-      </tbody>
-    </table>
-  </div>
-    
-  </section>
-  
+
+  {% for label, messages in app.flashes %}
+    {% for message in messages %}
+      <div class="listItem">
+        <span>{{ message }}</span>
+        <span class="badge {{ label == 'error' ? 'badge--danger' : 'badge--success' }}">{{ label|upper }}</span>
+      </div>
+    {% endfor %}
+  {% endfor %}
+
   <section class="panel">
     <div class="panelHeader">
-      <div>
-        <h3 class="panelTitle">SCHEMA UTILISE</h3>
-        <div class="panelDesc">Tables et colonnes principales.</div>
+      <h3 class="panelTitle">{{ editingTeam ? 'MODIFIER EQUIPE #' ~ editingTeam.teamId : 'NOUVELLE EQUIPE' }}</h3>
+    </div>
+
+    <form method="post" enctype="multipart/form-data">
+      <input type="hidden" name="_token" value="{{ csrf_token('admin_team_form') }}" />
+      <input type="hidden" name="team_id" value="{{ editingTeam ? editingTeam.teamId : '' }}" />
+
+      <div class="formGrid">
+        <div class="field">
+          <label for="team_name">Nom equipe *</label>
+          <input id="team_name" type="text" name="name" required value="{{ editingTeam ? editingTeam.name : '' }}" />
+        </div>
+
+        <div class="field">
+          <label for="team_region">Region</label>
+          <input id="team_region" type="text" name="region" value="{{ editingTeam ? editingTeam.region : '' }}" />
+        </div>
+
+        <div class="field">
+          <label for="team_captain">Capitaine *</label>
+          <select id="team_captain" name="captain_user_id" required>
+            <option value="">Selectionner</option>
+            {% for captain in captains %}
+              {% set captainId = captain.userId ?? 0 %}
+              <option value="{{ captainId }}" {{ editingTeam and editingTeam.captainUserId and editingTeam.captainUserId.userId == captainId ? 'selected' : '' }}>
+                {{ captain.username }} ({{ captain.email }})
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="team_logo_file">Logo (fichier)</label>
+          <input id="team_logo_file" type="file" name="logo_file" accept="image/png,image/jpeg,image/webp,image/gif" />
+          {% if editingTeam and editingTeam.logoImageId %}
+            {% set currentLogoUrl = editingTeam.logoImageId.fileUrl %}
+            <div class="listMeta">Logo actuel</div>
+            <img src="{{ currentLogoUrl starts with 'http' ? currentLogoUrl : asset(currentLogoUrl) }}" alt="logo actuel" style="width:56px;height:56px;border-radius:12px;object-fit:cover;border:1px solid rgba(255,255,255,.12);" />
+          {% endif %}
+        </div>
+
+        <div class="field" style="grid-column: 1 / -1;">
+          <label for="team_description">Description</label>
+          <textarea id="team_description" name="description">{{ editingTeam ? editingTeam.description : '' }}</textarea>
+        </div>
       </div>
-    </div>
-    <div class="list">
-      <div class="listItem"><span><b>teams</b></span><span class="listMeta">team_id, name, region, captain, members, products</span></div>
-    </div>
+
+      <div class="formActions" style="margin-top:12px;">
+        <button class="btn btnPrimary" type="submit">{{ editingTeam ? 'Mettre a jour' : 'Creer equipe' }}</button>
+        {% if editingTeam %}
+          <a class="btn btnGhost" href="{{ path('admin_teams') }}">Annuler edition</a>
+        {% endif %}
+      </div>
+    </form>
   </section>
 
+  <form class="filtersBar js-live-filters" method="get" action="{{ path('admin_teams') }}">
+    <input type="hidden" name="sort" value="{{ filters.sort|default('created_at') }}" />
+    <input type="hidden" name="direction" value="{{ filters.direction|default('desc') }}" />
 
-      
+    <div class="filterGroup">
+      <label>Recherche</label>
+      <input type="search" name="q" value="{{ filters.q }}" placeholder="nom, desc, captain" />
+    </div>
+
+    <div class="filterGroup">
+      <label>Region</label>
+      <input type="text" name="region" value="{{ filters.region }}" placeholder="EU, NA, ..." />
+    </div>
+
+    <div class="filterGroup">
+      <label>Capitaine</label>
+      <input type="search" name="captain" value="{{ filters.captain }}" placeholder="username/email" />
+    </div>
+
+    <div class="filterGroup">
+      <label>Avec produits</label>
+      <select name="with_products">
+        <option value="" {{ filters.with_products == '' ? 'selected' : '' }}>ALL</option>
+        <option value="1" {{ filters.with_products == '1' ? 'selected' : '' }}>Oui</option>
+        <option value="0" {{ filters.with_products == '0' ? 'selected' : '' }}>Non</option>
+      </select>
+    </div>
+
+    <div class="formActions">
+      <button class="btn btnPrimary" type="submit">Filtrer</button>
+      <a class="btn btnGhost" href="{{ path('admin_teams') }}">Reset</a>
+    </div>
+  </form>
+
+  <section class="panel">
+    <div class="panelHeader">
+      <h3 class="panelTitle">LISTE</h3>
+      <span class="listMeta">{{ teams|length }} resultat(s)</span>
+    </div>
+
+    <div class="dataTableWrap">
+      <table class="dataTable">
+        <thead>
+          <tr>
+            <th>Logo</th>
+            <th>{{ sorter.sort_link('admin_teams', filters, 'id', 'ID') }}</th>
+            <th>{{ sorter.sort_link('admin_teams', filters, 'name', 'Nom') }}</th>
+            <th>{{ sorter.sort_link('admin_teams', filters, 'region', 'Region') }}</th>
+            <th>{{ sorter.sort_link('admin_teams', filters, 'captain', 'Capitaine') }}</th>
+            <th>{{ sorter.sort_link('admin_teams', filters, 'members', 'Membres') }}</th>
+            <th>{{ sorter.sort_link('admin_teams', filters, 'products', 'Produits') }}</th>
+            <th>{{ sorter.sort_link('admin_teams', filters, 'created_at', 'Cree le') }}</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for team in teams %}
+            {% set teamId = team.teamId ?? 0 %}
+            <tr>
+              <td>
+                {% if team.logoImageId %}
+                  {% set logoUrl = team.logoImageId.fileUrl %}
+                  <img src="{{ logoUrl starts with 'http' ? logoUrl : asset(logoUrl) }}" alt="logo" style="width:28px;height:28px;border-radius:999px;object-fit:cover;" />
+                {% else %}
+                  <span class="avatarSmall">{{ team.name|slice(0, 1)|upper }}</span>
+                {% endif %}
+              </td>
+              <td>#{{ teamId }}</td>
+              <td>{{ team.name }}</td>
+              <td>{{ team.region ?: '-' }}</td>
+              <td>{{ team.captainUserId ? team.captainUserId.username : '-' }}</td>
+              <td>{{ membersByTeamId[teamId]|default(0) }}</td>
+              <td>{{ productsByTeamId[teamId]|default(0) }}</td>
+              <td>{{ team.createdAt ? team.createdAt|date('d/m/Y H:i') : '-' }}</td>
+              <td>
+                <div class="formActions">
+                  <a class="btn btnTiny" href="{{ path('admin_teams', {edit: teamId}) }}">Update</a>
+                  <form method="post" action="{{ path('admin_team_delete', {id: teamId}) }}" onsubmit="return confirm('Supprimer cette equipe ?');" style="display:inline-block;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete_team_' ~ teamId) }}" />
+                    <button class="btn btnTiny" type="submit">Delete</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="9" class="listMeta">Aucune equipe trouvee.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
 {% endblock %}
-

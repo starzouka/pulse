@@ -13,6 +13,8 @@ use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\Length;
+use Symfony\Component\Validator\Constraints\NotBlank;
 
 class CommentType extends AbstractType
 {
@@ -27,10 +29,16 @@ class CommentType extends AbstractType
 
                     return sprintf('#%d - %s', (int) $post->getPostId(), $excerpt);
                 },
+                'constraints' => [
+                    new NotBlank(message: 'Le post est obligatoire.'),
+                ],
             ])
             ->add('authorUserId', EntityType::class, [
                 'class' => User::class,
                 'choice_label' => static fn (User $user): string => sprintf('#%d - %s', (int) $user->getUserId(), (string) $user->getUsername()),
+                'constraints' => [
+                    new NotBlank(message: "L'auteur est obligatoire."),
+                ],
             ])
             ->add('parentCommentId', EntityType::class, [
                 'class' => Comment::class,
@@ -43,7 +51,12 @@ class CommentType extends AbstractType
                     return sprintf('#%d - %s', (int) $comment->getCommentId(), $excerpt);
                 },
             ])
-            ->add('contentText', TextareaType::class);
+            ->add('contentText', TextareaType::class, [
+                'constraints' => [
+                    new NotBlank(message: 'Le commentaire est obligatoire.'),
+                    new Length(max: 5000, maxMessage: 'Le commentaire ne doit pas depasser {{ limit }} caracteres.'),
+                ],
+            ]);
 
         if ((bool) $options['include_deleted']) {
             $builder->add('isDeleted', CheckboxType::class, [

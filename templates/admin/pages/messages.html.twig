@@ -42,6 +42,7 @@
     </div>
 
     {{ form_start(messageForm, {attr: {novalidate: 'novalidate'}}) }}
+      {{ form_errors(messageForm) }}
       {% include 'admin/pages/_message_form_fields.html.twig' with {form: messageForm} %}
       <div class="formActions" style="margin-top:12px;">
         <button class="btn btnPrimary" type="submit">{{ editingMessage ? 'Mettre a jour' : 'Creer message' }}</button>

@@ -21,6 +21,7 @@
 
   <section class="panel">
     {{ form_start(userForm, {attr: {novalidate: 'novalidate'}}) }}
+      {{ form_errors(userForm) }}
       {% include 'admin/pages/_user_form_fields.html.twig' with {form: userForm} %}
       <div class="formActions" style="margin-top:12px;">
         <button class="btn btnPrimary" type="submit">Enregistrer</button>

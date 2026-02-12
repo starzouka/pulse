@@ -36,7 +36,7 @@
     {% endfor %}
   {% endfor %}
 
-  <form class="filtersBar" method="get" action="{{ path('admin_tournaments') }}">
+  <form class="filtersBar js-live-filters" method="get" action="{{ path('admin_tournaments') }}">
     <div class="filterGroup">
       <label>Recherche</label>
       <input type="search" name="q" value="{{ filters.q|default('') }}" placeholder="Titre, jeu, organisateur..." />

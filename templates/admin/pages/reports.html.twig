@@ -42,6 +42,7 @@
     </div>
 
     {{ form_start(reportForm, {attr: {novalidate: 'novalidate'}}) }}
+      {{ form_errors(reportForm) }}
       {% include 'admin/pages/_report_form_fields.html.twig' with {form: reportForm} %}
       <div class="formActions" style="margin-top:12px;">
         <button class="btn btnPrimary" type="submit">{{ editingReport ? 'Mettre a jour' : 'Creer signalement' }}</button>

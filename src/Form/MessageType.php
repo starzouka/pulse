@@ -12,6 +12,8 @@ use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\Length;
+use Symfony\Component\Validator\Constraints\NotBlank;
 
 class MessageType extends AbstractType
 {
@@ -21,12 +23,23 @@ class MessageType extends AbstractType
             ->add('senderUserId', EntityType::class, [
                 'class' => User::class,
                 'choice_label' => static fn (User $user): string => sprintf('#%d - %s', (int) $user->getUserId(), (string) $user->getUsername()),
+                'constraints' => [
+                    new NotBlank(message: "L'expediteur est obligatoire."),
+                ],
             ])
             ->add('receiverUserId', EntityType::class, [
                 'class' => User::class,
                 'choice_label' => static fn (User $user): string => sprintf('#%d - %s', (int) $user->getUserId(), (string) $user->getUsername()),
+                'constraints' => [
+                    new NotBlank(message: 'Le destinataire est obligatoire.'),
+                ],
             ])
-            ->add('bodyText', TextareaType::class);
+            ->add('bodyText', TextareaType::class, [
+                'constraints' => [
+                    new NotBlank(message: 'Le message est obligatoire.'),
+                    new Length(max: 5000, maxMessage: 'Le message ne doit pas depasser {{ limit }} caracteres.'),
+                ],
+            ]);
 
         if ((bool) $options['include_flags']) {
             $builder

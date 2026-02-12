@@ -14,9 +14,11 @@ use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\Choice;
 use Symfony\Component\Validator\Constraints\Image;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Regex;
 
 final class ProfileEditType extends AbstractType
 {
@@ -41,14 +43,27 @@ final class ProfileEditType extends AbstractType
             ->add('bio', TextareaType::class, [
                 'required' => false,
                 'label' => 'Bio',
+                'constraints' => [
+                    new Length(max: 2000, maxMessage: 'La bio ne doit pas depasser {{ limit }} caracteres.'),
+                ],
             ])
             ->add('country', TextType::class, [
                 'required' => false,
                 'label' => 'Pays',
+                'constraints' => [
+                    new Length(max: 80, maxMessage: 'Le pays ne doit pas depasser {{ limit }} caracteres.'),
+                ],
             ])
             ->add('phone', TextType::class, [
                 'required' => false,
                 'label' => 'Telephone',
+                'constraints' => [
+                    new Length(max: 30, maxMessage: 'Le telephone ne doit pas depasser {{ limit }} caracteres.'),
+                    new Regex(
+                        pattern: '/^$|^[0-9+\-\s().]{6,30}$/',
+                        message: 'Telephone invalide.',
+                    ),
+                ],
             ])
             ->add('birthDate', DateType::class, [
                 'widget' => 'single_text',
@@ -65,6 +80,9 @@ final class ProfileEditType extends AbstractType
                     'Autre' => 'OTHER',
                     'Non precise' => 'UNKNOWN',
                 ],
+                'constraints' => [
+                    new Choice(choices: ['UNKNOWN', 'MALE', 'FEMALE', 'OTHER'], message: 'Genre invalide.'),
+                ],
             ])
             ->add('isActive', CheckboxType::class, [
                 'required' => false,
@@ -80,4 +98,3 @@ final class ProfileEditType extends AbstractType
         ]);
     }
 }
-

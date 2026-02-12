@@ -57,6 +57,7 @@
 
           <section class="panel">
             {{ form_start(tournamentForm, {attr: {novalidate: 'novalidate'}}) }}
+              {{ form_errors(tournamentForm) }}
               {% include 'shared/_tournament_form_fields.html.twig' with {form: tournamentForm} %}
               <div class="formActions" style="margin-top:12px;">
                 <button class="btn btn--primary" type="submit">Enregistrer les modifications</button>

@@ -7,9 +7,12 @@ namespace App\Entity;
 use Doctrine\DBAL\Types\Types;
 use App\Repository\TeamRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: TeamRepository::class)]
 #[ORM\Table(name: 'teams')]
+#[UniqueEntity(fields: ['name'], message: "Ce nom d'equipe est deja utilise.")]
 class Team
 {
     
@@ -19,12 +22,16 @@ class Team
     private ?int $teamId = null;
     
     #[ORM\Column(name: 'name', type: Types::STRING, length: 100)]
+    #[Assert\NotBlank(message: "Le nom de l'equipe est obligatoire.")]
+    #[Assert\Length(min: 2, max: 100)]
     private string $name;
     
     #[ORM\Column(name: 'description', type: Types::TEXT, nullable: true)]
+    #[Assert\Length(max: 2000)]
     private ?string $description = null;
     
     #[ORM\Column(name: 'region', type: Types::STRING, length: 80, nullable: true)]
+    #[Assert\Length(max: 80)]
     private ?string $region = null;
     
     #[ORM\ManyToOne(targetEntity: Image::class)]
@@ -33,6 +40,7 @@ class Team
     
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(name: 'captain_user_id', referencedColumnName: 'user_id', nullable: false, onDelete: 'RESTRICT')]
+    #[Assert\NotNull(message: 'Le capitaine est obligatoire.')]
     private User $captainUserId;
     
     #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE)]

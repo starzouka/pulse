@@ -206,4 +206,119 @@ class TeamRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
+
+    /**
+     * @return list<Team>
+     */
+    public function searchForAdmin(
+        ?string $query,
+        ?string $region,
+        ?string $captainQuery,
+        ?bool $withProducts,
+        string $sortBy = 'created_at',
+        string $direction = 'desc',
+        int $limit = 500
+    ): array {
+        $builder = $this->createQueryBuilder('team')
+            ->leftJoin('team.logoImageId', 'logo')
+            ->addSelect('logo')
+            ->leftJoin('team.captainUserId', 'captain')
+            ->addSelect('captain')
+            ->setMaxResults($limit);
+
+        $search = trim((string) $query);
+        if ($search !== '') {
+            $builder
+                ->andWhere(
+                    'LOWER(team.name) LIKE :query
+                    OR LOWER(COALESCE(team.description, \'\')) LIKE :query
+                    OR LOWER(COALESCE(team.region, \'\')) LIKE :query
+                    OR LOWER(captain.username) LIKE :query
+                    OR LOWER(COALESCE(captain.displayName, \'\')) LIKE :query'
+                )
+                ->setParameter('query', '%' . mb_strtolower($search) . '%');
+        }
+
+        $regionValue = trim((string) $region);
+        if ($regionValue !== '') {
+            $builder
+                ->andWhere('LOWER(COALESCE(team.region, \'\')) LIKE :region')
+                ->setParameter('region', '%' . mb_strtolower($regionValue) . '%');
+        }
+
+        $captainSearch = trim((string) $captainQuery);
+        if ($captainSearch !== '') {
+            $builder
+                ->andWhere(
+                    'LOWER(captain.username) LIKE :captainQuery
+                    OR LOWER(COALESCE(captain.displayName, \'\')) LIKE :captainQuery
+                    OR LOWER(captain.email) LIKE :captainQuery'
+                )
+                ->setParameter('captainQuery', '%' . mb_strtolower($captainSearch) . '%');
+        }
+
+        if ($withProducts !== null) {
+            $existsProductsDql = $this->getEntityManager()->createQueryBuilder()
+                ->select('1')
+                ->from(\App\Entity\Product::class, 'productFilter')
+                ->andWhere('productFilter.teamId = team')
+                ->getDQL();
+
+            if ($withProducts) {
+                $builder->andWhere($builder->expr()->exists($existsProductsDql));
+            } else {
+                $builder->andWhere($builder->expr()->not($builder->expr()->exists($existsProductsDql)));
+            }
+        }
+
+        $sortDirection = strtoupper(trim($direction)) === 'ASC' ? 'ASC' : 'DESC';
+        $sortKey = strtolower(trim($sortBy));
+
+        switch ($sortKey) {
+            case 'id':
+                $builder->orderBy('team.teamId', $sortDirection);
+                break;
+
+            case 'name':
+                $builder
+                    ->orderBy('team.name', $sortDirection)
+                    ->addOrderBy('team.teamId', 'DESC');
+                break;
+
+            case 'region':
+                $builder
+                    ->orderBy('team.region', $sortDirection)
+                    ->addOrderBy('team.name', 'ASC');
+                break;
+
+            case 'captain':
+                $builder
+                    ->orderBy('captain.username', $sortDirection)
+                    ->addOrderBy('team.teamId', 'DESC');
+                break;
+
+            case 'members':
+                $builder
+                    ->addSelect('(SELECT COUNT(teamMemberSub.userId) FROM App\Entity\TeamMember teamMemberSub WHERE teamMemberSub.teamId = team AND teamMemberSub.isActive = true) AS HIDDEN membersCount')
+                    ->orderBy('membersCount', $sortDirection)
+                    ->addOrderBy('team.teamId', 'DESC');
+                break;
+
+            case 'products':
+                $builder
+                    ->addSelect('(SELECT COUNT(productSub.productId) FROM App\Entity\Product productSub WHERE productSub.teamId = team) AS HIDDEN productsCount')
+                    ->orderBy('productsCount', $sortDirection)
+                    ->addOrderBy('team.teamId', 'DESC');
+                break;
+
+            case 'created_at':
+            default:
+                $builder
+                    ->orderBy('team.createdAt', $sortDirection)
+                    ->addOrderBy('team.teamId', 'DESC');
+                break;
+        }
+
+        return $builder->getQuery()->getResult();
+    }
 }

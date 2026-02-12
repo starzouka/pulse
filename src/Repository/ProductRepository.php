@@ -266,4 +266,114 @@ class ProductRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * @return list<Product>
+     */
+    public function searchForAdmin(
+        ?string $query,
+        ?int $teamId,
+        ?bool $isActive,
+        string $sortBy = 'created_at',
+        string $direction = 'desc',
+        int $limit = 500
+    ): array {
+        $builder = $this->createQueryBuilder('product')
+            ->leftJoin('product.teamId', 'team')
+            ->addSelect('team')
+            ->setMaxResults($limit);
+
+        $search = trim((string) $query);
+        if ($search !== '') {
+            $builder
+                ->andWhere(
+                    'LOWER(product.name) LIKE :query
+                    OR LOWER(COALESCE(product.description, \'\')) LIKE :query
+                    OR LOWER(COALESCE(product.sku, \'\')) LIKE :query
+                    OR LOWER(COALESCE(team.name, \'\')) LIKE :query'
+                )
+                ->setParameter('query', '%' . mb_strtolower($search) . '%');
+        }
+
+        if (is_int($teamId) && $teamId > 0) {
+            $builder
+                ->andWhere('IDENTITY(product.teamId) = :teamId')
+                ->setParameter('teamId', $teamId);
+        }
+
+        if ($isActive !== null) {
+            $builder
+                ->andWhere('product.isActive = :isActive')
+                ->setParameter('isActive', $isActive);
+        }
+
+        $sortDirection = strtoupper(trim($direction)) === 'ASC' ? 'ASC' : 'DESC';
+        $sortKey = strtolower(trim($sortBy));
+        switch ($sortKey) {
+            case 'id':
+                $builder->orderBy('product.productId', $sortDirection);
+                break;
+
+            case 'name':
+                $builder
+                    ->orderBy('product.name', $sortDirection)
+                    ->addOrderBy('product.productId', 'DESC');
+                break;
+
+            case 'team':
+                $builder
+                    ->orderBy('team.name', $sortDirection)
+                    ->addOrderBy('product.productId', 'DESC');
+                break;
+
+            case 'price':
+                $builder
+                    ->orderBy('product.price', $sortDirection)
+                    ->addOrderBy('product.productId', 'DESC');
+                break;
+
+            case 'stock_qty':
+                $builder
+                    ->orderBy('product.stockQty', $sortDirection)
+                    ->addOrderBy('product.productId', 'DESC');
+                break;
+
+            case 'is_active':
+                $builder
+                    ->orderBy('product.isActive', $sortDirection)
+                    ->addOrderBy('product.productId', 'DESC');
+                break;
+
+            case 'updated_at':
+                $builder
+                    ->orderBy('product.updatedAt', $sortDirection)
+                    ->addOrderBy('product.productId', 'DESC');
+                break;
+
+            case 'created_at':
+            default:
+                $builder
+                    ->orderBy('product.createdAt', $sortDirection)
+                    ->addOrderBy('product.productId', 'DESC');
+                break;
+        }
+
+        return $builder->getQuery()->getResult();
+    }
+
+    public function findOneWithRelationsById(int $id): ?Product
+    {
+        if ($id <= 0) {
+            return null;
+        }
+
+        return $this->createQueryBuilder('product')
+            ->leftJoin('product.teamId', 'team')
+            ->addSelect('team')
+            ->andWhere('product.productId = :id')
+            ->setParameter('id', $id)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }
