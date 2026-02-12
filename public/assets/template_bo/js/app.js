@@ -3,12 +3,20 @@ const profileBtn = document.getElementById("profileBtn");
 const profileMenu = document.getElementById("profileMenu");
 
 function closeProfileMenu() {
+  if (!profileBtn || !profileMenu) {
+    return;
+  }
+
   profileMenu.style.display = "none";
   profileMenu.setAttribute("aria-hidden", "true");
   profileBtn.setAttribute("aria-expanded", "false");
 }
 
 function openProfileMenu() {
+  if (!profileBtn || !profileMenu) {
+    return;
+  }
+
   profileMenu.style.display = "block";
   profileMenu.setAttribute("aria-hidden", "false");
   profileBtn.setAttribute("aria-expanded", "true");
@@ -129,16 +137,5 @@ function wireReveal() {
 
   pending.forEach((el) => io.observe(el));
 }
-
-// Fake search (demo)
-const globalSearch = document.getElementById("globalSearch");
-globalSearch?.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") {
-    const q = globalSearch.value.trim();
-    if (!q) return;
-    // À remplacer par votre logique backend
-    alert(`Search: ${q}`);
-  }
-});
 
 wireReveal();

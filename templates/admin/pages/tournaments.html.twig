@@ -3,48 +3,122 @@
 {% block title %}PULSE - Gestion tournois{% endblock %}
 
 {% block admin_content %}
-
-        
   <div class="pageHeader">
     <div>
       <h2>Gestion tournois</h2>
-      <div class="pageSub">CRUD tournaments + filtres.</div>
+      <div class="pageSub">Creation, mise a jour, suppression et suivi des tournois.</div>
     </div>
-    <div class="formActions"><a class="btn btnPrimary" href="{{ path('admin_tournament_form') }}">+ Nouveau tournoi</a></div>
+    <div class="formActions">
+      <a class="btn btnPrimary" href="{{ path('admin_tournament_create') }}">+ Nouveau tournoi</a>
+    </div>
   </div>
-  
-  <div class="filtersBar">
-    <div class="filterGroup"><label>Status</label><select><option>ALL</option><option>OPEN</option><option>ONGOING</option><option>FINISHED</option></select></div>
-<div class="filterGroup"><label>Game</label><input type="text" placeholder="Valorant" /></div>
-  </div>
-  <section class="panel">
-    <div class="panelHeader"><h3 class="panelTitle">LISTE</h3></div>
-    
-  <div class="dataTableWrap">
-    <table class="dataTable">
-      <thead><tr><th>tournament_id</th><th>title</th><th>game</th><th>organizer</th><th>status</th><th>start_date</th><th>prize_pool</th><th>Actions</th></tr></thead>
-      <tbody>
-        <tr><td>1</td><td>Pulse Invitational</td><td>Valorant</td><td>—</td><td><span class="badge badge--warning">PENDING</span></td><td>2026-02-05</td><td>—</td><td><a class="btn btnTiny" href="{{ path('admin_tournament_detail') }}">Voir</a></td></tr>
-        <tr><td>1</td><td>Pulse Invitational</td><td>Valorant</td><td>—</td><td><span class="badge badge--warning">PENDING</span></td><td>2026-02-05</td><td>—</td><td><a class="btn btnTiny" href="{{ path('admin_tournament_detail') }}">Voir</a></td></tr>
-      </tbody>
-    </table>
-  </div>
-    
-  </section>
-  
+
+  {% for label, messages in app.flashes %}
+    {% for message in messages %}
+      <div class="listItem">
+        <span>{{ message }}</span>
+        <span class="badge {{ label == 'error' ? 'badge--danger' : (label == 'warning' ? 'badge--warning' : 'badge--success') }}">{{ label|upper }}</span>
+      </div>
+    {% endfor %}
+  {% endfor %}
+
+  <form class="filtersBar" method="get" action="{{ path('admin_tournaments') }}">
+    <div class="filterGroup">
+      <label>Recherche</label>
+      <input type="search" name="q" value="{{ filters.q|default('') }}" placeholder="Titre, jeu, organisateur..." />
+    </div>
+
+    <div class="filterGroup">
+      <label>Status</label>
+      <select name="status">
+        <option value="">ALL</option>
+        {% for statusValue in statusOptions %}
+          <option value="{{ statusValue }}" {{ filters.status == statusValue ? 'selected' : '' }}>{{ statusValue }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="filterGroup">
+      <label>Game</label>
+      <select name="game">
+        <option value="">ALL</option>
+        {% for game in availableGames %}
+          <option value="{{ game.gameId }}" {{ filters.game is not null and filters.game == game.gameId ? 'selected' : '' }}>{{ game.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="formActions">
+      <button class="btn btnPrimary" type="submit">Filtrer</button>
+      <a class="btn btnGhost" href="{{ path('admin_tournaments') }}">Reset</a>
+    </div>
+  </form>
+
   <section class="panel">
     <div class="panelHeader">
-      <div>
-        <h3 class="panelTitle">SCHEMA UTILISE</h3>
-        <div class="panelDesc">Tables et colonnes principales.</div>
-      </div>
+      <h3 class="panelTitle">LISTE DES TOURNOIS</h3>
+      <span class="listMeta">{{ tournaments|length }} resultat(s)</span>
     </div>
-    <div class="list">
-      <div class="listItem"><span><b>tournaments</b></span><span class="listMeta">tournament_id, title, game, organizer, status, start_date, prize_pool</span></div>
+
+    <div class="dataTableWrap">
+      <table class="dataTable">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Titre</th>
+            <th>Jeu</th>
+            <th>Organisateur</th>
+            <th>Status</th>
+            <th>Dates</th>
+            <th>Inscriptions</th>
+            <th>Matchs</th>
+            <th>Prize pool</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for tournament in tournaments %}
+            {% set tournamentId = tournament.tournamentId ?? 0 %}
+            {% set status = tournament.status|default('DRAFT') %}
+            {% set statusBadge = status == 'OPEN' or status == 'ONGOING' ? 'badge--success' : (status == 'FINISHED' ? 'badge--info' : (status == 'CANCELLED' ? 'badge--danger' : 'badge--warning')) %}
+            {% set registrationCount = registrationsByTournamentId[tournamentId]|default(0) %}
+            {% set acceptedCount = acceptedByTournamentId[tournamentId]|default(0) %}
+            {% set matchesCount = matchesByTournamentId[tournamentId]|default(0) %}
+
+            <tr>
+              <td>#{{ tournamentId }}</td>
+              <td>
+                <strong>{{ tournament.title }}</strong>
+                {% if tournament.photoPath %}
+                  <div class="listMeta"><a href="{{ tournament.photoPath starts with 'http' ? tournament.photoPath : asset(tournament.photoPath) }}" target="_blank" rel="noopener">Photo</a></div>
+                {% endif %}
+              </td>
+              <td>{{ tournament.gameId ? tournament.gameId.name : '-' }}</td>
+              <td>{{ tournament.organizerUserId ? tournament.organizerUserId.username : '-' }}</td>
+              <td><span class="badge {{ statusBadge }}">{{ status }}</span></td>
+              <td>{{ tournament.startDate ? tournament.startDate|date('d/m/Y') : '-' }} -> {{ tournament.endDate ? tournament.endDate|date('d/m/Y') : '-' }}</td>
+              <td>{{ acceptedCount }}/{{ tournament.maxTeams }} <span class="listMeta">(total: {{ registrationCount }})</span></td>
+              <td>{{ matchesCount }}</td>
+              <td>{{ tournament.prizePool|number_format(2, '.', ' ') }} DT</td>
+              <td>
+                <div class="formActions">
+                  <a class="btn btnTiny" href="{{ path('admin_tournament_detail', {id: tournamentId}) }}">Voir detail</a>
+                  <a class="btn btnTiny" href="{{ path('admin_tournament_edit', {id: tournamentId}) }}">Update</a>
+                  <form method="post" action="{{ path('admin_tournament_delete', {id: tournamentId}) }}" onsubmit="return confirm('Supprimer ce tournoi ?');" style="display:inline-block;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete_tournament_' ~ tournamentId) }}" />
+                    <button class="btn btnTiny" type="submit">Delete</button>
+                  </form>
+                  <a class="btn btnTiny" href="{{ path('front_tournament_detail', {id: tournamentId}) }}" target="_blank" rel="noopener">Front</a>
+                </div>
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="10" class="listMeta">Aucun tournoi trouve.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
   </section>
-
-
-      
 {% endblock %}
-

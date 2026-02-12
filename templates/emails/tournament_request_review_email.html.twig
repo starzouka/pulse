@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="fr">
+  <body style="font-family: Arial, sans-serif; background:#f5f6fa; margin:0; padding:24px;">
+    <table role="presentation" style="max-width:640px; width:100%; margin:0 auto; background:#ffffff; border-collapse:collapse; border:1px solid #e5e7eb;">
+      <tr>
+        <td style="padding:20px 24px; border-bottom:1px solid #e5e7eb;">
+          <h2 style="margin:0; font-size:20px; color:#111827;">Decision demande tournoi</h2>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:20px 24px; color:#374151; font-size:14px; line-height:1.6;">
+          <p style="margin:0 0 10px;">Bonjour {{ request.organizerUserId ? request.organizerUserId.displayName : 'organisateur' }},</p>
+          <p style="margin:0 0 10px;">Votre demande <strong>{{ request.title }}</strong> a ete traitee.</p>
+          <p style="margin:0 0 10px;"><strong>{{ message }}</strong></p>
+          {% if request.adminResponseNote %}
+            <p style="margin:0 0 10px;">Note admin: {{ request.adminResponseNote }}</p>
+          {% endif %}
+          <p style="margin:0;">Statut actuel: <strong>{{ decision }}</strong></p>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

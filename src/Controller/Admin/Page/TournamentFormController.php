@@ -6,6 +6,7 @@ namespace App\Controller\Admin\Page;
 
 use App\Entity\Tournament;
 use App\Form\TournamentType;
+use App\Repository\TournamentRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -17,14 +18,30 @@ use Symfony\Component\Routing\Attribute\Route;
 final class TournamentFormController extends AbstractController
 {
     #[Route('/admin/tournament-form', name: 'admin_tournament_form', methods: ['GET', 'POST'])]
+    #[Route('/admin/tournaments/new', name: 'admin_tournament_create', methods: ['GET', 'POST'])]
+    #[Route('/admin/tournaments/{id}/edit', name: 'admin_tournament_edit', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
     public function index(
         Request $request,
+        TournamentRepository $tournamentRepository,
         EntityManagerInterface $entityManager,
         KernelInterface $kernel,
+        ?int $id = null,
     ): Response
     {
-        $tournament = new Tournament();
-        $form = $this->createForm(TournamentType::class, $tournament);
+        $isEdit = $id !== null;
+        $tournament = $isEdit ? $tournamentRepository->find($id) : new Tournament();
+
+        if ($isEdit && !$tournament instanceof Tournament) {
+            throw $this->createNotFoundException('Tournoi introuvable.');
+        }
+
+        if (!$tournament instanceof Tournament) {
+            $tournament = new Tournament();
+        }
+
+        $form = $this->createForm(TournamentType::class, $tournament, [
+            'include_status' => true,
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -34,21 +51,24 @@ final class TournamentFormController extends AbstractController
             }
 
             $now = new \DateTime();
-            $tournament
-                ->setCreatedAt($now)
-                ->setUpdatedAt($now)
-            ;
+            if (!$isEdit) {
+                $tournament->setCreatedAt($now);
+                $entityManager->persist($tournament);
+            }
 
-            $entityManager->persist($tournament);
+            $tournament->setUpdatedAt($now);
+
             $entityManager->flush();
 
-            $this->addFlash('success', 'Tournoi enregistre avec succes.');
+            $this->addFlash('success', $isEdit ? 'Tournoi mis a jour avec succes.' : 'Tournoi enregistre avec succes.');
 
             return $this->redirectToRoute('admin_tournaments');
         }
 
         return $this->render('admin/pages/tournament-form.html.twig', [
             'tournamentForm' => $form->createView(),
+            'isEdit' => $isEdit,
+            'tournament' => $tournament,
         ]);
     }
 

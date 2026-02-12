@@ -139,4 +139,65 @@ class TournamentRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * @return list<Tournament>
+     */
+    public function searchForAdmin(?string $query, ?string $status, ?int $gameId, int $limit = 300): array
+    {
+        $builder = $this->createQueryBuilder('tournament')
+            ->innerJoin('tournament.gameId', 'game')
+            ->addSelect('game')
+            ->leftJoin('tournament.organizerUserId', 'organizer')
+            ->addSelect('organizer')
+            ->setMaxResults($limit);
+
+        $queryValue = trim((string) $query);
+        if ($queryValue !== '') {
+            $builder
+                ->andWhere(
+                    '(LOWER(tournament.title) LIKE :query
+                    OR LOWER(COALESCE(tournament.description, \'\')) LIKE :query
+                    OR LOWER(game.name) LIKE :query
+                    OR LOWER(organizer.username) LIKE :query
+                    OR LOWER(organizer.email) LIKE :query)'
+                )
+                ->setParameter('query', '%' . mb_strtolower($queryValue) . '%');
+        }
+
+        $statusValue = strtoupper(trim((string) $status));
+        if ($statusValue !== '') {
+            $builder
+                ->andWhere('tournament.status = :status')
+                ->setParameter('status', $statusValue);
+        }
+
+        if ($gameId !== null && $gameId > 0) {
+            $builder
+                ->andWhere('IDENTITY(tournament.gameId) = :gameId')
+                ->setParameter('gameId', $gameId);
+        }
+
+        return $builder
+            ->orderBy('tournament.startDate', 'DESC')
+            ->addOrderBy('tournament.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findOneWithRelationsById(int $id): ?Tournament
+    {
+        return $this->createQueryBuilder('tournament')
+            ->innerJoin('tournament.gameId', 'game')
+            ->addSelect('game')
+            ->leftJoin('game.categoryId', 'category')
+            ->addSelect('category')
+            ->leftJoin('tournament.organizerUserId', 'organizer')
+            ->addSelect('organizer')
+            ->andWhere('tournament.tournamentId = :id')
+            ->setParameter('id', $id)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }
