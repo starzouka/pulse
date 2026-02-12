@@ -41,6 +41,8 @@ class CommentRepository extends ServiceEntityRepository
         ?bool $isDeleted,
         ?\DateTimeInterface $date,
         ?int $postId,
+        string $sortBy = 'created_at',
+        string $direction = 'desc',
         int $limit = 500
     ): array {
         $builder = $this->createQueryBuilder('comment')
@@ -48,7 +50,6 @@ class CommentRepository extends ServiceEntityRepository
             ->addSelect('author')
             ->leftJoin('comment.postId', 'post')
             ->addSelect('post')
-            ->orderBy('comment.createdAt', 'DESC')
             ->setMaxResults($limit);
 
         $search = trim((string) $query);
@@ -83,6 +84,24 @@ class CommentRepository extends ServiceEntityRepository
                 ->andWhere('comment.createdAt < :end')
                 ->setParameter('start', $start)
                 ->setParameter('end', $end);
+        }
+
+        $sortMap = [
+            'id' => 'comment.commentId',
+            'post' => 'post.postId',
+            'author' => 'author.username',
+            'content' => 'comment.contentText',
+            'created_at' => 'comment.createdAt',
+            'deleted' => 'comment.isDeleted',
+        ];
+
+        $sortKey = strtolower(trim($sortBy));
+        $sortField = $sortMap[$sortKey] ?? 'comment.createdAt';
+        $sortDirection = strtoupper(trim($direction)) === 'ASC' ? 'ASC' : 'DESC';
+
+        $builder->orderBy($sortField, $sortDirection);
+        if ($sortField !== 'comment.commentId') {
+            $builder->addOrderBy('comment.commentId', 'DESC');
         }
 
         return $builder->getQuery()->getResult();

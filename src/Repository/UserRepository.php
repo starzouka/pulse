@@ -108,12 +108,13 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         ?string $role,
         ?bool $isActive,
         ?bool $emailVerified,
+        string $sortBy = 'created_at',
+        string $direction = 'desc',
         int $limit = 500
     ): array {
         $builder = $this->createQueryBuilder('user')
             ->leftJoin('user.profileImageId', 'profileImage')
             ->addSelect('profileImage')
-            ->orderBy('user.createdAt', 'DESC')
             ->setMaxResults($limit);
 
         $search = trim((string) $query);
@@ -149,6 +150,27 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             $builder
                 ->andWhere('user.emailVerified = :emailVerified')
                 ->setParameter('emailVerified', $emailVerified);
+        }
+
+        $sortMap = [
+            'id' => 'user.userId',
+            'username' => 'user.username',
+            'email' => 'user.email',
+            'role' => 'user.role',
+            'active' => 'user.isActive',
+            'verified' => 'user.emailVerified',
+            'country' => 'user.country',
+            'created_at' => 'user.createdAt',
+            'last_login_at' => 'user.lastLoginAt',
+        ];
+
+        $sortKey = strtolower(trim($sortBy));
+        $sortField = $sortMap[$sortKey] ?? 'user.createdAt';
+        $sortDirection = strtoupper(trim($direction)) === 'ASC' ? 'ASC' : 'DESC';
+
+        $builder->orderBy($sortField, $sortDirection);
+        if ($sortField !== 'user.userId') {
+            $builder->addOrderBy('user.userId', 'DESC');
         }
 
         return $builder->getQuery()->getResult();

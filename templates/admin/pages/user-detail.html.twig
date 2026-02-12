@@ -1,5 +1,16 @@
 ﻿{% extends 'admin/base_admin.html.twig' %}
 
+{% macro scoped_sort_link(route_name, route_id, query, sort_key, direction_key, field, label, current_sort, current_direction) %}
+  {% set is_current = current_sort == field %}
+  {% set next_direction = is_current and current_direction == 'asc' ? 'desc' : 'asc' %}
+  {% set marker = is_current ? (current_direction == 'asc' ? ' (ASC)' : ' (DESC)') : '' %}
+  <a href="{{ path(route_name, query|merge({id: route_id, (sort_key): field, (direction_key): next_direction})) }}" style="color:inherit;text-decoration:none;">
+    {{ label }}{{ marker }}
+  </a>
+{% endmacro %}
+
+{% import _self as sorter %}
+
 {% block title %}PULSE - Detail utilisateur{% endblock %}
 
 {% block admin_content %}
@@ -54,7 +65,13 @@
       <section class="panel">
         <div class="dataTableWrap">
           <table class="dataTable">
-            <thead><tr><th>Equipe</th><th>Joined at</th><th>Actif</th></tr></thead>
+            <thead>
+              <tr>
+                <th>{{ sorter.scoped_sort_link('admin_user_detail', user.userId, app.request.query.all, 'teams_sort', 'teams_direction', 'team_id', 'Equipe', sorts.teams.sort, sorts.teams.direction) }}</th>
+                <th>{{ sorter.scoped_sort_link('admin_user_detail', user.userId, app.request.query.all, 'teams_sort', 'teams_direction', 'joined_at', 'Joined at', sorts.teams.sort, sorts.teams.direction) }}</th>
+                <th>{{ sorter.scoped_sort_link('admin_user_detail', user.userId, app.request.query.all, 'teams_sort', 'teams_direction', 'is_active', 'Actif', sorts.teams.sort, sorts.teams.direction) }}</th>
+              </tr>
+            </thead>
             <tbody>
               {% for teamMember in teamMembers %}
                 <tr>
@@ -75,7 +92,15 @@
       <section class="panel">
         <div class="dataTableWrap">
           <table class="dataTable">
-            <thead><tr><th>Post</th><th>Visibility</th><th>Deleted</th><th>Date</th><th>Action</th></tr></thead>
+            <thead>
+              <tr>
+                <th>{{ sorter.scoped_sort_link('admin_user_detail', user.userId, app.request.query.all, 'posts_sort', 'posts_direction', 'content', 'Post', sorts.posts.sort, sorts.posts.direction) }}</th>
+                <th>{{ sorter.scoped_sort_link('admin_user_detail', user.userId, app.request.query.all, 'posts_sort', 'posts_direction', 'visibility', 'Visibility', sorts.posts.sort, sorts.posts.direction) }}</th>
+                <th>{{ sorter.scoped_sort_link('admin_user_detail', user.userId, app.request.query.all, 'posts_sort', 'posts_direction', 'deleted', 'Deleted', sorts.posts.sort, sorts.posts.direction) }}</th>
+                <th>{{ sorter.scoped_sort_link('admin_user_detail', user.userId, app.request.query.all, 'posts_sort', 'posts_direction', 'created_at', 'Date', sorts.posts.sort, sorts.posts.direction) }}</th>
+                <th>Action</th>
+              </tr>
+            </thead>
             <tbody>
               {% for post in posts %}
                 <tr>
@@ -98,7 +123,14 @@
       <section class="panel">
         <div class="dataTableWrap">
           <table class="dataTable">
-            <thead><tr><th>Order</th><th>Status</th><th>Total</th><th>Date</th></tr></thead>
+            <thead>
+              <tr>
+                <th>{{ sorter.scoped_sort_link('admin_user_detail', user.userId, app.request.query.all, 'orders_sort', 'orders_direction', 'order_number', 'Order', sorts.orders.sort, sorts.orders.direction) }}</th>
+                <th>{{ sorter.scoped_sort_link('admin_user_detail', user.userId, app.request.query.all, 'orders_sort', 'orders_direction', 'status', 'Status', sorts.orders.sort, sorts.orders.direction) }}</th>
+                <th>{{ sorter.scoped_sort_link('admin_user_detail', user.userId, app.request.query.all, 'orders_sort', 'orders_direction', 'total_amount', 'Total', sorts.orders.sort, sorts.orders.direction) }}</th>
+                <th>{{ sorter.scoped_sort_link('admin_user_detail', user.userId, app.request.query.all, 'orders_sort', 'orders_direction', 'created_at', 'Date', sorts.orders.sort, sorts.orders.direction) }}</th>
+              </tr>
+            </thead>
             <tbody>
               {% for order in orders %}
                 <tr>
@@ -120,7 +152,15 @@
       <section class="panel">
         <div class="dataTableWrap">
           <table class="dataTable">
-            <thead><tr><th>ID</th><th>Target</th><th>Status</th><th>Date</th><th>Action</th></tr></thead>
+            <thead>
+              <tr>
+                <th>{{ sorter.scoped_sort_link('admin_user_detail', user.userId, app.request.query.all, 'reports_sort', 'reports_direction', 'id', 'ID', sorts.reports.sort, sorts.reports.direction) }}</th>
+                <th>{{ sorter.scoped_sort_link('admin_user_detail', user.userId, app.request.query.all, 'reports_sort', 'reports_direction', 'target', 'Target', sorts.reports.sort, sorts.reports.direction) }}</th>
+                <th>{{ sorter.scoped_sort_link('admin_user_detail', user.userId, app.request.query.all, 'reports_sort', 'reports_direction', 'status', 'Status', sorts.reports.sort, sorts.reports.direction) }}</th>
+                <th>{{ sorter.scoped_sort_link('admin_user_detail', user.userId, app.request.query.all, 'reports_sort', 'reports_direction', 'created_at', 'Date', sorts.reports.sort, sorts.reports.direction) }}</th>
+                <th>Action</th>
+              </tr>
+            </thead>
             <tbody>
               {% for report in reports %}
                 <tr>

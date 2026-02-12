@@ -13,6 +13,19 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class UsersController extends AbstractController
 {
+    /** @var list<string> */
+    private const SORTS = [
+        'id',
+        'username',
+        'email',
+        'role',
+        'active',
+        'verified',
+        'country',
+        'created_at',
+        'last_login_at',
+    ];
+
     #[Route('/admin/users', name: 'admin_users', methods: ['GET'])]
     public function index(Request $request, UserRepository $userRepository): Response
     {
@@ -21,6 +34,8 @@ final class UsersController extends AbstractController
             'role' => strtoupper(trim((string) $request->query->get('role', ''))),
             'active' => trim((string) $request->query->get('active', '')),
             'verified' => trim((string) $request->query->get('verified', '')),
+            'sort' => $this->sanitizeSort((string) $request->query->get('sort', 'created_at')),
+            'direction' => $this->sanitizeDirection((string) $request->query->get('direction', 'desc')),
         ];
 
         $users = $userRepository->searchForAdmin(
@@ -28,6 +43,8 @@ final class UsersController extends AbstractController
             $filters['role'],
             $this->parseBooleanFilter($filters['active']),
             $this->parseBooleanFilter($filters['verified']),
+            $filters['sort'],
+            $filters['direction'],
             500
         );
 
@@ -93,6 +110,8 @@ final class UsersController extends AbstractController
             'role' => strtoupper(trim((string) $request->query->get('role', ''))),
             'active' => trim((string) $request->query->get('active', '')),
             'verified' => trim((string) $request->query->get('verified', '')),
+            'sort' => $this->sanitizeSort((string) $request->query->get('sort', 'created_at')),
+            'direction' => $this->sanitizeDirection((string) $request->query->get('direction', 'desc')),
         ];
 
         $users = $userRepository->searchForAdmin(
@@ -100,6 +119,8 @@ final class UsersController extends AbstractController
             $filters['role'],
             $this->parseBooleanFilter($filters['active']),
             $this->parseBooleanFilter($filters['verified']),
+            $filters['sort'],
+            $filters['direction'],
             5000
         );
 
@@ -153,5 +174,17 @@ final class UsersController extends AbstractController
         }
 
         return null;
+    }
+
+    private function sanitizeSort(string $value): string
+    {
+        $normalized = strtolower(trim($value));
+
+        return in_array($normalized, self::SORTS, true) ? $normalized : 'created_at';
+    }
+
+    private function sanitizeDirection(string $value): string
+    {
+        return strtolower(trim($value)) === 'asc' ? 'asc' : 'desc';
     }
 }

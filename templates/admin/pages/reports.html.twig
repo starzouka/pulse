@@ -1,5 +1,18 @@
 ﻿{% extends 'admin/base_admin.html.twig' %}
 
+{% macro sort_link(route_name, filters, field, label) %}
+  {% set current_sort = filters.sort|default('created_at') %}
+  {% set current_direction = filters.direction|default('desc') %}
+  {% set is_current = current_sort == field %}
+  {% set next_direction = is_current and current_direction == 'asc' ? 'desc' : 'asc' %}
+  {% set marker = is_current ? (current_direction == 'asc' ? ' (ASC)' : ' (DESC)') : '' %}
+  <a href="{{ path(route_name, filters|merge({sort: field, direction: next_direction})) }}" style="color:inherit;text-decoration:none;">
+    {{ label }}{{ marker }}
+  </a>
+{% endmacro %}
+
+{% import _self as sorter %}
+
 {% block title %}PULSE - Gestion signalements{% endblock %}
 
 {% block admin_content %}
@@ -40,6 +53,8 @@
   </section>
 
   <form class="filtersBar" method="get" action="{{ path('admin_reports') }}">
+    <input type="hidden" name="sort" value="{{ filters.sort|default('created_at') }}" />
+    <input type="hidden" name="direction" value="{{ filters.direction|default('desc') }}" />
     <div class="filterGroup">
       <label>Status</label>
       <select name="status">
@@ -81,12 +96,12 @@
       <table class="dataTable">
         <thead>
           <tr>
-            <th>ID</th>
-            <th>Reporter</th>
-            <th>Target</th>
-            <th>Target ID</th>
-            <th>Status</th>
-            <th>Date</th>
+            <th>{{ sorter.sort_link('admin_reports', filters, 'id', 'ID') }}</th>
+            <th>{{ sorter.sort_link('admin_reports', filters, 'reporter', 'Reporter') }}</th>
+            <th>{{ sorter.sort_link('admin_reports', filters, 'target', 'Target') }}</th>
+            <th>{{ sorter.sort_link('admin_reports', filters, 'target_id', 'Target ID') }}</th>
+            <th>{{ sorter.sort_link('admin_reports', filters, 'status', 'Status') }}</th>
+            <th>{{ sorter.sort_link('admin_reports', filters, 'created_at', 'Date') }}</th>
             <th>Actions</th>
           </tr>
         </thead>

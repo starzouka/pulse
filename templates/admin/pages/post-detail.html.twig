@@ -1,5 +1,16 @@
 ﻿{% extends 'admin/base_admin.html.twig' %}
 
+{% macro scoped_sort_link(route_name, route_id, query, sort_key, direction_key, field, label, current_sort, current_direction) %}
+  {% set is_current = current_sort == field %}
+  {% set next_direction = is_current and current_direction == 'asc' ? 'desc' : 'asc' %}
+  {% set marker = is_current ? (current_direction == 'asc' ? ' (ASC)' : ' (DESC)') : '' %}
+  <a href="{{ path(route_name, query|merge({id: route_id, (sort_key): field, (direction_key): next_direction})) }}" style="color:inherit;text-decoration:none;">
+    {{ label }}{{ marker }}
+  </a>
+{% endmacro %}
+
+{% import _self as sorter %}
+
 {% block title %}PULSE - Detail post{% endblock %}
 
 {% block admin_content %}
@@ -46,7 +57,13 @@
       <section class="panel">
         <div class="dataTableWrap">
           <table class="dataTable">
-            <thead><tr><th>Image ID</th><th>URL</th><th>Position</th></tr></thead>
+            <thead>
+              <tr>
+                <th>{{ sorter.scoped_sort_link('admin_post_detail', post.postId, app.request.query.all, 'images_sort', 'images_direction', 'image_id', 'Image ID', sorts.images.sort, sorts.images.direction) }}</th>
+                <th>URL</th>
+                <th>{{ sorter.scoped_sort_link('admin_post_detail', post.postId, app.request.query.all, 'images_sort', 'images_direction', 'position', 'Position', sorts.images.sort, sorts.images.direction) }}</th>
+              </tr>
+            </thead>
             <tbody>
               {% for postImage in postImages %}
                 <tr>
@@ -73,7 +90,16 @@
       <section class="panel">
         <div class="dataTableWrap">
           <table class="dataTable">
-            <thead><tr><th>ID</th><th>Auteur</th><th>Contenu</th><th>Date</th><th>Deleted</th><th>Action</th></tr></thead>
+            <thead>
+              <tr>
+                <th>{{ sorter.scoped_sort_link('admin_post_detail', post.postId, app.request.query.all, 'comments_sort', 'comments_direction', 'id', 'ID', sorts.comments.sort, sorts.comments.direction) }}</th>
+                <th>{{ sorter.scoped_sort_link('admin_post_detail', post.postId, app.request.query.all, 'comments_sort', 'comments_direction', 'author', 'Auteur', sorts.comments.sort, sorts.comments.direction) }}</th>
+                <th>{{ sorter.scoped_sort_link('admin_post_detail', post.postId, app.request.query.all, 'comments_sort', 'comments_direction', 'content', 'Contenu', sorts.comments.sort, sorts.comments.direction) }}</th>
+                <th>{{ sorter.scoped_sort_link('admin_post_detail', post.postId, app.request.query.all, 'comments_sort', 'comments_direction', 'created_at', 'Date', sorts.comments.sort, sorts.comments.direction) }}</th>
+                <th>{{ sorter.scoped_sort_link('admin_post_detail', post.postId, app.request.query.all, 'comments_sort', 'comments_direction', 'deleted', 'Deleted', sorts.comments.sort, sorts.comments.direction) }}</th>
+                <th>Action</th>
+              </tr>
+            </thead>
             <tbody>
               {% for comment in comments %}
                 <tr>
@@ -97,7 +123,15 @@
       <section class="panel">
         <div class="dataTableWrap">
           <table class="dataTable">
-            <thead><tr><th>ID</th><th>Reporter</th><th>Status</th><th>Date</th><th>Action</th></tr></thead>
+            <thead>
+              <tr>
+                <th>{{ sorter.scoped_sort_link('admin_post_detail', post.postId, app.request.query.all, 'reports_sort', 'reports_direction', 'id', 'ID', sorts.reports.sort, sorts.reports.direction) }}</th>
+                <th>{{ sorter.scoped_sort_link('admin_post_detail', post.postId, app.request.query.all, 'reports_sort', 'reports_direction', 'reporter', 'Reporter', sorts.reports.sort, sorts.reports.direction) }}</th>
+                <th>{{ sorter.scoped_sort_link('admin_post_detail', post.postId, app.request.query.all, 'reports_sort', 'reports_direction', 'status', 'Status', sorts.reports.sort, sorts.reports.direction) }}</th>
+                <th>{{ sorter.scoped_sort_link('admin_post_detail', post.postId, app.request.query.all, 'reports_sort', 'reports_direction', 'created_at', 'Date', sorts.reports.sort, sorts.reports.direction) }}</th>
+                <th>Action</th>
+              </tr>
+            </thead>
             <tbody>
               {% for report in reports %}
                 <tr>

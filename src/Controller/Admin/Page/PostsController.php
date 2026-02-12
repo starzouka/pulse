@@ -19,6 +19,19 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class PostsController extends AbstractController
 {
+    /** @var list<string> */
+    private const SORTS = [
+        'id',
+        'author',
+        'content',
+        'visibility',
+        'created_at',
+        'deleted',
+        'images',
+        'comments',
+        'likes',
+    ];
+
     #[Route('/admin/posts', name: 'admin_posts', methods: ['GET', 'POST'])]
     public function index(
         Request $request,
@@ -73,6 +86,8 @@ final class PostsController extends AbstractController
             'visibility' => strtoupper(trim((string) $request->query->get('visibility', ''))),
             'deleted' => trim((string) $request->query->get('deleted', '')),
             'author' => trim((string) $request->query->get('author', '')),
+            'sort' => $this->sanitizeSort((string) $request->query->get('sort', 'created_at')),
+            'direction' => $this->sanitizeDirection((string) $request->query->get('direction', 'desc')),
         ];
 
         $posts = $postRepository->searchForAdmin(
@@ -80,6 +95,8 @@ final class PostsController extends AbstractController
             $filters['visibility'],
             $this->parseBooleanFilter($filters['deleted']),
             $filters['author'],
+            $filters['sort'],
+            $filters['direction'],
             500
         );
 
@@ -146,6 +163,8 @@ final class PostsController extends AbstractController
             'visibility' => strtoupper(trim((string) $request->query->get('visibility', ''))),
             'deleted' => trim((string) $request->query->get('deleted', '')),
             'author' => trim((string) $request->query->get('author', '')),
+            'sort' => $this->sanitizeSort((string) $request->query->get('sort', 'created_at')),
+            'direction' => $this->sanitizeDirection((string) $request->query->get('direction', 'desc')),
         ];
 
         $posts = $postRepository->searchForAdmin(
@@ -153,6 +172,8 @@ final class PostsController extends AbstractController
             $filters['visibility'],
             $this->parseBooleanFilter($filters['deleted']),
             $filters['author'],
+            $filters['sort'],
+            $filters['direction'],
             5000
         );
 
@@ -208,5 +229,17 @@ final class PostsController extends AbstractController
         }
 
         return null;
+    }
+
+    private function sanitizeSort(string $value): string
+    {
+        $normalized = strtolower(trim($value));
+
+        return in_array($normalized, self::SORTS, true) ? $normalized : 'created_at';
+    }
+
+    private function sanitizeDirection(string $value): string
+    {
+        return strtolower(trim($value)) === 'asc' ? 'asc' : 'desc';
     }
 }

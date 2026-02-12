@@ -1,5 +1,18 @@
 ﻿{% extends 'admin/base_admin.html.twig' %}
 
+{% macro sort_link(route_name, filters, field, label) %}
+  {% set current_sort = filters.sort|default('created_at') %}
+  {% set current_direction = filters.direction|default('desc') %}
+  {% set is_current = current_sort == field %}
+  {% set next_direction = is_current and current_direction == 'asc' ? 'desc' : 'asc' %}
+  {% set marker = is_current ? (current_direction == 'asc' ? ' (ASC)' : ' (DESC)') : '' %}
+  <a href="{{ path(route_name, filters|merge({sort: field, direction: next_direction})) }}" style="color:inherit;text-decoration:none;">
+    {{ label }}{{ marker }}
+  </a>
+{% endmacro %}
+
+{% import _self as sorter %}
+
 {% block title %}PULSE - Gestion utilisateurs{% endblock %}
 
 {% block admin_content %}
@@ -25,6 +38,8 @@
   {% endfor %}
 
   <form class="filtersBar" method="get" action="{{ path('admin_users') }}">
+    <input type="hidden" name="sort" value="{{ filters.sort|default('created_at') }}" />
+    <input type="hidden" name="direction" value="{{ filters.direction|default('desc') }}" />
     <div class="filterGroup">
       <label>Recherche</label>
       <input type="search" name="q" value="{{ filters.q }}" placeholder="username, email, display name" />
@@ -75,15 +90,15 @@
         <thead>
           <tr>
             <th>Photo</th>
-            <th>ID</th>
-            <th>Username</th>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Actif</th>
-            <th>Email verifie</th>
-            <th>Country</th>
-            <th>Created</th>
-            <th>Last login</th>
+            <th>{{ sorter.sort_link('admin_users', filters, 'id', 'ID') }}</th>
+            <th>{{ sorter.sort_link('admin_users', filters, 'username', 'Username') }}</th>
+            <th>{{ sorter.sort_link('admin_users', filters, 'email', 'Email') }}</th>
+            <th>{{ sorter.sort_link('admin_users', filters, 'role', 'Role') }}</th>
+            <th>{{ sorter.sort_link('admin_users', filters, 'active', 'Actif') }}</th>
+            <th>{{ sorter.sort_link('admin_users', filters, 'verified', 'Email verifie') }}</th>
+            <th>{{ sorter.sort_link('admin_users', filters, 'country', 'Country') }}</th>
+            <th>{{ sorter.sort_link('admin_users', filters, 'created_at', 'Created') }}</th>
+            <th>{{ sorter.sort_link('admin_users', filters, 'last_login_at', 'Last login') }}</th>
             <th>Actions</th>
           </tr>
         </thead>

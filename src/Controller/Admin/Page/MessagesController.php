@@ -16,6 +16,16 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class MessagesController extends AbstractController
 {
+    /** @var list<string> */
+    private const SORTS = [
+        'id',
+        'sender',
+        'receiver',
+        'content',
+        'created_at',
+        'is_read',
+    ];
+
     #[Route('/admin/messages', name: 'admin_messages', methods: ['GET', 'POST'])]
     public function index(
         Request $request,
@@ -65,6 +75,8 @@ final class MessagesController extends AbstractController
             'sender' => trim((string) $request->query->get('sender', '')),
             'receiver' => trim((string) $request->query->get('receiver', '')),
             'is_read' => trim((string) $request->query->get('is_read', '')),
+            'sort' => $this->sanitizeSort((string) $request->query->get('sort', 'created_at')),
+            'direction' => $this->sanitizeDirection((string) $request->query->get('direction', 'desc')),
         ];
 
         $messages = $messageRepository->searchForAdmin(
@@ -72,6 +84,8 @@ final class MessagesController extends AbstractController
             $filters['sender'],
             $filters['receiver'],
             $this->parseBooleanFilter($filters['is_read']),
+            $filters['sort'],
+            $filters['direction'],
             500
         );
 
@@ -123,6 +137,8 @@ final class MessagesController extends AbstractController
             'sender' => trim((string) $request->query->get('sender', '')),
             'receiver' => trim((string) $request->query->get('receiver', '')),
             'is_read' => trim((string) $request->query->get('is_read', '')),
+            'sort' => $this->sanitizeSort((string) $request->query->get('sort', 'created_at')),
+            'direction' => $this->sanitizeDirection((string) $request->query->get('direction', 'desc')),
         ];
 
         $messages = $messageRepository->searchForAdmin(
@@ -130,6 +146,8 @@ final class MessagesController extends AbstractController
             $filters['sender'],
             $filters['receiver'],
             $this->parseBooleanFilter($filters['is_read']),
+            $filters['sort'],
+            $filters['direction'],
             5000
         );
 
@@ -170,5 +188,17 @@ final class MessagesController extends AbstractController
         }
 
         return null;
+    }
+
+    private function sanitizeSort(string $value): string
+    {
+        $normalized = strtolower(trim($value));
+
+        return in_array($normalized, self::SORTS, true) ? $normalized : 'created_at';
+    }
+
+    private function sanitizeDirection(string $value): string
+    {
+        return strtolower(trim($value)) === 'asc' ? 'asc' : 'desc';
     }
 }

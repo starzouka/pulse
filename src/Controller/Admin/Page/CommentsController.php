@@ -16,6 +16,16 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class CommentsController extends AbstractController
 {
+    /** @var list<string> */
+    private const SORTS = [
+        'id',
+        'post',
+        'author',
+        'content',
+        'created_at',
+        'deleted',
+    ];
+
     #[Route('/admin/comments', name: 'admin_comments', methods: ['GET', 'POST'])]
     public function index(
         Request $request,
@@ -58,6 +68,8 @@ final class CommentsController extends AbstractController
             'deleted' => trim((string) $request->query->get('deleted', '')),
             'date' => trim((string) $request->query->get('date', '')),
             'post' => trim((string) $request->query->get('post', '')),
+            'sort' => $this->sanitizeSort((string) $request->query->get('sort', 'created_at')),
+            'direction' => $this->sanitizeDirection((string) $request->query->get('direction', 'desc')),
         ];
 
         $filterDate = null;
@@ -74,6 +86,8 @@ final class CommentsController extends AbstractController
             $this->parseBooleanFilter($filters['deleted']),
             $filterDate,
             ctype_digit($filters['post']) ? (int) $filters['post'] : null,
+            $filters['sort'],
+            $filters['direction'],
             500
         );
 
@@ -125,6 +139,8 @@ final class CommentsController extends AbstractController
             'deleted' => trim((string) $request->query->get('deleted', '')),
             'date' => trim((string) $request->query->get('date', '')),
             'post' => trim((string) $request->query->get('post', '')),
+            'sort' => $this->sanitizeSort((string) $request->query->get('sort', 'created_at')),
+            'direction' => $this->sanitizeDirection((string) $request->query->get('direction', 'desc')),
         ];
 
         $filterDate = null;
@@ -141,6 +157,8 @@ final class CommentsController extends AbstractController
             $this->parseBooleanFilter($filters['deleted']),
             $filterDate,
             ctype_digit($filters['post']) ? (int) $filters['post'] : null,
+            $filters['sort'],
+            $filters['direction'],
             5000
         );
 
@@ -181,5 +199,17 @@ final class CommentsController extends AbstractController
         }
 
         return null;
+    }
+
+    private function sanitizeSort(string $value): string
+    {
+        $normalized = strtolower(trim($value));
+
+        return in_array($normalized, self::SORTS, true) ? $normalized : 'created_at';
+    }
+
+    private function sanitizeDirection(string $value): string
+    {
+        return strtolower(trim($value)) === 'asc' ? 'asc' : 'desc';
     }
 }

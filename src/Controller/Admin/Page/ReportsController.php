@@ -17,6 +17,16 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class ReportsController extends AbstractController
 {
+    /** @var list<string> */
+    private const SORTS = [
+        'id',
+        'reporter',
+        'target',
+        'target_id',
+        'status',
+        'created_at',
+    ];
+
     #[Route('/admin/reports', name: 'admin_reports', methods: ['GET', 'POST'])]
     public function index(
         Request $request,
@@ -73,12 +83,16 @@ final class ReportsController extends AbstractController
             'q' => trim((string) $request->query->get('q', '')),
             'status' => strtoupper(trim((string) $request->query->get('status', ''))),
             'target' => strtoupper(trim((string) $request->query->get('target', ''))),
+            'sort' => $this->sanitizeSort((string) $request->query->get('sort', 'created_at')),
+            'direction' => $this->sanitizeDirection((string) $request->query->get('direction', 'desc')),
         ];
 
         $reports = $reportRepository->searchForAdmin(
             $filters['q'],
             $filters['status'],
             $filters['target'],
+            $filters['sort'],
+            $filters['direction'],
             500
         );
 
@@ -131,12 +145,16 @@ final class ReportsController extends AbstractController
             'q' => trim((string) $request->query->get('q', '')),
             'status' => strtoupper(trim((string) $request->query->get('status', ''))),
             'target' => strtoupper(trim((string) $request->query->get('target', ''))),
+            'sort' => $this->sanitizeSort((string) $request->query->get('sort', 'created_at')),
+            'direction' => $this->sanitizeDirection((string) $request->query->get('direction', 'desc')),
         ];
 
         $reports = $reportRepository->searchForAdmin(
             $filters['q'],
             $filters['status'],
             $filters['target'],
+            $filters['sort'],
+            $filters['direction'],
             5000
         );
 
@@ -160,5 +178,17 @@ final class ReportsController extends AbstractController
         }
 
         return $tableExportService->exportPdf('Signalements', $headers, $rows, sprintf('admin_reports_%s.pdf', $fileSuffix));
+    }
+
+    private function sanitizeSort(string $value): string
+    {
+        $normalized = strtolower(trim($value));
+
+        return in_array($normalized, self::SORTS, true) ? $normalized : 'created_at';
+    }
+
+    private function sanitizeDirection(string $value): string
+    {
+        return strtolower(trim($value)) === 'asc' ? 'asc' : 'desc';
     }
 }

@@ -155,6 +155,8 @@ class MessageRepository extends ServiceEntityRepository
         ?string $senderSearch,
         ?string $receiverSearch,
         ?bool $isRead,
+        string $sortBy = 'created_at',
+        string $direction = 'desc',
         int $limit = 500
     ): array {
         $builder = $this->createQueryBuilder('message')
@@ -162,7 +164,6 @@ class MessageRepository extends ServiceEntityRepository
             ->addSelect('sender')
             ->leftJoin('message.receiverUserId', 'receiver')
             ->addSelect('receiver')
-            ->orderBy('message.createdAt', 'DESC')
             ->setMaxResults($limit);
 
         $search = trim((string) $query);
@@ -198,6 +199,24 @@ class MessageRepository extends ServiceEntityRepository
             $builder
                 ->andWhere('message.isRead = :isRead')
                 ->setParameter('isRead', $isRead);
+        }
+
+        $sortMap = [
+            'id' => 'message.messageId',
+            'sender' => 'sender.username',
+            'receiver' => 'receiver.username',
+            'content' => 'message.bodyText',
+            'created_at' => 'message.createdAt',
+            'is_read' => 'message.isRead',
+        ];
+
+        $sortKey = strtolower(trim($sortBy));
+        $sortField = $sortMap[$sortKey] ?? 'message.createdAt';
+        $sortDirection = strtoupper(trim($direction)) === 'ASC' ? 'ASC' : 'DESC';
+
+        $builder->orderBy($sortField, $sortDirection);
+        if ($sortField !== 'message.messageId') {
+            $builder->addOrderBy('message.messageId', 'DESC');
         }
 
         return $builder->getQuery()->getResult();

@@ -1,5 +1,18 @@
 ﻿{% extends 'admin/base_admin.html.twig' %}
 
+{% macro sort_link(route_name, filters, field, label) %}
+  {% set current_sort = filters.sort|default('created_at') %}
+  {% set current_direction = filters.direction|default('desc') %}
+  {% set is_current = current_sort == field %}
+  {% set next_direction = is_current and current_direction == 'asc' ? 'desc' : 'asc' %}
+  {% set marker = is_current ? (current_direction == 'asc' ? ' (ASC)' : ' (DESC)') : '' %}
+  <a href="{{ path(route_name, filters|merge({sort: field, direction: next_direction})) }}" style="color:inherit;text-decoration:none;">
+    {{ label }}{{ marker }}
+  </a>
+{% endmacro %}
+
+{% import _self as sorter %}
+
 {% block title %}PULSE - Gestion posts{% endblock %}
 
 {% block admin_content %}
@@ -40,6 +53,8 @@
   </section>
 
   <form class="filtersBar" method="get" action="{{ path('admin_posts') }}">
+    <input type="hidden" name="sort" value="{{ filters.sort|default('created_at') }}" />
+    <input type="hidden" name="direction" value="{{ filters.direction|default('desc') }}" />
     <div class="filterGroup">
       <label>Recherche</label>
       <input type="search" name="q" value="{{ filters.q }}" placeholder="contenu" />
@@ -85,15 +100,15 @@
       <table class="dataTable">
         <thead>
           <tr>
-            <th>ID</th>
-            <th>Auteur</th>
-            <th>Extrait</th>
-            <th>Visibility</th>
-            <th>Created</th>
-            <th>Deleted</th>
-            <th>Images</th>
-            <th>Comments</th>
-            <th>Likes</th>
+            <th>{{ sorter.sort_link('admin_posts', filters, 'id', 'ID') }}</th>
+            <th>{{ sorter.sort_link('admin_posts', filters, 'author', 'Auteur') }}</th>
+            <th>{{ sorter.sort_link('admin_posts', filters, 'content', 'Extrait') }}</th>
+            <th>{{ sorter.sort_link('admin_posts', filters, 'visibility', 'Visibility') }}</th>
+            <th>{{ sorter.sort_link('admin_posts', filters, 'created_at', 'Created') }}</th>
+            <th>{{ sorter.sort_link('admin_posts', filters, 'deleted', 'Deleted') }}</th>
+            <th>{{ sorter.sort_link('admin_posts', filters, 'images', 'Images') }}</th>
+            <th>{{ sorter.sort_link('admin_posts', filters, 'comments', 'Comments') }}</th>
+            <th>{{ sorter.sort_link('admin_posts', filters, 'likes', 'Likes') }}</th>
             <th>Actions</th>
           </tr>
         </thead>

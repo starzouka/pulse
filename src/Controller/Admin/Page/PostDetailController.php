@@ -58,15 +58,65 @@ final class PostDetailController extends AbstractController
             return $this->redirectToRoute('admin_post_detail', ['id' => $id]);
         }
 
+        $sorts = [
+            'images' => [
+                'sort' => $this->sanitizeSort(
+                    (string) $request->query->get('images_sort', 'position'),
+                    ['image_id', 'position'],
+                    'position'
+                ),
+                'direction' => $this->sanitizeDirection((string) $request->query->get('images_direction', 'asc')),
+            ],
+            'comments' => [
+                'sort' => $this->sanitizeSort(
+                    (string) $request->query->get('comments_sort', 'created_at'),
+                    ['id', 'author', 'content', 'created_at', 'deleted'],
+                    'created_at'
+                ),
+                'direction' => $this->sanitizeDirection((string) $request->query->get('comments_direction', 'desc')),
+            ],
+            'reports' => [
+                'sort' => $this->sanitizeSort(
+                    (string) $request->query->get('reports_sort', 'created_at'),
+                    ['id', 'reporter', 'status', 'created_at'],
+                    'created_at'
+                ),
+                'direction' => $this->sanitizeDirection((string) $request->query->get('reports_direction', 'desc')),
+            ],
+        ];
+
+        $imageOrderMap = [
+            'image_id' => 'imageId',
+            'position' => 'position',
+        ];
+        $commentOrderMap = [
+            'id' => 'commentId',
+            'author' => 'authorUserId',
+            'content' => 'contentText',
+            'created_at' => 'createdAt',
+            'deleted' => 'isDeleted',
+        ];
+        $reportOrderMap = [
+            'id' => 'reportId',
+            'reporter' => 'reporterUserId',
+            'status' => 'status',
+            'created_at' => 'createdAt',
+        ];
+
+        $imageOrderBy = [$imageOrderMap[$sorts['images']['sort']] => strtoupper($sorts['images']['direction'])];
+        $commentOrderBy = [$commentOrderMap[$sorts['comments']['sort']] => strtoupper($sorts['comments']['direction'])];
+        $reportOrderBy = [$reportOrderMap[$sorts['reports']['sort']] => strtoupper($sorts['reports']['direction'])];
+
         return $this->render('admin/pages/post-detail.html.twig', [
             'post' => $post,
             'postForm' => $form->createView(),
-            'comments' => $commentRepository->findBy(['postId' => $post], ['createdAt' => 'DESC'], 300),
+            'comments' => $commentRepository->findBy(['postId' => $post], $commentOrderBy, 300),
             'reports' => $reportRepository->findBy([
                 'targetType' => 'POST',
                 'targetId' => (string) $id,
-            ], ['createdAt' => 'DESC'], 300),
-            'postImages' => $postImageRepository->findBy(['postId' => $post], ['position' => 'ASC']),
+            ], $reportOrderBy, 300),
+            'postImages' => $postImageRepository->findBy(['postId' => $post], $imageOrderBy),
+            'sorts' => $sorts,
         ]);
     }
 
@@ -79,5 +129,20 @@ final class PostDetailController extends AbstractController
         }
 
         return $this->redirectToRoute('admin_posts');
+    }
+
+    /**
+     * @param list<string> $allowed
+     */
+    private function sanitizeSort(string $value, array $allowed, string $default): string
+    {
+        $normalized = strtolower(trim($value));
+
+        return in_array($normalized, $allowed, true) ? $normalized : $default;
+    }
+
+    private function sanitizeDirection(string $value): string
+    {
+        return strtolower(trim($value)) === 'asc' ? 'asc' : 'desc';
     }
 }

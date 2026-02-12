@@ -22,6 +22,8 @@ class ReportRepository extends ServiceEntityRepository
         ?string $query,
         ?string $status,
         ?string $targetType,
+        string $sortBy = 'created_at',
+        string $direction = 'desc',
         int $limit = 500
     ): array {
         $builder = $this->createQueryBuilder('report')
@@ -29,7 +31,6 @@ class ReportRepository extends ServiceEntityRepository
             ->addSelect('reporter')
             ->leftJoin('report.handledByAdminId', 'adminHandler')
             ->addSelect('adminHandler')
-            ->orderBy('report.createdAt', 'DESC')
             ->setMaxResults($limit);
 
         $search = trim((string) $query);
@@ -55,6 +56,24 @@ class ReportRepository extends ServiceEntityRepository
             $builder
                 ->andWhere('report.targetType = :targetType')
                 ->setParameter('targetType', $targetTypeValue);
+        }
+
+        $sortMap = [
+            'id' => 'report.reportId',
+            'reporter' => 'reporter.username',
+            'target' => 'report.targetType',
+            'target_id' => 'report.targetId',
+            'status' => 'report.status',
+            'created_at' => 'report.createdAt',
+        ];
+
+        $sortKey = strtolower(trim($sortBy));
+        $sortField = $sortMap[$sortKey] ?? 'report.createdAt';
+        $sortDirection = strtoupper(trim($direction)) === 'ASC' ? 'ASC' : 'DESC';
+
+        $builder->orderBy($sortField, $sortDirection);
+        if ($sortField !== 'report.reportId') {
+            $builder->addOrderBy('report.reportId', 'DESC');
         }
 
         return $builder->getQuery()->getResult();
