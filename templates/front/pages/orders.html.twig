@@ -3,69 +3,100 @@
 {% block title %}PULSE - Mes commandes{% endblock %}
 
 {% block body %}
-
-
   {% include 'front/partials/_hero_mini.html.twig' with {
-  hero_kicker: 'JOUEUR',
-  hero_title: 'Mes commandes',
-  hero_sub: 'Historique des commandes.',
-  breadcrumb_current: 'Mes commandes'
-} %}
-
+    hero_kicker: 'JOUEUR',
+    hero_title: 'Mes commandes',
+    hero_sub: 'Historique, statuts et acces detail commande.',
+    breadcrumb_current: 'Mes commandes'
+  } %}
 
   <main class="page">
     <section class="belowHero">
-
       <div class="layout">
-        
-  <aside class="sideNav">
-    <div class="sideNav__title">ESPACE JOUEUR</div>
-    <a class="" href="{{ path('front_dashboard') }}">Dashboard</a><a class="" href="{{ path('front_profile') }}">Mon profil</a><a class="" href="{{ path('front_players') }}">Recherche joueurs</a><a class="" href="{{ path('front_friends') }}">Amis</a><a class="" href="{{ path('front_messages') }}">Messages</a><a class="" href="{{ path('front_feed') }}">Fil d’actualité</a><a class="" href="{{ path('front_my_teams') }}">Mes équipes</a><a class="" href="{{ path('front_my_requests') }}">Mes demandes</a><a class="is-active" href="{{ path('front_orders') }}">Mes commandes</a><a class="" href="{{ path('front_notifications') }}">Notifications</a>
-  </aside>
+        {% include 'front/partials/_player_side_nav.html.twig' with { active: 'orders' } %}
 
-        <div>
-          
-        <div class="panel">
-          <div class="filtersRow">
-            <div class="select"><select><option>Statut</option><option>PENDING</option><option>PAID</option><option>SHIPPED</option><option>DELIVERED</option></select></div>
-            <input class="input" type="date" />
-            <button class="btn btn--ghost">Plus récents</button>
+        <div class="socialShell">
+          <div class="socialStack">
+            <section class="panel">
+              <div class="filtersRow">
+                <div class="select">
+                  <select>
+                    <option>Tous statuts</option>
+                    <option>PENDING</option>
+                    <option>PAID</option>
+                    <option>SHIPPED</option>
+                    <option>DELIVERED</option>
+                  </select>
+                </div>
+                <input class="input" type="date" />
+                <button class="btn btn--ghost" type="button">Filtrer</button>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="tableWrap">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Commande</th>
+                      <th>Date</th>
+                      <th>Total</th>
+                      <th>Statut</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>ORD-2026-001</td>
+                      <td>02/02/2026</td>
+                      <td>167 DT</td>
+                      <td><span class="badge badge--success">PAID</span></td>
+                      <td><a class="btn btn--ghost" href="{{ path('front_order_detail') }}">Detail</a></td>
+                    </tr>
+                    <tr>
+                      <td>ORD-2026-002</td>
+                      <td>05/02/2026</td>
+                      <td>39 DT</td>
+                      <td><span class="badge">PENDING</span></td>
+                      <td><a class="btn btn--ghost" href="{{ path('front_order_detail') }}">Detail</a></td>
+                    </tr>
+                    <tr>
+                      <td>ORD-2026-003</td>
+                      <td>09/02/2026</td>
+                      <td>210 DT</td>
+                      <td><span class="badge badge--warning">SHIPPED</span></td>
+                      <td><a class="btn btn--ghost" href="{{ path('front_order_detail') }}">Detail</a></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
           </div>
-          <div class="tableWrap" style="margin-top:10px;">
-            <table class="table">
-              <thead><tr><th>Commande</th><th>Date</th><th>Total</th><th>Statut</th><th>Action</th></tr></thead>
-              <tbody>
-                <tr><td>ORD-2026-001</td><td>02/02/2026</td><td>167 DT</td><td><span class="badge badge--success">PAID</span></td><td><a class="btn btn--ghost" href="{{ path('front_order_detail') }}">Détail</a></td></tr>
-                <tr><td>ORD-2026-002</td><td>05/02/2026</td><td>39 DT</td><td><span class="badge">PENDING</span></td><td><a class="btn btn--ghost" href="{{ path('front_order_detail') }}">Détail</a></td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-        
-      <div class="panel">
-        <div class="panel__head">
-          <div>
-            <h3 class="panel__title">TABLES UTILISÉES</h3>
-            <div class="panel__desc">Schéma réel + colonnes clés.</div>
-          </div>
-        </div>
-        <div class="list">
-          <div class="listItem"><span><b>orders</b></span><span class="listItem__meta">order_id, order_number, status, total_amount, created_at</span></div>
+
+          <aside class="socialStack">
+            <section class="panel">
+              <h3 class="panel__title">RESUME COMMANDES</h3>
+              <div class="statsRow">
+                <div class="statCard"><div class="statCard__value">3</div><div class="statCard__label">Totales</div></div>
+                <div class="statCard"><div class="statCard__value">1</div><div class="statCard__label">En livraison</div></div>
+                <div class="statCard"><div class="statCard__value">1</div><div class="statCard__label">En attente</div></div>
+              </div>
+            </section>
+
+            <section class="panel">
+              <h3 class="panel__title">RACCOURCIS</h3>
+              <div class="socialQuickList">
+                <a class="listItem" href="{{ path('front_cart') }}"><span>Ouvrir panier</span><span class="listItem__meta">2 articles</span></a>
+                <a class="listItem" href="{{ path('front_shop') }}"><span>Retour boutique</span><span class="listItem__meta">Explorer</span></a>
+              </div>
+            </section>
+          </aside>
         </div>
       </div>
-
-      
-        </div>
-      </div>
-
 
       {% include 'front/partials/_footer.html.twig' %}
-
     </section>
   </main>
 
   {% include 'front/partials/_auth_modal.html.twig' %}
-
 {% endblock %}
-
-

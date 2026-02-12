@@ -3,96 +3,125 @@
 {% block title %}PULSE - Dashboard joueur{% endblock %}
 
 {% block body %}
-
-
   {% include 'front/partials/_hero_mini.html.twig' with {
-  hero_kicker: 'JOUEUR',
-  hero_title: 'Dashboard joueur',
-  hero_sub: 'Résumé rapide + actions.',
-  breadcrumb_current: 'Dashboard joueur'
-} %}
-
+    hero_kicker: 'JOUEUR',
+    hero_title: 'Dashboard joueur',
+    hero_sub: 'Vue sociale de votre activite du jour.',
+    breadcrumb_current: 'Dashboard joueur'
+  } %}
 
   <main class="page">
     <section class="belowHero">
-
       <div class="layout">
-        
-  <aside class="sideNav">
-    <div class="sideNav__title">ESPACE JOUEUR</div>
-    <a class="is-active" href="{{ path('front_dashboard') }}">Dashboard</a><a class="" href="{{ path('front_profile') }}">Mon profil</a><a class="" href="{{ path('front_players') }}">Recherche joueurs</a><a class="" href="{{ path('front_friends') }}">Amis</a><a class="" href="{{ path('front_messages') }}">Messages</a><a class="" href="{{ path('front_feed') }}">Fil d’actualité</a><a class="" href="{{ path('front_my_teams') }}">Mes équipes</a><a class="" href="{{ path('front_my_requests') }}">Mes demandes</a><a class="" href="{{ path('front_orders') }}">Mes commandes</a><a class="" href="{{ path('front_notifications') }}">Notifications</a>
-  </aside>
+        {% include 'front/partials/_player_side_nav.html.twig' with { active: 'dashboard' } %}
 
         <div>
-          
-        <div class="pageHeader">
-          <div>
-            <h1>Tableau de bord</h1>
-            <p>Vue globale de vos activités.</p>
-          </div>
-        </div>
-        <div class="panel">
-          <div style="display:flex; gap:14px; align-items:center;">
-            <div class="avatarLg" data-avatar="https://picsum.photos/seed/pulse_a1/200/200"></div>
-            <div>
-              <h3 style="margin:0;">Zed (@ZED_99)</h3>
-              <div class="muted">Pays: TN • Bio: FPS player</div>
+          <div class="socialShell">
+            <div class="socialStack">
+              <section class="panel">
+                <div class="socialComposer">
+                  <div class="avatarMd" data-avatar="https://picsum.photos/seed/pulse_dashboard_me/200/200"></div>
+                  <input class="input" type="text" placeholder="Partager une nouvelle, un score ou une annonce..." />
+                  <a class="btn btn--primary" href="{{ path('front_post_create') }}">Publier</a>
+                </div>
+                <div class="postCard__actions">
+                  <a class="btn btn--ghost" href="{{ path('front_post_create') }}">Photo</a>
+                  <a class="btn btn--ghost" href="{{ path('front_post_create') }}">Video</a>
+                  <a class="btn btn--ghost" href="{{ path('front_post_create') }}">Tournoi</a>
+                </div>
+              </section>
+
+              <section class="panel">
+                <div class="panel__head">
+                  <h3 class="panel__title">FIL RAPIDE</h3>
+                  <a class="btn btn--ghost" href="{{ path('front_feed') }}">Voir tout</a>
+                </div>
+
+                <article class="panel">
+                  <div class="postCard__head">
+                    <div class="postCard__author">
+                      <div class="avatarMd" data-avatar="https://picsum.photos/seed/pulse_post_1/200/200"></div>
+                      <div>
+                        <div class="name">ZED_99</div>
+                        <div class="sub">Il y a 15 min � Public</div>
+                      </div>
+                    </div>
+                    <span class="badge badge--success">Nouveau</span>
+                  </div>
+                  <div class="postCard__body">Victoire 3-1 en quart de finale. Merci a la team pour la coordination.</div>
+                  <div class="postCard__actions">
+                    <a class="btn btn--ghost" href="{{ path('front_post_detail') }}">J'aime</a>
+                    <a class="btn btn--ghost" href="{{ path('front_post_detail') }}">Commenter</a>
+                    <a class="btn btn--ghost" href="{{ path('front_post_detail') }}">Partager</a>
+                  </div>
+                </article>
+
+                <article class="panel">
+                  <div class="postCard__head">
+                    <div class="postCard__author">
+                      <div class="avatarMd" data-avatar="https://picsum.photos/seed/pulse_post_2/200/200"></div>
+                      <div>
+                        <div class="name">North Hydra</div>
+                        <div class="sub">Il y a 1 h � Equipe</div>
+                      </div>
+                    </div>
+                    <span class="badge">Annonce</span>
+                  </div>
+                  <div class="postCard__body">Nous ouvrons les essais ce weekend. Les joueurs interesses peuvent envoyer leur candidature.</div>
+                  <div class="postCard__actions">
+                    <a class="btn btn--ghost" href="{{ path('front_team_detail') }}">Voir equipe</a>
+                    <a class="btn btn--ghost" href="{{ path('front_my_requests') }}">Mes demandes</a>
+                  </div>
+                </article>
+              </section>
             </div>
+
+            <aside class="socialStack">
+              <section class="panel">
+                <div class="profileHeader">
+                  <div class="avatarLg" data-avatar="https://picsum.photos/seed/pulse_dashboard_me/200/200"></div>
+                  <div>
+                    <h3 style="margin:0;">Zed (@ZED_99)</h3>
+                    <div class="muted">Player � TN</div>
+                    <div class="profileHeader__actions">
+                      <a class="btn btn--ghost" href="{{ path('front_profile') }}">Mon profil</a>
+                      <a class="btn btn--ghost" href="{{ path('front_profile_edit') }}">Modifier</a>
+                    </div>
+                  </div>
+                </div>
+                <div class="statsRow">
+                  <div class="statCard"><div class="statCard__value">8</div><div class="statCard__label">Amis</div></div>
+                  <div class="statCard"><div class="statCard__value">3</div><div class="statCard__label">Equipes</div></div>
+                  <div class="statCard"><div class="statCard__value">12</div><div class="statCard__label">Posts</div></div>
+                </div>
+              </section>
+
+              <section class="panel">
+                <h3 class="panel__title">RACCOURCIS</h3>
+                <div class="socialQuickList">
+                  <a class="listItem" href="{{ path('front_players') }}"><span>Recherche joueurs</span><span class="listItem__meta">Trouver</span></a>
+                  <a class="listItem" href="{{ path('front_messages') }}"><span>Messages</span><span class="listItem__meta">2 non lus</span></a>
+                  <a class="listItem" href="{{ path('front_my_teams') }}"><span>Mes equipes</span><span class="listItem__meta">3 actives</span></a>
+                  <a class="listItem" href="{{ path('front_orders') }}"><span>Mes commandes</span><span class="listItem__meta">2 recentes</span></a>
+                </div>
+              </section>
+
+              <section class="panel">
+                <h3 class="panel__title">NOTIFICATIONS</h3>
+                <div class="list">
+                  <a class="listItem" href="{{ path('front_notifications') }}"><span>Invitation equipe Aurora Squad</span><span class="badge">Nouveau</span></a>
+                  <a class="listItem" href="{{ path('front_notifications') }}"><span>Nouveau message de FrostByte</span><span class="listItem__meta">1h</span></a>
+                  <a class="listItem" href="{{ path('front_notifications') }}"><span>Commande ORD-2026-001</span><span class="badge badge--success">PAID</span></a>
+                </div>
+              </section>
+            </aside>
           </div>
-        </div>
-        <div class="statsRow" style="margin-top:12px;">
-          <div class="statCard"><div class="statCard__value">8</div><div class="statCard__label">Amis</div></div>
-          <div class="statCard"><div class="statCard__value">3</div><div class="statCard__label">Équipes</div></div>
-          <div class="statCard"><div class="statCard__value">12</div><div class="statCard__label">Posts</div></div>
-        </div>
-        <div class="panel" style="margin-top:12px;">
-          <div class="panel__head"><h3 class="panel__title">NOTIFICATIONS</h3></div>
-          <div class="list">
-            <div class="listItem"><span>Invitation équipe Aurora Squad</span><span class="badge">Nouveau</span></div>
-            <div class="listItem"><span>Commande #ORD-2026-001</span><span class="badge badge--success">PAYÉE</span></div>
-          </div>
-        </div>
-        <div class="panel" style="margin-top:12px;">
-          <div class="panel__head"><h3 class="panel__title">DEMANDES EN ATTENTE</h3></div>
-          <div class="list">
-            <div class="listItem"><span>Demande d’ami de Kairo</span><span class="badge">PENDING</span></div>
-            <div class="listItem"><span>Invitation équipe North Hydra</span><span class="badge">PENDING</span></div>
-          </div>
-        </div>
-        <div class="panel" style="margin-top:12px;">
-          <div class="panel__head"><h3 class="panel__title">RACCOURCIS</h3></div>
-          <div class="card__actions">
-            <a class="btn btn--primary" href="{{ path('front_post_create') }}">Créer un post</a>
-            <a class="btn btn--ghost" href="{{ path('front_teams_explore') }}">Explorer équipes</a>
-            <a class="btn btn--ghost" href="{{ path('front_shop') }}">Boutique</a>
-            <a class="btn btn--ghost" href="{{ path('front_cart') }}">Mon panier</a>
-          </div>
-        </div>
-        
-      <div class="panel">
-        <div class="panel__head">
-          <div>
-            <h3 class="panel__title">TABLES UTILISÉES</h3>
-            <div class="panel__desc">Schéma réel + colonnes clés.</div>
-          </div>
-        </div>
-        <div class="list">
-          <div class="listItem"><span><b>users</b></span><span class="listItem__meta">user_id, display_name, profile_image_id</span></div><div class="listItem"><span><b>notifications</b></span><span class="listItem__meta">notification_id, user_id, type, is_read</span></div><div class="listItem"><span><b>friend_requests</b></span><span class="listItem__meta">from_user_id, to_user_id, status</span></div><div class="listItem"><span><b>team_invites</b></span><span class="listItem__meta">team_id, invited_user_id, status</span></div><div class="listItem"><span><b>team_join_requests</b></span><span class="listItem__meta">team_id, user_id, status</span></div><div class="listItem"><span><b>matches</b></span><span class="listItem__meta">match_id, status, scheduled_at</span></div>
         </div>
       </div>
-
-      
-        </div>
-      </div>
-
 
       {% include 'front/partials/_footer.html.twig' %}
-
     </section>
   </main>
 
   {% include 'front/partials/_auth_modal.html.twig' %}
-
 {% endblock %}
-
-

@@ -3,166 +3,134 @@
 {% block title %}PULSE - Recherche joueurs{% endblock %}
 
 {% block body %}
-
-
   {% include 'front/partials/_hero_mini.html.twig' with {
-  hero_kicker: 'JOUEUR',
-  hero_title: 'Recherche joueurs',
-  hero_sub: 'Trouver des joueurs et envoyer des demandes d’amis.',
-  breadcrumb_current: 'Recherche joueurs'
-} %}
-
+    hero_kicker: 'JOUEUR',
+    hero_title: 'Recherche joueurs',
+    hero_sub: 'Trouver des profils, voir leurs posts et lancer une interaction.',
+    breadcrumb_current: 'Recherche joueurs'
+  } %}
 
   <main class="page">
     <section class="belowHero">
-
       <div class="layout">
-        
-  <aside class="sideNav">
-    <div class="sideNav__title">ESPACE JOUEUR</div>
-    <a class="" href="{{ path('front_dashboard') }}">Dashboard</a><a class="" href="{{ path('front_profile') }}">Mon profil</a><a class="is-active" href="{{ path('front_players') }}">Recherche joueurs</a><a class="" href="{{ path('front_friends') }}">Amis</a><a class="" href="{{ path('front_messages') }}">Messages</a><a class="" href="{{ path('front_feed') }}">Fil d’actualité</a><a class="" href="{{ path('front_my_teams') }}">Mes équipes</a><a class="" href="{{ path('front_my_requests') }}">Mes demandes</a><a class="" href="{{ path('front_orders') }}">Mes commandes</a><a class="" href="{{ path('front_notifications') }}">Notifications</a>
-  </aside>
+        {% include 'front/partials/_player_side_nav.html.twig' with { active: 'players' } %}
 
-        <div>
-          
-        <div class="panel">
-          <div class="filtersRow">
-            <input class="input" type="search" placeholder="Username ou display name" />
-            <div class="select"><select><option>Pays</option><option>TN</option><option>FR</option></select></div>
-            <button class="btn btn--ghost">Plus récents</button>
+        <div class="socialShell">
+          <div class="socialStack">
+            <section class="panel">
+              <div class="filtersRow">
+                <input class="input" type="search" placeholder="Rechercher par pseudo, display name, role..." />
+                <div class="select">
+                  <select>
+                    <option>Tous les roles</option>
+                    <option>PLAYER</option>
+                    <option>CAPTAIN</option>
+                    <option>ORGANIZER</option>
+                  </select>
+                </div>
+                <div class="select">
+                  <select>
+                    <option>Tous les pays</option>
+                    <option>TN</option>
+                    <option>FR</option>
+                    <option>US</option>
+                  </select>
+                </div>
+                <button class="btn btn--ghost" type="button">Rechercher</button>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel__head">
+                <h3 class="panel__title">RESULTATS</h3>
+                <span class="panel__desc">4 profils trouves</span>
+              </div>
+
+              <article class="panel">
+                <div class="postCard__head">
+                  <div class="postCard__author">
+                    <div class="avatarMd" data-avatar="https://picsum.photos/seed/pulse_player_1/200/200"></div>
+                    <div>
+                      <div class="name">FrostByte</div>
+                      <div class="sub">CAPTAIN � FR � @FrostByte</div>
+                    </div>
+                  </div>
+                  <span class="badge">En ligne</span>
+                </div>
+                <div class="postCard__body">Capitaine de North Hydra. Recherche un support player avec disponibilite soir/weekend.</div>
+                <div class="postCard__actions">
+                  <a class="btn btn--ghost" href="{{ path('front_player_profile') }}">Voir profil</a>
+                  <a class="btn btn--primary" href="{{ path('front_friends') }}">Ajouter ami</a>
+                  <a class="btn btn--ghost" href="{{ path('front_messages') }}">Message</a>
+                </div>
+              </article>
+
+              <article class="panel">
+                <div class="postCard__head">
+                  <div class="postCard__author">
+                    <div class="avatarMd" data-avatar="https://picsum.photos/seed/pulse_player_2/200/200"></div>
+                    <div>
+                      <div class="name">NovaAim</div>
+                      <div class="sub">PLAYER � US � @NovaAim</div>
+                    </div>
+                  </div>
+                  <span class="badge">Actif</span>
+                </div>
+                <div class="postCard__body">Joueuse flex FPS. Disponible pour scrims competitifs.</div>
+                <div class="postCard__actions">
+                  <a class="btn btn--ghost" href="{{ path('front_player_profile') }}">Voir profil</a>
+                  <a class="btn btn--primary" href="{{ path('front_friends') }}">Ajouter ami</a>
+                  <a class="btn btn--ghost" href="{{ path('front_messages') }}">Message</a>
+                </div>
+              </article>
+
+              <article class="panel">
+                <div class="postCard__head">
+                  <div class="postCard__author">
+                    <div class="avatarMd" data-avatar="https://picsum.photos/seed/pulse_player_3/200/200"></div>
+                    <div>
+                      <div class="name">Kairo</div>
+                      <div class="sub">PLAYER � TN � @Kairo</div>
+                    </div>
+                  </div>
+                  <span class="badge">Nouveau</span>
+                </div>
+                <div class="postCard__body">Main entry fragger. Cherche equipe active sur Pulse Invitational.</div>
+                <div class="postCard__actions">
+                  <a class="btn btn--ghost" href="{{ path('front_player_profile') }}">Voir profil</a>
+                  <a class="btn btn--primary" href="{{ path('front_friends') }}">Ajouter ami</a>
+                  <a class="btn btn--ghost" href="{{ path('front_my_teams') }}">Inviter equipe</a>
+                </div>
+              </article>
+            </section>
           </div>
-        </div>
-        <div class="cardsGrid">
 
-    <article class="card card--member">
-      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_u1/1200/800">
-        <div class="card__chips">
-          <span class="chip chip--role">PLAYER</span>
-          <span class="chip">TN</span>
-          <span class="chip">@ZED_99</span>
+          <aside class="socialStack">
+            <section class="panel">
+              <h3 class="panel__title">SUGGESTIONS</h3>
+              <div class="socialQuickList">
+                <a class="listItem" href="{{ path('front_player_profile') }}"><span>Joueurs proches</span><span class="listItem__meta">12</span></a>
+                <a class="listItem" href="{{ path('front_players') }}"><span>Capitaines actifs</span><span class="listItem__meta">5</span></a>
+                <a class="listItem" href="{{ path('front_teams_explore') }}"><span>Equipes en recrutement</span><span class="listItem__meta">9</span></a>
+              </div>
+            </section>
+
+            <section class="panel">
+              <h3 class="panel__title">FILTRES RAPIDES</h3>
+              <div class="postCard__actions">
+                <button class="btn btn--ghost" type="button">FPS</button>
+                <button class="btn btn--ghost" type="button">MOBA</button>
+                <button class="btn btn--ghost" type="button">MENA</button>
+                <button class="btn btn--ghost" type="button">FR</button>
+              </div>
+            </section>
+          </aside>
         </div>
       </div>
-      <div class="card__body">
-        <h4 class="card__title">Zed</h4>
-        <p class="card__desc">Profil public • Message • Invitation équipe</p>
-        <div class="avatarRow">
-          <div class="avatar" data-avatar="https://picsum.photos/seed/pulse_a1/200/200" aria-hidden="true"></div>
-          <div class="avatarText">
-            <div class="name">Zed</div>
-            <div class="sub">PLAYER • TN</div>
-          </div>
-        </div>
-        <div class="card__actions">
-          <a class="btn btn--ghost" href="{{ path('front_player_profile') }}">Voir profil</a>
-          <a class="btn btn--primary" href="{{ path('front_friends') }}">Ajouter ami</a>
-        </div>
-      </div>
-    </article>
-
-
-    <article class="card card--member">
-      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_u2/1200/800">
-        <div class="card__chips">
-          <span class="chip chip--role">CAPTAIN</span>
-          <span class="chip">FR</span>
-          <span class="chip">@FrostByte</span>
-        </div>
-      </div>
-      <div class="card__body">
-        <h4 class="card__title">Frost</h4>
-        <p class="card__desc">Profil public • Message • Invitation équipe</p>
-        <div class="avatarRow">
-          <div class="avatar" data-avatar="https://picsum.photos/seed/pulse_a2/200/200" aria-hidden="true"></div>
-          <div class="avatarText">
-            <div class="name">Frost</div>
-            <div class="sub">CAPTAIN • FR</div>
-          </div>
-        </div>
-        <div class="card__actions">
-          <a class="btn btn--ghost" href="{{ path('front_player_profile') }}">Voir profil</a>
-          <a class="btn btn--primary" href="{{ path('front_friends') }}">Ajouter ami</a>
-        </div>
-      </div>
-    </article>
-
-
-    <article class="card card--member">
-      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_u3/1200/800">
-        <div class="card__chips">
-          <span class="chip chip--role">PLAYER</span>
-          <span class="chip">TN</span>
-          <span class="chip">@Kairo</span>
-        </div>
-      </div>
-      <div class="card__body">
-        <h4 class="card__title">Kairo</h4>
-        <p class="card__desc">Profil public • Message • Invitation équipe</p>
-        <div class="avatarRow">
-          <div class="avatar" data-avatar="https://picsum.photos/seed/pulse_a3/200/200" aria-hidden="true"></div>
-          <div class="avatarText">
-            <div class="name">Kairo</div>
-            <div class="sub">PLAYER • TN</div>
-          </div>
-        </div>
-        <div class="card__actions">
-          <a class="btn btn--ghost" href="{{ path('front_player_profile') }}">Voir profil</a>
-          <a class="btn btn--primary" href="{{ path('front_friends') }}">Ajouter ami</a>
-        </div>
-      </div>
-    </article>
-
-
-    <article class="card card--member">
-      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_u4/1200/800">
-        <div class="card__chips">
-          <span class="chip chip--role">PLAYER</span>
-          <span class="chip">US</span>
-          <span class="chip">@NovaAim</span>
-        </div>
-      </div>
-      <div class="card__body">
-        <h4 class="card__title">Nova</h4>
-        <p class="card__desc">Profil public • Message • Invitation équipe</p>
-        <div class="avatarRow">
-          <div class="avatar" data-avatar="https://picsum.photos/seed/pulse_a4/200/200" aria-hidden="true"></div>
-          <div class="avatarText">
-            <div class="name">Nova</div>
-            <div class="sub">PLAYER • US</div>
-          </div>
-        </div>
-        <div class="card__actions">
-          <a class="btn btn--ghost" href="{{ path('front_player_profile') }}">Voir profil</a>
-          <a class="btn btn--primary" href="{{ path('front_friends') }}">Ajouter ami</a>
-        </div>
-      </div>
-    </article>
-
-</div>
-        
-      <div class="panel">
-        <div class="panel__head">
-          <div>
-            <h3 class="panel__title">TABLES UTILISÉES</h3>
-            <div class="panel__desc">Schéma réel + colonnes clés.</div>
-          </div>
-        </div>
-        <div class="list">
-          <div class="listItem"><span><b>users</b></span><span class="listItem__meta">user_id, username, display_name, country</span></div><div class="listItem"><span><b>friend_requests</b></span><span class="listItem__meta">from_user_id, to_user_id, status</span></div><div class="listItem"><span><b>friendships</b></span><span class="listItem__meta">user_id1, user_id2</span></div>
-        </div>
-      </div>
-
-      
-        </div>
-      </div>
-
 
       {% include 'front/partials/_footer.html.twig' %}
-
     </section>
   </main>
 
   {% include 'front/partials/_auth_modal.html.twig' %}
-
 {% endblock %}
-
-

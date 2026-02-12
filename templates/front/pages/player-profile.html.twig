@@ -3,95 +3,102 @@
 {% block title %}PULSE - Profil joueur{% endblock %}
 
 {% block body %}
-
-
   {% include 'front/partials/_hero_mini.html.twig' with {
-  hero_kicker: 'JOUEUR',
-  hero_title: 'Profil joueur',
-  hero_sub: 'Profil public + posts.',
-  breadcrumb_current: 'Profil joueur'
-} %}
-
+    hero_kicker: 'JOUEUR',
+    hero_title: 'Profil joueur',
+    hero_sub: 'Vue publique du profil, des equipes et des publications.',
+    breadcrumb_current: 'Profil joueur'
+  } %}
 
   <main class="page">
     <section class="belowHero">
-
       <div class="layout">
-        <section class="panel">
-          <div style="display:flex; gap:14px; align-items:center;">
-            <div class="avatarLg" data-avatar="https://picsum.photos/seed/pulse_a2/200/200"></div>
-            <div>
-              <h3 style="margin:0;">FrostByte</h3>
-              <div class="muted">Capitaine • FR</div>
-              <div style="margin-top:8px;">
-                <a class="btn btn--primary" href="{{ path('front_login') }}">Ajouter ami</a>
-                <a class="btn btn--ghost" href="{{ path('front_login') }}">Envoyer message</a>
-                <a class="btn btn--ghost" href="{{ path('front_login') }}">Inviter dans une équipe</a>
+        {% include 'front/partials/_player_side_nav.html.twig' with { active: 'player_profile' } %}
+
+        <div class="socialStack">
+          <section class="panel">
+            <div class="coverBlock" data-bg="https://picsum.photos/seed/pulse_public_cover/1200/420"></div>
+            <div class="profileHeader" style="margin-top: -34px;">
+              <div class="avatarLg" data-avatar="https://picsum.photos/seed/pulse_public_avatar/200/200"></div>
+              <div>
+                <h3 style="margin:0;">FrostByte</h3>
+                <div class="muted">Capitaine � FR � @FrostByte</div>
+                <div class="profileHeader__actions">
+                  <a class="btn btn--primary" href="{{ path('front_login') }}">Ajouter ami</a>
+                  <a class="btn btn--ghost" href="{{ path('front_login') }}">Envoyer message</a>
+                  <a class="btn btn--ghost" href="{{ path('front_login') }}">Inviter en equipe</a>
+                </div>
               </div>
             </div>
-          </div>
-        </section>
-        <aside class="panel">
-          <h3 class="panel__title">ÉQUIPES</h3>
-          <div class="list">
-            <div class="listItem"><span>North Hydra</span><span class="listItem__meta">Capitaine</span></div>
-          </div>
-        </aside>
-      </div>
-      <div class="panel" style="margin-top:12px;">
-        <h3 class="panel__title">POSTS PUBLICS</h3>
-        
-      <div class="list">
-        
-          <div class="listItem">
-            <div>
-              <b>@ZED_99</b>
-              <div class="listItem__meta">Victoire 3-1 au Pulse Invitational !</div>
-            </div>
-            <div class="listItem__meta">42 likes • 9 commentaires</div>
-          </div>
-          <div class="listItem">
-            <div>
-              <b>@NovaAim</b>
-              <div class="listItem__meta">Nouveau produit disponible dans la boutique Aurora Squad.</div>
-            </div>
-            <div class="listItem__meta">15 likes • 2 commentaires</div>
-          </div>
-          <div class="listItem">
-            <div>
-              <b>@FrostByte</b>
-              <div class="listItem__meta">Roster update + essais ouverts cette semaine.</div>
-            </div>
-            <div class="listItem__meta">28 likes • 7 commentaires</div>
-          </div>
-      </div>
-      <div class="panel__actions" style="margin-top:10px;">
-        <a class="btn btn--ghost" href="{{ path('front_login') }}">Like / Commenter → Connexion</a>
-      </div>
+          </section>
 
-      </div>
-      
-      <div class="panel">
-        <div class="panel__head">
-          <div>
-            <h3 class="panel__title">TABLES UTILISÉES</h3>
-            <div class="panel__desc">Schéma réel + colonnes clés.</div>
+          <div class="socialShell">
+            <aside class="socialStack">
+              <section class="panel">
+                <h3 class="panel__title">DETAILS</h3>
+                <div class="list">
+                  <div class="listItem"><span>Pays</span><span class="listItem__meta">France</span></div>
+                  <div class="listItem"><span>Role principal</span><span class="listItem__meta">Capitaine / IGL</span></div>
+                  <div class="listItem"><span>Disponibilite</span><span class="listItem__meta">Soir 20h-23h</span></div>
+                </div>
+              </section>
+
+              <section class="panel">
+                <h3 class="panel__title">EQUIPES</h3>
+                <div class="socialQuickList">
+                  <a class="listItem" href="{{ path('front_team_detail') }}"><span>North Hydra</span><span class="listItem__meta">Capitaine</span></a>
+                  <a class="listItem" href="{{ path('front_team_detail') }}"><span>Hydra Academy</span><span class="listItem__meta">Coach</span></a>
+                </div>
+              </section>
+            </aside>
+
+            <div class="socialStack">
+              <section class="panel">
+                <h3 class="panel__title">PUBLICATIONS PUBLIQUES</h3>
+
+                <article class="panel">
+                  <div class="postCard__head">
+                    <div class="postCard__author">
+                      <div class="avatarMd" data-avatar="https://picsum.photos/seed/pulse_public_avatar/200/200"></div>
+                      <div>
+                        <div class="name">FrostByte</div>
+                        <div class="sub">Il y a 3 h � Public</div>
+                      </div>
+                    </div>
+                    <span class="badge">54 J'aime</span>
+                  </div>
+                  <div class="postCard__body">North Hydra passe en finale regionale. Merci pour le soutien de la communaute.</div>
+                  <div class="postCard__actions">
+                    <a class="btn btn--ghost" href="{{ path('front_login') }}">J'aime</a>
+                    <a class="btn btn--ghost" href="{{ path('front_login') }}">Commenter</a>
+                  </div>
+                </article>
+
+                <article class="panel">
+                  <div class="postCard__head">
+                    <div class="postCard__author">
+                      <div class="avatarMd" data-avatar="https://picsum.photos/seed/pulse_public_avatar/200/200"></div>
+                      <div>
+                        <div class="name">FrostByte</div>
+                        <div class="sub">Hier � Public</div>
+                      </div>
+                    </div>
+                    <span class="badge">32 J'aime</span>
+                  </div>
+                  <div class="postCard__body">Recherche analyste video pour review post-match. Contact en message prive.</div>
+                  <div class="postCard__actions">
+                    <a class="btn btn--ghost" href="{{ path('front_login') }}">Contacter</a>
+                  </div>
+                </article>
+              </section>
+            </div>
           </div>
         </div>
-        <div class="list">
-          <div class="listItem"><span><b>users</b></span><span class="listItem__meta">user_id, display_name, bio, country, profile_image_id</span></div><div class="listItem"><span><b>team_members</b></span><span class="listItem__meta">team_id, user_id, is_active</span></div><div class="listItem"><span><b>posts</b></span><span class="listItem__meta">post_id, author_user_id, visibility</span></div><div class="listItem"><span><b>post_images</b></span><span class="listItem__meta">post_id, image_id</span></div>
-        </div>
       </div>
-
-    
 
       {% include 'front/partials/_footer.html.twig' %}
-
     </section>
   </main>
 
   {% include 'front/partials/_auth_modal.html.twig' %}
-
 {% endblock %}
-
-

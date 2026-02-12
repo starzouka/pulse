@@ -1,71 +1,94 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}PULSE - Détail commande{% endblock %}
+{% block title %}PULSE - Detail commande{% endblock %}
 
 {% block body %}
-
-
   {% include 'front/partials/_hero_mini.html.twig' with {
-  hero_kicker: 'JOUEUR',
-  hero_title: 'Détail commande',
-  hero_sub: 'Contenu et statut.',
-  breadcrumb_current: 'Détail commande'
-} %}
-
+    hero_kicker: 'JOUEUR',
+    hero_title: 'Detail commande',
+    hero_sub: 'Vue complete de la commande et de ses lignes.',
+    breadcrumb_current: 'Detail commande'
+  } %}
 
   <main class="page">
     <section class="belowHero">
-
       <div class="layout">
-        
-  <aside class="sideNav">
-    <div class="sideNav__title">ESPACE JOUEUR</div>
-    <a class="" href="{{ path('front_dashboard') }}">Dashboard</a><a class="" href="{{ path('front_profile') }}">Mon profil</a><a class="" href="{{ path('front_players') }}">Recherche joueurs</a><a class="" href="{{ path('front_friends') }}">Amis</a><a class="" href="{{ path('front_messages') }}">Messages</a><a class="" href="{{ path('front_feed') }}">Fil d’actualité</a><a class="" href="{{ path('front_my_teams') }}">Mes équipes</a><a class="" href="{{ path('front_my_requests') }}">Mes demandes</a><a class="is-active" href="{{ path('front_orders') }}">Mes commandes</a><a class="" href="{{ path('front_notifications') }}">Notifications</a>
-  </aside>
+        {% include 'front/partials/_player_side_nav.html.twig' with { active: 'order_detail' } %}
 
-        <div>
-          
-        <div class="panel">
-          <h3 class="panel__title">ORD-2026-001</h3>
-          <p class="muted">Status: <span class="badge badge--success">PAID</span></p>
-          <div class="tableWrap">
-            <table class="table">
-              <thead><tr><th>Produit</th><th>Quantité</th><th>Prix</th></tr></thead>
-              <tbody>
-                <tr><td>Pulse Hoodie</td><td>1</td><td>89 DT</td></tr>
-                <tr><td>Mousepad XL</td><td>2</td><td>39 DT</td></tr>
-              </tbody>
-            </table>
+        <div class="socialShell">
+          <div class="socialStack">
+            <section class="panel">
+              <div class="panel__head">
+                <div>
+                  <h3 class="panel__title">ORD-2026-001</h3>
+                  <div class="panel__desc">Creee le 02/02/2026 � Paiement carte</div>
+                </div>
+                <span class="badge badge--success">PAID</span>
+              </div>
+
+              <div class="tableWrap">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Produit</th>
+                      <th>Quantite</th>
+                      <th>Prix unitaire</th>
+                      <th>Sous-total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Pulse Hoodie</td>
+                      <td>1</td>
+                      <td>89 DT</td>
+                      <td>89 DT</td>
+                    </tr>
+                    <tr>
+                      <td>Mousepad XL</td>
+                      <td>2</td>
+                      <td>39 DT</td>
+                      <td>78 DT</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="panel">
+              <h3 class="panel__title">SUIVI</h3>
+              <div class="socialQuickList">
+                <div class="listItem"><span>Commande confirmee</span><span class="badge badge--success">OK</span></div>
+                <div class="listItem"><span>Paiement valide</span><span class="badge badge--success">OK</span></div>
+                <div class="listItem"><span>Preparation logistique</span><span class="badge">EN COURS</span></div>
+              </div>
+            </section>
           </div>
-          <div class="panel__actions" style="margin-top:10px;">
-            <button class="btn btn--ghost">Annuler commande</button>
-          </div>
-        </div>
-        
-      <div class="panel">
-        <div class="panel__head">
-          <div>
-            <h3 class="panel__title">TABLES UTILISÉES</h3>
-            <div class="panel__desc">Schéma réel + colonnes clés.</div>
-          </div>
-        </div>
-        <div class="list">
-          <div class="listItem"><span><b>orders</b></span><span class="listItem__meta">order_id, order_number, status, total_amount</span></div><div class="listItem"><span><b>cart_items</b></span><span class="listItem__meta">cart_id, product_id, quantity, unit_price_at_add</span></div><div class="listItem"><span><b>products</b></span><span class="listItem__meta">product_id, team_id, name</span></div>
+
+          <aside class="socialStack">
+            <section class="panel">
+              <h3 class="panel__title">RESUME</h3>
+              <div class="list">
+                <div class="listItem"><span>Sous-total</span><span class="listItem__meta">167 DT</span></div>
+                <div class="listItem"><span>Livraison</span><span class="listItem__meta">0 DT</span></div>
+                <div class="listItem"><span>Total</span><span class="listItem__meta">167 DT</span></div>
+              </div>
+            </section>
+
+            <section class="panel">
+              <h3 class="panel__title">ACTIONS</h3>
+              <div class="postCard__actions">
+                <button class="btn btn--ghost" type="button">Telecharger facture</button>
+                <button class="btn btn--ghost" type="button">Contacter support</button>
+                <a class="btn btn--ghost" href="{{ path('front_orders') }}">Retour commandes</a>
+              </div>
+            </section>
+          </aside>
         </div>
       </div>
-
-      
-        </div>
-      </div>
-
 
       {% include 'front/partials/_footer.html.twig' %}
-
     </section>
   </main>
 
   {% include 'front/partials/_auth_modal.html.twig' %}
-
 {% endblock %}
-
-

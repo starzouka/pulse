@@ -1,0 +1,15 @@
+{% set active = active|default('') %}
+
+<aside class="sideNav">
+  <div class="sideNav__title">ESPACE JOUEUR</div>
+  <a class="{{ active == 'dashboard' ? 'is-active' : '' }}" href="{{ path('front_dashboard') }}">Dashboard</a>
+  <a class="{{ active in ['profile', 'profile_edit'] ? 'is-active' : '' }}" href="{{ path('front_profile') }}">Mon profil</a>
+  <a class="{{ active in ['players', 'player_profile'] ? 'is-active' : '' }}" href="{{ path('front_players') }}">Recherche joueurs</a>
+  <a class="{{ active == 'friends' ? 'is-active' : '' }}" href="{{ path('front_friends') }}">Amis</a>
+  <a class="{{ active in ['messages', 'conversation'] ? 'is-active' : '' }}" href="{{ path('front_messages') }}">Messages</a>
+  <a class="{{ active == 'feed' ? 'is-active' : '' }}" href="{{ path('front_feed') }}">Fil d'actualite</a>
+  <a class="{{ active == 'my_teams' ? 'is-active' : '' }}" href="{{ path('front_my_teams') }}">Mes equipes</a>
+  <a class="{{ active == 'my_requests' ? 'is-active' : '' }}" href="{{ path('front_my_requests') }}">Mes demandes</a>
+  <a class="{{ active in ['orders', 'order_detail'] ? 'is-active' : '' }}" href="{{ path('front_orders') }}">Mes commandes</a>
+  <a class="{{ active == 'notifications' ? 'is-active' : '' }}" href="{{ path('front_notifications') }}">Notifications</a>
+</aside>

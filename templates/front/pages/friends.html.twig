@@ -3,93 +3,80 @@
 {% block title %}PULSE - Amis{% endblock %}
 
 {% block body %}
-
-
   {% include 'front/partials/_hero_mini.html.twig' with {
-  hero_kicker: 'JOUEUR',
-  hero_title: 'Amis',
-  hero_sub: 'Gérer amis + demandes.',
-  breadcrumb_current: 'Amis'
-} %}
-
+    hero_kicker: 'JOUEUR',
+    hero_title: 'Amis',
+    hero_sub: 'Gestion des relations comme une page sociale classique.',
+    breadcrumb_current: 'Amis'
+  } %}
 
   <main class="page">
     <section class="belowHero">
-
       <div class="layout">
-        
-  <aside class="sideNav">
-    <div class="sideNav__title">ESPACE JOUEUR</div>
-    <a class="" href="{{ path('front_dashboard') }}">Dashboard</a><a class="" href="{{ path('front_profile') }}">Mon profil</a><a class="" href="{{ path('front_players') }}">Recherche joueurs</a><a class="is-active" href="{{ path('front_friends') }}">Amis</a><a class="" href="{{ path('front_messages') }}">Messages</a><a class="" href="{{ path('front_feed') }}">Fil d’actualité</a><a class="" href="{{ path('front_my_teams') }}">Mes équipes</a><a class="" href="{{ path('front_my_requests') }}">Mes demandes</a><a class="" href="{{ path('front_orders') }}">Mes commandes</a><a class="" href="{{ path('front_notifications') }}">Notifications</a>
-  </aside>
+        {% include 'front/partials/_player_side_nav.html.twig' with { active: 'friends' } %}
 
-        <div>
-          
-        <div class="panel">
-          <div class="tabs" data-tabs="friends-tabs">
-            <button class="tab is-active" data-tab="list">Mes amis</button>
-            <button class="tab" data-tab="received">Demandes reçues</button>
-            <button class="tab" data-tab="sent">Demandes envoyées</button>
-          </div>
-          <div class="tabPanels" data-panels="friends-tabs">
-            <section class="tabPanel is-active" data-panel="list">
-              <div class="tableWrap">
-                <table class="table">
-                  <thead><tr><th>Joueur</th><th>Pays</th><th>Action</th></tr></thead>
-                  <tbody>
-                    <tr><td>Zed_99</td><td>TN</td><td><button class="btn btn--ghost">Message</button></td></tr>
-                    <tr><td>NovaAim</td><td>US</td><td><button class="btn btn--ghost">Message</button></td></tr>
-                  </tbody>
-                </table>
+        <div class="socialShell">
+          <div class="socialStack">
+            <section class="panel">
+              <div class="tabs" data-tabs="friends-tabs">
+                <button class="tab is-active" data-tab="my-friends">Mes amis</button>
+                <button class="tab" data-tab="received">Demandes recues</button>
+                <button class="tab" data-tab="sent">Demandes envoyees</button>
               </div>
-            </section>
-            <section class="tabPanel" data-panel="received">
-              <div class="tableWrap">
-                <table class="table">
-                  <thead><tr><th>Joueur</th><th>Statut</th><th>Actions</th></tr></thead>
-                  <tbody>
-                    <tr><td>Kairo</td><td><span class="badge">PENDING</span></td><td><button class="btn btn--primary">Accepter</button></td></tr>
-                  </tbody>
-                </table>
-              </div>
-            </section>
-            <section class="tabPanel" data-panel="sent">
-              <div class="tableWrap">
-                <table class="table">
-                  <thead><tr><th>Joueur</th><th>Statut</th><th>Action</th></tr></thead>
-                  <tbody>
-                    <tr><td>FrostByte</td><td><span class="badge">PENDING</span></td><td><button class="btn btn--ghost">Annuler</button></td></tr>
-                  </tbody>
-                </table>
+
+              <div class="tabPanels" data-panels="friends-tabs">
+                <section class="tabPanel is-active" data-panel="my-friends">
+                  <div class="socialQuickList">
+                    <article class="listItem"><span>NovaAim</span><span class="listItem__meta">US � En ligne</span></article>
+                    <article class="listItem"><span>FrostByte</span><span class="listItem__meta">FR � Actif</span></article>
+                    <article class="listItem"><span>Kairo</span><span class="listItem__meta">TN � En ligne</span></article>
+                  </div>
+                </section>
+
+                <section class="tabPanel" data-panel="received">
+                  <div class="socialQuickList">
+                    <article class="listItem"><span>ZenithPro</span><span class="badge">PENDING</span></article>
+                    <article class="listItem"><span>MiraShot</span><span class="badge">PENDING</span></article>
+                  </div>
+                  <div class="postCard__actions" style="margin-top:10px;">
+                    <button class="btn btn--primary" type="button">Accepter</button>
+                    <button class="btn btn--ghost" type="button">Refuser</button>
+                  </div>
+                </section>
+
+                <section class="tabPanel" data-panel="sent">
+                  <div class="socialQuickList">
+                    <article class="listItem"><span>ShadowArc</span><span class="badge">PENDING</span></article>
+                    <article class="listItem"><span>VoltAim</span><span class="badge badge--danger">REFUSED</span></article>
+                  </div>
+                </section>
               </div>
             </section>
           </div>
-        </div>
-        
-      <div class="panel">
-        <div class="panel__head">
-          <div>
-            <h3 class="panel__title">TABLES UTILISÉES</h3>
-            <div class="panel__desc">Schéma réel + colonnes clés.</div>
-          </div>
-        </div>
-        <div class="list">
-          <div class="listItem"><span><b>friendships</b></span><span class="listItem__meta">user_id1, user_id2, created_at</span></div><div class="listItem"><span><b>friend_requests</b></span><span class="listItem__meta">from_user_id, to_user_id, status</span></div><div class="listItem"><span><b>users</b></span><span class="listItem__meta">user_id, display_name</span></div>
+
+          <aside class="socialStack">
+            <section class="panel">
+              <h3 class="panel__title">SUGGESTIONS</h3>
+              <div class="socialQuickList">
+                <a class="listItem" href="{{ path('front_players') }}"><span>Joueurs de votre region</span><span class="listItem__meta">22</span></a>
+                <a class="listItem" href="{{ path('front_players') }}"><span>Capitaines actifs</span><span class="listItem__meta">7</span></a>
+              </div>
+            </section>
+
+            <section class="panel">
+              <h3 class="panel__title">RACCOURCIS</h3>
+              <div class="socialQuickList">
+                <a class="listItem" href="{{ path('front_messages') }}"><span>Ouvrir messagerie</span><span class="listItem__meta">Direct</span></a>
+                <a class="listItem" href="{{ path('front_players') }}"><span>Rechercher joueurs</span><span class="listItem__meta">Explorer</span></a>
+              </div>
+            </section>
+          </aside>
         </div>
       </div>
-
-      
-        </div>
-      </div>
-
 
       {% include 'front/partials/_footer.html.twig' %}
-
     </section>
   </main>
 
   {% include 'front/partials/_auth_modal.html.twig' %}
-
 {% endblock %}
-
-

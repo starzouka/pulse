@@ -3,70 +3,61 @@
 {% block title %}PULSE - Notifications{% endblock %}
 
 {% block body %}
-
-
   {% include 'front/partials/_hero_mini.html.twig' with {
-  hero_kicker: 'JOUEUR',
-  hero_title: 'Notifications',
-  hero_sub: 'Tous vos événements importants.',
-  breadcrumb_current: 'Notifications'
-} %}
-
+    hero_kicker: 'JOUEUR',
+    hero_title: 'Notifications',
+    hero_sub: 'Fil des alertes et evenements importants.',
+    breadcrumb_current: 'Notifications'
+  } %}
 
   <main class="page">
     <section class="belowHero">
-
       <div class="layout">
-        
-  <aside class="sideNav">
-    <div class="sideNav__title">ESPACE JOUEUR</div>
-    <a class="" href="{{ path('front_dashboard') }}">Dashboard</a><a class="" href="{{ path('front_profile') }}">Mon profil</a><a class="" href="{{ path('front_players') }}">Recherche joueurs</a><a class="" href="{{ path('front_friends') }}">Amis</a><a class="" href="{{ path('front_messages') }}">Messages</a><a class="" href="{{ path('front_feed') }}">Fil d’actualité</a><a class="" href="{{ path('front_my_teams') }}">Mes équipes</a><a class="" href="{{ path('front_my_requests') }}">Mes demandes</a><a class="" href="{{ path('front_orders') }}">Mes commandes</a><a class="is-active" href="{{ path('front_notifications') }}">Notifications</a>
-  </aside>
+        {% include 'front/partials/_player_side_nav.html.twig' with { active: 'notifications' } %}
 
-        <div>
-          
-        <div class="panel">
-          <div class="panel__head">
-            <h3 class="panel__title">NOTIFICATIONS</h3>
-            <div class="panel__actions">
-              <button class="btn btn--ghost">Tout marquer lu</button>
-            </div>
+        <div class="socialShell">
+          <div class="socialStack">
+            <section class="panel">
+              <div class="panel__head">
+                <h3 class="panel__title">ALERTES</h3>
+                <button class="btn btn--ghost" type="button">Tout marquer lu</button>
+              </div>
+
+              <div class="list">
+                <article class="listItem"><span>Invitation equipe Aurora Squad</span><span class="badge">Nouveau</span></article>
+                <article class="listItem"><span>Nouveau message de FrostByte</span><span class="listItem__meta">1h</span></article>
+                <article class="listItem"><span>Commande ORD-2026-001 payee</span><span class="badge badge--success">PAID</span></article>
+                <article class="listItem"><span>Tournoi Pulse Invitational: check-in demain</span><span class="badge badge--warning">Rappel</span></article>
+              </div>
+            </section>
           </div>
-          <div class="filtersRow">
-            <button class="btn btn--soft">Toutes</button>
-            <button class="btn btn--ghost">Non lues</button>
-          </div>
-          <div class="list" style="margin-top:10px;">
-            <div class="listItem"><span>Invitation équipe Aurora Squad</span><span class="badge">Nouveau</span></div>
-            <div class="listItem"><span>Commande #ORD-2026-001</span><span class="badge badge--success">PAYÉE</span></div>
-            <div class="listItem"><span>Nouveau message de FrostByte</span><span class="badge">1h</span></div>
-          </div>
-        </div>
-        
-      <div class="panel">
-        <div class="panel__head">
-          <div>
-            <h3 class="panel__title">TABLES UTILISÉES</h3>
-            <div class="panel__desc">Schéma réel + colonnes clés.</div>
-          </div>
-        </div>
-        <div class="list">
-          <div class="listItem"><span><b>notifications</b></span><span class="listItem__meta">notification_id, user_id, type, ref_table, ref_id, is_read</span></div>
+
+          <aside class="socialStack">
+            <section class="panel">
+              <h3 class="panel__title">FILTRES</h3>
+              <div class="postCard__actions">
+                <button class="btn btn--soft" type="button">Toutes</button>
+                <button class="btn btn--ghost" type="button">Non lues</button>
+                <button class="btn btn--ghost" type="button">Messages</button>
+                <button class="btn btn--ghost" type="button">Tournois</button>
+              </div>
+            </section>
+
+            <section class="panel">
+              <h3 class="panel__title">PREFERENCES</h3>
+              <div class="socialQuickList">
+                <div class="listItem"><span>Email notifications</span><span class="listItem__meta">Active</span></div>
+                <div class="listItem"><span>Push in-app</span><span class="listItem__meta">Active</span></div>
+                <div class="listItem"><span>Commandes uniquement</span><span class="listItem__meta">Desactive</span></div>
+              </div>
+            </section>
+          </aside>
         </div>
       </div>
-
-      
-        </div>
-      </div>
-
 
       {% include 'front/partials/_footer.html.twig' %}
-
     </section>
   </main>
 
   {% include 'front/partials/_auth_modal.html.twig' %}
-
 {% endblock %}
-
-

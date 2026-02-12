@@ -1,90 +1,121 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}PULSE - Fil d’actualité{% endblock %}
+{% block title %}PULSE - Fil d'actualite{% endblock %}
 
 {% block body %}
-
-
   {% include 'front/partials/_hero_mini.html.twig' with {
-  hero_kicker: 'JOUEUR',
-  hero_title: 'Fil d’actualité',
-  hero_sub: 'Posts publics, amis et équipes.',
-  breadcrumb_current: 'Fil d’actualité'
-} %}
-
+    hero_kicker: 'JOUEUR',
+    hero_title: "Fil d'actualite",
+    hero_sub: 'Timeline sociale: posts, equipes, tournois et annonces.',
+    breadcrumb_current: "Fil d'actualite"
+  } %}
 
   <main class="page">
     <section class="belowHero">
-
       <div class="layout">
-        
-  <aside class="sideNav">
-    <div class="sideNav__title">ESPACE JOUEUR</div>
-    <a class="" href="{{ path('front_dashboard') }}">Dashboard</a><a class="" href="{{ path('front_profile') }}">Mon profil</a><a class="" href="{{ path('front_players') }}">Recherche joueurs</a><a class="" href="{{ path('front_friends') }}">Amis</a><a class="" href="{{ path('front_messages') }}">Messages</a><a class="is-active" href="{{ path('front_feed') }}">Fil d’actualité</a><a class="" href="{{ path('front_my_teams') }}">Mes équipes</a><a class="" href="{{ path('front_my_requests') }}">Mes demandes</a><a class="" href="{{ path('front_orders') }}">Mes commandes</a><a class="" href="{{ path('front_notifications') }}">Notifications</a>
-  </aside>
+        {% include 'front/partials/_player_side_nav.html.twig' with { active: 'feed' } %}
 
-        <div>
-          
-        <div class="panel">
-          <div class="panel__head">
-            <h3 class="panel__title">FIL</h3>
-            <div class="panel__actions"><a class="btn btn--primary" href="{{ path('front_post_create') }}">Créer un post</a></div>
-          </div>
-          
-      <div class="list">
-        
-          <div class="listItem">
-            <div>
-              <b>@ZED_99</b>
-              <div class="listItem__meta">Victoire 3-1 au Pulse Invitational !</div>
-            </div>
-            <div class="listItem__meta">42 likes • 9 commentaires</div>
-          </div>
-          <div class="listItem">
-            <div>
-              <b>@NovaAim</b>
-              <div class="listItem__meta">Nouveau produit disponible dans la boutique Aurora Squad.</div>
-            </div>
-            <div class="listItem__meta">15 likes • 2 commentaires</div>
-          </div>
-          <div class="listItem">
-            <div>
-              <b>@FrostByte</b>
-              <div class="listItem__meta">Roster update + essais ouverts cette semaine.</div>
-            </div>
-            <div class="listItem__meta">28 likes • 7 commentaires</div>
-          </div>
-      </div>
-      <div class="panel__actions" style="margin-top:10px;">
-        <a class="btn btn--ghost" href="{{ path('front_post_detail') }}">Like / Commenter → Connexion</a>
-      </div>
+        <div class="socialShell">
+          <div class="socialStack">
+            <section class="panel">
+              <div class="socialComposer">
+                <div class="avatarMd" data-avatar="https://picsum.photos/seed/pulse_feed_me/200/200"></div>
+                <input class="input" type="text" placeholder="Que voulez-vous partager aujourd'hui ?" />
+                <a class="btn btn--primary" href="{{ path('front_post_create') }}">Publier</a>
+              </div>
+            </section>
 
-        </div>
-        
-      <div class="panel">
-        <div class="panel__head">
-          <div>
-            <h3 class="panel__title">TABLES UTILISÉES</h3>
-            <div class="panel__desc">Schéma réel + colonnes clés.</div>
+            <section class="panel">
+              <div class="panel__head">
+                <h3 class="panel__title">NOUVEAUTES</h3>
+                <div class="panel__actions">
+                  <button class="btn btn--soft" type="button">Tous</button>
+                  <button class="btn btn--ghost" type="button">Amis</button>
+                  <button class="btn btn--ghost" type="button">Equipes</button>
+                </div>
+              </div>
+
+              <article class="panel">
+                <div class="postCard__head">
+                  <div class="postCard__author">
+                    <div class="avatarMd" data-avatar="https://picsum.photos/seed/pulse_feed_1/200/200"></div>
+                    <div>
+                      <div class="name">FrostByte</div>
+                      <div class="sub">Il y a 8 min � Public</div>
+                    </div>
+                  </div>
+                  <span class="badge">Tournoi</span>
+                </div>
+                <div class="postCard__body">Nous avons valide le roster pour le tournoi de samedi. Prochain objectif: top 4 minimum.</div>
+                <div class="postCard__actions">
+                  <a class="btn btn--ghost" href="{{ path('front_post_detail') }}">J'aime</a>
+                  <a class="btn btn--ghost" href="{{ path('front_post_detail') }}">Commenter</a>
+                  <a class="btn btn--ghost" href="{{ path('front_post_detail') }}">Partager</a>
+                </div>
+              </article>
+
+              <article class="panel">
+                <div class="postCard__head">
+                  <div class="postCard__author">
+                    <div class="avatarMd" data-avatar="https://picsum.photos/seed/pulse_feed_2/200/200"></div>
+                    <div>
+                      <div class="name">Aurora Squad</div>
+                      <div class="sub">Il y a 52 min � Equipe</div>
+                    </div>
+                  </div>
+                  <span class="badge badge--success">Shop</span>
+                </div>
+                <div class="postCard__body">Nouveau drop textile en boutique. Stocks limites sur les tailles M et L.</div>
+                <div class="postCard__actions">
+                  <a class="btn btn--ghost" href="{{ path('front_shop') }}">Voir boutique</a>
+                  <a class="btn btn--ghost" href="{{ path('front_product_detail') }}">Produit</a>
+                </div>
+              </article>
+
+              <article class="panel">
+                <div class="postCard__head">
+                  <div class="postCard__author">
+                    <div class="avatarMd" data-avatar="https://picsum.photos/seed/pulse_feed_3/200/200"></div>
+                    <div>
+                      <div class="name">Pulse Org</div>
+                      <div class="sub">Il y a 2 h � Organisateur</div>
+                    </div>
+                  </div>
+                  <span class="badge badge--warning">Info</span>
+                </div>
+                <div class="postCard__body">Check-in des equipes ouvert demain a 09:00 pour le Pulse Invitational.</div>
+                <div class="postCard__actions">
+                  <a class="btn btn--ghost" href="{{ path('front_tournaments') }}">Voir tournois</a>
+                </div>
+              </article>
+            </section>
           </div>
-        </div>
-        <div class="list">
-          <div class="listItem"><span><b>posts</b></span><span class="listItem__meta">post_id, author_user_id, visibility, created_at</span></div><div class="listItem"><span><b>post_likes</b></span><span class="listItem__meta">post_id, user_id</span></div><div class="listItem"><span><b>comments</b></span><span class="listItem__meta">comment_id, post_id, author_user_id</span></div><div class="listItem"><span><b>friendships</b></span><span class="listItem__meta">user_id1, user_id2</span></div><div class="listItem"><span><b>team_members</b></span><span class="listItem__meta">team_id, user_id</span></div>
+
+          <aside class="socialStack">
+            <section class="panel">
+              <h3 class="panel__title">TENDANCES</h3>
+              <div class="socialQuickList">
+                <a class="listItem" href="{{ path('front_tournaments') }}"><span>#PulseInvitational</span><span class="listItem__meta">120 posts</span></a>
+                <a class="listItem" href="{{ path('front_games') }}"><span>#Valorant</span><span class="listItem__meta">88 posts</span></a>
+                <a class="listItem" href="{{ path('front_teams') }}"><span>#NorthHydra</span><span class="listItem__meta">57 posts</span></a>
+              </div>
+            </section>
+
+            <section class="panel">
+              <h3 class="panel__title">ANNONCES A SUIVRE</h3>
+              <div class="list">
+                <a class="listItem" href="{{ path('front_tournament_detail') }}"><span>Tournoi CS2 - inscriptions</span><span class="badge">OPEN</span></a>
+                <a class="listItem" href="{{ path('front_team_detail') }}"><span>Aurora Squad recrute</span><span class="listItem__meta">3 postes</span></a>
+                <a class="listItem" href="{{ path('front_notifications') }}"><span>Activer alertes personnalisees</span><span class="listItem__meta">Configurer</span></a>
+              </div>
+            </section>
+          </aside>
         </div>
       </div>
-
-      
-        </div>
-      </div>
-
 
       {% include 'front/partials/_footer.html.twig' %}
-
     </section>
   </main>
 
   {% include 'front/partials/_auth_modal.html.twig' %}
-
 {% endblock %}
-
-

@@ -3,68 +3,55 @@
 {% block title %}PULSE - Modifier profil{% endblock %}
 
 {% block body %}
-
-
   {% include 'front/partials/_hero_mini.html.twig' with {
-  hero_kicker: 'JOUEUR',
-  hero_title: 'Modifier profil',
-  hero_sub: 'Mise à jour des informations.',
-  breadcrumb_current: 'Modifier profil'
-} %}
-
+    hero_kicker: 'JOUEUR',
+    hero_title: 'Modifier profil',
+    hero_sub: 'Mettez a jour vos informations personnelles.',
+    breadcrumb_current: 'Modifier profil'
+  } %}
 
   <main class="page">
     <section class="belowHero">
-
       <div class="layout">
-        
-  <aside class="sideNav">
-    <div class="sideNav__title">ESPACE JOUEUR</div>
-    <a class="" href="{{ path('front_dashboard') }}">Dashboard</a><a class="is-active" href="{{ path('front_profile') }}">Mon profil</a><a class="" href="{{ path('front_players') }}">Recherche joueurs</a><a class="" href="{{ path('front_friends') }}">Amis</a><a class="" href="{{ path('front_messages') }}">Messages</a><a class="" href="{{ path('front_feed') }}">Fil d’actualité</a><a class="" href="{{ path('front_my_teams') }}">Mes équipes</a><a class="" href="{{ path('front_my_requests') }}">Mes demandes</a><a class="" href="{{ path('front_orders') }}">Mes commandes</a><a class="" href="{{ path('front_notifications') }}">Notifications</a>
-  </aside>
+        {% include 'front/partials/_player_side_nav.html.twig' with { active: 'profile_edit' } %}
 
-        <div>
-          
-        <form class="panel">
-          <div class="formGrid">
-            <label class="field"><span class="field__label">Photo</span><input class="input" type="file" /></label>
-            <label class="field"><span class="field__label">Display name</span><input class="input" type="text" value="Zed" /></label>
-            <label class="field"><span class="field__label">Bio</span><textarea class="textarea">FPS player</textarea></label>
-            <label class="field"><span class="field__label">Pays</span><input class="input" type="text" value="TN" /></label>
-            <label class="field"><span class="field__label">Téléphone</span><input class="input" type="tel" /></label>
-            <label class="field"><span class="field__label">Date de naissance</span><input class="input" type="date" /></label>
-            <label class="field"><span class="field__label">Genre</span><select class="input"><option>—</option><option>Homme</option><option>Femme</option></select></label>
-            <label class="field"><span class="field__label">Désactiver compte</span><input type="checkbox" /></label>
+        <div class="socialShell">
+          <div class="socialStack">
+            <form class="panel">
+              <h3 class="panel__title">INFORMATIONS PROFIL</h3>
+              <div class="formGrid">
+                <label class="field"><span class="field__label">Photo profil</span><input class="input" type="file" /></label>
+                <label class="field"><span class="field__label">Display name</span><input class="input" type="text" value="Zed" /></label>
+                <label class="field"><span class="field__label">Bio</span><textarea class="textarea">FPS player</textarea></label>
+                <label class="field"><span class="field__label">Pays</span><input class="input" type="text" value="TN" /></label>
+                <label class="field"><span class="field__label">Telephone</span><input class="input" type="tel" /></label>
+                <label class="field"><span class="field__label">Date de naissance</span><input class="input" type="date" /></label>
+                <label class="field"><span class="field__label">Genre</span><select class="input"><option>UNKNOWN</option><option>MALE</option><option>FEMALE</option><option>OTHER</option></select></label>
+                <label class="field"><span class="field__label">Compte actif</span><select class="input"><option>Oui</option><option>Non</option></select></label>
+              </div>
+              <div class="formActions" style="margin-top:12px;">
+                <button class="btn btn--primary" type="submit">Sauvegarder</button>
+                <a class="btn btn--ghost" href="{{ path('front_profile') }}">Annuler</a>
+              </div>
+            </form>
           </div>
-          <div class="formActions" style="margin-top:12px;">
-            <button class="btn btn--primary" type="submit">Sauvegarder</button>
-          </div>
-        </form>
-        
-      <div class="panel">
-        <div class="panel__head">
-          <div>
-            <h3 class="panel__title">TABLES UTILISÉES</h3>
-            <div class="panel__desc">Schéma réel + colonnes clés.</div>
-          </div>
-        </div>
-        <div class="list">
-          <div class="listItem"><span><b>users</b></span><span class="listItem__meta">display_name, bio, country, phone, birth_date, gender, profile_image_id</span></div><div class="listItem"><span><b>images</b></span><span class="listItem__meta">image_id, file_url</span></div>
-        </div>
-      </div>
 
-      
+          <aside class="socialStack">
+            <section class="panel">
+              <h3 class="panel__title">CONSEILS</h3>
+              <div class="list">
+                <div class="listItem"><span>Ajoutez une bio claire</span><span class="listItem__meta">+ visibilite</span></div>
+                <div class="listItem"><span>Photo recente</span><span class="listItem__meta">+ confiance</span></div>
+                <div class="listItem"><span>Renseignez votre pays</span><span class="listItem__meta">+ matching</span></div>
+              </div>
+            </section>
+          </aside>
         </div>
       </div>
-
 
       {% include 'front/partials/_footer.html.twig' %}
-
     </section>
   </main>
 
   {% include 'front/partials/_auth_modal.html.twig' %}
-
 {% endblock %}
-
-

@@ -1,84 +1,90 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}PULSE - Mes équipes{% endblock %}
+{% block title %}PULSE - Mes equipes{% endblock %}
 
 {% block body %}
-
-
   {% include 'front/partials/_hero_mini.html.twig' with {
-  hero_kicker: 'JOUEUR',
-  hero_title: 'Mes équipes',
-  hero_sub: 'Appartenances + invitations.',
-  breadcrumb_current: 'Mes équipes'
-} %}
-
+    hero_kicker: 'JOUEUR',
+    hero_title: 'Mes equipes',
+    hero_sub: 'Vue sociale des equipes rejointes et des invitations.',
+    breadcrumb_current: 'Mes equipes'
+  } %}
 
   <main class="page">
     <section class="belowHero">
-
       <div class="layout">
-        
-  <aside class="sideNav">
-    <div class="sideNav__title">ESPACE JOUEUR</div>
-    <a class="" href="{{ path('front_dashboard') }}">Dashboard</a><a class="" href="{{ path('front_profile') }}">Mon profil</a><a class="" href="{{ path('front_players') }}">Recherche joueurs</a><a class="" href="{{ path('front_friends') }}">Amis</a><a class="" href="{{ path('front_messages') }}">Messages</a><a class="" href="{{ path('front_feed') }}">Fil d’actualité</a><a class="is-active" href="{{ path('front_my_teams') }}">Mes équipes</a><a class="" href="{{ path('front_my_requests') }}">Mes demandes</a><a class="" href="{{ path('front_orders') }}">Mes commandes</a><a class="" href="{{ path('front_notifications') }}">Notifications</a>
-  </aside>
+        {% include 'front/partials/_player_side_nav.html.twig' with { active: 'my_teams' } %}
 
-        <div>
-          
-        <div class="panel">
-          <div class="tabs" data-tabs="myteams-tabs">
-            <button class="tab is-active" data-tab="active">Équipes actives</button>
-            <button class="tab" data-tab="invites">Invitations</button>
+        <div class="socialShell">
+          <div class="socialStack">
+            <section class="panel">
+              <div class="panel__head">
+                <h3 class="panel__title">EQUIPES ACTIVES</h3>
+                <a class="btn btn--ghost" href="{{ path('front_teams_explore') }}">Explorer</a>
+              </div>
+
+              <article class="panel">
+                <div class="postCard__head">
+                  <div class="postCard__author">
+                    <div class="avatarMd" data-avatar="https://picsum.photos/seed/pulse_team_a/200/200"></div>
+                    <div>
+                      <div class="name">Nebula Five</div>
+                      <div class="sub">Role: Membre � Region MENA</div>
+                    </div>
+                  </div>
+                  <span class="badge badge--success">ACTIVE</span>
+                </div>
+                <div class="postCard__actions">
+                  <a class="btn btn--ghost" href="{{ path('front_team_detail') }}">Voir equipe</a>
+                  <button class="btn btn--ghost" type="button">Quitter</button>
+                </div>
+              </article>
+
+              <article class="panel">
+                <div class="postCard__head">
+                  <div class="postCard__author">
+                    <div class="avatarMd" data-avatar="https://picsum.photos/seed/pulse_team_b/200/200"></div>
+                    <div>
+                      <div class="name">Aurora Squad</div>
+                      <div class="sub">Role: Membre � Region NA</div>
+                    </div>
+                  </div>
+                  <span class="badge badge--success">ACTIVE</span>
+                </div>
+                <div class="postCard__actions">
+                  <a class="btn btn--ghost" href="{{ path('front_team_detail') }}">Voir equipe</a>
+                  <button class="btn btn--ghost" type="button">Quitter</button>
+                </div>
+              </article>
+            </section>
           </div>
-          <div class="tabPanels" data-panels="myteams-tabs">
-            <section class="tabPanel is-active" data-panel="active">
-              <div class="tableWrap">
-                <table class="table">
-                  <thead><tr><th>Équipe</th><th>Rôle</th><th>Action</th></tr></thead>
-                  <tbody>
-                    <tr><td>Nebula Five</td><td>Membre</td><td><button class="btn btn--ghost">Quitter</button></td></tr>
-                    <tr><td>Aurora Squad</td><td>Membre</td><td><button class="btn btn--ghost">Quitter</button></td></tr>
-                  </tbody>
-                </table>
+
+          <aside class="socialStack">
+            <section class="panel">
+              <h3 class="panel__title">INVITATIONS</h3>
+              <div class="socialQuickList">
+                <article class="listItem"><span>North Hydra</span><span class="badge">PENDING</span></article>
+              </div>
+              <div class="postCard__actions" style="margin-top:10px;">
+                <button class="btn btn--primary" type="button">Accepter</button>
+                <button class="btn btn--ghost" type="button">Refuser</button>
               </div>
             </section>
-            <section class="tabPanel" data-panel="invites">
-              <div class="tableWrap">
-                <table class="table">
-                  <thead><tr><th>Équipe</th><th>Statut</th><th>Actions</th></tr></thead>
-                  <tbody>
-                    <tr><td>North Hydra</td><td><span class="badge">PENDING</span></td><td><button class="btn btn--primary">Accepter</button></td></tr>
-                  </tbody>
-                </table>
+
+            <section class="panel">
+              <h3 class="panel__title">RACCOURCIS</h3>
+              <div class="socialQuickList">
+                <a class="listItem" href="{{ path('front_my_requests') }}"><span>Mes demandes</span><span class="listItem__meta">Suivi</span></a>
+                <a class="listItem" href="{{ path('front_tournaments') }}"><span>Tournois ouverts</span><span class="listItem__meta">7</span></a>
               </div>
             </section>
-          </div>
-        </div>
-        
-      <div class="panel">
-        <div class="panel__head">
-          <div>
-            <h3 class="panel__title">TABLES UTILISÉES</h3>
-            <div class="panel__desc">Schéma réel + colonnes clés.</div>
-          </div>
-        </div>
-        <div class="list">
-          <div class="listItem"><span><b>team_members</b></span><span class="listItem__meta">team_id, user_id, is_active, left_at</span></div><div class="listItem"><span><b>team_invites</b></span><span class="listItem__meta">team_id, invited_user_id, status</span></div>
+          </aside>
         </div>
       </div>
-
-      
-        </div>
-      </div>
-
 
       {% include 'front/partials/_footer.html.twig' %}
-
     </section>
   </main>
 
   {% include 'front/partials/_auth_modal.html.twig' %}
-
 {% endblock %}
-
-

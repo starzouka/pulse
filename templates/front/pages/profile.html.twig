@@ -1,158 +1,242 @@
-{% extends 'base.html.twig' %}
+﻿{% extends 'base.html.twig' %}
 
-{% block title %}PULSE - Mon profil{% endblock %}
+{% set profileId = profile_user.userId ?? 0 %}
+{% set viewerId = viewer_user ? viewer_user.userId : 0 %}
+{% set avatarPath = profile_user.profileImageId ? profile_user.profileImageId.fileUrl : '' %}
+{% set avatarUrl = avatarPath ? (avatarPath starts with 'http' ? avatarPath : asset(avatarPath)) : 'https://picsum.photos/seed/pulse_profile_' ~ profileId ~ '/200/200' %}
+{% set coverUrl = 'https://picsum.photos/seed/pulse_cover_' ~ profileId ~ '/1200/420' %}
+
+{% block title %}
+  PULSE - {{ is_own_profile ? 'Mon profil' : ('Profil de ' ~ (profile_user.displayName ?? profile_user.username)) }}
+{% endblock %}
 
 {% block body %}
-
-
   {% include 'front/partials/_hero_mini.html.twig' with {
-  hero_kicker: 'JOUEUR',
-  hero_title: 'Mon profil',
-  hero_sub: 'Infos + posts + stats.',
-  breadcrumb_current: 'Mon profil'
-} %}
-
+    hero_kicker: 'JOUEUR',
+    hero_title: is_own_profile ? 'Mon profil' : ('Profil de ' ~ (profile_user.displayName ?? profile_user.username)),
+    hero_sub: 'Publications, details, amis et equipes.',
+    breadcrumb_current: is_own_profile ? 'Mon profil' : 'Profil joueur'
+  } %}
 
   <main class="page">
     <section class="belowHero">
-
       <div class="layout">
-        
-  <aside class="sideNav">
-    <div class="sideNav__title">ESPACE JOUEUR</div>
-    <a class="" href="{{ path('front_dashboard') }}">Dashboard</a><a class="is-active" href="{{ path('front_profile') }}">Mon profil</a><a class="" href="{{ path('front_players') }}">Recherche joueurs</a><a class="" href="{{ path('front_friends') }}">Amis</a><a class="" href="{{ path('front_messages') }}">Messages</a><a class="" href="{{ path('front_feed') }}">Fil d’actualité</a><a class="" href="{{ path('front_my_teams') }}">Mes équipes</a><a class="" href="{{ path('front_my_requests') }}">Mes demandes</a><a class="" href="{{ path('front_orders') }}">Mes commandes</a><a class="" href="{{ path('front_notifications') }}">Notifications</a>
-  </aside>
+        {% include 'front/partials/_player_side_nav.html.twig' with { active: is_own_profile ? 'profile' : 'player_profile' } %}
 
-        <div>
-          
-        <div class="panel">
-          <div style="display:flex; gap:14px; align-items:center;">
-            <div class="avatarLg" data-avatar="https://picsum.photos/seed/pulse_a1/200/200"></div>
-            <div>
-              <h3 style="margin:0;">Zed (@ZED_99)</h3>
-              <div class="muted">Bio: FPS player • Pays: TN</div>
-              <div style="margin-top:8px;">
-                <a class="btn btn--primary" href="{{ path('front_profile_edit') }}">Modifier profil</a>
-                <a class="btn btn--ghost" href="{{ path('front_password_change') }}">Changer mot de passe</a>
+        <div class="socialStack">
+          {% for label, messages in app.flashes %}
+            {% for message in messages %}
+              <div class="listItem">
+                <span>{{ message }}</span>
+                <span class="badge {{ label == 'error' ? 'badge--danger' : (label == 'success' ? 'badge--success' : 'badge--info') }}">{{ label|upper }}</span>
+              </div>
+            {% endfor %}
+          {% endfor %}
+
+          <section class="panel">
+            <div class="coverBlock" data-bg="{{ coverUrl }}"></div>
+            <div class="profileHeader" style="margin-top: -34px;">
+              <div class="avatarLg" data-avatar="{{ avatarUrl }}"></div>
+              <div>
+                <h3 style="margin:0;">{{ profile_user.displayName ?? profile_user.username }} (@{{ profile_user.username }})</h3>
+                <div class="muted">{{ profile_user.role }}{% if profile_user.country %} · {{ profile_user.country }}{% endif %}</div>
+                <div class="profileHeader__actions">
+                  {% if is_own_profile %}
+                    <a class="btn btn--primary" href="{{ path('front_profile_edit') }}">Modifier profil</a>
+                    <a class="btn btn--ghost" href="{{ path('front_password_change') }}">Changer mot de passe</a>
+                  {% else %}
+                    {% if viewer_user %}
+                      {% if friend_status == 'friends' %}
+                        <button class="btn btn--soft" type="button" disabled>Vous etes amis</button>
+                      {% elseif friend_status == 'request_sent' %}
+                        <button class="btn btn--ghost" type="button" disabled>Demande envoyee</button>
+                      {% elseif friend_status == 'request_received' %}
+                        <a class="btn btn--ghost" href="{{ path('front_friends') }}">Voir demande recue</a>
+                      {% else %}
+                        <form method="post" action="{{ path('front_profile_add_friend', {id: profileId}) }}">
+                          <input type="hidden" name="_token" value="{{ csrf_token('profile_add_friend_' ~ profileId) }}">
+                          <button class="btn btn--primary" type="submit">Ajouter ami</button>
+                        </form>
+                      {% endif %}
+                      <a class="btn btn--ghost" href="{{ path('front_messages', {'with': profileId}) }}">Message</a>
+                    {% else %}
+                      <a class="btn btn--primary" href="{{ path('front_login', {'_target_path': app.request.uri}) }}">Ajouter ami</a>
+                      <a class="btn btn--ghost" href="{{ path('front_login', {'_target_path': app.request.uri}) }}">Message</a>
+                    {% endif %}
+                  {% endif %}
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-        <div class="statsRow" style="margin-top:12px;">
-          <div class="statCard"><div class="statCard__value">8</div><div class="statCard__label">Amis</div></div>
-          <div class="statCard"><div class="statCard__value">3</div><div class="statCard__label">Équipes</div></div>
-          <div class="statCard"><div class="statCard__value">12</div><div class="statCard__label">Posts</div></div>
-        </div>
-        <div class="panel" style="margin-top:12px;">
-          <h3 class="panel__title">MES ÉQUIPES</h3>
-          <div class="cardsGrid">
 
-    <article class="card card--team">
-      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_team_1/1200/800">
-        <div class="card__chips">
-          <span class="chip chip--region">MENA</span>
-          <span class="chip">Membres: 12</span>
-        </div>
-      </div>
-      <div class="card__body">
-        <h4 class="card__title">Nebula Five</h4>
-        <p class="card__desc">Équipe e-sport • Tournois • Boutique</p>
-        <div class="avatarRow">
-          <div class="avatar" data-avatar="https://picsum.photos/seed/pulse_logo_1/200/200" aria-hidden="true"></div>
-          <div class="avatarText">
-            <div class="name">Nebula Five</div>
-            <div class="sub">MENA • 12 membres</div>
-          </div>
-        </div>
-        <div class="card__actions">
-          <a class="btn btn--ghost" href="{{ path('front_team_detail') }}">Détail équipe</a>
-        </div>
-      </div>
-    </article>
-
-
-    <article class="card card--team">
-      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_team_2/1200/800">
-        <div class="card__chips">
-          <span class="chip chip--region">EU</span>
-          <span class="chip">Membres: 9</span>
-        </div>
-      </div>
-      <div class="card__body">
-        <h4 class="card__title">North Hydra</h4>
-        <p class="card__desc">Équipe e-sport • Tournois • Boutique</p>
-        <div class="avatarRow">
-          <div class="avatar" data-avatar="https://picsum.photos/seed/pulse_logo_2/200/200" aria-hidden="true"></div>
-          <div class="avatarText">
-            <div class="name">North Hydra</div>
-            <div class="sub">EU • 9 membres</div>
-          </div>
-        </div>
-        <div class="card__actions">
-          <a class="btn btn--ghost" href="{{ path('front_team_detail') }}">Détail équipe</a>
-        </div>
-      </div>
-    </article>
-
-</div>
-        </div>
-        <div class="panel" style="margin-top:12px;">
-          <h3 class="panel__title">MES POSTS</h3>
-          
-      <div class="list">
-        
-          <div class="listItem">
-            <div>
-              <b>@ZED_99</b>
-              <div class="listItem__meta">Victoire 3-1 au Pulse Invitational !</div>
+            <div class="statsRow">
+              <div class="statCard">
+                <div class="statCard__value">{{ stats.posts }}</div>
+                <div class="statCard__label">Publications</div>
+              </div>
+              <div class="statCard">
+                <div class="statCard__value">{{ stats.friends }}</div>
+                <div class="statCard__label">Amis</div>
+              </div>
+              <div class="statCard">
+                <div class="statCard__value">{{ stats.teams }}</div>
+                <div class="statCard__label">Equipes</div>
+              </div>
             </div>
-            <div class="listItem__meta">42 likes • 9 commentaires</div>
-          </div>
-          <div class="listItem">
-            <div>
-              <b>@NovaAim</b>
-              <div class="listItem__meta">Nouveau produit disponible dans la boutique Aurora Squad.</div>
+          </section>
+
+          <section class="panel">
+            <div class="tabs profileTabs" data-tabs="profile-tabs">
+              <button class="tab {{ active_tab == 'posts' ? 'is-active' : '' }}" data-tab="posts">Mes publications</button>
+              <button class="tab {{ active_tab == 'about' ? 'is-active' : '' }}" data-tab="about">A propos</button>
+              <button class="tab {{ active_tab == 'friends' ? 'is-active' : '' }}" data-tab="friends">Mes amis</button>
+              <button class="tab {{ active_tab == 'teams' ? 'is-active' : '' }}" data-tab="teams">Mes equipes</button>
             </div>
-            <div class="listItem__meta">15 likes • 2 commentaires</div>
-          </div>
-          <div class="listItem">
-            <div>
-              <b>@FrostByte</b>
-              <div class="listItem__meta">Roster update + essais ouverts cette semaine.</div>
+
+            <div class="tabPanels" data-panels="profile-tabs">
+              <section class="tabPanel {{ active_tab == 'posts' ? 'is-active' : '' }}" data-panel="posts">
+                {% if is_own_profile and viewer_user %}
+                  <form class="panel" method="post" action="{{ path('front_profile_post_create') }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('profile_post_create') }}">
+                    <div class="field">
+                      <span class="field__label">Nouveau post</span>
+                      <textarea class="textarea" name="content_text" placeholder="Partagez une mise a jour..."></textarea>
+                    </div>
+                    <div class="postComposer__footer">
+                      <label class="field" style="min-width:220px; margin:0;">
+                        <span class="field__label">Visibilite</span>
+                        <select class="input" name="visibility">
+                          <option value="PUBLIC">Public</option>
+                          <option value="FRIENDS">Amis</option>
+                          <option value="TEAM_ONLY">Equipe</option>
+                        </select>
+                      </label>
+                      <button class="btn btn--primary" type="submit">Publier</button>
+                    </div>
+                  </form>
+                {% endif %}
+
+                {% if posts is empty %}
+                  <div class="emptyState">Aucune publication pour le moment.</div>
+                {% else %}
+                  {% for postData in posts %}
+                    {% set post = postData.post %}
+                    {% set postId = post.postId ?? 0 %}
+                    <article class="panel profilePost">
+                      <div class="postCard__head">
+                        <div class="postCard__author">
+                          <div class="avatarMd" data-avatar="{{ avatarUrl }}"></div>
+                          <div>
+                            <div class="name">{{ profile_user.displayName ?? profile_user.username }}</div>
+                            <div class="sub">{{ post.createdAt ? post.createdAt|date('d/m/Y H:i') : '-' }} · {{ post.visibility }}</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="postCard__body">{{ post.contentText }}</div>
+
+                      <div class="postReactionsSummary">
+                        <span>{{ postData.likes_count }} J'aime</span>
+                        <span>{{ postData.comments_count }} commentaires</span>
+                      </div>
+
+                      <div class="postReactionsBar">
+                        {% if viewer_user %}
+                          <form method="post" action="{{ path('front_profile_post_like', {id: postId}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('profile_post_like_' ~ postId) }}">
+                            <input type="hidden" name="profile_id" value="{{ profileId }}">
+                            <button class="reactionBtn {{ postData.is_liked_by_viewer ? 'is-active' : '' }}" type="submit">J'aime</button>
+                          </form>
+
+                          <form method="post" action="{{ path('front_profile_post_comment', {id: postId}) }}" class="commentInlineForm">
+                            <input type="hidden" name="_token" value="{{ csrf_token('profile_post_comment_' ~ postId) }}">
+                            <input type="hidden" name="profile_id" value="{{ profileId }}">
+                            <input class="input" type="text" name="content_text" placeholder="Ecrire un commentaire..." required>
+                            <button class="reactionBtn" type="submit">Commenter</button>
+                          </form>
+
+                          <form method="post" action="{{ path('front_profile_post_report', {id: postId}) }}" class="reportInlineForm">
+                            <input type="hidden" name="_token" value="{{ csrf_token('profile_post_report_' ~ postId) }}">
+                            <input type="hidden" name="profile_id" value="{{ profileId }}">
+                            <input class="input" type="text" name="reason" placeholder="Raison du signalement" maxlength="255">
+                            <button class="reactionBtn reactionBtn--danger" type="submit">Report</button>
+                          </form>
+                        {% else %}
+                          <a class="btn btn--ghost" href="{{ path('front_login', {'_target_path': app.request.uri}) }}">Connectez-vous pour interagir</a>
+                        {% endif %}
+                      </div>
+
+                      {% if postData.comments is not empty %}
+                        <div class="postCommentsList">
+                          {% for comment in postData.comments %}
+                            {% set author = comment.authorUserId %}
+                            <div class="listItem">
+                              <span>
+                                <b>{{ author ? (author.displayName ?? author.username) : 'Utilisateur' }}</b>
+                                {{ comment.contentText }}
+                              </span>
+                              <span class="listItem__meta">{{ comment.createdAt ? comment.createdAt|date('d/m H:i') : '' }}</span>
+                            </div>
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                    </article>
+                  {% endfor %}
+                {% endif %}
+              </section>
+
+              <section class="tabPanel {{ active_tab == 'about' ? 'is-active' : '' }}" data-panel="about">
+                <div class="list">
+                  <div class="listItem"><span>Nom affichage</span><span class="listItem__meta">{{ profile_user.displayName ?? '-' }}</span></div>
+                  <div class="listItem"><span>Username</span><span class="listItem__meta">{{ profile_user.username ?? '-' }}</span></div>
+                  <div class="listItem"><span>Role</span><span class="listItem__meta">{{ profile_user.role ?? '-' }}</span></div>
+                  <div class="listItem"><span>Email</span><span class="listItem__meta">{{ is_own_profile ? (profile_user.email ?? '-') : 'Prive' }}</span></div>
+                  <div class="listItem"><span>Pays</span><span class="listItem__meta">{{ profile_user.country ?? '-' }}</span></div>
+                  <div class="listItem"><span>Bio</span><span class="listItem__meta">{{ profile_user.bio ?? 'Aucune bio.' }}</span></div>
+                </div>
+              </section>
+
+              <section class="tabPanel {{ active_tab == 'friends' ? 'is-active' : '' }}" data-panel="friends">
+                {% if friends is empty %}
+                  <div class="emptyState">Aucun ami affiche.</div>
+                {% else %}
+                  <div class="socialQuickList">
+                    {% for friend in friends %}
+                      {% if friend.userId is not null %}
+                        <a class="listItem" href="{{ friend.userId == viewerId ? path('front_profile') : path('front_player_profile', {id: friend.userId}) }}">
+                          <span>{{ friend.displayName ?? friend.username }} (@{{ friend.username }})</span>
+                          <span class="listItem__meta">{{ friend.role }}</span>
+                        </a>
+                      {% endif %}
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </section>
+
+              <section class="tabPanel {{ active_tab == 'teams' ? 'is-active' : '' }}" data-panel="teams">
+                {% if teams is empty %}
+                  <div class="emptyState">Aucune equipe active.</div>
+                {% else %}
+                  <div class="socialQuickList">
+                    {% for team in teams %}
+                      <a class="listItem" href="{{ path('front_team_detail') }}">
+                        <span>{{ team.name }}</span>
+                        <span class="listItem__meta">
+                          {{ team.region ?? 'Region -' }} ·
+                          {{ team.captainUserId and team.captainUserId.userId == profileId ? 'Capitaine' : 'Membre' }}
+                        </span>
+                      </a>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </section>
             </div>
-            <div class="listItem__meta">28 likes • 7 commentaires</div>
-          </div>
-      </div>
-      <div class="panel__actions" style="margin-top:10px;">
-        <a class="btn btn--ghost" href="{{ path('front_post_detail') }}">Like / Commenter → Connexion</a>
-      </div>
-
-        </div>
-        
-      <div class="panel">
-        <div class="panel__head">
-          <div>
-            <h3 class="panel__title">TABLES UTILISÉES</h3>
-            <div class="panel__desc">Schéma réel + colonnes clés.</div>
-          </div>
-        </div>
-        <div class="list">
-          <div class="listItem"><span><b>users</b></span><span class="listItem__meta">user_id, display_name, bio, country</span></div><div class="listItem"><span><b>team_members</b></span><span class="listItem__meta">team_id, user_id, is_active</span></div><div class="listItem"><span><b>posts</b></span><span class="listItem__meta">post_id, author_user_id, created_at</span></div><div class="listItem"><span><b>post_images</b></span><span class="listItem__meta">post_id, image_id</span></div>
+          </section>
         </div>
       </div>
-
-      
-        </div>
-      </div>
-
 
       {% include 'front/partials/_footer.html.twig' %}
-
     </section>
   </main>
 
   {% include 'front/partials/_auth_modal.html.twig' %}
-
 {% endblock %}
-
-

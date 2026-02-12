@@ -3,62 +3,57 @@
 {% block title %}PULSE - Messagerie{% endblock %}
 
 {% block body %}
-
-
   {% include 'front/partials/_hero_mini.html.twig' with {
-  hero_kicker: 'JOUEUR',
-  hero_title: 'Messagerie',
-  hero_sub: 'Conversations privées.',
-  breadcrumb_current: 'Messagerie'
-} %}
-
+    hero_kicker: 'JOUEUR',
+    hero_title: 'Messagerie',
+    hero_sub: 'Vue inbox style social pour toutes vos conversations.',
+    breadcrumb_current: 'Messagerie'
+  } %}
 
   <main class="page">
     <section class="belowHero">
-
       <div class="layout">
-        
-  <aside class="sideNav">
-    <div class="sideNav__title">ESPACE JOUEUR</div>
-    <a class="" href="{{ path('front_dashboard') }}">Dashboard</a><a class="" href="{{ path('front_profile') }}">Mon profil</a><a class="" href="{{ path('front_players') }}">Recherche joueurs</a><a class="" href="{{ path('front_friends') }}">Amis</a><a class="is-active" href="{{ path('front_messages') }}">Messages</a><a class="" href="{{ path('front_feed') }}">Fil d’actualité</a><a class="" href="{{ path('front_my_teams') }}">Mes équipes</a><a class="" href="{{ path('front_my_requests') }}">Mes demandes</a><a class="" href="{{ path('front_orders') }}">Mes commandes</a><a class="" href="{{ path('front_notifications') }}">Notifications</a>
-  </aside>
+        {% include 'front/partials/_player_side_nav.html.twig' with { active: 'messages' } %}
 
-        <div>
-          
-        <div class="panel">
-          <div class="filtersRow">
-            <input class="input" type="search" placeholder="Rechercher conversation..." />
+        <div class="socialShell--chat">
+          <aside class="socialStack">
+            <section class="panel">
+              <div class="filtersRow">
+                <input class="input" type="search" placeholder="Rechercher une conversation..." />
+              </div>
+              <div class="socialQuickList" style="margin-top:10px;">
+                <a class="listItem" href="{{ path('front_conversation') }}"><span>FrostByte</span><span class="badge">2 non lus</span></a>
+                <a class="listItem" href="{{ path('front_conversation') }}"><span>NovaAim</span><span class="listItem__meta">Hier</span></a>
+                <a class="listItem" href="{{ path('front_conversation') }}"><span>North Hydra</span><span class="listItem__meta">Lun</span></a>
+              </div>
+            </section>
+          </aside>
+
+          <div class="socialStack">
+            <section class="panel">
+              <div class="panel__head">
+                <h3 class="panel__title">APERCU CONVERSATION</h3>
+                <a class="btn btn--ghost" href="{{ path('front_conversation') }}">Ouvrir</a>
+              </div>
+
+              <div class="list">
+                <div class="listItem"><span>FrostByte: Ready pour le scrim de ce soir ?</span><span class="listItem__meta">10:05</span></div>
+                <div class="listItem"><span>Moi: Oui, je confirme 20h30.</span><span class="listItem__meta">10:06</span></div>
+                <div class="listItem"><span>FrostByte: Parfait, on finalise la map pool.</span><span class="listItem__meta">10:08</span></div>
+              </div>
+
+              <div class="socialComposer" style="margin-top:10px;">
+                <input class="input" type="text" placeholder="Ecrire un message..." />
+                <button class="btn btn--primary" type="button">Envoyer</button>
+              </div>
+            </section>
           </div>
-          <div class="list" style="margin-top:10px;">
-            <div class="listItem"><span>FrostByte</span><span class="badge">2 non lus</span></div>
-            <div class="listItem"><span>NovaAim</span><span class="listItem__meta">Hier</span></div>
-          </div>
-        </div>
-        
-      <div class="panel">
-        <div class="panel__head">
-          <div>
-            <h3 class="panel__title">TABLES UTILISÉES</h3>
-            <div class="panel__desc">Schéma réel + colonnes clés.</div>
-          </div>
-        </div>
-        <div class="list">
-          <div class="listItem"><span><b>messages</b></span><span class="listItem__meta">message_id, sender_user_id, receiver_user_id, body_text, is_read</span></div><div class="listItem"><span><b>users</b></span><span class="listItem__meta">user_id, display_name</span></div>
         </div>
       </div>
-
-      
-        </div>
-      </div>
-
 
       {% include 'front/partials/_footer.html.twig' %}
-
     </section>
   </main>
 
   {% include 'front/partials/_auth_modal.html.twig' %}
-
 {% endblock %}
-
-
