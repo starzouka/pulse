@@ -235,6 +235,6 @@ class __TwigTemplate_ace82263a1c6bc9d23833ed36bbcf6ba extends Template
       
 {% endblock %}
 
-", "admin/pages/tournaments.html.twig", "C:\\Users\\ilyes\\OneDrive\\Bureau\\PULSE\\PULSE\\templates\\admin\\pages\\tournaments.html.twig");
+", "admin/pages/tournaments.html.twig", "C:\\Users\\Malek\\Desktop\\pi\\pulse\\templates\\admin\\pages\\tournaments.html.twig");
     }
 }

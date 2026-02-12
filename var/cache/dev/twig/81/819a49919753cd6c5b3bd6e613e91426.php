@@ -229,6 +229,6 @@ class __TwigTemplate_432d7a90ff9bba53cdbd01282f208e1b extends Template
     </body>
 </html>
 
-", "base.html.twig", "C:\\Users\\ilyes\\OneDrive\\Bureau\\PULSE\\PULSE\\templates\\base.html.twig");
+", "base.html.twig", "C:\\Users\\Malek\\Desktop\\pi\\pulse\\templates\\base.html.twig");
     }
 }

@@ -297,6 +297,6 @@ class __TwigTemplate_b9c9ee8279e666ede4f6e5c7c522b033 extends Template
 
       
 {% endblock %}
-", "admin/pages/user-detail.html.twig", "C:\\Users\\ilyes\\OneDrive\\Bureau\\PULSE\\PULSE\\templates\\admin\\pages\\user-detail.html.twig");
+", "admin/pages/user-detail.html.twig", "C:\\Users\\Malek\\Desktop\\pi\\pulse\\templates\\admin\\pages\\user-detail.html.twig");
     }
 }

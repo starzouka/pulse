@@ -12,20 +12,49 @@
     </div>
   </div>
   <section class="panel">
+    {{ form_start(form) }}
     <div class="formGrid">
-      <div class="field"><label>team_id*</label><input type="text" placeholder="" /></div>
-<div class="field"><label>name*</label><input type="text" placeholder="" /></div>
-<div class="field"><label>sku</label><input type="text" placeholder="" /></div>
-<div class="field"><label>price*</label><input type="number" placeholder="" /></div>
-<div class="field"><label>stock_qty*</label><input type="number" placeholder="" /></div>
-<div class="field"><label>is_active</label><select><option>true</option><option>false</option></select></div>
-<div class="field"><label>description</label><textarea placeholder=""></textarea></div>
-<div class="field"><label>Images</label><input type="file" placeholder="" /></div>
+      <div class="field">
+        {{ form_label(form.teamId) }}
+        {{ form_widget(form.teamId, {'attr': {'class': 'input-dark'}}) }}
+        {{ form_errors(form.teamId) }}
+      </div>
+      <div class="field">
+        {{ form_label(form.name) }}
+        {{ form_widget(form.name, {'attr': {'class': 'input-dark'}}) }}
+        {{ form_errors(form.name) }}
+      </div>
+      <div class="field">
+        {{ form_label(form.sku) }}
+        {{ form_widget(form.sku, {'attr': {'class': 'input-dark'}}) }}
+        {{ form_errors(form.sku) }}
+      </div>
+      <div class="field">
+        {{ form_label(form.price) }}
+        {{ form_widget(form.price, {'attr': {'class': 'input-dark'}}) }}
+        {{ form_errors(form.price) }}
+      </div>
+      <div class="field">
+        {{ form_label(form.stockQty) }}
+        {{ form_widget(form.stockQty, {'attr': {'class': 'input-dark'}}) }}
+        {{ form_errors(form.stockQty) }}
+      </div>
+      <div class="field">
+        {{ form_label(form.isActive) }}
+        {{ form_widget(form.isActive, {'attr': {'class': 'input-dark'}}) }}
+        {{ form_errors(form.isActive) }}
+      </div>
+      <div class="field">
+        {{ form_label(form.description) }}
+        {{ form_widget(form.description, {'attr': {'class': 'input-dark'}}) }}
+        {{ form_errors(form.description) }}
+      </div>
     </div>
     <div class="formActions" style="margin-top:12px;">
-      <button class="btn btnPrimary">Enregistrer</button>
-      <button class="btn btnGhost">Annuler</button>
+      <button class="btn btnPrimary" type="submit">Enregistrer</button>
+      <a class="btn btnGhost" href="{{ path('admin_products') }}">Annuler</a>
     </div>
+    {{ form_end(form) }}
   </section>
   
   <section class="panel">

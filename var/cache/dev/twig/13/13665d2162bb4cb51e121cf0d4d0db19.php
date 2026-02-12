@@ -162,6 +162,6 @@ class __TwigTemplate_d427fc30dbe4cf967b54c1364e55af59 extends Template
   </div>
 </header>
 
-", "admin/Partials/navbar.html.twig", "C:\\Users\\ilyes\\OneDrive\\Bureau\\PULSE\\PULSE\\templates\\admin\\Partials\\navbar.html.twig");
+", "admin/Partials/navbar.html.twig", "C:\\Users\\Malek\\Desktop\\pi\\pulse\\templates\\admin\\Partials\\navbar.html.twig");
     }
 }

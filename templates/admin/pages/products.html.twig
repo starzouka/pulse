@@ -10,7 +10,7 @@
       <h2>Gestion produits</h2>
       <div class="pageSub">Produits + images + stock.</div>
     </div>
-    <div class="formActions"><a class="btn btnPrimary" href="{{ path('admin_product_form') }}">+ Nouveau produit</a></div>
+    <div class="formActions"><a class="btn btnPrimary" href="{{ path('admin_product_new') }}">+ Nouveau produit</a></div>
   </div>
   
   <div class="filtersBar">
@@ -23,10 +23,31 @@
     
   <div class="dataTableWrap">
     <table class="dataTable">
-      <thead><tr><th>image</th><th>product_id</th><th>name</th><th>team</th><th>price</th><th>stock_qty</th><th>is_active</th><th>Actions</th></tr></thead>
+        <thead><tr><th>image</th><th>product_id</th><th>name</th><th>team</th><th>price</th><th>stock_qty</th><th>is_active</th><th>Actions</th></tr></thead>
       <tbody>
-        <tr><td><span class="avatarSmall">A</span></td><td>1</td><td>—</td><td>Nebula Five</td><td>120 DT</td><td>—</td><td>—</td><td><a class="btn btnTiny" href="{{ path('admin_product_detail') }}">Voir</a></td></tr>
-        <tr><td><span class="avatarSmall">A</span></td><td>1</td><td>—</td><td>Nebula Five</td><td>120 DT</td><td>—</td><td>—</td><td><a class="btn btnTiny" href="{{ path('admin_product_detail') }}">Voir</a></td></tr>
+        {% for product in products %}
+        <tr>
+          <td>
+            <span class="avatarSmall">{{ product.name is defined and product.name|length > 0 ? product.name|slice(0,1)|upper : '?' }}</span>
+          </td>
+          <td>{{ product.productId }}</td>
+          <td>{{ product.name }}</td>
+          <td>{{ product.teamId ? product.teamId.name : '' }}</td>
+          <td>{{ product.price }} DT</td>
+          <td>{{ product.stockQty }}</td>
+          <td>{{ product.isActive ? 'Oui' : 'Non' }}</td>
+          <td>
+            <a class="btn btnTiny" href="{{ path('admin_product_detail', {'id': product.productId}) }}">Voir</a>
+            <a class="btn btnTiny" href="{{ path('admin_product_edit', {'id': product.productId}) }}">Éditer</a>
+            <form method="post" action="{{ path('admin_product_delete', {'id': product.productId}) }}" style="display:inline;" onsubmit="return confirm('Supprimer ce produit ?');">
+              <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ product.productId) }}">
+              <button class="btn btnTiny btnDanger" type="submit">Supprimer</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8">Aucun produit.</td></tr>
+        {% endfor %}
       </tbody>
     </table>
   </div>

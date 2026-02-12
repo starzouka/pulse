@@ -392,6 +392,6 @@ class __TwigTemplate_1baa125e530fa4fc64b17190f83a4231 extends Template
   <script src=\"{{ asset('assets/template_bo/js/app.js') }}\"></script>
 {% endblock %}
 
-", "admin/base_admin.html.twig", "C:\\Users\\ilyes\\OneDrive\\Bureau\\PULSE\\PULSE\\templates\\admin\\base_admin.html.twig");
+", "admin/base_admin.html.twig", "C:\\Users\\Malek\\Desktop\\pi\\pulse\\templates\\admin\\base_admin.html.twig");
     }
 }

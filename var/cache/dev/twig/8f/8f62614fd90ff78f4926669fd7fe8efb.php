@@ -661,6 +661,6 @@ class __TwigTemplate_08119cf45c99084c8c2fbdbe2ec5b890 extends Template
 {% endblock %}
 
 
-", "front/pages/games.html.twig", "C:\\Users\\ilyes\\OneDrive\\Bureau\\PULSE\\PULSE\\templates\\front\\pages\\games.html.twig");
+", "front/pages/games.html.twig", "C:\\Users\\Malek\\Desktop\\pi\\pulse\\templates\\front\\pages\\games.html.twig");
     }
 }

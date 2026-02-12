@@ -18,7 +18,18 @@
 <button class="tab" data-tab="orders">Commandes</button>
   </div>
   <div class="tabPanels" data-panels="product">
-    <div class="tabPanel isActive" data-panel="info"><section class="panel"><div class="list"><div class="listItem"><span>product_id</span><span class="listMeta">1</span></div><div class="listItem"><span>name</span><span class="listMeta">—</span></div><div class="listItem"><span>price</span><span class="listMeta">120 DT</span></div><div class="listItem"><span>stock_qty</span><span class="listMeta">—</span></div></div></section></div>
+    <div class="tabPanel isActive" data-panel="info">
+      <section class="panel">
+        <div class="list">
+          <div class="listItem"><span>product_id</span><span class="listMeta">{{ product.productId }}</span></div>
+          <div class="listItem"><span>name</span><span class="listMeta">{{ product.name }}</span></div>
+          <div class="listItem"><span>price</span><span class="listMeta">{{ product.price }} DT</span></div>
+          <div class="listItem"><span>stock_qty</span><span class="listMeta">{{ product.stockQty }}</span></div>
+          <div class="listItem"><span>is_active</span><span class="listMeta">{{ product.isActive ? 'Oui' : 'Non' }}</span></div>
+          <div class="listItem"><span>description</span><span class="listMeta">{{ product.description }}</span></div>
+        </div>
+      </section>
+    </div>
 <div class="tabPanel" data-panel="orders"><section class="panel">
   <div class="dataTableWrap">
     <table class="dataTable">
