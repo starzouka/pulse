@@ -24,4 +24,39 @@ class PostLikeRepository extends ServiceEntityRepository
             'userId' => $user,
         ]);
     }
+
+    /**
+     * @param list<int> $postIds
+     * @return array<int, int>
+     */
+    public function countByPostIds(array $postIds): array
+    {
+        $filteredPostIds = array_values(array_unique(array_filter(
+            $postIds,
+            static fn (mixed $postId): bool => is_int($postId) && $postId > 0
+        )));
+        if ($filteredPostIds === []) {
+            return [];
+        }
+
+        $rows = $this->createQueryBuilder('postLike')
+            ->select('IDENTITY(postLike.postId) AS postId, COUNT(IDENTITY(postLike.userId)) AS likesCount')
+            ->andWhere('IDENTITY(postLike.postId) IN (:postIds)')
+            ->setParameter('postIds', $filteredPostIds)
+            ->groupBy('postLike.postId')
+            ->getQuery()
+            ->getArrayResult();
+
+        $countsByPostId = [];
+        foreach ($rows as $row) {
+            $postId = (int) ($row['postId'] ?? 0);
+            if ($postId <= 0) {
+                continue;
+            }
+
+            $countsByPostId[$postId] = (int) ($row['likesCount'] ?? 0);
+        }
+
+        return $countsByPostId;
+    }
 }

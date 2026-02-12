@@ -99,4 +99,58 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * @return list<User>
+     */
+    public function searchForAdmin(
+        ?string $query,
+        ?string $role,
+        ?bool $isActive,
+        ?bool $emailVerified,
+        int $limit = 500
+    ): array {
+        $builder = $this->createQueryBuilder('user')
+            ->leftJoin('user.profileImageId', 'profileImage')
+            ->addSelect('profileImage')
+            ->orderBy('user.createdAt', 'DESC')
+            ->setMaxResults($limit);
+
+        $search = trim((string) $query);
+        if ($search !== '') {
+            $builder
+                ->andWhere(
+                    'LOWER(user.username) LIKE :query
+                    OR LOWER(user.email) LIKE :query
+                    OR LOWER(user.displayName) LIKE :query'
+                )
+                ->setParameter('query', '%' . mb_strtolower($search) . '%');
+        }
+
+        $roleValue = strtoupper(trim((string) $role));
+        if (in_array($roleValue, [
+            User::DOMAIN_ROLE_PLAYER,
+            User::DOMAIN_ROLE_CAPTAIN,
+            User::DOMAIN_ROLE_ORGANIZER,
+            User::DOMAIN_ROLE_ADMIN,
+        ], true)) {
+            $builder
+                ->andWhere('user.role = :role')
+                ->setParameter('role', $roleValue);
+        }
+
+        if ($isActive !== null) {
+            $builder
+                ->andWhere('user.isActive = :isActive')
+                ->setParameter('isActive', $isActive);
+        }
+
+        if ($emailVerified !== null) {
+            $builder
+                ->andWhere('user.emailVerified = :emailVerified')
+                ->setParameter('emailVerified', $emailVerified);
+        }
+
+        return $builder->getQuery()->getResult();
+    }
 }

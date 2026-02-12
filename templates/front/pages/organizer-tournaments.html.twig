@@ -26,6 +26,46 @@
           {% endfor %}
 
           <div class="panel">
+            <div class="panel__head">
+              <h3 class="panel__title">MES TOURNOIS</h3>
+              <div class="panel__desc">Total: {{ counter|default(tournaments|length) }} tournoi(s)</div>
+            </div>
+
+            <form method="get" action="{{ path('front_organizer_tournaments') }}">
+              <div class="filtersRow">
+                <input class="input" type="search" name="q" value="{{ filters.q|default('') }}" placeholder="Rechercher un tournoi..." />
+
+                <div class="select">
+                  <select name="status">
+                    <option value="">Statut</option>
+                    {% for statusValue in statusOptions %}
+                      <option value="{{ statusValue }}" {{ filters.status == statusValue ? 'selected' : '' }}>{{ statusValue }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+
+                <div class="select">
+                  <select name="game">
+                    <option value="">Jeu</option>
+                    {% for game in availableGames %}
+                      <option value="{{ game.gameId }}" {{ filters.game is not null and filters.game == game.gameId ? 'selected' : '' }}>{{ game.name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+
+                <div class="select">
+                  <select name="sort">
+                    {% for sortValue in sortOptions %}
+                      <option value="{{ sortValue }}" {{ filters.sort == sortValue ? 'selected' : '' }}>{{ sortValue|upper }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+
+                <button class="btn btn--primary" type="submit">Filtrer</button>
+                <a class="btn btn--ghost" href="{{ path('front_organizer_tournaments') }}">Reset</a>
+              </div>
+            </form>
+
             <div class="tableWrap">
               <table class="table">
                 <thead>
@@ -91,3 +131,4 @@
 
   {% include 'front/partials/_auth_modal.html.twig' %}
 {% endblock %}
+

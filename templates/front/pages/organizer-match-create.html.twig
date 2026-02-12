@@ -28,9 +28,6 @@
           <section class="panel">
             {{ form_start(matchForm, {attr: {novalidate: 'novalidate'}}) }}
               {% include 'shared/_organizer_match_form_fields.html.twig' with {form: matchForm} %}
-              <div class="panelDesc" style="margin-top:8px;">
-                Equipes disponibles pour le tournoi selectionne: {{ availableTeamsCount }}
-              </div>
               <div class="formActions" style="margin-top:12px;">
                 <button class="btn btn--primary" type="submit">Creer match</button>
                 <a class="btn btn--ghost" href="{{ path('front_organizer_matches', selectedTournament ? {tournament: selectedTournament.tournamentId} : {}) }}">Annuler</a>

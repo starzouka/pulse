@@ -17,6 +17,36 @@
           <h1>Catalogue des tournois</h1>
           <p>La recherche et les filtres sont traites au back-end puis affiches depuis la base.</p>
         </div>
+        <div class="formActions">
+          <a class="btn btn--ghost" href="{{ path('front_tournaments_export', {
+            format: 'pdf',
+            q: filters.q|default(''),
+            game: filters.game|default(''),
+            category: filters.category|default(''),
+            status: filters.status|default(''),
+            format_filter: filters.format|default(''),
+            registration_mode: filters.registration_mode|default(''),
+            date_from: filters.date_from|default(''),
+            date_to: filters.date_to|default(''),
+            prize_min: filters.prize_min|default(''),
+            prize_max: filters.prize_max|default(''),
+            sort: filters.sort|default('latest')
+          }) }}">PDF</a>
+          <a class="btn btn--ghost" href="{{ path('front_tournaments_export', {
+            format: 'excel',
+            q: filters.q|default(''),
+            game: filters.game|default(''),
+            category: filters.category|default(''),
+            status: filters.status|default(''),
+            format_filter: filters.format|default(''),
+            registration_mode: filters.registration_mode|default(''),
+            date_from: filters.date_from|default(''),
+            date_to: filters.date_to|default(''),
+            prize_min: filters.prize_min|default(''),
+            prize_max: filters.prize_max|default(''),
+            sort: filters.sort|default('latest')
+          }) }}">Excel</a>
+        </div>
       </div>
 
       <section class="panel">

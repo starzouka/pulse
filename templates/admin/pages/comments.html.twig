@@ -1,51 +1,124 @@
-{% extends 'admin/base_admin.html.twig' %}
+﻿{% extends 'admin/base_admin.html.twig' %}
 
 {% block title %}PULSE - Gestion commentaires{% endblock %}
 
 {% block admin_content %}
-
-        
   <div class="pageHeader">
     <div>
       <h2>Gestion commentaires</h2>
-      <div class="pageSub">comments + moderation.</div>
+      <div class="pageSub">CRUD + filtres DB + exports.</div>
     </div>
-    
+    <div class="formActions">
+      <a class="btn btnGhost" href="{{ path('admin_comments_export', filters|merge({format: 'pdf'})) }}">Exporter PDF</a>
+      <a class="btn btnGhost" href="{{ path('admin_comments_export', filters|merge({format: 'excel'})) }}">Exporter Excel</a>
+    </div>
   </div>
-  
-  <div class="filtersBar">
-    <div class="filterGroup"><label>Recherche</label><input type="text" placeholder="keyword" /></div>
-<div class="filterGroup"><label>Deleted</label><select><option>ALL</option><option>false</option><option>true</option></select></div>
-<div class="filterGroup"><label>Date</label><input type="date" placeholder="" /></div>
-  </div>
-  <section class="panel">
-    <div class="panelHeader"><h3 class="panelTitle">LISTE</h3></div>
-    
-  <div class="dataTableWrap">
-    <table class="dataTable">
-      <thead><tr><th>comment_id</th><th>post_id</th><th>Auteur</th><th>Extrait</th><th>created_at</th><th>is_deleted</th><th>Actions</th></tr></thead>
-      <tbody>
-        <tr><td>1</td><td>1</td><td>—</td><td>—</td><td>2026-02-05</td><td>—</td><td><a class="btn btnTiny" href="{{ path('admin_post_detail') }}">Voir</a></td></tr>
-        <tr><td>1</td><td>1</td><td>—</td><td>—</td><td>2026-02-05</td><td>—</td><td><a class="btn btnTiny" href="{{ path('admin_post_detail') }}">Voir</a></td></tr>
-      </tbody>
-    </table>
-  </div>
-    
-  </section>
-  
+
+  {% for label, messages in app.flashes %}
+    {% for message in messages %}
+      <div class="listItem">
+        <span>{{ message }}</span>
+        <span class="badge {{ label == 'error' ? 'badge--danger' : 'badge--success' }}">{{ label|upper }}</span>
+      </div>
+    {% endfor %}
+  {% endfor %}
+
   <section class="panel">
     <div class="panelHeader">
-      <div>
-        <h3 class="panelTitle">SCHEMA UTILISE</h3>
-        <div class="panelDesc">Tables et colonnes principales.</div>
+      <h3 class="panelTitle">{{ editingComment ? 'MODIFIER COMMENTAIRE #' ~ editingComment.commentId : 'NOUVEAU COMMENTAIRE' }}</h3>
+    </div>
+
+    {{ form_start(commentForm, {attr: {novalidate: 'novalidate'}}) }}
+      {% include 'admin/pages/_comment_form_fields.html.twig' with {form: commentForm} %}
+      <div class="formActions" style="margin-top:12px;">
+        <button class="btn btnPrimary" type="submit">{{ editingComment ? 'Mettre a jour' : 'Creer commentaire' }}</button>
+        {% if editingComment %}
+          <a class="btn btnGhost" href="{{ path('admin_comments') }}">Annuler edition</a>
+        {% endif %}
       </div>
-    </div>
-    <div class="list">
-      <div class="listItem"><span><b>comments</b></span><span class="listMeta">comment_id, post_id, Auteur, Extrait, created_at, is_deleted</span></div>
-    </div>
+    {{ form_end(commentForm) }}
   </section>
 
+  <form class="filtersBar" method="get" action="{{ path('admin_comments') }}">
+    <div class="filterGroup">
+      <label>Recherche</label>
+      <input type="search" name="q" value="{{ filters.q }}" placeholder="contenu, auteur" />
+    </div>
 
-      
+    <div class="filterGroup">
+      <label>Deleted</label>
+      <select name="deleted">
+        <option value="" {{ filters.deleted == '' ? 'selected' : '' }}>ALL</option>
+        <option value="0" {{ filters.deleted == '0' ? 'selected' : '' }}>Non</option>
+        <option value="1" {{ filters.deleted == '1' ? 'selected' : '' }}>Oui</option>
+      </select>
+    </div>
+
+    <div class="filterGroup">
+      <label>Date</label>
+      <input type="date" name="date" value="{{ filters.date }}" />
+    </div>
+
+    <div class="filterGroup">
+      <label>Post ID</label>
+      <input type="number" min="1" name="post" value="{{ filters.post }}" placeholder="post id" />
+    </div>
+
+    <div class="formActions">
+      <button class="btn btnPrimary" type="submit">Filtrer</button>
+      <a class="btn btnGhost" href="{{ path('admin_comments') }}">Reset</a>
+    </div>
+  </form>
+
+  <section class="panel">
+    <div class="panelHeader">
+      <h3 class="panelTitle">LISTE</h3>
+      <span class="listMeta">{{ comments|length }} resultat(s)</span>
+    </div>
+
+    <div class="dataTableWrap">
+      <table class="dataTable">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Post</th>
+            <th>Auteur</th>
+            <th>Extrait</th>
+            <th>Created</th>
+            <th>Deleted</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for comment in comments %}
+            {% set commentId = comment.commentId ?? 0 %}
+            <tr>
+              <td>#{{ commentId }}</td>
+              <td>#{{ comment.postId ? comment.postId.postId : '-' }}</td>
+              <td>{{ comment.authorUserId ? comment.authorUserId.username : '-' }}</td>
+              <td>{{ comment.contentText ? comment.contentText|slice(0, 90) : '-' }}</td>
+              <td>{{ comment.createdAt ? comment.createdAt|date('d/m/Y H:i') : '-' }}</td>
+              <td>{{ comment.isDeleted ? 'Oui' : 'Non' }}</td>
+              <td>
+                <div class="formActions">
+                  {% if comment.postId %}
+                    <a class="btn btnTiny" href="{{ path('admin_post_detail', {id: comment.postId.postId}) }}">Post</a>
+                  {% endif %}
+                  <a class="btn btnTiny" href="{{ path('admin_comments', {edit: commentId}) }}">Update</a>
+                  <form method="post" action="{{ path('admin_comment_delete', {id: commentId}) }}" onsubmit="return confirm('Supprimer ce commentaire ?');" style="display:inline-block;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete_comment_' ~ commentId) }}" />
+                    <button class="btn btnTiny" type="submit">Delete</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="7" class="listMeta">Aucun commentaire trouve.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
 {% endblock %}
-

@@ -100,6 +100,128 @@ class TournamentMatchRepository extends ServiceEntityRepository
     /**
      * @return list<TournamentMatch>
      */
+    public function searchForAdmin(
+        ?string $query,
+        ?int $tournamentId,
+        ?int $gameId,
+        ?string $status,
+        ?\DateTimeInterface $dateFrom,
+        ?\DateTimeInterface $dateTo,
+        ?string $teamQuery,
+        string $sort = 'latest',
+        int $limit = 300,
+    ): array {
+        $builder = $this->createQueryBuilder('tournamentMatch')
+            ->innerJoin('tournamentMatch.tournamentId', 'tournament')
+            ->addSelect('tournament')
+            ->innerJoin('tournament.gameId', 'game')
+            ->addSelect('game')
+            ->leftJoin('tournament.organizerUserId', 'organizer')
+            ->addSelect('organizer')
+            ->setMaxResults($limit);
+
+        $queryValue = trim((string) $query);
+        if ($queryValue !== '') {
+            $builder
+                ->andWhere(
+                    '(LOWER(COALESCE(tournamentMatch.roundName, \'\')) LIKE :query
+                    OR LOWER(tournament.title) LIKE :query
+                    OR LOWER(game.name) LIKE :query
+                    OR LOWER(organizer.username) LIKE :query)'
+                )
+                ->setParameter('query', '%' . mb_strtolower($queryValue) . '%');
+        }
+
+        if ($tournamentId !== null && $tournamentId > 0) {
+            $builder
+                ->andWhere('IDENTITY(tournamentMatch.tournamentId) = :tournamentId')
+                ->setParameter('tournamentId', $tournamentId);
+        }
+
+        if ($gameId !== null && $gameId > 0) {
+            $builder
+                ->andWhere('IDENTITY(tournament.gameId) = :gameId')
+                ->setParameter('gameId', $gameId);
+        }
+
+        $statusValue = strtoupper(trim((string) $status));
+        if ($statusValue !== '') {
+            $builder
+                ->andWhere('tournamentMatch.status = :status')
+                ->setParameter('status', $statusValue);
+        }
+
+        if ($dateFrom instanceof \DateTimeInterface) {
+            $dateFromAtMidnight = \DateTimeImmutable::createFromInterface($dateFrom)->setTime(0, 0, 0);
+            $builder
+                ->andWhere('tournamentMatch.scheduledAt IS NOT NULL')
+                ->andWhere('tournamentMatch.scheduledAt >= :dateFrom')
+                ->setParameter('dateFrom', $dateFromAtMidnight);
+        }
+
+        if ($dateTo instanceof \DateTimeInterface) {
+            $dateToEndOfDay = \DateTimeImmutable::createFromInterface($dateTo)->setTime(23, 59, 59);
+            $builder
+                ->andWhere('tournamentMatch.scheduledAt IS NOT NULL')
+                ->andWhere('tournamentMatch.scheduledAt <= :dateTo')
+                ->setParameter('dateTo', $dateToEndOfDay);
+        }
+
+        $teamQueryValue = trim((string) $teamQuery);
+        if ($teamQueryValue !== '') {
+            $builder
+                ->andWhere(
+                    $builder->expr()->exists(
+                        $this->getEntityManager()->createQueryBuilder()
+                            ->select('1')
+                            ->from(MatchTeam::class, 'matchTeamFilter')
+                            ->innerJoin('matchTeamFilter.teamId', 'teamFilter')
+                            ->andWhere('matchTeamFilter.matchId = tournamentMatch')
+                            ->andWhere('LOWER(teamFilter.name) LIKE :teamQuery')
+                            ->getDQL()
+                    )
+                )
+                ->setParameter('teamQuery', '%' . mb_strtolower($teamQueryValue) . '%');
+        }
+
+        $sortValue = strtolower(trim($sort));
+        switch ($sortValue) {
+            case 'oldest':
+                $builder
+                    ->addSelect('(CASE WHEN tournamentMatch.scheduledAt IS NULL THEN 1 ELSE 0 END) AS HIDDEN scheduledNullRank')
+                    ->orderBy('scheduledNullRank', 'ASC')
+                    ->addOrderBy('tournamentMatch.scheduledAt', 'ASC')
+                    ->addOrderBy('tournamentMatch.matchId', 'ASC');
+                break;
+            case 'status':
+                $builder
+                    ->addSelect('(CASE tournamentMatch.status WHEN \'ONGOING\' THEN 0 WHEN \'SCHEDULED\' THEN 1 WHEN \'FINISHED\' THEN 2 ELSE 3 END) AS HIDDEN statusRank')
+                    ->orderBy('statusRank', 'ASC')
+                    ->addOrderBy('tournamentMatch.scheduledAt', 'ASC')
+                    ->addOrderBy('tournamentMatch.matchId', 'ASC');
+                break;
+            case 'tournament':
+                $builder
+                    ->orderBy('tournament.title', 'ASC')
+                    ->addOrderBy('tournamentMatch.scheduledAt', 'DESC')
+                    ->addOrderBy('tournamentMatch.matchId', 'DESC');
+                break;
+            case 'latest':
+            default:
+                $builder
+                    ->addSelect('(CASE WHEN tournamentMatch.scheduledAt IS NULL THEN 1 ELSE 0 END) AS HIDDEN scheduledNullRank')
+                    ->orderBy('scheduledNullRank', 'ASC')
+                    ->addOrderBy('tournamentMatch.scheduledAt', 'DESC')
+                    ->addOrderBy('tournamentMatch.matchId', 'DESC');
+                break;
+        }
+
+        return $builder->getQuery()->getResult();
+    }
+
+    /**
+     * @return list<TournamentMatch>
+     */
     public function searchMatches(
         ?string $query,
         ?int $tournamentId,

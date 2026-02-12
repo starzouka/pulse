@@ -1,51 +1,123 @@
-{% extends 'admin/base_admin.html.twig' %}
+﻿{% extends 'admin/base_admin.html.twig' %}
 
 {% block title %}PULSE - Gestion signalements{% endblock %}
 
 {% block admin_content %}
-
-        
   <div class="pageHeader">
     <div>
       <h2>Gestion signalements</h2>
-      <div class="pageSub">reports OPEN/IN_REVIEW/CLOSED.</div>
+      <div class="pageSub">CRUD + filtres DB + exports.</div>
     </div>
-    
+    <div class="formActions">
+      <a class="btn btnGhost" href="{{ path('admin_reports_export', filters|merge({format: 'pdf'})) }}">Exporter PDF</a>
+      <a class="btn btnGhost" href="{{ path('admin_reports_export', filters|merge({format: 'excel'})) }}">Exporter Excel</a>
+    </div>
   </div>
-  
-  <div class="filtersBar">
-    <div class="filterGroup"><label>Status</label><select><option>ALL</option><option>OPEN</option><option>IN_REVIEW</option><option>CLOSED</option></select></div>
-<div class="filterGroup"><label>Target</label><select><option>ALL</option><option>POST</option><option>COMMENT</option><option>USER</option><option>TEAM</option></select></div>
-<div class="filterGroup"><label>Recherche</label><input type="text" placeholder="reason, reporter" /></div>
-  </div>
-  <section class="panel">
-    <div class="panelHeader"><h3 class="panelTitle">LISTE</h3></div>
-    
-  <div class="dataTableWrap">
-    <table class="dataTable">
-      <thead><tr><th>report_id</th><th>reporter</th><th>target_type</th><th>target_id</th><th>status</th><th>created_at</th><th>Actions</th></tr></thead>
-      <tbody>
-        <tr><td>1</td><td>—</td><td>—</td><td>1</td><td><span class="badge badge--warning">PENDING</span></td><td>2026-02-05</td><td><a class="btn btnTiny" href="{{ path('admin_report_detail') }}">Voir</a></td></tr>
-        <tr><td>1</td><td>—</td><td>—</td><td>1</td><td><span class="badge badge--warning">PENDING</span></td><td>2026-02-05</td><td><a class="btn btnTiny" href="{{ path('admin_report_detail') }}">Voir</a></td></tr>
-      </tbody>
-    </table>
-  </div>
-    
-  </section>
-  
+
+  {% for label, messages in app.flashes %}
+    {% for message in messages %}
+      <div class="listItem">
+        <span>{{ message }}</span>
+        <span class="badge {{ label == 'error' ? 'badge--danger' : 'badge--success' }}">{{ label|upper }}</span>
+      </div>
+    {% endfor %}
+  {% endfor %}
+
   <section class="panel">
     <div class="panelHeader">
-      <div>
-        <h3 class="panelTitle">SCHEMA UTILISE</h3>
-        <div class="panelDesc">Tables et colonnes principales.</div>
+      <h3 class="panelTitle">{{ editingReport ? 'MODIFIER SIGNALEMENT #' ~ editingReport.reportId : 'NOUVEAU SIGNALEMENT' }}</h3>
+    </div>
+
+    {{ form_start(reportForm, {attr: {novalidate: 'novalidate'}}) }}
+      {% include 'admin/pages/_report_form_fields.html.twig' with {form: reportForm} %}
+      <div class="formActions" style="margin-top:12px;">
+        <button class="btn btnPrimary" type="submit">{{ editingReport ? 'Mettre a jour' : 'Creer signalement' }}</button>
+        {% if editingReport %}
+          <a class="btn btnGhost" href="{{ path('admin_reports') }}">Annuler edition</a>
+        {% endif %}
       </div>
-    </div>
-    <div class="list">
-      <div class="listItem"><span><b>reports</b></span><span class="listMeta">report_id, reporter, target_type, target_id, status, created_at</span></div>
-    </div>
+    {{ form_end(reportForm) }}
   </section>
 
+  <form class="filtersBar" method="get" action="{{ path('admin_reports') }}">
+    <div class="filterGroup">
+      <label>Status</label>
+      <select name="status">
+        <option value="">ALL</option>
+        {% for statusValue in statusOptions %}
+          <option value="{{ statusValue }}" {{ filters.status == statusValue ? 'selected' : '' }}>{{ statusValue }}</option>
+        {% endfor %}
+      </select>
+    </div>
 
-      
+    <div class="filterGroup">
+      <label>Target</label>
+      <select name="target">
+        <option value="">ALL</option>
+        {% for targetValue in targetOptions %}
+          <option value="{{ targetValue }}" {{ filters.target == targetValue ? 'selected' : '' }}>{{ targetValue }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="filterGroup">
+      <label>Recherche</label>
+      <input type="search" name="q" value="{{ filters.q }}" placeholder="reason/reporter" />
+    </div>
+
+    <div class="formActions">
+      <button class="btn btnPrimary" type="submit">Filtrer</button>
+      <a class="btn btnGhost" href="{{ path('admin_reports') }}">Reset</a>
+    </div>
+  </form>
+
+  <section class="panel">
+    <div class="panelHeader">
+      <h3 class="panelTitle">LISTE</h3>
+      <span class="listMeta">{{ reports|length }} resultat(s)</span>
+    </div>
+
+    <div class="dataTableWrap">
+      <table class="dataTable">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Reporter</th>
+            <th>Target</th>
+            <th>Target ID</th>
+            <th>Status</th>
+            <th>Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for report in reports %}
+            {% set reportId = report.reportId ?? 0 %}
+            <tr>
+              <td>#{{ reportId }}</td>
+              <td>{{ report.reporterUserId ? report.reporterUserId.username : '-' }}</td>
+              <td>{{ report.targetType }}</td>
+              <td>{{ report.targetId }}</td>
+              <td><span class="badge {{ report.status == 'CLOSED' ? 'badge--success' : 'badge--warning' }}">{{ report.status }}</span></td>
+              <td>{{ report.createdAt ? report.createdAt|date('d/m/Y H:i') : '-' }}</td>
+              <td>
+                <div class="formActions">
+                  <a class="btn btnTiny" href="{{ path('admin_report_detail', {id: reportId}) }}">Voir</a>
+                  <a class="btn btnTiny" href="{{ path('admin_reports', {edit: reportId}) }}">Update</a>
+                  <form method="post" action="{{ path('admin_report_delete', {id: reportId}) }}" onsubmit="return confirm('Supprimer ce signalement ?');" style="display:inline-block;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete_report_' ~ reportId) }}" />
+                    <button class="btn btnTiny" type="submit">Delete</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="7" class="listMeta">Aucun signalement trouve.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
 {% endblock %}
-

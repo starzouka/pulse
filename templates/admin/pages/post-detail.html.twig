@@ -1,60 +1,119 @@
-{% extends 'admin/base_admin.html.twig' %}
+﻿{% extends 'admin/base_admin.html.twig' %}
 
 {% block title %}PULSE - Detail post{% endblock %}
 
 {% block admin_content %}
-
-        
   <div class="pageHeader">
     <div>
-      <h2>Detail post</h2>
-      <div class="pageSub">Post + commentaires + moderation.</div>
+      <h2>Detail post #{{ post.postId }}</h2>
+      <div class="pageSub">Edition, commentaires, signalements.</div>
     </div>
-    
-  </div>
-  
-  <div class="tabs" data-tabs="post">
-    <button class="tab isActive" data-tab="post">Post</button>
-<button class="tab" data-tab="comments">Commentaires</button>
-<button class="tab" data-tab="reports">Signalements</button>
-  </div>
-  <div class="tabPanels" data-panels="post">
-    <div class="tabPanel isActive" data-panel="post"><section class="panel"><div class="list"><div class="listItem"><span>post_id</span><span class="listMeta">1</span></div><div class="listItem"><span>author_user_id</span><span class="listMeta">zed_99</span></div><div class="listItem"><span>visibility</span><span class="listMeta">—</span></div><div class="listItem"><span>is_deleted</span><span class="listMeta">—</span></div></div></section></div>
-<div class="tabPanel" data-panel="comments"><section class="panel">
-  <div class="dataTableWrap">
-    <table class="dataTable">
-      <thead><tr><th>comment_id</th><th>author</th><th>content_text</th><th>created_at</th></tr></thead>
-      <tbody>
-        <tr><td>1</td><td>—</td><td>—</td><td>2026-02-05</td></tr>
-        <tr><td>1</td><td>—</td><td>—</td><td>2026-02-05</td></tr>
-      </tbody>
-    </table>
-  </div></section></div>
-<div class="tabPanel" data-panel="reports"><section class="panel">
-  <div class="dataTableWrap">
-    <table class="dataTable">
-      <thead><tr><th>report_id</th><th>status</th><th>created_at</th></tr></thead>
-      <tbody>
-        <tr><td>1</td><td><span class="badge badge--warning">PENDING</span></td><td>2026-02-05</td></tr>
-        <tr><td>1</td><td><span class="badge badge--warning">PENDING</span></td><td>2026-02-05</td></tr>
-      </tbody>
-    </table>
-  </div></section></div>
+    <div class="formActions">
+      <a class="btn btnGhost" href="{{ path('admin_posts') }}">Retour liste</a>
+    </div>
   </div>
 
-  
+  {% for label, messages in app.flashes %}
+    {% for message in messages %}
+      <div class="listItem">
+        <span>{{ message }}</span>
+        <span class="badge {{ label == 'error' ? 'badge--danger' : 'badge--success' }}">{{ label|upper }}</span>
+      </div>
+    {% endfor %}
+  {% endfor %}
+
   <section class="panel">
     <div class="panelHeader">
-      <div>
-        <h3 class="panelTitle">SCHEMA UTILISE</h3>
-        <div class="panelDesc">Tables et colonnes principales.</div>
+      <h3 class="panelTitle">EDITER LE POST</h3>
+    </div>
+
+    {{ form_start(postForm, {attr: {novalidate: 'novalidate'}}) }}
+      {% include 'admin/pages/_post_form_fields.html.twig' with {form: postForm} %}
+      <div class="formActions" style="margin-top:12px;">
+        <button class="btn btnPrimary" type="submit">Mettre a jour</button>
       </div>
-    </div>
-    <div class="list">
-      <div class="listItem"><span><b>posts</b></span><span class="listMeta">post_id, author_user_id, visibility, is_deleted, comment_id, author, content_text, created_at, report_id, status, created_at</span></div>
-    </div>
+    {{ form_end(postForm) }}
   </section>
 
+  <div class="tabs" data-tabs="post-detail">
+    <button class="tab isActive" data-tab="images">Images</button>
+    <button class="tab" data-tab="comments">Commentaires</button>
+    <button class="tab" data-tab="reports">Signalements</button>
+  </div>
 
-      
+  <div class="tabPanels" data-panels="post-detail">
+    <div class="tabPanel isActive" data-panel="images">
+      <section class="panel">
+        <div class="dataTableWrap">
+          <table class="dataTable">
+            <thead><tr><th>Image ID</th><th>URL</th><th>Position</th></tr></thead>
+            <tbody>
+              {% for postImage in postImages %}
+                <tr>
+                  <td>#{{ postImage.imageId ? postImage.imageId.imageId : '-' }}</td>
+                  <td>
+                    {% if postImage.imageId %}
+                      <a href="{{ postImage.imageId.fileUrl starts with 'http' ? postImage.imageId.fileUrl : asset(postImage.imageId.fileUrl) }}" target="_blank" rel="noopener">Voir</a>
+                    {% else %}
+                      -
+                    {% endif %}
+                  </td>
+                  <td>{{ postImage.position }}</td>
+                </tr>
+              {% else %}
+                <tr><td colspan="3" class="listMeta">Aucune image liee.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <div class="tabPanel" data-panel="comments">
+      <section class="panel">
+        <div class="dataTableWrap">
+          <table class="dataTable">
+            <thead><tr><th>ID</th><th>Auteur</th><th>Contenu</th><th>Date</th><th>Deleted</th><th>Action</th></tr></thead>
+            <tbody>
+              {% for comment in comments %}
+                <tr>
+                  <td>#{{ comment.commentId }}</td>
+                  <td>{{ comment.authorUserId ? comment.authorUserId.username : '-' }}</td>
+                  <td>{{ comment.contentText ? comment.contentText|slice(0, 100) : '-' }}</td>
+                  <td>{{ comment.createdAt ? comment.createdAt|date('d/m/Y H:i') : '-' }}</td>
+                  <td>{{ comment.isDeleted ? 'Oui' : 'Non' }}</td>
+                  <td><a class="btn btnTiny" href="{{ path('admin_comments', {edit: comment.commentId}) }}">Edit</a></td>
+                </tr>
+              {% else %}
+                <tr><td colspan="6" class="listMeta">Aucun commentaire.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <div class="tabPanel" data-panel="reports">
+      <section class="panel">
+        <div class="dataTableWrap">
+          <table class="dataTable">
+            <thead><tr><th>ID</th><th>Reporter</th><th>Status</th><th>Date</th><th>Action</th></tr></thead>
+            <tbody>
+              {% for report in reports %}
+                <tr>
+                  <td>#{{ report.reportId }}</td>
+                  <td>{{ report.reporterUserId ? report.reporterUserId.username : '-' }}</td>
+                  <td><span class="badge {{ report.status == 'CLOSED' ? 'badge--success' : 'badge--warning' }}">{{ report.status }}</span></td>
+                  <td>{{ report.createdAt ? report.createdAt|date('d/m/Y H:i') : '-' }}</td>
+                  <td><a class="btn btnTiny" href="{{ path('admin_report_detail', {id: report.reportId}) }}">Voir</a></td>
+                </tr>
+              {% else %}
+                <tr><td colspan="5" class="listMeta">Aucun signalement.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </div>
 {% endblock %}

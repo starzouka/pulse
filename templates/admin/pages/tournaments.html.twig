@@ -10,6 +10,20 @@
     </div>
     <div class="formActions">
       <a class="btn btnPrimary" href="{{ path('admin_tournament_create') }}">+ Nouveau tournoi</a>
+      <a class="btn btnGhost" href="{{ path('admin_tournaments_export', {
+        format: 'pdf',
+        q: filters.q|default(''),
+        status: filters.status|default(''),
+        game: filters.game|default(''),
+        sort: filters.sort|default('latest')
+      }) }}">Exporter PDF</a>
+      <a class="btn btnGhost" href="{{ path('admin_tournaments_export', {
+        format: 'excel',
+        q: filters.q|default(''),
+        status: filters.status|default(''),
+        game: filters.game|default(''),
+        sort: filters.sort|default('latest')
+      }) }}">Exporter Excel</a>
     </div>
   </div>
 
@@ -48,6 +62,15 @@
       </select>
     </div>
 
+    <div class="filterGroup">
+      <label>Tri</label>
+      <select name="sort">
+        {% for sortValue in sortOptions %}
+          <option value="{{ sortValue }}" {{ filters.sort == sortValue ? 'selected' : '' }}>{{ sortValue|upper }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
     <div class="formActions">
       <button class="btn btnPrimary" type="submit">Filtrer</button>
       <a class="btn btnGhost" href="{{ path('admin_tournaments') }}">Reset</a>
@@ -57,7 +80,7 @@
   <section class="panel">
     <div class="panelHeader">
       <h3 class="panelTitle">LISTE DES TOURNOIS</h3>
-      <span class="listMeta">{{ tournaments|length }} resultat(s)</span>
+      <span class="listMeta">{{ counter|default(tournaments|length) }} resultat(s)</span>
     </div>
 
     <div class="dataTableWrap">

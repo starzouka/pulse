@@ -29,9 +29,60 @@
             <div class="panel__head">
               <h3 class="panel__title">DEMANDES ENVOYEES</h3>
               <div class="panel__actions">
+                <span class="panel__desc">Total: {{ counter|default(tournamentRequests|length) }} demande(s)</span>
+                <a class="btn btn--ghost" href="{{ path('front_organizer_requests_export', {
+                  format: 'pdf',
+                  q: filters.q|default(''),
+                  status: filters.status|default(''),
+                  game: filters.game|default(''),
+                  sort: filters.sort|default('latest')
+                }) }}">PDF</a>
+                <a class="btn btn--ghost" href="{{ path('front_organizer_requests_export', {
+                  format: 'excel',
+                  q: filters.q|default(''),
+                  status: filters.status|default(''),
+                  game: filters.game|default(''),
+                  sort: filters.sort|default('latest')
+                }) }}">Excel</a>
                 <a class="btn btn--primary" href="{{ path('front_organizer_request_create') }}">Nouvelle demande</a>
               </div>
             </div>
+
+            <form method="get" action="{{ path('front_organizer_requests') }}">
+              <div class="filtersRow">
+                <input class="input" type="search" name="q" value="{{ filters.q|default('') }}" placeholder="Rechercher une demande..." />
+
+                <div class="select">
+                  <select name="status">
+                    <option value="">Statut</option>
+                    {% for statusValue in statusOptions %}
+                      <option value="{{ statusValue }}" {{ filters.status == statusValue ? 'selected' : '' }}>{{ statusValue }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+
+                <div class="select">
+                  <select name="game">
+                    <option value="">Jeu</option>
+                    {% for game in availableGames %}
+                      <option value="{{ game.gameId }}" {{ filters.game is not null and filters.game == game.gameId ? 'selected' : '' }}>{{ game.name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+
+                <div class="select">
+                  <select name="sort">
+                    {% for sortValue in sortOptions %}
+                      <option value="{{ sortValue }}" {{ filters.sort == sortValue ? 'selected' : '' }}>{{ sortValue|upper }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+
+                <button class="btn btn--primary" type="submit">Filtrer</button>
+                <a class="btn btn--ghost" href="{{ path('front_organizer_requests') }}">Reset</a>
+              </div>
+            </form>
+
             <div class="tableWrap">
               <table class="table">
                 <thead>

@@ -146,4 +146,60 @@ class MessageRepository extends ServiceEntityRepository
             ->getQuery()
             ->execute();
     }
+
+    /**
+     * @return list<Message>
+     */
+    public function searchForAdmin(
+        ?string $query,
+        ?string $senderSearch,
+        ?string $receiverSearch,
+        ?bool $isRead,
+        int $limit = 500
+    ): array {
+        $builder = $this->createQueryBuilder('message')
+            ->leftJoin('message.senderUserId', 'sender')
+            ->addSelect('sender')
+            ->leftJoin('message.receiverUserId', 'receiver')
+            ->addSelect('receiver')
+            ->orderBy('message.createdAt', 'DESC')
+            ->setMaxResults($limit);
+
+        $search = trim((string) $query);
+        if ($search !== '') {
+            $builder
+                ->andWhere('LOWER(message.bodyText) LIKE :query')
+                ->setParameter('query', '%' . mb_strtolower($search) . '%');
+        }
+
+        $senderQuery = trim((string) $senderSearch);
+        if ($senderQuery !== '') {
+            $builder
+                ->andWhere(
+                    'LOWER(sender.username) LIKE :senderQuery
+                    OR LOWER(sender.email) LIKE :senderQuery
+                    OR LOWER(sender.displayName) LIKE :senderQuery'
+                )
+                ->setParameter('senderQuery', '%' . mb_strtolower($senderQuery) . '%');
+        }
+
+        $receiverQuery = trim((string) $receiverSearch);
+        if ($receiverQuery !== '') {
+            $builder
+                ->andWhere(
+                    'LOWER(receiver.username) LIKE :receiverQuery
+                    OR LOWER(receiver.email) LIKE :receiverQuery
+                    OR LOWER(receiver.displayName) LIKE :receiverQuery'
+                )
+                ->setParameter('receiverQuery', '%' . mb_strtolower($receiverQuery) . '%');
+        }
+
+        if ($isRead !== null) {
+            $builder
+                ->andWhere('message.isRead = :isRead')
+                ->setParameter('isRead', $isRead);
+        }
+
+        return $builder->getQuery()->getResult();
+    }
 }

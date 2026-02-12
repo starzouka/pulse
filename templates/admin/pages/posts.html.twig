@@ -1,51 +1,133 @@
-{% extends 'admin/base_admin.html.twig' %}
+﻿{% extends 'admin/base_admin.html.twig' %}
 
 {% block title %}PULSE - Gestion posts{% endblock %}
 
 {% block admin_content %}
-
-        
   <div class="pageHeader">
     <div>
       <h2>Gestion posts</h2>
-      <div class="pageSub">posts + stats (images, comments, likes).</div>
+      <div class="pageSub">CRUD + stats + filtres base de donnees.</div>
     </div>
-    
+    <div class="formActions">
+      <a class="btn btnGhost" href="{{ path('admin_posts_export', filters|merge({format: 'pdf'})) }}">Exporter PDF</a>
+      <a class="btn btnGhost" href="{{ path('admin_posts_export', filters|merge({format: 'excel'})) }}">Exporter Excel</a>
+    </div>
   </div>
-  
-  <div class="filtersBar">
-    <div class="filterGroup"><label>Recherche</label><input type="text" placeholder="keyword" /></div>
-<div class="filterGroup"><label>Visibility</label><select><option>ALL</option><option>PUBLIC</option><option>FRIENDS</option><option>TEAM_ONLY</option></select></div>
-<div class="filterGroup"><label>Deleted</label><select><option>ALL</option><option>false</option><option>true</option></select></div>
-  </div>
-  <section class="panel">
-    <div class="panelHeader"><h3 class="panelTitle">LISTE</h3></div>
-    
-  <div class="dataTableWrap">
-    <table class="dataTable">
-      <thead><tr><th>post_id</th><th>Auteur</th><th>Extrait</th><th>visibility</th><th>created_at</th><th>is_deleted</th><th>nb images</th><th>nb comments</th><th>nb likes</th><th>Actions</th></tr></thead>
-      <tbody>
-        <tr><td>1</td><td>—</td><td>—</td><td>—</td><td>2026-02-05</td><td>—</td><td><span class="avatarSmall">A</span></td><td>—</td><td>—</td><td><a class="btn btnTiny" href="{{ path('admin_post_detail') }}">Voir</a></td></tr>
-        <tr><td>1</td><td>—</td><td>—</td><td>—</td><td>2026-02-05</td><td>—</td><td><span class="avatarSmall">A</span></td><td>—</td><td>—</td><td><a class="btn btnTiny" href="{{ path('admin_post_detail') }}">Voir</a></td></tr>
-      </tbody>
-    </table>
-  </div>
-    
-  </section>
-  
+
+  {% for label, messages in app.flashes %}
+    {% for message in messages %}
+      <div class="listItem">
+        <span>{{ message }}</span>
+        <span class="badge {{ label == 'error' ? 'badge--danger' : 'badge--success' }}">{{ label|upper }}</span>
+      </div>
+    {% endfor %}
+  {% endfor %}
+
   <section class="panel">
     <div class="panelHeader">
-      <div>
-        <h3 class="panelTitle">SCHEMA UTILISE</h3>
-        <div class="panelDesc">Tables et colonnes principales.</div>
+      <h3 class="panelTitle">{{ editingPost ? 'MODIFIER POST #' ~ editingPost.postId : 'NOUVEAU POST' }}</h3>
+    </div>
+
+    {{ form_start(postForm, {attr: {novalidate: 'novalidate'}}) }}
+      {% include 'admin/pages/_post_form_fields.html.twig' with {form: postForm} %}
+      <div class="formActions" style="margin-top:12px;">
+        <button class="btn btnPrimary" type="submit">{{ editingPost ? 'Mettre a jour' : 'Creer post' }}</button>
+        {% if editingPost %}
+          <a class="btn btnGhost" href="{{ path('admin_posts') }}">Annuler edition</a>
+        {% endif %}
       </div>
-    </div>
-    <div class="list">
-      <div class="listItem"><span><b>posts</b></span><span class="listMeta">post_id, Auteur, Extrait, visibility, created_at, is_deleted, nb comments, nb likes</span></div>
-    </div>
+    {{ form_end(postForm) }}
   </section>
 
+  <form class="filtersBar" method="get" action="{{ path('admin_posts') }}">
+    <div class="filterGroup">
+      <label>Recherche</label>
+      <input type="search" name="q" value="{{ filters.q }}" placeholder="contenu" />
+    </div>
 
-      
+    <div class="filterGroup">
+      <label>Visibility</label>
+      <select name="visibility">
+        <option value="">ALL</option>
+        {% for visibility in visibilityOptions %}
+          <option value="{{ visibility }}" {{ filters.visibility == visibility ? 'selected' : '' }}>{{ visibility }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="filterGroup">
+      <label>Deleted</label>
+      <select name="deleted">
+        <option value="" {{ filters.deleted == '' ? 'selected' : '' }}>ALL</option>
+        <option value="0" {{ filters.deleted == '0' ? 'selected' : '' }}>Non</option>
+        <option value="1" {{ filters.deleted == '1' ? 'selected' : '' }}>Oui</option>
+      </select>
+    </div>
+
+    <div class="filterGroup">
+      <label>Auteur</label>
+      <input type="search" name="author" value="{{ filters.author }}" placeholder="username/email" />
+    </div>
+
+    <div class="formActions">
+      <button class="btn btnPrimary" type="submit">Filtrer</button>
+      <a class="btn btnGhost" href="{{ path('admin_posts') }}">Reset</a>
+    </div>
+  </form>
+
+  <section class="panel">
+    <div class="panelHeader">
+      <h3 class="panelTitle">LISTE DES POSTS</h3>
+      <span class="listMeta">{{ posts|length }} resultat(s)</span>
+    </div>
+
+    <div class="dataTableWrap">
+      <table class="dataTable">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Auteur</th>
+            <th>Extrait</th>
+            <th>Visibility</th>
+            <th>Created</th>
+            <th>Deleted</th>
+            <th>Images</th>
+            <th>Comments</th>
+            <th>Likes</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for post in posts %}
+            {% set postId = post.postId ?? 0 %}
+            <tr>
+              <td>#{{ postId }}</td>
+              <td>{{ post.authorUserId ? post.authorUserId.username : '-' }}</td>
+              <td>{{ post.contentText ? post.contentText|slice(0, 80) : '-' }}</td>
+              <td>{{ post.visibility }}</td>
+              <td>{{ post.createdAt ? post.createdAt|date('d/m/Y H:i') : '-' }}</td>
+              <td>{{ post.isDeleted ? 'Oui' : 'Non' }}</td>
+              <td>{{ imagesByPostId[postId]|default(0) }}</td>
+              <td>{{ commentsByPostId[postId]|default(0) }}</td>
+              <td>{{ likesByPostId[postId]|default(0) }}</td>
+              <td>
+                <div class="formActions">
+                  <a class="btn btnTiny" href="{{ path('admin_post_detail', {id: postId}) }}">Voir</a>
+                  <a class="btn btnTiny" href="{{ path('admin_posts', {edit: postId}) }}">Update</a>
+                  <form method="post" action="{{ path('admin_post_delete', {id: postId}) }}" onsubmit="return confirm('Supprimer ce post ?');" style="display:inline-block;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete_post_' ~ postId) }}" />
+                    <button class="btn btnTiny" type="submit">Delete</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="10" class="listMeta">Aucun post trouve.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
 {% endblock %}
-

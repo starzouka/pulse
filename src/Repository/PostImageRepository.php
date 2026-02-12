@@ -59,4 +59,39 @@ class PostImageRepository extends ServiceEntityRepository
 
         return $imagesByPost;
     }
+
+    /**
+     * @param list<int> $postIds
+     * @return array<int, int>
+     */
+    public function countByPostIds(array $postIds): array
+    {
+        $filteredPostIds = array_values(array_unique(array_filter(
+            $postIds,
+            static fn (mixed $postId): bool => is_int($postId) && $postId > 0
+        )));
+        if ($filteredPostIds === []) {
+            return [];
+        }
+
+        $rows = $this->createQueryBuilder('postImage')
+            ->select('IDENTITY(postImage.postId) AS postId, COUNT(IDENTITY(postImage.imageId)) AS imagesCount')
+            ->andWhere('IDENTITY(postImage.postId) IN (:postIds)')
+            ->setParameter('postIds', $filteredPostIds)
+            ->groupBy('postImage.postId')
+            ->getQuery()
+            ->getArrayResult();
+
+        $countsByPostId = [];
+        foreach ($rows as $row) {
+            $postId = (int) ($row['postId'] ?? 0);
+            if ($postId <= 0) {
+                continue;
+            }
+
+            $countsByPostId[$postId] = (int) ($row['imagesCount'] ?? 0);
+        }
+
+        return $countsByPostId;
+    }
 }

@@ -143,7 +143,13 @@ class TournamentRepository extends ServiceEntityRepository
     /**
      * @return list<Tournament>
      */
-    public function searchForAdmin(?string $query, ?string $status, ?int $gameId, int $limit = 300): array
+    public function searchForAdmin(
+        ?string $query,
+        ?string $status,
+        ?int $gameId,
+        string $sort = 'latest',
+        int $limit = 300
+    ): array
     {
         $builder = $this->createQueryBuilder('tournament')
             ->innerJoin('tournament.gameId', 'game')
@@ -178,11 +184,38 @@ class TournamentRepository extends ServiceEntityRepository
                 ->setParameter('gameId', $gameId);
         }
 
-        return $builder
-            ->orderBy('tournament.startDate', 'DESC')
-            ->addOrderBy('tournament.createdAt', 'DESC')
-            ->getQuery()
-            ->getResult();
+        $sortValue = strtolower(trim($sort));
+        switch ($sortValue) {
+            case 'oldest':
+                $builder
+                    ->orderBy('tournament.startDate', 'ASC')
+                    ->addOrderBy('tournament.createdAt', 'ASC');
+                break;
+            case 'title':
+                $builder
+                    ->orderBy('tournament.title', 'ASC')
+                    ->addOrderBy('tournament.startDate', 'DESC');
+                break;
+            case 'prize':
+                $builder
+                    ->orderBy('tournament.prizePool', 'DESC')
+                    ->addOrderBy('tournament.startDate', 'DESC');
+                break;
+            case 'status':
+                $builder
+                    ->addSelect('(CASE tournament.status WHEN \'OPEN\' THEN 0 WHEN \'ONGOING\' THEN 1 WHEN \'FINISHED\' THEN 2 ELSE 3 END) AS HIDDEN statusRank')
+                    ->orderBy('statusRank', 'ASC')
+                    ->addOrderBy('tournament.startDate', 'DESC');
+                break;
+            case 'latest':
+            default:
+                $builder
+                    ->orderBy('tournament.startDate', 'DESC')
+                    ->addOrderBy('tournament.createdAt', 'DESC');
+                break;
+        }
+
+        return $builder->getQuery()->getResult();
     }
 
     public function findOneWithRelationsById(int $id): ?Tournament
@@ -199,5 +232,76 @@ class TournamentRepository extends ServiceEntityRepository
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
+    }
+
+    /**
+     * @return list<Tournament>
+     */
+    public function searchForOrganizer(
+        int $organizerUserId,
+        ?string $query,
+        ?string $status,
+        ?int $gameId,
+        string $sort = 'latest',
+        int $limit = 300
+    ): array {
+        $builder = $this->createQueryBuilder('tournament')
+            ->innerJoin('tournament.gameId', 'game')
+            ->addSelect('game')
+            ->andWhere('IDENTITY(tournament.organizerUserId) = :organizerUserId')
+            ->setParameter('organizerUserId', $organizerUserId)
+            ->setMaxResults($limit);
+
+        $queryValue = trim((string) $query);
+        if ($queryValue !== '') {
+            $builder
+                ->andWhere(
+                    '(LOWER(tournament.title) LIKE :query
+                    OR LOWER(COALESCE(tournament.description, \'\')) LIKE :query
+                    OR LOWER(game.name) LIKE :query)'
+                )
+                ->setParameter('query', '%' . mb_strtolower($queryValue) . '%');
+        }
+
+        $statusValue = strtoupper(trim((string) $status));
+        if ($statusValue !== '') {
+            $builder
+                ->andWhere('tournament.status = :status')
+                ->setParameter('status', $statusValue);
+        }
+
+        if ($gameId !== null && $gameId > 0) {
+            $builder
+                ->andWhere('IDENTITY(tournament.gameId) = :gameId')
+                ->setParameter('gameId', $gameId);
+        }
+
+        $sortValue = strtolower(trim($sort));
+        switch ($sortValue) {
+            case 'oldest':
+                $builder
+                    ->orderBy('tournament.startDate', 'ASC')
+                    ->addOrderBy('tournament.createdAt', 'ASC');
+                break;
+            case 'title':
+                $builder
+                    ->orderBy('tournament.title', 'ASC')
+                    ->addOrderBy('tournament.startDate', 'DESC');
+                break;
+            case 'status':
+                $builder
+                    ->addSelect('(CASE tournament.status WHEN \'OPEN\' THEN 0 WHEN \'ONGOING\' THEN 1 WHEN \'FINISHED\' THEN 2 ELSE 3 END) AS HIDDEN statusRank')
+                    ->orderBy('statusRank', 'ASC')
+                    ->addOrderBy('tournament.startDate', 'DESC');
+                break;
+            case 'latest':
+            default:
+                $builder
+                    ->orderBy('tournament.startDate', 'DESC')
+                    ->addOrderBy('tournament.createdAt', 'DESC');
+                break;
+        }
+
+        return $builder->getQuery()->getResult();
     }
 }

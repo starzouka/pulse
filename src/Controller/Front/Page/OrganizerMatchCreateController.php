@@ -123,7 +123,6 @@ final class OrganizerMatchCreateController extends AbstractController
         return $this->render('front/pages/organizer-match-create.html.twig', [
             'matchForm' => $form->createView(),
             'selectedTournament' => $selectedTournament,
-            'availableTeamsCount' => count($teamChoices),
         ]);
     }
 

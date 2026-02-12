@@ -8,6 +8,7 @@ use App\Entity\User;
 use App\Repository\GameRepository;
 use App\Repository\TournamentRepository;
 use App\Repository\TournamentRequestRepository;
+use App\Service\Admin\TableExportService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -21,6 +22,7 @@ use Symfony\Component\Routing\Attribute\Route;
 final class TournamentRequestsController extends AbstractController
 {
     private const STATUSES = ['PENDING', 'ACCEPTED', 'REFUSED'];
+    private const SORTS = ['latest', 'oldest', 'title', 'prize', 'status'];
 
     #[Route('/admin/tournament-requests', name: 'admin_tournament_requests', methods: ['GET'])]
     public function index(
@@ -34,8 +36,10 @@ final class TournamentRequestsController extends AbstractController
         $status = in_array($status, self::STATUSES, true) ? $status : '';
         $gameId = $request->query->getInt('game', 0);
         $gameId = $gameId > 0 ? $gameId : null;
+        $sort = strtolower(trim((string) $request->query->get('sort', 'latest')));
+        $sort = in_array($sort, self::SORTS, true) ? $sort : 'latest';
 
-        $requests = $tournamentRequestRepository->searchForAdmin($query, $status, $gameId, 500);
+        $requests = $tournamentRequestRepository->searchForAdmin($query, $status, $gameId, $sort, 500);
 
         return $this->render('admin/pages/tournament-requests.html.twig', [
             'requests' => $requests,
@@ -44,9 +48,53 @@ final class TournamentRequestsController extends AbstractController
                 'q' => $query,
                 'status' => $status,
                 'game' => $gameId,
+                'sort' => $sort,
             ],
             'statusOptions' => self::STATUSES,
+            'sortOptions' => self::SORTS,
+            'counter' => count($requests),
         ]);
+    }
+
+    #[Route('/admin/tournament-requests/export/{format}', name: 'admin_tournament_requests_export', requirements: ['format' => 'pdf|excel'], methods: ['GET'])]
+    public function export(
+        string $format,
+        Request $request,
+        TournamentRequestRepository $tournamentRequestRepository,
+        TableExportService $tableExportService,
+    ): Response {
+        $query = trim((string) $request->query->get('q', ''));
+        $status = strtoupper(trim((string) $request->query->get('status', '')));
+        $status = in_array($status, self::STATUSES, true) ? $status : '';
+        $gameId = $request->query->getInt('game', 0);
+        $gameId = $gameId > 0 ? $gameId : null;
+        $sort = strtolower(trim((string) $request->query->get('sort', 'latest')));
+        $sort = in_array($sort, self::SORTS, true) ? $sort : 'latest';
+
+        $requests = $tournamentRequestRepository->searchForAdmin($query, $status, $gameId, $sort, 5000);
+
+        $headers = ['ID', 'Titre', 'Organisateur', 'Jeu', 'Start date', 'End date', 'Status', 'Prize pool', 'Created at'];
+        $rows = [];
+        foreach ($requests as $requestItem) {
+            $rows[] = [
+                (int) ($requestItem->getRequestId() ?? 0),
+                (string) ($requestItem->getTitle() ?? '-'),
+                (string) ($requestItem->getOrganizerUserId()?->getUsername() ?? '-'),
+                (string) ($requestItem->getGameId()?->getName() ?? '-'),
+                $requestItem->getStartDate()?->format('Y-m-d') ?? '-',
+                $requestItem->getEndDate()?->format('Y-m-d') ?? '-',
+                (string) ($requestItem->getStatus() ?? '-'),
+                (string) ($requestItem->getPrizePool() ?? '0'),
+                $requestItem->getCreatedAt()?->format('Y-m-d H:i') ?? '-',
+            ];
+        }
+
+        $timestamp = (new \DateTimeImmutable())->format('Ymd_His');
+        if ($format === 'excel') {
+            return $tableExportService->exportExcel('Demandes Tournois', $headers, $rows, sprintf('admin_tournament_requests_%s.xlsx', $timestamp));
+        }
+
+        return $tableExportService->exportPdf('Demandes Tournois', $headers, $rows, sprintf('admin_tournament_requests_%s.pdf', $timestamp));
     }
 
     #[Route('/admin/tournament-requests/{id}/review', name: 'admin_tournament_request_review', requirements: ['id' => '\d+'], methods: ['POST'])]

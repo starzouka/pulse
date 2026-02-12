@@ -9,6 +9,7 @@ use App\Repository\GameRepository;
 use App\Repository\TournamentMatchRepository;
 use App\Repository\TournamentRepository;
 use App\Repository\TournamentTeamRepository;
+use App\Service\Admin\TableExportService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -125,6 +126,70 @@ final class TournamentsController extends AbstractController
                 'sorts' => self::SORTS,
             ],
         ]);
+    }
+
+    #[Route('/pages/tournaments/export/{format}', name: 'front_tournaments_export', requirements: ['format' => 'pdf|excel'], methods: ['GET'])]
+    public function export(
+        string $format,
+        Request $request,
+        TournamentRepository $tournamentRepository,
+        TableExportService $tableExportService,
+    ): Response {
+        $query = trim((string) $request->query->get('q', ''));
+        $gameId = $this->toPositiveInt($request->query->get('game'));
+        $categoryId = $this->toPositiveInt($request->query->get('category'));
+        $status = $this->sanitizeEnum((string) $request->query->get('status', ''), self::STATUSES);
+        $formatValue = $this->sanitizeEnum((string) $request->query->get('format_filter', ''), self::FORMATS);
+        $registrationMode = $this->sanitizeEnum((string) $request->query->get('registration_mode', ''), self::REGISTRATION_MODES);
+        $sort = $this->sanitizeEnum((string) $request->query->get('sort', 'latest'), self::SORTS) ?? 'latest';
+
+        $dateFrom = $this->parseDate(trim((string) $request->query->get('date_from', '')));
+        $dateTo = $this->parseDate(trim((string) $request->query->get('date_to', '')));
+        $prizeMin = $this->toFloatOrNull(trim((string) $request->query->get('prize_min', '')));
+        $prizeMax = $this->toFloatOrNull(trim((string) $request->query->get('prize_max', '')));
+        if ($prizeMin !== null && $prizeMax !== null && $prizeMin > $prizeMax) {
+            [$prizeMin, $prizeMax] = [$prizeMax, $prizeMin];
+        }
+
+        $tournaments = $tournamentRepository->searchCatalog(
+            $query,
+            $gameId,
+            $categoryId,
+            $status,
+            $formatValue,
+            $registrationMode,
+            $dateFrom,
+            $dateTo,
+            $prizeMin,
+            $prizeMax,
+            $sort,
+            5000
+        );
+
+        $headers = ['ID', 'Titre', 'Jeu', 'Categorie', 'Status', 'Format', 'Inscription', 'Start date', 'End date', 'Prize pool'];
+        $rows = [];
+        foreach ($tournaments as $tournament) {
+            $game = $tournament->getGameId();
+            $rows[] = [
+                (int) ($tournament->getTournamentId() ?? 0),
+                (string) ($tournament->getTitle() ?? '-'),
+                (string) ($game?->getName() ?? '-'),
+                (string) ($game?->getCategoryId()?->getName() ?? '-'),
+                (string) ($tournament->getStatus() ?? '-'),
+                (string) ($tournament->getFormat() ?? '-'),
+                (string) ($tournament->getRegistrationMode() ?? '-'),
+                $tournament->getStartDate()?->format('Y-m-d') ?? '-',
+                $tournament->getEndDate()?->format('Y-m-d') ?? '-',
+                (string) ($tournament->getPrizePool() ?? '0'),
+            ];
+        }
+
+        $timestamp = (new \DateTimeImmutable())->format('Ymd_His');
+        if ($format === 'excel') {
+            return $tableExportService->exportExcel('Tournois Front', $headers, $rows, sprintf('front_tournaments_%s.xlsx', $timestamp));
+        }
+
+        return $tableExportService->exportPdf('Tournois Front', $headers, $rows, sprintf('front_tournaments_%s.pdf', $timestamp));
     }
 
     private function toPositiveInt(mixed $value): ?int
