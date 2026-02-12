@@ -12,41 +12,38 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Table(name: 'product_images')]
 class ProductImage
 {
-    
     #[ORM\Id]
-    #[ORM\ManyToOne(targetEntity: Product::class)]
+    #[ORM\ManyToOne(targetEntity: Product::class, inversedBy: 'productImages')]
     #[ORM\JoinColumn(name: 'product_id', referencedColumnName: 'product_id', nullable: false, onDelete: 'CASCADE')]
-    private Product $productId;
-    
+    private Product $product;
+
     #[ORM\Id]
     #[ORM\ManyToOne(targetEntity: Image::class)]
     #[ORM\JoinColumn(name: 'image_id', referencedColumnName: 'image_id', nullable: false, onDelete: 'RESTRICT')]
-    private Image $imageId;
+    private Image $image;
     
     #[ORM\Column(name: 'position', type: Types::INTEGER, options: ['unsigned' => true, 'default' => 1])]
     private int $position = 1;
 
-    public function getProductId(): ?Product
+    public function getProduct(): ?Product
     {
-        return $this->productId;
+        return $this->product;
     }
 
-    public function setProductId(?Product $productId): static
+    public function setProduct(?Product $product): static
     {
-        $this->productId = $productId;
-
+        $this->product = $product;
         return $this;
     }
 
-    public function getImageId(): ?Image
+    public function getImage(): ?Image
     {
-        return $this->imageId;
+        return $this->image;
     }
 
-    public function setImageId(?Image $imageId): static
+    public function setImage(?Image $image): static
     {
-        $this->imageId = $imageId;
-
+        $this->image = $image;
         return $this;
     }
 

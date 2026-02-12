@@ -3,19 +3,16 @@
 {% block title %}PULSE - Detail produit{% endblock %}
 
 {% block admin_content %}
-
-        
+{% if product is defined and product %}
   <div class="pageHeader">
     <div>
       <h2>Detail produit</h2>
       <div class="pageSub">Infos + commandes impactees.</div>
     </div>
-    
   </div>
-  
   <div class="tabs" data-tabs="product">
     <button class="tab isActive" data-tab="info">Infos</button>
-<button class="tab" data-tab="orders">Commandes</button>
+    <button class="tab" data-tab="orders">Commandes</button>
   </div>
   <div class="tabPanels" data-panels="product">
     <div class="tabPanel isActive" data-panel="info">
@@ -27,22 +24,37 @@
           <div class="listItem"><span>stock_qty</span><span class="listMeta">{{ product.stockQty }}</span></div>
           <div class="listItem"><span>is_active</span><span class="listMeta">{{ product.isActive ? 'Oui' : 'Non' }}</span></div>
           <div class="listItem"><span>description</span><span class="listMeta">{{ product.description }}</span></div>
+          <div class="listItem">
+            <span>Images</span>
+            <span class="listMeta">
+              {% if product.productImages|length > 0 %}
+                {% for pi in product.productImages %}
+                  {% if pi.image and pi.image.fileUrl %}
+                    <img src="{{ pi.image.fileUrl }}" alt="image produit" style="max-width:80px; max-height:80px; margin-right:6px; border-radius:4px; border:1px solid #ccc;" />
+                  {% endif %}
+                {% endfor %}
+              {% else %}
+                <span class="badge badge--warning">Aucune image</span>
+              {% endif %}
+            </span>
+          </div>
         </div>
       </section>
     </div>
-<div class="tabPanel" data-panel="orders"><section class="panel">
-  <div class="dataTableWrap">
-    <table class="dataTable">
-      <thead><tr><th>order_number</th><th>status</th><th>quantity</th></tr></thead>
-      <tbody>
-        <tr><td>ORD-2026-001</td><td><span class="badge badge--warning">PENDING</span></td><td>—</td></tr>
-        <tr><td>ORD-2026-001</td><td><span class="badge badge--warning">PENDING</span></td><td>—</td></tr>
-      </tbody>
-    </table>
-  </div></section></div>
+    <div class="tabPanel" data-panel="orders">
+      <section class="panel">
+        <div class="dataTableWrap">
+          <table class="dataTable">
+            <thead><tr><th>order_number</th><th>status</th><th>quantity</th></tr></thead>
+            <tbody>
+              <tr><td>ORD-2026-001</td><td><span class="badge badge--warning">PENDING</span></td><td>—</td></tr>
+              <tr><td>ORD-2026-001</td><td><span class="badge badge--warning">PENDING</span></td><td>—</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
   </div>
-
-  
   <section class="panel">
     <div class="panelHeader">
       <div>
@@ -54,7 +66,7 @@
       <div class="listItem"><span><b>products</b></span><span class="listMeta">product_id, name, price, stock_qty, order_number, status, quantity</span></div>
     </div>
   </section>
-
-
-      
+{% else %}
+  <div class="alert alert-danger">Aucun produit à afficher.</div>
+{% endif %}
 {% endblock %}

@@ -35,6 +35,7 @@ return [
         '/admin/post-detail' => [[['_route' => 'admin_post_detail', '_controller' => 'App\\Controller\\Admin\\Page\\PostDetailController::index'], null, ['GET' => 0], null, false, false, null]],
         '/admin/posts' => [[['_route' => 'admin_posts', '_controller' => 'App\\Controller\\Admin\\Page\\PostsController::index'], null, ['GET' => 0], null, false, false, null]],
         '/admin/product/new' => [[['_route' => 'admin_product_new', '_controller' => 'App\\Controller\\Admin\\Page\\ProductFormController::new'], null, ['GET' => 0, 'POST' => 1], null, false, false, null]],
+        '/admin/product' => [[['_route' => 'admin_product_redirect', '_controller' => 'App\\Controller\\Admin\\Page\\ProductsController::redirectToProducts'], null, ['GET' => 0], null, true, false, null]],
         '/admin/products' => [[['_route' => 'admin_products', '_controller' => 'App\\Controller\\Admin\\Page\\ProductsController::index'], null, ['GET' => 0], null, false, false, null]],
         '/admin/report-detail' => [[['_route' => 'admin_report_detail', '_controller' => 'App\\Controller\\Admin\\Page\\ReportDetailController::index'], null, ['GET' => 0], null, false, false, null]],
         '/admin/reports' => [[['_route' => 'admin_reports', '_controller' => 'App\\Controller\\Admin\\Page\\ReportsController::index'], null, ['GET' => 0], null, false, false, null]],
@@ -142,12 +143,15 @@ return [
                         .'|(\\d+)(*:228)'
                         .'|edit/([^/]++)(*:249)'
                     .')'
-                    .'|s/delete/([^/]++)(*:275)'
+                    .'|s/(?'
+                        .'|([^/]++)/add\\-image(*:282)'
+                        .'|delete/([^/]++)(*:305)'
+                    .')'
                 .')'
                 .'|/cart/(?'
-                    .'|add/([^/]++)(*:305)'
-                    .'|update/([^/]++)(*:328)'
-                    .'|remove/([^/]++)(*:351)'
+                    .'|add/([^/]++)(*:336)'
+                    .'|update/([^/]++)(*:359)'
+                    .'|remove/([^/]++)(*:382)'
                 .')'
             .')/?$}sDu',
     ],
@@ -162,10 +166,11 @@ return [
         191 => [[['_route' => '_profiler', '_controller' => 'web_profiler.controller.profiler::panelAction'], ['token'], null, null, false, true, null]],
         228 => [[['_route' => 'admin_product_detail', '_controller' => 'App\\Controller\\Admin\\Page\\ProductDetailController::detail'], ['id'], ['GET' => 0], null, false, true, null]],
         249 => [[['_route' => 'admin_product_edit', '_controller' => 'App\\Controller\\Admin\\Page\\ProductFormController::edit'], ['id'], ['GET' => 0, 'POST' => 1], null, false, true, null]],
-        275 => [[['_route' => 'admin_product_delete', '_controller' => 'App\\Controller\\Admin\\Page\\ProductsController::delete'], ['id'], ['POST' => 0], null, false, true, null]],
-        305 => [[['_route' => 'front_cart_add', '_controller' => 'App\\Controller\\Front\\Page\\CartItemController::add'], ['productId'], ['POST' => 0], null, false, true, null]],
-        328 => [[['_route' => 'front_cart_update', '_controller' => 'App\\Controller\\Front\\Page\\CartItemController::update'], ['itemId'], ['POST' => 0], null, false, true, null]],
-        351 => [
+        282 => [[['_route' => 'admin_product_add_image', '_controller' => 'App\\Controller\\Admin\\Page\\ProductsController::addImage'], ['id'], ['GET' => 0, 'POST' => 1], null, false, false, null]],
+        305 => [[['_route' => 'admin_product_delete', '_controller' => 'App\\Controller\\Admin\\Page\\ProductsController::delete'], ['id'], ['POST' => 0], null, false, true, null]],
+        336 => [[['_route' => 'front_cart_add', '_controller' => 'App\\Controller\\Front\\Page\\CartItemController::add'], ['productId'], ['POST' => 0], null, false, true, null]],
+        359 => [[['_route' => 'front_cart_update', '_controller' => 'App\\Controller\\Front\\Page\\CartItemController::update'], ['itemId'], ['POST' => 0], null, false, true, null]],
+        382 => [
             [['_route' => 'front_cart_remove', '_controller' => 'App\\Controller\\Front\\Page\\CartItemController::remove'], ['itemId'], ['POST' => 0], null, false, true, null],
             [null, null, null, null, false, false, 0],
         ],

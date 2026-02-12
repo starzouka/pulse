@@ -39,6 +39,7 @@
           <td>
             <a class="btn btnTiny" href="{{ path('admin_product_detail', {'id': product.productId}) }}">Voir</a>
             <a class="btn btnTiny" href="{{ path('admin_product_edit', {'id': product.productId}) }}">Éditer</a>
+            <a class="btn btnTiny btnInfo" href="{{ path('admin_product_add_image', {'id': product.productId}) }}">Ajouter image</a>
             <form method="post" action="{{ path('admin_product_delete', {'id': product.productId}) }}" style="display:inline;" onsubmit="return confirm('Supprimer ce produit ?');">
               <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ product.productId) }}">
               <button class="btn btnTiny btnDanger" type="submit">Supprimer</button>

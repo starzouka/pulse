@@ -1,0 +1,31 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Ajouter une image au produit{% endblock %}
+
+{% block admin_content %}
+<div class="pageHeader">
+  <div>
+    <h2>Ajouter une image au produit : {{ product.name }}</h2>
+  </div>
+</div>
+<section class="panel">
+  {{ form_start(form, {'attr': {'enctype': 'multipart/form-data'}}) }}
+  <div class="formGrid">
+    <div class="field">
+      {{ form_label(form.imageFile) }}
+      {{ form_widget(form.imageFile, {'attr': {'class': 'input-dark'}}) }}
+      {{ form_errors(form.imageFile) }}
+    </div>
+    <div class="field">
+      {{ form_label(form.position) }}
+      {{ form_widget(form.position, {'attr': {'class': 'input-dark'}}) }}
+      {{ form_errors(form.position) }}
+    </div>
+  </div>
+  <div class="formActions" style="margin-top:12px;">
+    <button class="btn btnPrimary" type="submit">Ajouter l'image</button>
+    <a class="btn btnGhost" href="{{ path('admin_products') }}">Annuler</a>
+  </div>
+  {{ form_end(form) }}
+</section>
+{% endblock %}
