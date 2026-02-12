@@ -1,4 +1,4 @@
-{% extends 'base.html.twig' %}
+﻿{% extends 'base.html.twig' %}
 
 {% block title %}PULSE - Mes demandes{% endblock %}
 
@@ -17,26 +17,64 @@
 
         <div class="socialShell">
           <div class="socialStack">
+            {% for label, messages in app.flashes %}
+              {% for message in messages %}
+                <div class="listItem">
+                  <span>{{ message }}</span>
+                  <span class="badge {{ label == 'error' ? 'badge--danger' : (label == 'info' ? 'badge--info' : 'badge--success') }}">{{ label|upper }}</span>
+                </div>
+              {% endfor %}
+            {% endfor %}
+
             <section class="panel">
               <div class="panel__head">
                 <h3 class="panel__title">SUIVI DES DEMANDES</h3>
                 <a class="btn btn--ghost" href="{{ path('front_teams_explore') }}">Nouvelle demande</a>
               </div>
 
-              <div class="list">
-                <article class="listItem">
-                  <span>North Hydra - Demande envoyee le 02/02/2026</span>
-                  <span class="badge">PENDING</span>
-                </article>
-                <article class="listItem">
-                  <span>Sandstorm - Demande envoyee le 20/01/2026</span>
-                  <span class="badge badge--danger">REFUSED</span>
-                </article>
-                <article class="listItem">
-                  <span>Aurora Squad - Demande envoyee le 10/01/2026</span>
-                  <span class="badge badge--success">ACCEPTED</span>
-                </article>
-              </div>
+              {% if join_requests is empty %}
+                <div class="emptyState">Aucune demande envoyee pour le moment.</div>
+              {% else %}
+                <div class="list">
+                  {% for joinRequest in join_requests %}
+                    {% set requestId = joinRequest.requestId ?? 0 %}
+                    {% set team = joinRequest.teamId %}
+                    {% set captain = joinRequest.respondedByCaptainId %}
+                    {% set status = joinRequest.status|default('PENDING') %}
+                    {% set badgeClass = status == 'ACCEPTED' ? 'badge--success' : (status == 'REFUSED' or status == 'CANCELLED' ? 'badge--danger' : '') %}
+
+                    <article class="panel" style="margin-bottom:12px;">
+                      <div class="postCard__head">
+                        <div>
+                          <div class="name">{{ team ? team.name : 'Equipe' }}</div>
+                          <div class="sub">Demande envoyee le {{ joinRequest.createdAt ? joinRequest.createdAt|date('d/m/Y H:i') : '-' }}</div>
+                        </div>
+                        <span class="badge {{ badgeClass }}">{{ status }}</span>
+                      </div>
+
+                      {% if joinRequest.note %}
+                        <div class="postCard__body">Note: {{ joinRequest.note }}</div>
+                      {% endif %}
+
+                      {% if joinRequest.respondedAt %}
+                        <div class="sub" style="margin-top:6px;">
+                          Reponse le {{ joinRequest.respondedAt|date('d/m/Y H:i') }}
+                          {% if captain %} par {{ captain.displayName ?? captain.username }}{% endif %}
+                        </div>
+                      {% endif %}
+
+                      {% if status == 'PENDING' and requestId > 0 %}
+                        <div class="postCard__actions" style="margin-top:10px;">
+                          <form method="post" action="{{ path('front_my_requests_cancel', {id: requestId}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('my_request_cancel_' ~ requestId) }}">
+                            <button class="btn btn--ghost" type="submit">Annuler la demande</button>
+                          </form>
+                        </div>
+                      {% endif %}
+                    </article>
+                  {% endfor %}
+                </div>
+              {% endif %}
             </section>
           </div>
 
@@ -44,9 +82,9 @@
             <section class="panel">
               <h3 class="panel__title">STATISTIQUES</h3>
               <div class="statsRow">
-                <div class="statCard"><div class="statCard__value">1</div><div class="statCard__label">En attente</div></div>
-                <div class="statCard"><div class="statCard__value">1</div><div class="statCard__label">Acceptee</div></div>
-                <div class="statCard"><div class="statCard__value">1</div><div class="statCard__label">Refusee</div></div>
+                <div class="statCard"><div class="statCard__value">{{ join_requests_summary.pending|default(0) }}</div><div class="statCard__label">En attente</div></div>
+                <div class="statCard"><div class="statCard__value">{{ join_requests_summary.accepted|default(0) }}</div><div class="statCard__label">Acceptees</div></div>
+                <div class="statCard"><div class="statCard__value">{{ join_requests_summary.refused|default(0) }}</div><div class="statCard__label">Refusees</div></div>
               </div>
             </section>
 
@@ -54,7 +92,8 @@
               <h3 class="panel__title">ACTIONS</h3>
               <div class="socialQuickList">
                 <a class="listItem" href="{{ path('front_my_teams') }}"><span>Voir mes equipes</span><span class="listItem__meta">Direct</span></a>
-                <a class="listItem" href="{{ path('front_notifications') }}"><span>Notifications</span><span class="listItem__meta">3 nouvelles</span></a>
+                <a class="listItem" href="{{ path('front_notifications') }}"><span>Notifications</span><span class="listItem__meta">Alertes</span></a>
+                <a class="listItem" href="{{ path('front_teams_explore') }}"><span>Chercher une equipe</span><span class="listItem__meta">Explorer</span></a>
               </div>
             </section>
           </aside>

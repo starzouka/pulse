@@ -1,4 +1,4 @@
-{% extends 'base.html.twig' %}
+ï»¿{% extends 'base.html.twig' %}
 
 {% block title %}PULSE - Amis{% endblock %}
 
@@ -6,7 +6,7 @@
   {% include 'front/partials/_hero_mini.html.twig' with {
     hero_kicker: 'JOUEUR',
     hero_title: 'Amis',
-    hero_sub: 'Gestion des relations comme une page sociale classique.',
+    hero_sub: "Gestion des relations et demandes d'amis.",
     breadcrumb_current: 'Amis'
   } %}
 
@@ -17,7 +17,16 @@
 
         <div class="socialShell">
           <div class="socialStack">
-            <section class="panel">
+            {% for label, messages in app.flashes %}
+              {% for message in messages %}
+                <div class="listItem">
+                  <span>{{ message }}</span>
+                  <span class="badge {{ label == 'error' ? 'badge--danger' : 'badge--success' }}">{{ label|upper }}</span>
+                </div>
+              {% endfor %}
+            {% endfor %}
+
+            <section class="panel gadget">
               <div class="tabs" data-tabs="friends-tabs">
                 <button class="tab is-active" data-tab="my-friends">Mes amis</button>
                 <button class="tab" data-tab="received">Demandes recues</button>
@@ -26,48 +35,98 @@
 
               <div class="tabPanels" data-panels="friends-tabs">
                 <section class="tabPanel is-active" data-panel="my-friends">
-                  <div class="socialQuickList">
-                    <article class="listItem"><span>NovaAim</span><span class="listItem__meta">US · En ligne</span></article>
-                    <article class="listItem"><span>FrostByte</span><span class="listItem__meta">FR · Actif</span></article>
-                    <article class="listItem"><span>Kairo</span><span class="listItem__meta">TN · En ligne</span></article>
-                  </div>
+                  {% if friends is empty %}
+                    <div class="emptyState">Aucun ami pour le moment.</div>
+                  {% else %}
+                    <div class="socialQuickList">
+                      {% for friend in friends %}
+                        {% set friendId = friend.userId ?? 0 %}
+                        <a class="listItem" href="{{ path('front_player_profile', {id: friendId}) }}">
+                          <span>{{ friend.displayName ?? friend.username }} (@{{ friend.username }})</span>
+                          <span class="listItem__meta">{{ friend.role }}</span>
+                        </a>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
                 </section>
 
                 <section class="tabPanel" data-panel="received">
-                  <div class="socialQuickList">
-                    <article class="listItem"><span>ZenithPro</span><span class="badge">PENDING</span></article>
-                    <article class="listItem"><span>MiraShot</span><span class="badge">PENDING</span></article>
-                  </div>
-                  <div class="postCard__actions" style="margin-top:10px;">
-                    <button class="btn btn--primary" type="button">Accepter</button>
-                    <button class="btn btn--ghost" type="button">Refuser</button>
-                  </div>
+                  {% set pendingReceived = received_requests|filter(request => request.status == 'PENDING') %}
+                  {% if pendingReceived is empty %}
+                    <div class="emptyState">Aucune demande recue en attente.</div>
+                  {% else %}
+                    {% for request in pendingReceived %}
+                      {% set sender = request.fromUserId %}
+                      <article class="panel profilePost">
+                        <div class="postCard__head">
+                          <div class="postCard__author">
+                            <div>
+                              <div class="name">{{ sender ? (sender.displayName ?? sender.username) : 'Utilisateur' }}</div>
+                              <div class="sub">Recu le {{ request.createdAt ? request.createdAt|date('d/m/Y H:i') : '-' }}</div>
+                            </div>
+                          </div>
+                          <span class="badge">PENDING</span>
+                        </div>
+                        <div class="postCard__actions">
+                          <form method="post" action="{{ path('front_friends_request_accept', {id: request.requestId}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('friend_request_accept_' ~ request.requestId) }}">
+                            <button class="btn btn--primary" type="submit">Accepter</button>
+                          </form>
+                          <form method="post" action="{{ path('front_friends_request_refuse', {id: request.requestId}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('friend_request_refuse_' ~ request.requestId) }}">
+                            <button class="btn btn--ghost" type="submit">Refuser</button>
+                          </form>
+                        </div>
+                      </article>
+                    {% endfor %}
+                  {% endif %}
                 </section>
 
                 <section class="tabPanel" data-panel="sent">
-                  <div class="socialQuickList">
-                    <article class="listItem"><span>ShadowArc</span><span class="badge">PENDING</span></article>
-                    <article class="listItem"><span>VoltAim</span><span class="badge badge--danger">REFUSED</span></article>
-                  </div>
+                  {% set pendingSent = sent_requests|filter(request => request.status == 'PENDING') %}
+                  {% if pendingSent is empty %}
+                    <div class="emptyState">Aucune demande envoyee en attente.</div>
+                  {% else %}
+                    {% for request in pendingSent %}
+                      {% set target = request.toUserId %}
+                      <article class="panel profilePost">
+                        <div class="postCard__head">
+                          <div class="postCard__author">
+                            <div>
+                              <div class="name">{{ target ? (target.displayName ?? target.username) : 'Utilisateur' }}</div>
+                              <div class="sub">Envoyee le {{ request.createdAt ? request.createdAt|date('d/m/Y H:i') : '-' }}</div>
+                            </div>
+                          </div>
+                          <span class="badge">PENDING</span>
+                        </div>
+                        <div class="postCard__actions">
+                          <form method="post" action="{{ path('front_friends_request_cancel', {id: request.requestId}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('friend_request_cancel_' ~ request.requestId) }}">
+                            <button class="btn btn--ghost" type="submit">Annuler</button>
+                          </form>
+                        </div>
+                      </article>
+                    {% endfor %}
+                  {% endif %}
                 </section>
               </div>
             </section>
           </div>
 
           <aside class="socialStack">
-            <section class="panel">
+            <section class="panel gadget">
               <h3 class="panel__title">SUGGESTIONS</h3>
               <div class="socialQuickList">
-                <a class="listItem" href="{{ path('front_players') }}"><span>Joueurs de votre region</span><span class="listItem__meta">22</span></a>
-                <a class="listItem" href="{{ path('front_players') }}"><span>Capitaines actifs</span><span class="listItem__meta">7</span></a>
+                <a class="listItem" href="{{ path('front_players') }}"><span>Trouver des joueurs</span><span class="listItem__meta">Explorer</span></a>
+                <a class="listItem" href="{{ path('front_players', {role: 'CAPTAIN'}) }}"><span>Capitaines actifs</span><span class="listItem__meta">Filtrer</span></a>
               </div>
             </section>
 
-            <section class="panel">
+            <section class="panel gadget">
               <h3 class="panel__title">RACCOURCIS</h3>
               <div class="socialQuickList">
                 <a class="listItem" href="{{ path('front_messages') }}"><span>Ouvrir messagerie</span><span class="listItem__meta">Direct</span></a>
-                <a class="listItem" href="{{ path('front_players') }}"><span>Rechercher joueurs</span><span class="listItem__meta">Explorer</span></a>
+                <a class="listItem" href="{{ path('front_feed') }}"><span>Aller au fil</span><span class="listItem__meta">Social</span></a>
               </div>
             </section>
           </aside>

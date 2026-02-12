@@ -1,0 +1,14 @@
+{% set active_key = active|default('team') %}
+{% set team_query = active_team and active_team.teamId ? { team: active_team.teamId } : {} %}
+
+<aside class="sideNav">
+  <div class="sideNav__title">ESPACE CAPITAINE</div>
+  <a class="{{ active_key == 'team' ? 'is-active' : '' }}" href="{{ path('front_captain_team_manage', team_query) }}">Mon equipe</a>
+  <a class="{{ active_key == 'members' ? 'is-active' : '' }}" href="{{ path('front_captain_members', team_query) }}">Membres</a>
+  <a class="{{ active_key == 'requests' ? 'is-active' : '' }}" href="{{ path('front_captain_requests', team_query) }}">Demandes</a>
+  <a class="{{ active_key == 'invite' ? 'is-active' : '' }}" href="{{ path('front_captain_invite', team_query) }}">Inviter</a>
+  <a class="{{ active_key == 'products' ? 'is-active' : '' }}" href="{{ path('front_captain_products', team_query) }}">Produits</a>
+  <a class="{{ active_key == 'orders' ? 'is-active' : '' }}" href="{{ path('front_captain_orders', team_query) }}">Commandes</a>
+  <a class="{{ active_key == 'tournaments' ? 'is-active' : '' }}" href="{{ path('front_captain_tournaments', team_query) }}">Tournois</a>
+</aside>
+

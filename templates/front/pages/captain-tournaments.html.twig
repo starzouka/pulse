@@ -1,170 +1,169 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}PULSE - Inscrire une équipe{% endblock %}
+{% block title %}PULSE - Tournois equipe{% endblock %}
 
 {% block body %}
-
-
   {% include 'front/partials/_hero_mini.html.twig' with {
-  hero_kicker: 'CAPITAINE',
-  hero_title: 'Inscrire une équipe',
-  hero_sub: 'Choisir un tournoi et inscrire l’équipe.',
-  breadcrumb_current: 'Inscrire une équipe'
-} %}
-
+    hero_kicker: 'CAPITAINE',
+    hero_title: 'Tournois',
+    hero_sub: "Inscription et suivi des tournois pour l'equipe active.",
+    breadcrumb_current: 'Tournois'
+  } %}
 
   <main class="page">
     <section class="belowHero">
-
       <div class="layout">
-        
-  <aside class="sideNav">
-    <div class="sideNav__title">ESPACE CAPITAINE</div>
-    <a class="" href="{{ path('front_captain_team_manage') }}">Mon équipe</a><a class="" href="{{ path('front_captain_members') }}">Membres</a><a class="" href="{{ path('front_captain_requests') }}">Demandes</a><a class="" href="{{ path('front_captain_invite') }}">Inviter</a><a class="" href="{{ path('front_captain_products') }}">Produits</a><a class="" href="{{ path('front_captain_orders') }}">Commandes</a><a class="is-active" href="{{ path('front_captain_tournaments') }}">Tournois</a>
-  </aside>
+        {% include 'front/partials/_captain_side_nav.html.twig' with {
+          active: 'tournaments',
+          active_team: active_team
+        } %}
 
         <div>
-          
-        
-          <div class="panel">
-            <div class="filtersRow">
-              <div class="select">
-                <select>
-                  <option>Équipe active</option>
-                  <option>Nebula Five</option>
-                  <option>North Hydra</option>
-                </select>
+          {% include 'front/partials/_captain_team_selector.html.twig' with {
+            captain_teams: captain_teams,
+            active_team: active_team,
+            selector_route: 'front_captain_tournaments'
+          } %}
+
+          <section class="panel">
+            <div class="panel__head">
+              <div>
+                <h3 class="panel__title">INSCRIPTIONS DE L'EQUIPE</h3>
+                <div class="panel__desc">{{ team_participations|length }} participation(s)</div>
               </div>
-              <button class="btn btn--ghost" type="button">Changer</button>
             </div>
-          </div>
 
-        <div class="panel">
-          <div class="filtersRow">
-            <div class="select"><select><option>Équipe</option><option>Nebula Five</option></select></div>
-            <div class="select"><select><option>Tournoi</option><option>Pulse Invitational</option></select></div>
-            <button class="btn btn--primary">Inscrire</button>
-          </div>
-        </div>
-        <div class="cardsGrid">
+            <div class="tableWrap" style="margin-top:10px;">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Tournoi</th>
+                    <th>Statut inscription</th>
+                    <th>Check-in</th>
+                    <th>Progression</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for participation in team_participations %}
+                    {% set tournament = participation.tournamentId %}
+                    {% set tournamentId = tournament ? tournament.tournamentId : 0 %}
+                    {% set matchesTotal = matches_total_by_tournament_id[tournamentId] ?? 0 %}
+                    {% set matchesFinished = matches_finished_by_tournament_id[tournamentId] ?? 0 %}
+                    <tr>
+                      <td>
+                        <a href="{{ path('front_tournament_detail', {id: tournamentId}) }}">{{ tournament.title ?: ('Tournoi #' ~ tournamentId) }}</a>
+                      </td>
+                      <td>
+                        {% set status = participation.status ?: 'PENDING' %}
+                        <span class="badge {{ status == 'ACCEPTED' ? 'badge--success' : (status == 'REFUSED' ? 'badge--danger' : (status == 'PENDING' ? 'badge--info' : '')) }}">
+                          {{ status }}
+                        </span>
+                      </td>
+                      <td>
+                        {% if participation.checkedIn %}
+                          <span class="badge badge--success">OK</span>
+                        {% else %}
+                          <span class="badge">NON</span>
+                        {% endif %}
+                      </td>
+                      <td>{{ matchesFinished }}/{{ matchesTotal }}</td>
+                      <td>
+                        <div class="postCard__actions">
+                          {% if participation.status in ['PENDING', 'ACCEPTED'] %}
+                            <form method="post" action="{{ path('front_captain_tournaments_cancel', {id: tournamentId}) }}">
+                              <input type="hidden" name="_token" value="{{ csrf_token('captain_tournament_cancel_' ~ tournamentId) }}">
+                              <input type="hidden" name="team_id" value="{{ active_team.teamId }}">
+                              <button class="btn btn--ghost" type="submit">Annuler</button>
+                            </form>
+                          {% endif %}
 
-    <article class="card card--tournament">
-      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_t1/1200/800">
-        <div class="card__chips">
-          <span class="chip chip--status">OPEN</span>
-          <span class="chip chip--format">BO3</span>
-          <span class="chip">Valorant</span>
+                          {% if participation.status == 'ACCEPTED' and not participation.checkedIn %}
+                            <form method="post" action="{{ path('front_captain_tournaments_checkin', {id: tournamentId}) }}">
+                              <input type="hidden" name="_token" value="{{ csrf_token('captain_tournament_checkin_' ~ tournamentId) }}">
+                              <input type="hidden" name="team_id" value="{{ active_team.teamId }}">
+                              <button class="btn btn--primary" type="submit">Check-in</button>
+                            </form>
+                          {% endif %}
+                        </div>
+                      </td>
+                    </tr>
+                  {% else %}
+                    <tr>
+                      <td colspan="5">Aucune inscription pour cette equipe.</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel__head">
+              <div>
+                <h3 class="panel__title">TOURNOIS OUVERTS</h3>
+                <div class="panel__desc">Inscription directe ou demande selon le mode du tournoi.</div>
+              </div>
+            </div>
+
+            <div class="cardsGrid" style="margin-top:10px;">
+              {% for row in open_tournaments_data %}
+                {% set tournament = row.tournament %}
+                {% set participation = row.participation %}
+                {% set tournamentId = tournament.tournamentId %}
+                {% set progress = row.matches_total > 0 ? ((row.matches_finished / row.matches_total) * 100)|round : 0 %}
+                {% set tournamentPhotoPath = tournament.photoPath ?: '' %}
+                {% set tournamentPhotoUrl = tournamentPhotoPath ? (tournamentPhotoPath starts with 'http' ? tournamentPhotoPath : asset(tournamentPhotoPath)) : 'https://picsum.photos/seed/captain_tournament_' ~ tournamentId ~ '/1200/800' %}
+                <article class="card card--tournament">
+                  <div class="card__media" data-bg="{{ tournamentPhotoUrl }}">
+                    <div class="card__chips">
+                      <span class="chip chip--status">{{ tournament.status }}</span>
+                      <span class="chip chip--format">{{ tournament.format }}</span>
+                      <span class="chip">{{ tournament.registrationMode }}</span>
+                    </div>
+                  </div>
+                  <div class="card__body">
+                    <h4 class="card__title">{{ tournament.title }}</h4>
+                    <p class="card__desc">
+                      Deadline: <b>{{ tournament.registrationDeadline ? tournament.registrationDeadline|date('d/m/Y') : '-' }}</b>
+                      - Prize: <b>{{ tournament.prizePool }} DT</b>
+                    </p>
+                    <div class="card__metaRow">
+                      <span class="metaPill">Inscrits: <b>{{ row.registered_count }}</b></span>
+                      <span class="metaPill">Acceptes: <b>{{ row.accepted_count }}/{{ tournament.maxTeams }}</b></span>
+                    </div>
+                    <div class="progress"><div class="progress__bar" style="width:{{ progress }}%"></div></div>
+                    <div class="card__actions">
+                      <a class="btn btn--ghost" href="{{ path('front_tournament_detail', {id: tournamentId}) }}">Voir detail</a>
+                      {% if participation and participation.status in ['PENDING', 'ACCEPTED'] %}
+                        <span class="badge {{ participation.status == 'ACCEPTED' ? 'badge--success' : 'badge--info' }}">{{ participation.status }}</span>
+                      {% elseif row.registration_open %}
+                        <form method="post" action="{{ path('front_captain_tournaments_register') }}">
+                          <input type="hidden" name="_token" value="{{ csrf_token('captain_tournament_register') }}">
+                          <input type="hidden" name="team_id" value="{{ active_team.teamId }}">
+                          <input type="hidden" name="tournament_id" value="{{ tournamentId }}">
+                          <button class="btn btn--primary" type="submit">
+                            {{ tournament.registrationMode == 'OPEN' ? 'Inscrire equipe' : 'Envoyer demande' }}
+                          </button>
+                        </form>
+                      {% else %}
+                        <span class="badge badge--danger">Inscriptions fermees</span>
+                      {% endif %}
+                    </div>
+                  </div>
+                </article>
+              {% else %}
+                <div class="emptyState">Aucun tournoi OPEN actuellement.</div>
+              {% endfor %}
+            </div>
+          </section>
         </div>
       </div>
-      <div class="card__body">
-        <h4 class="card__title">Pulse Invitational — Valorant</h4>
-        <p class="card__desc">Dates: <b>18–22 Fév</b> • Prize pool: <b>1200 DT</b></p>
-        <div class="card__metaRow">
-          <span class="metaPill">Matchs: <b>7/20</b></span>
-          <span class="metaPill">Statut: <b>OPEN</b></span>
-        </div>
-        <div class="progress"><div class="progress__bar" style="width:35%"></div></div>
-        <div class="card__actions">
-          <a class="btn btn--ghost" href="{{ path('front_tournament_detail') }}">Voir détail</a>
-        </div>
-      </div>
-    </article>
-
-
-    <article class="card card--tournament">
-      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_t2/1200/800">
-        <div class="card__chips">
-          <span class="chip chip--status">ONGOING</span>
-          <span class="chip chip--format">BO1</span>
-          <span class="chip">CS2</span>
-        </div>
-      </div>
-      <div class="card__body">
-        <h4 class="card__title">CS2 Arena Cup — Winter Split</h4>
-        <p class="card__desc">Dates: <b>20–23 Fév</b> • Prize pool: <b>900 DT</b></p>
-        <div class="card__metaRow">
-          <span class="metaPill">Matchs: <b>12/20</b></span>
-          <span class="metaPill">Statut: <b>ONGOING</b></span>
-        </div>
-        <div class="progress"><div class="progress__bar" style="width:60%"></div></div>
-        <div class="card__actions">
-          <a class="btn btn--ghost" href="{{ path('front_tournament_detail') }}">Voir détail</a>
-        </div>
-      </div>
-    </article>
-
-
-    <article class="card card--tournament">
-      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_t3/1200/800">
-        <div class="card__chips">
-          <span class="chip chip--status">OPEN</span>
-          <span class="chip chip--format">BO5</span>
-          <span class="chip">League of Legends</span>
-        </div>
-      </div>
-      <div class="card__body">
-        <h4 class="card__title">League Clash — Weekend Major</h4>
-        <p class="card__desc">Dates: <b>23–25 Fév</b> • Prize pool: <b>2500 DT</b></p>
-        <div class="card__metaRow">
-          <span class="metaPill">Matchs: <b>0/16</b></span>
-          <span class="metaPill">Statut: <b>OPEN</b></span>
-        </div>
-        <div class="progress"><div class="progress__bar" style="width:0%"></div></div>
-        <div class="card__actions">
-          <a class="btn btn--ghost" href="{{ path('front_tournament_detail') }}">Voir détail</a>
-        </div>
-      </div>
-    </article>
-
-
-    <article class="card card--tournament">
-      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_t4/1200/800">
-        <div class="card__chips">
-          <span class="chip chip--status">OPEN</span>
-          <span class="chip chip--format">BO1</span>
-          <span class="chip">Fortnite</span>
-        </div>
-      </div>
-      <div class="card__body">
-        <h4 class="card__title">Fortnite Zero Build Cup</h4>
-        <p class="card__desc">Dates: <b>25 Fév</b> • Prize pool: <b>700 DT</b></p>
-        <div class="card__metaRow">
-          <span class="metaPill">Matchs: <b>0/24</b></span>
-          <span class="metaPill">Statut: <b>OPEN</b></span>
-        </div>
-        <div class="progress"><div class="progress__bar" style="width:0%"></div></div>
-        <div class="card__actions">
-          <a class="btn btn--ghost" href="{{ path('front_tournament_detail') }}">Voir détail</a>
-        </div>
-      </div>
-    </article>
-
-</div>
-        
-      <div class="panel">
-        <div class="panel__head">
-          <div>
-            <h3 class="panel__title">TABLES UTILISÉES</h3>
-            <div class="panel__desc">Schéma réel + colonnes clés.</div>
-          </div>
-        </div>
-        <div class="list">
-          <div class="listItem"><span><b>tournament_teams</b></span><span class="listItem__meta">tournament_id, team_id, status</span></div><div class="listItem"><span><b>tournaments</b></span><span class="listItem__meta">tournament_id, status, registration_mode, max_teams</span></div><div class="listItem"><span><b>teams</b></span><span class="listItem__meta">team_id, captain_user_id</span></div>
-        </div>
-      </div>
-
-      
-        </div>
-      </div>
-
 
       {% include 'front/partials/_footer.html.twig' %}
-
     </section>
   </main>
 
   {% include 'front/partials/_auth_modal.html.twig' %}
-
 {% endblock %}
-
 

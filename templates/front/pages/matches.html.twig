@@ -1,78 +1,149 @@
-{% extends 'base.html.twig' %}
+﻿{% extends 'base.html.twig' %}
 
 {% block title %}PULSE - Liste des matchs{% endblock %}
 
 {% block body %}
-
-
   {% include 'front/partials/_hero_mini.html.twig' with {
-  hero_kicker: 'MATCHS',
-  hero_title: 'Liste des matchs',
-  hero_sub: 'Filtrer par tournoi, statut et équipe.',
-  breadcrumb_current: 'Liste des matchs'
-} %}
-
+    hero_kicker: 'MATCHS',
+    hero_title: 'Liste des matchs',
+    hero_sub: 'Recherche dynamique via la base de donnees.',
+    breadcrumb_current: 'Liste des matchs'
+  } %}
 
   <main class="page">
     <section class="belowHero">
-
       <div class="pageHeader">
         <div>
           <h1>Liste des matchs</h1>
-          <p>Vue globale ou par tournoi.</p>
-        </div>
-        <div class="pageHeader__actions">
-          <button class="btn btn--soft">Prochains matchs</button>
-          <button class="btn btn--ghost">Plus récents</button>
+          <p>Filtres back-end: tournoi, statut, jeu, equipe et periode.</p>
         </div>
       </div>
 
-      <div class="panel">
-        <div class="filtersRow">
-          <div class="select"><select><option>Filtre principal</option><option>Tous</option><option>Par tournoi</option></select></div>
-          <div class="select"><select><option>Statut</option><option>SCHEDULED</option><option>ONGOING</option><option>FINISHED</option></select></div>
-          <div class="select"><select><option>Jeu</option><option>Valorant</option><option>CS2</option></select></div>
-          <input class="input" type="date" />
-          <input class="input" type="search" placeholder="Équipe" />
-        </div>
-      </div>
+      <section class="panel">
+        <form method="get" action="{{ path('front_matches') }}">
+          <div class="filtersRow">
+            <input class="input" type="search" name="q" value="{{ filters.q|default('') }}" placeholder="Rechercher round/tournoi/jeu" />
 
-      <div class="panel">
-        <div class="panel__head"><h3 class="panel__title">MATCHS</h3></div>
-        <div class="tableWrap">
-          <table class="table">
-            <thead><tr><th>Match</th><th>Tournoi</th><th>Round</th><th>Statut</th><th>Horaire</th></tr></thead>
-            <tbody>
-              <tr><td>Nebula Five vs North Hydra</td><td>CS2 Arena Cup</td><td>Quarterfinal</td><td><span class="badge badge--info">SCHEDULED</span></td><td>Jeu 20:00</td></tr>
-              <tr><td>Sandstorm vs Aurora Squad</td><td>League Clash</td><td>Semifinal</td><td><span class="badge badge--success">ONGOING</span></td><td>Live</td></tr>
-              <tr><td>Nebula Five vs Sandstorm</td><td>Pulse Invitational</td><td>Final</td><td><span class="badge">FINISHED</span></td><td>Terminé</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+            <div class="select">
+              <select name="tournament">
+                <option value="">Tournoi</option>
+                {% for tournament in available_tournaments %}
+                  {% set tournamentGame = tournament.gameId %}
+                  <option value="{{ tournament.tournamentId }}" {{ filters.tournament is not null and filters.tournament == tournament.tournamentId ? 'selected' : '' }}>
+                    {{ tournament.title }}{% if tournamentGame %} - {{ tournamentGame.name }}{% endif %}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
 
-      
-      <div class="panel">
-        <div class="panel__head">
-          <div>
-            <h3 class="panel__title">TABLES UTILISÉES</h3>
-            <div class="panel__desc">Schéma réel + colonnes clés.</div>
+            <div class="select">
+              <select name="status">
+                <option value="">Statut</option>
+                {% for statusValue in filter_options.statuses %}
+                  <option value="{{ statusValue }}" {{ filters.status == statusValue ? 'selected' : '' }}>{{ statusValue }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="select">
+              <select name="game">
+                <option value="">Jeu</option>
+                {% for game in available_games %}
+                  <option value="{{ game.gameId }}" {{ filters.game is not null and filters.game == game.gameId ? 'selected' : '' }}>{{ game.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <input class="input" type="date" name="date_from" value="{{ filters.date_from|default('') }}" />
+            <input class="input" type="date" name="date_to" value="{{ filters.date_to|default('') }}" />
+            <input class="input" type="search" name="team" value="{{ filters.team|default('') }}" placeholder="Equipe participante" />
+
+            <div class="select">
+              <select name="sort">
+                <option value="upcoming" {{ filters.sort == 'upcoming' ? 'selected' : '' }}>Prochains matchs</option>
+                <option value="latest" {{ filters.sort == 'latest' ? 'selected' : '' }}>Plus recents</option>
+              </select>
+            </div>
+
+            <button class="btn btn--primary" type="submit">Filtrer</button>
+            <a class="btn btn--ghost" href="{{ path('front_matches') }}">Reset</a>
           </div>
-        </div>
-        <div class="list">
-          <div class="listItem"><span><b>matches</b></span><span class="listItem__meta">match_id, tournament_id, status, scheduled_at, round_name, best_of</span></div><div class="listItem"><span><b>tournaments</b></span><span class="listItem__meta">tournament_id, title, game_id</span></div><div class="listItem"><span><b>match_teams</b></span><span class="listItem__meta">match_id, team_id, score, is_winner</span></div><div class="listItem"><span><b>teams</b></span><span class="listItem__meta">team_id, name</span></div>
-        </div>
-      </div>
+        </form>
+      </section>
 
-    
+      <section class="panel">
+        <div class="panel__head">
+          <h3 class="panel__title">MATCHS</h3>
+          <div class="panel__desc">{{ matches_data|length }} match(s) trouve(s)</div>
+        </div>
+
+        {% if matches_data is empty %}
+          <div class="emptyState">Aucun match ne correspond aux filtres selectionnes.</div>
+        {% else %}
+          <div class="tableWrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Match</th>
+                  <th>Tournoi</th>
+                  <th>Round</th>
+                  <th>Statut</th>
+                  <th>Horaire</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in matches_data %}
+                  {% set match = item.match %}
+                  {% set tournament = item.tournament %}
+                  {% set game = item.game %}
+                  {% set matchId = match.matchId ?? 0 %}
+                  {% set status = match.status|default('SCHEDULED') %}
+                  {% set statusClass = status == 'ONGOING' ? 'badge--success' : (status == 'SCHEDULED' ? 'badge--info' : (status == 'FINISHED' ? '' : 'badge--danger')) %}
+                  {% set detailUrl = path('front_match_detail', {id: matchId}) %}
+
+                  <tr>
+                    <td>
+                      <div><b>{{ item.teams_label }}</b></div>
+                      {% if item.teams is not empty %}
+                        <div class="listItem__meta">
+                          {% for relation in item.teams %}
+                            {% set relationTeam = relation.teamId %}
+                            {{ relationTeam ? relationTeam.name : 'Equipe' }}
+                            {% if relation.score is not null %} ({{ relation.score }}){% endif %}
+                            {% if relation.isWinner is same as(true) %} W{% endif %}
+                            {% if not loop.last %} · {% endif %}
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                    </td>
+                    <td>
+                      <div>{{ tournament ? tournament.title : '-' }}</div>
+                      <div class="listItem__meta">{{ game ? game.name : '-' }}</div>
+                    </td>
+                    <td>{{ match.roundName ?: '-' }}{% if match.bestOf %} · BO{{ match.bestOf }}{% endif %}</td>
+                    <td><span class="badge {{ statusClass }}">{{ status }}</span></td>
+                    <td>
+                      {% if match.scheduledAt %}
+                        {{ match.scheduledAt|date('d/m/Y H:i') }}
+                      {% else %}
+                        -
+                      {% endif %}
+                    </td>
+                    <td>
+                      <a class="btn btn--ghost" href="{{ detailUrl }}">Detail</a>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% endif %}
+      </section>
 
       {% include 'front/partials/_footer.html.twig' %}
-
     </section>
   </main>
 
   {% include 'front/partials/_auth_modal.html.twig' %}
-
 {% endblock %}
-
-

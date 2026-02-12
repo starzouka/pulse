@@ -1,4 +1,4 @@
-{% extends 'base.html.twig' %}
+ï»¿{% extends 'base.html.twig' %}
 
 {% block title %}PULSE - Mes equipes{% endblock %}
 
@@ -17,65 +17,118 @@
 
         <div class="socialShell">
           <div class="socialStack">
+            {% for label, messages in app.flashes %}
+              {% for message in messages %}
+                <div class="listItem">
+                  <span>{{ message }}</span>
+                  <span class="badge {{ label == 'error' ? 'badge--danger' : (label == 'info' ? 'badge--info' : 'badge--success') }}">{{ label|upper }}</span>
+                </div>
+              {% endfor %}
+            {% endfor %}
+
             <section class="panel">
               <div class="panel__head">
                 <h3 class="panel__title">EQUIPES ACTIVES</h3>
                 <a class="btn btn--ghost" href="{{ path('front_teams_explore') }}">Explorer</a>
               </div>
 
-              <article class="panel">
-                <div class="postCard__head">
-                  <div class="postCard__author">
-                    <div class="avatarMd" data-avatar="https://picsum.photos/seed/pulse_team_a/200/200"></div>
-                    <div>
-                      <div class="name">Nebula Five</div>
-                      <div class="sub">Role: Membre · Region MENA</div>
-                    </div>
-                  </div>
-                  <span class="badge badge--success">ACTIVE</span>
-                </div>
-                <div class="postCard__actions">
-                  <a class="btn btn--ghost" href="{{ path('front_team_detail') }}">Voir equipe</a>
-                  <button class="btn btn--ghost" type="button">Quitter</button>
-                </div>
-              </article>
+              {% if active_team_members is empty %}
+                <div class="emptyState">Vous n'avez aucune equipe active.</div>
+              {% else %}
+                {% for membership in active_team_members %}
+                  {% set team = membership.teamId %}
+                  {% set teamId = team ? (team.teamId ?? 0) : 0 %}
+                  {% set captain = team ? team.captainUserId : null %}
+                  {% set logoPath = team and team.logoImageId ? team.logoImageId.fileUrl : '' %}
+                  {% set logoUrl = logoPath ? (logoPath starts with 'http' ? logoPath : asset(logoPath)) : 'https://picsum.photos/seed/pulse_team_' ~ teamId ~ '/200/200' %}
 
-              <article class="panel">
-                <div class="postCard__head">
-                  <div class="postCard__author">
-                    <div class="avatarMd" data-avatar="https://picsum.photos/seed/pulse_team_b/200/200"></div>
-                    <div>
-                      <div class="name">Aurora Squad</div>
-                      <div class="sub">Role: Membre · Region NA</div>
+                  <article class="panel">
+                    <div class="postCard__head">
+                      <div class="postCard__author">
+                        <div class="avatarMd" data-avatar="{{ logoUrl }}"></div>
+                        <div>
+                          <div class="name">{{ team ? team.name : 'Equipe' }}</div>
+                          <div class="sub">
+                            Role: {{ team and captain and viewer_user and captain.userId == viewer_user.userId ? 'Capitaine' : 'Membre' }}
+                            {% if team and team.region %} Â· {{ team.region }}{% endif %}
+                          </div>
+                          <div class="sub">Rejoint le {{ membership.joinedAt ? membership.joinedAt|date('d/m/Y') : '-' }}</div>
+                        </div>
+                      </div>
+                      <span class="badge badge--success">ACTIVE</span>
                     </div>
-                  </div>
-                  <span class="badge badge--success">ACTIVE</span>
-                </div>
-                <div class="postCard__actions">
-                  <a class="btn btn--ghost" href="{{ path('front_team_detail') }}">Voir equipe</a>
-                  <button class="btn btn--ghost" type="button">Quitter</button>
-                </div>
-              </article>
+                    <div class="postCard__actions">
+                      <a class="btn btn--ghost" href="{{ path('front_team_detail') }}">Voir equipe</a>
+                      {% if teamId > 0 %}
+                        <form method="post" action="{{ path('front_my_teams_leave', {teamId: teamId}) }}">
+                          <input type="hidden" name="_token" value="{{ csrf_token('team_leave_' ~ teamId) }}">
+                          <button class="btn btn--ghost" type="submit">Quitter</button>
+                        </form>
+                      {% endif %}
+                    </div>
+                  </article>
+                {% endfor %}
+              {% endif %}
             </section>
           </div>
 
           <aside class="socialStack">
             <section class="panel">
               <h3 class="panel__title">INVITATIONS</h3>
-              <div class="socialQuickList">
-                <article class="listItem"><span>North Hydra</span><span class="badge">PENDING</span></article>
-              </div>
-              <div class="postCard__actions" style="margin-top:10px;">
-                <button class="btn btn--primary" type="button">Accepter</button>
-                <button class="btn btn--ghost" type="button">Refuser</button>
-              </div>
+              {% if pending_team_invites is empty %}
+                <div class="emptyState">Aucune invitation en attente.</div>
+              {% else %}
+                <div class="socialQuickList">
+                  {% for invite in pending_team_invites %}
+                    {% set inviteId = invite.inviteId ?? 0 %}
+                    {% set team = invite.teamId %}
+                    {% set invitedBy = invite.invitedByUserId %}
+
+                    <article class="listItem">
+                      <span>
+                        {{ team ? team.name : 'Equipe' }}
+                        {% if invitedBy %} - invite par {{ invitedBy.displayName ?? invitedBy.username }}{% endif %}
+                      </span>
+                      <span class="badge">{{ invite.status }}</span>
+                    </article>
+
+                    {% if invite.message %}
+                      <div class="listItem__meta">{{ invite.message }}</div>
+                    {% endif %}
+
+                    {% if inviteId > 0 %}
+                      <div class="postCard__actions" style="margin-top:10px;">
+                        <form method="post" action="{{ path('front_my_teams_invite_respond', {id: inviteId}) }}">
+                          <input type="hidden" name="_token" value="{{ csrf_token('team_invite_respond_' ~ inviteId) }}">
+                          <input type="hidden" name="decision" value="ACCEPTED">
+                          <button class="btn btn--primary" type="submit">Accepter</button>
+                        </form>
+                        <form method="post" action="{{ path('front_my_teams_invite_respond', {id: inviteId}) }}">
+                          <input type="hidden" name="_token" value="{{ csrf_token('team_invite_respond_' ~ inviteId) }}">
+                          <input type="hidden" name="decision" value="REFUSED">
+                          <button class="btn btn--ghost" type="submit">Refuser</button>
+                        </form>
+                      </div>
+                    {% endif %}
+                  {% endfor %}
+                </div>
+              {% endif %}
             </section>
 
             <section class="panel">
               <h3 class="panel__title">RACCOURCIS</h3>
               <div class="socialQuickList">
                 <a class="listItem" href="{{ path('front_my_requests') }}"><span>Mes demandes</span><span class="listItem__meta">Suivi</span></a>
-                <a class="listItem" href="{{ path('front_tournaments') }}"><span>Tournois ouverts</span><span class="listItem__meta">7</span></a>
+                <a class="listItem" href="{{ path('front_teams_explore') }}"><span>Trouver une equipe</span><span class="listItem__meta">Explorer</span></a>
+                <a class="listItem" href="{{ path('front_tournaments') }}"><span>Tournois ouverts</span><span class="listItem__meta">Voir</span></a>
+              </div>
+            </section>
+
+            <section class="panel">
+              <h3 class="panel__title">RESUME</h3>
+              <div class="statsRow">
+                <div class="statCard"><div class="statCard__value">{{ active_team_members|length }}</div><div class="statCard__label">Equipes actives</div></div>
+                <div class="statCard"><div class="statCard__value">{{ pending_team_invites|length }}</div><div class="statCard__label">Invitations</div></div>
               </div>
             </section>
           </aside>

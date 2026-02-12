@@ -1,153 +1,94 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}PULSE - Produits équipe{% endblock %}
+{% block title %}PULSE - Produits equipe{% endblock %}
 
 {% block body %}
-
-
   {% include 'front/partials/_hero_mini.html.twig' with {
-  hero_kicker: 'CAPITAINE',
-  hero_title: 'Produits équipe',
-  hero_sub: 'CRUD produits de l’équipe.',
-  breadcrumb_current: 'Produits équipe'
-} %}
-
+    hero_kicker: 'CAPITAINE',
+    hero_title: 'Produits',
+    hero_sub: "Gestion des produits de l'equipe active.",
+    breadcrumb_current: 'Produits'
+  } %}
 
   <main class="page">
     <section class="belowHero">
-
       <div class="layout">
-        
-  <aside class="sideNav">
-    <div class="sideNav__title">ESPACE CAPITAINE</div>
-    <a class="" href="{{ path('front_captain_team_manage') }}">Mon équipe</a><a class="" href="{{ path('front_captain_members') }}">Membres</a><a class="" href="{{ path('front_captain_requests') }}">Demandes</a><a class="" href="{{ path('front_captain_invite') }}">Inviter</a><a class="is-active" href="{{ path('front_captain_products') }}">Produits</a><a class="" href="{{ path('front_captain_orders') }}">Commandes</a><a class="" href="{{ path('front_captain_tournaments') }}">Tournois</a>
-  </aside>
+        {% include 'front/partials/_captain_side_nav.html.twig' with {
+          active: 'products',
+          active_team: active_team
+        } %}
 
         <div>
-          
-        
-          <div class="panel">
+          {% include 'front/partials/_captain_team_selector.html.twig' with {
+            captain_teams: captain_teams,
+            active_team: active_team,
+            selector_route: 'front_captain_products'
+          } %}
+
+          <form class="panel" method="get" action="{{ path('front_captain_products') }}">
             <div class="filtersRow">
-              <div class="select">
-                <select>
-                  <option>Équipe active</option>
-                  <option>Nebula Five</option>
-                  <option>North Hydra</option>
-                </select>
-              </div>
-              <button class="btn btn--ghost" type="button">Changer</button>
+              <input type="hidden" name="team" value="{{ active_team.teamId }}">
+              <input class="input" type="search" name="q" value="{{ filters.q }}" placeholder="Rechercher nom, description ou SKU">
+              <label class="field" style="display:flex;align-items:center;gap:8px;">
+                <input type="checkbox" name="inactive" value="1" {{ filters.inactive ? 'checked' : '' }}>
+                <span class="field__label">Inclure inactifs</span>
+              </label>
+              <button class="btn btn--ghost" type="submit">Filtrer</button>
+              <a class="btn btn--primary" href="{{ path('front_captain_product_create', {team: active_team.teamId}) }}">Nouveau produit</a>
             </div>
-          </div>
+          </form>
 
-        <div class="panel">
-          <div class="panel__head">
-            <h3 class="panel__title">PRODUITS</h3>
-            <div class="panel__actions"><a class="btn btn--primary" href="{{ path('front_captain_product_create') }}">Créer produit</a></div>
-          </div>
-          <div class="cardsGrid">
+          <section class="panel">
+            <div class="panel__head">
+              <div>
+                <h3 class="panel__title">PRODUITS DE {{ active_team.name|upper }}</h3>
+                <div class="panel__desc">{{ products|length }} produit(s)</div>
+              </div>
+            </div>
 
-    <article class="card card--product">
-      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_p1/1200/800">
-        <div class="card__chips">
-          <span class="chip chip--price">89 DT</span>
-          <span class="chip">Stock: 14</span>
-          <span class="chip">Nebula Five</span>
+            <div class="cardsGrid" style="margin-top:10px;">
+              {% for product in products %}
+                {% set primaryImage = product_primary_images[product.productId] ?? null %}
+                {% set imagePath = primaryImage ? primaryImage.fileUrl : '' %}
+                {% set imageUrl = imagePath ? (imagePath starts with 'http' ? imagePath : asset(imagePath)) : 'https://picsum.photos/seed/captain_product_' ~ product.productId ~ '/1000/700' %}
+                <article class="card card--product">
+                  <div class="card__media" data-bg="{{ imageUrl }}">
+                    <div class="card__chips">
+                      <span class="chip chip--price">{{ product.price }} DT</span>
+                      <span class="chip">Stock: {{ product.stockQty }}</span>
+                      <span class="chip">{{ product.isActive ? 'ACTIF' : 'INACTIF' }}</span>
+                    </div>
+                  </div>
+                  <div class="card__body">
+                    <h4 class="card__title">{{ product.name }}</h4>
+                    <p class="card__desc">{{ product.description ?: 'Sans description.' }}</p>
+                    <div class="card__metaRow">
+                      <span class="metaPill">SKU: <b>{{ product.sku ?: '-' }}</b></span>
+                      <span class="metaPill">Maj: <b>{{ product.updatedAt ? product.updatedAt|date('d/m/Y') : '-' }}</b></span>
+                    </div>
+                    <div class="card__actions">
+                      <a class="btn btn--ghost" href="{{ path('front_product_detail', {id: product.productId}) }}">Voir detail</a>
+                      <a class="btn btn--ghost" href="{{ path('front_captain_product_edit', {id: product.productId, team: active_team.teamId}) }}">Modifier</a>
+                      <form method="post" action="{{ path('front_captain_product_delete', {id: product.productId}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('captain_product_delete_' ~ product.productId) }}">
+                        <input type="hidden" name="team_id" value="{{ active_team.teamId }}">
+                        <button class="btn btn--ghost" type="submit">Supprimer</button>
+                      </form>
+                    </div>
+                  </div>
+                </article>
+              {% else %}
+                <div class="emptyState">Aucun produit pour cette equipe.</div>
+              {% endfor %}
+            </div>
+          </section>
         </div>
       </div>
-      <div class="card__body">
-        <h4 class="card__title">Pulse Hoodie — Neon</h4>
-        <p class="card__desc">Vendeur: <b>Nebula Five</b></p>
-        <div class="card__actions">
-          <a class="btn btn--ghost" href="{{ path('front_product_detail') }}">Détail</a>
-          <a class="btn btn--primary" href="{{ path('front_captain_product_edit') }}">Ajouter au panier</a>
-        </div>
-      </div>
-    </article>
-
-
-    <article class="card card--product">
-      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_p2/1200/800">
-        <div class="card__chips">
-          <span class="chip chip--price">69 DT</span>
-          <span class="chip">Stock: 7</span>
-          <span class="chip">North Hydra</span>
-        </div>
-      </div>
-      <div class="card__body">
-        <h4 class="card__title">Team Jersey — Pro Edition</h4>
-        <p class="card__desc">Vendeur: <b>North Hydra</b></p>
-        <div class="card__actions">
-          <a class="btn btn--ghost" href="{{ path('front_product_detail') }}">Détail</a>
-          <a class="btn btn--primary" href="{{ path('front_captain_product_edit') }}">Ajouter au panier</a>
-        </div>
-      </div>
-    </article>
-
-
-    <article class="card card--product">
-      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_p3/1200/800">
-        <div class="card__chips">
-          <span class="chip chip--price">39 DT</span>
-          <span class="chip">Stock: 33</span>
-          <span class="chip">Aurora Squad</span>
-        </div>
-      </div>
-      <div class="card__body">
-        <h4 class="card__title">Mousepad XL — Arena</h4>
-        <p class="card__desc">Vendeur: <b>Aurora Squad</b></p>
-        <div class="card__actions">
-          <a class="btn btn--ghost" href="{{ path('front_product_detail') }}">Détail</a>
-          <a class="btn btn--primary" href="{{ path('front_captain_product_edit') }}">Ajouter au panier</a>
-        </div>
-      </div>
-    </article>
-
-
-    <article class="card card--product">
-      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_p4/1200/800">
-        <div class="card__chips">
-          <span class="chip chip--price">29 DT</span>
-          <span class="chip">Stock: 5</span>
-          <span class="chip">Sandstorm</span>
-        </div>
-      </div>
-      <div class="card__body">
-        <h4 class="card__title">Cap — Limited Drop</h4>
-        <p class="card__desc">Vendeur: <b>Sandstorm</b></p>
-        <div class="card__actions">
-          <a class="btn btn--ghost" href="{{ path('front_product_detail') }}">Détail</a>
-          <a class="btn btn--primary" href="{{ path('front_captain_product_edit') }}">Ajouter au panier</a>
-        </div>
-      </div>
-    </article>
-
-</div>
-        </div>
-        
-      <div class="panel">
-        <div class="panel__head">
-          <div>
-            <h3 class="panel__title">TABLES UTILISÉES</h3>
-            <div class="panel__desc">Schéma réel + colonnes clés.</div>
-          </div>
-        </div>
-        <div class="list">
-          <div class="listItem"><span><b>products</b></span><span class="listItem__meta">product_id, team_id, name, price, stock_qty, is_active</span></div><div class="listItem"><span><b>product_images</b></span><span class="listItem__meta">product_id, image_id, position</span></div>
-        </div>
-      </div>
-
-      
-        </div>
-      </div>
-
 
       {% include 'front/partials/_footer.html.twig' %}
-
     </section>
   </main>
 
   {% include 'front/partials/_auth_modal.html.twig' %}
-
 {% endblock %}
-
 

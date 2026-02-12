@@ -30,4 +30,50 @@ class FriendRequestRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
+
+    /**
+     * @return list<FriendRequest>
+     */
+    public function findLatestReceivedByUser(User $user, int $limit = 100): array
+    {
+        return $this->createQueryBuilder('friendRequest')
+            ->andWhere('friendRequest.toUserId = :user')
+            ->setParameter('user', $user)
+            ->orderBy('friendRequest.createdAt', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return list<FriendRequest>
+     */
+    public function findLatestSentByUser(User $user, int $limit = 100): array
+    {
+        return $this->createQueryBuilder('friendRequest')
+            ->andWhere('friendRequest.fromUserId = :user')
+            ->setParameter('user', $user)
+            ->orderBy('friendRequest.createdAt', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findOnePendingReceivedById(User $user, int $requestId): ?FriendRequest
+    {
+        return $this->findOneBy([
+            'requestId' => $requestId,
+            'toUserId' => $user,
+            'status' => 'PENDING',
+        ]);
+    }
+
+    public function findOnePendingSentById(User $user, int $requestId): ?FriendRequest
+    {
+        return $this->findOneBy([
+            'requestId' => $requestId,
+            'fromUserId' => $user,
+            'status' => 'PENDING',
+        ]);
+    }
 }

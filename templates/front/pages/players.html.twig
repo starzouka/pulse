@@ -1,4 +1,4 @@
-{% extends 'base.html.twig' %}
+ï»¿{% extends 'base.html.twig' %}
 
 {% block title %}PULSE - Recherche joueurs{% endblock %}
 
@@ -6,7 +6,7 @@
   {% include 'front/partials/_hero_mini.html.twig' with {
     hero_kicker: 'JOUEUR',
     hero_title: 'Recherche joueurs',
-    hero_sub: 'Trouver des profils, voir leurs posts et lancer une interaction.',
+    hero_sub: 'Trouver des profils et lancer une interaction.',
     breadcrumb_current: 'Recherche joueurs'
   } %}
 
@@ -17,111 +17,84 @@
 
         <div class="socialShell">
           <div class="socialStack">
-            <section class="panel">
+            <form class="panel gadget" method="get" action="{{ path('front_players') }}">
               <div class="filtersRow">
-                <input class="input" type="search" placeholder="Rechercher par pseudo, display name, role..." />
+                <input class="input" type="search" name="q" value="{{ filters.q }}" placeholder="Rechercher par pseudo ou display name..." />
                 <div class="select">
-                  <select>
-                    <option>Tous les roles</option>
-                    <option>PLAYER</option>
-                    <option>CAPTAIN</option>
-                    <option>ORGANIZER</option>
+                  <select name="role">
+                    <option value="" {{ filters.role == '' ? 'selected' : '' }}>Tous les roles</option>
+                    <option value="PLAYER" {{ filters.role == 'PLAYER' ? 'selected' : '' }}>PLAYER</option>
+                    <option value="CAPTAIN" {{ filters.role == 'CAPTAIN' ? 'selected' : '' }}>CAPTAIN</option>
+                    <option value="ORGANIZER" {{ filters.role == 'ORGANIZER' ? 'selected' : '' }}>ORGANIZER</option>
+                    <option value="ADMIN" {{ filters.role == 'ADMIN' ? 'selected' : '' }}>ADMIN</option>
                   </select>
                 </div>
-                <div class="select">
-                  <select>
-                    <option>Tous les pays</option>
-                    <option>TN</option>
-                    <option>FR</option>
-                    <option>US</option>
-                  </select>
-                </div>
-                <button class="btn btn--ghost" type="button">Rechercher</button>
+                <input class="input" type="text" name="country" value="{{ filters.country }}" placeholder="Pays (ex: TN)" maxlength="80" />
+                <button class="btn btn--ghost" type="submit">Rechercher</button>
               </div>
-            </section>
+            </form>
 
-            <section class="panel">
+            <section class="panel gadget">
               <div class="panel__head">
                 <h3 class="panel__title">RESULTATS</h3>
-                <span class="panel__desc">4 profils trouves</span>
+                <span class="panel__desc">{{ player_cards|length }} profil(s)</span>
               </div>
 
-              <article class="panel">
-                <div class="postCard__head">
-                  <div class="postCard__author">
-                    <div class="avatarMd" data-avatar="https://picsum.photos/seed/pulse_player_1/200/200"></div>
-                    <div>
-                      <div class="name">FrostByte</div>
-                      <div class="sub">CAPTAIN · FR · @FrostByte</div>
+              {% if player_cards is empty %}
+                <div class="emptyState">Aucun joueur trouve avec ces filtres.</div>
+              {% else %}
+                {% for card in player_cards %}
+                  {% set user = card.user %}
+                  {% set userId = user.userId ?? 0 %}
+                  {% set avatarPath = user.profileImageId ? user.profileImageId.fileUrl : '' %}
+                  {% set avatarUrl = avatarPath ? (avatarPath starts with 'http' ? avatarPath : asset(avatarPath)) : 'https://picsum.photos/seed/pulse_player_' ~ userId ~ '/200/200' %}
+                  <article class="panel profilePost">
+                    <div class="postCard__head">
+                      <div class="postCard__author">
+                        <div class="avatarMd" data-avatar="{{ avatarUrl }}"></div>
+                        <div>
+                          <div class="name">{{ user.displayName ?? user.username }}</div>
+                          <div class="sub">{{ user.role }}{% if user.country %} Â· {{ user.country }}{% endif %} Â· @{{ user.username }}</div>
+                        </div>
+                      </div>
+                      <span class="badge">{{ card.friend_status|upper }}</span>
                     </div>
-                  </div>
-                  <span class="badge">En ligne</span>
-                </div>
-                <div class="postCard__body">Capitaine de North Hydra. Recherche un support player avec disponibilite soir/weekend.</div>
-                <div class="postCard__actions">
-                  <a class="btn btn--ghost" href="{{ path('front_player_profile') }}">Voir profil</a>
-                  <a class="btn btn--primary" href="{{ path('front_friends') }}">Ajouter ami</a>
-                  <a class="btn btn--ghost" href="{{ path('front_messages') }}">Message</a>
-                </div>
-              </article>
 
-              <article class="panel">
-                <div class="postCard__head">
-                  <div class="postCard__author">
-                    <div class="avatarMd" data-avatar="https://picsum.photos/seed/pulse_player_2/200/200"></div>
-                    <div>
-                      <div class="name">NovaAim</div>
-                      <div class="sub">PLAYER · US · @NovaAim</div>
-                    </div>
-                  </div>
-                  <span class="badge">Actif</span>
-                </div>
-                <div class="postCard__body">Joueuse flex FPS. Disponible pour scrims competitifs.</div>
-                <div class="postCard__actions">
-                  <a class="btn btn--ghost" href="{{ path('front_player_profile') }}">Voir profil</a>
-                  <a class="btn btn--primary" href="{{ path('front_friends') }}">Ajouter ami</a>
-                  <a class="btn btn--ghost" href="{{ path('front_messages') }}">Message</a>
-                </div>
-              </article>
+                    <div class="postCard__body">{{ user.bio ?? 'Profil joueur sur PULSE.' }}</div>
 
-              <article class="panel">
-                <div class="postCard__head">
-                  <div class="postCard__author">
-                    <div class="avatarMd" data-avatar="https://picsum.photos/seed/pulse_player_3/200/200"></div>
-                    <div>
-                      <div class="name">Kairo</div>
-                      <div class="sub">PLAYER · TN · @Kairo</div>
+                    <div class="postCard__actions">
+                      <a class="btn btn--ghost" href="{{ path('front_player_profile', {id: userId}) }}">Voir profil</a>
+                      {% if viewer_user %}
+                        {% if card.friend_status == 'friends' %}
+                          <button class="btn btn--soft" type="button" disabled>Vous etes amis</button>
+                        {% elseif card.friend_status == 'request_sent' %}
+                          <button class="btn btn--ghost" type="button" disabled>Demande envoyee</button>
+                        {% elseif card.friend_status == 'request_received' %}
+                          <a class="btn btn--ghost" href="{{ path('front_friends') }}">Voir demande</a>
+                        {% else %}
+                          <form method="post" action="{{ path('front_profile_add_friend', {id: userId}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('profile_add_friend_' ~ userId) }}">
+                            <button class="btn btn--primary" type="submit">Ajouter ami</button>
+                          </form>
+                        {% endif %}
+                        <a class="btn btn--ghost" href="{{ path('front_messages', {'with': userId}) }}">Message</a>
+                      {% else %}
+                        <a class="btn btn--primary" href="{{ path('front_login', {'_target_path': app.request.uri}) }}">Connexion requise</a>
+                      {% endif %}
                     </div>
-                  </div>
-                  <span class="badge">Nouveau</span>
-                </div>
-                <div class="postCard__body">Main entry fragger. Cherche equipe active sur Pulse Invitational.</div>
-                <div class="postCard__actions">
-                  <a class="btn btn--ghost" href="{{ path('front_player_profile') }}">Voir profil</a>
-                  <a class="btn btn--primary" href="{{ path('front_friends') }}">Ajouter ami</a>
-                  <a class="btn btn--ghost" href="{{ path('front_my_teams') }}">Inviter equipe</a>
-                </div>
-              </article>
+                  </article>
+                {% endfor %}
+              {% endif %}
             </section>
           </div>
 
           <aside class="socialStack">
-            <section class="panel">
+            <section class="panel gadget">
               <h3 class="panel__title">SUGGESTIONS</h3>
               <div class="socialQuickList">
-                <a class="listItem" href="{{ path('front_player_profile') }}"><span>Joueurs proches</span><span class="listItem__meta">12</span></a>
-                <a class="listItem" href="{{ path('front_players') }}"><span>Capitaines actifs</span><span class="listItem__meta">5</span></a>
-                <a class="listItem" href="{{ path('front_teams_explore') }}"><span>Equipes en recrutement</span><span class="listItem__meta">9</span></a>
-              </div>
-            </section>
-
-            <section class="panel">
-              <h3 class="panel__title">FILTRES RAPIDES</h3>
-              <div class="postCard__actions">
-                <button class="btn btn--ghost" type="button">FPS</button>
-                <button class="btn btn--ghost" type="button">MOBA</button>
-                <button class="btn btn--ghost" type="button">MENA</button>
-                <button class="btn btn--ghost" type="button">FR</button>
+                <a class="listItem" href="{{ path('front_players', {role: 'CAPTAIN'}) }}"><span>Capitaines actifs</span><span class="listItem__meta">Filtrer</span></a>
+                <a class="listItem" href="{{ path('front_players', {country: 'TN'}) }}"><span>Joueurs TN</span><span class="listItem__meta">Local</span></a>
+                <a class="listItem" href="{{ path('front_teams_explore') }}"><span>Equipes en recrutement</span><span class="listItem__meta">Explorer</span></a>
               </div>
             </section>
           </aside>

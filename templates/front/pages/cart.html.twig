@@ -3,67 +3,137 @@
 {% block title %}PULSE - Mon panier{% endblock %}
 
 {% block body %}
-
-
   {% include 'front/partials/_hero_mini.html.twig' with {
-  hero_kicker: 'JOUEUR',
-  hero_title: 'Mon panier',
-  hero_sub: 'Gérer les items du panier.',
-  breadcrumb_current: 'Mon panier'
-} %}
-
+    hero_kicker: 'JOUEUR',
+    hero_title: 'Mon panier',
+    hero_sub: 'Gerer les produits et finaliser la commande.',
+    breadcrumb_current: 'Mon panier'
+  } %}
 
   <main class="page">
     <section class="belowHero">
-
       <div class="layout">
-        
-  <aside class="sideNav">
-    <div class="sideNav__title">ESPACE JOUEUR</div>
-    <a class="" href="{{ path('front_dashboard') }}">Dashboard</a><a class="" href="{{ path('front_profile') }}">Mon profil</a><a class="" href="{{ path('front_players') }}">Recherche joueurs</a><a class="" href="{{ path('front_friends') }}">Amis</a><a class="" href="{{ path('front_messages') }}">Messages</a><a class="" href="{{ path('front_feed') }}">Fil d’actualité</a><a class="" href="{{ path('front_my_teams') }}">Mes équipes</a><a class="" href="{{ path('front_my_requests') }}">Mes demandes</a><a class="is-active" href="{{ path('front_orders') }}">Mes commandes</a><a class="" href="{{ path('front_notifications') }}">Notifications</a>
-  </aside>
+        {% include 'front/partials/_player_side_nav.html.twig' with { active: 'cart' } %}
 
-        <div>
-          
-        <div class="panel">
-          <div class="tableWrap">
-            <table class="table">
-              <thead><tr><th>Produit</th><th>Quantité</th><th>Prix</th><th>Total</th><th>Action</th></tr></thead>
-              <tbody>
-                <tr><td>Pulse Hoodie</td><td>1</td><td>89 DT</td><td>89 DT</td><td><button class="btn btn--ghost">Retirer</button></td></tr>
-                <tr><td>Mousepad XL</td><td>2</td><td>39 DT</td><td>78 DT</td><td><button class="btn btn--ghost">Retirer</button></td></tr>
-              </tbody>
-            </table>
+        <div class="socialShell">
+          <div class="socialStack">
+            {% for label, messages in app.flashes %}
+              {% for message in messages %}
+                <div class="listItem">
+                  <span>{{ message }}</span>
+                  <span class="badge {{ label == 'error' ? 'badge--danger' : (label == 'info' ? 'badge--info' : 'badge--success') }}">{{ label|upper }}</span>
+                </div>
+              {% endfor %}
+            {% endfor %}
+
+            <section class="panel">
+              <div class="panel__head">
+                <div>
+                  <h3 class="panel__title">ARTICLES DU PANIER</h3>
+                  <div class="panel__desc">{{ cart_total_quantity|default(0) }} article(s)</div>
+                </div>
+                {% if cart and cart.status %}
+                  <span class="badge {{ cart.status == 'OPEN' ? 'badge--success' : 'badge--warning' }}">{{ cart.status }}</span>
+                {% endif %}
+              </div>
+
+              {% if cart_items is empty %}
+                <div class="emptyState">
+                  Votre panier est vide.
+                  <div style="margin-top:10px;">
+                    <a class="btn btn--primary" href="{{ path('front_shop') }}">Aller a la boutique</a>
+                  </div>
+                </div>
+              {% else %}
+                <div class="tableWrap">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th>Produit</th>
+                        <th>Equipe</th>
+                        <th>Prix</th>
+                        <th>Quantite</th>
+                        <th>Total</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for item in cart_items %}
+                        {% set product = item.product %}
+                        {% set productId = product.productId ?? 0 %}
+                        <tr>
+                          <td>
+                            {% if productId > 0 %}
+                              <a href="{{ path('front_product_detail', {id: productId}) }}">{{ product.name }}</a>
+                            {% else %}
+                              {{ product.name }}
+                            {% endif %}
+                          </td>
+                          <td>{{ product.teamId ? product.teamId.name : '-' }}</td>
+                          <td>{{ item.unit_price|number_format(2, '.', ' ') }} DT</td>
+                          <td>
+                            {% if cart_is_editable %}
+                              <form method="post" action="{{ path('front_cart_item_update', {id: productId}) }}" class="inlineQtyForm">
+                                <input type="hidden" name="_token" value="{{ csrf_token('cart_item_update_' ~ productId) }}">
+                                <input class="input" type="number" min="0" name="quantity" value="{{ item.quantity }}" style="max-width:90px;">
+                                <button class="btn btn--ghost" type="submit">OK</button>
+                              </form>
+                            {% else %}
+                              {{ item.quantity }}
+                            {% endif %}
+                          </td>
+                          <td>{{ item.line_total|number_format(2, '.', ' ') }} DT</td>
+                          <td>
+                            {% if cart_is_editable %}
+                              <form method="post" action="{{ path('front_cart_item_remove', {id: productId}) }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('cart_item_remove_' ~ productId) }}">
+                                <button class="btn btn--ghost" type="submit">Retirer</button>
+                              </form>
+                            {% else %}
+                              <span class="listItem__meta">Verrouille</span>
+                            {% endif %}
+                          </td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              {% endif %}
+            </section>
           </div>
-          <div class="panel__actions" style="margin-top:10px;">
-            <a class="btn btn--primary" href="{{ path('front_checkout') }}">Passer commande</a>
-          </div>
-        </div>
-        
-      <div class="panel">
-        <div class="panel__head">
-          <div>
-            <h3 class="panel__title">TABLES UTILISÉES</h3>
-            <div class="panel__desc">Schéma réel + colonnes clés.</div>
-          </div>
-        </div>
-        <div class="list">
-          <div class="listItem"><span><b>carts</b></span><span class="listItem__meta">cart_id, user_id, status</span></div><div class="listItem"><span><b>cart_items</b></span><span class="listItem__meta">cart_id, product_id, quantity, unit_price_at_add</span></div><div class="listItem"><span><b>products</b></span><span class="listItem__meta">product_id, stock_qty, is_active</span></div>
+
+          <aside class="socialStack">
+            <section class="panel">
+              <h3 class="panel__title">RESUME</h3>
+              <div class="list">
+                <div class="listItem"><span>Articles</span><span class="listItem__meta">{{ cart_total_quantity|default(0) }}</span></div>
+                <div class="listItem"><span>Sous-total</span><span class="listItem__meta">{{ cart_subtotal|default(0)|number_format(2, '.', ' ') }} DT</span></div>
+              </div>
+
+              {% if locked_reason %}
+                <div class="emptyState" style="margin-top:12px;">{{ locked_reason }}</div>
+              {% elseif cart_items is not empty %}
+                <div class="panel__actions" style="margin-top:12px;">
+                  <a class="btn btn--primary" href="{{ path('front_checkout') }}">Passer commande</a>
+                </div>
+              {% endif %}
+            </section>
+
+            <section class="panel">
+              <h3 class="panel__title">RACCOURCIS</h3>
+              <div class="socialQuickList">
+                <a class="listItem" href="{{ path('front_shop') }}"><span>Retour boutique</span><span class="listItem__meta">Produits</span></a>
+                <a class="listItem" href="{{ path('front_orders') }}"><span>Mes commandes</span><span class="listItem__meta">Historique</span></a>
+                <a class="listItem" href="{{ path('front_notifications') }}"><span>Notifications</span><span class="listItem__meta">Suivi</span></a>
+              </div>
+            </section>
+          </aside>
         </div>
       </div>
-
-      
-        </div>
-      </div>
-
 
       {% include 'front/partials/_footer.html.twig' %}
-
     </section>
   </main>
 
   {% include 'front/partials/_auth_modal.html.twig' %}
-
 {% endblock %}
-
-

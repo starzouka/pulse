@@ -4,7 +4,6 @@
 {% set viewerId = viewer_user ? viewer_user.userId : 0 %}
 {% set avatarPath = profile_user.profileImageId ? profile_user.profileImageId.fileUrl : '' %}
 {% set avatarUrl = avatarPath ? (avatarPath starts with 'http' ? avatarPath : asset(avatarPath)) : 'https://picsum.photos/seed/pulse_profile_' ~ profileId ~ '/200/200' %}
-{% set coverUrl = 'https://picsum.photos/seed/pulse_cover_' ~ profileId ~ '/1200/420' %}
 
 {% block title %}
   PULSE - {{ is_own_profile ? 'Mon profil' : ('Profil de ' ~ (profile_user.displayName ?? profile_user.username)) }}
@@ -33,9 +32,8 @@
             {% endfor %}
           {% endfor %}
 
-          <section class="panel">
-            <div class="coverBlock" data-bg="{{ coverUrl }}"></div>
-            <div class="profileHeader" style="margin-top: -34px;">
+          <section class="panel profileIdentityPanel">
+            <div class="profileHeader">
               <div class="avatarLg" data-avatar="{{ avatarUrl }}"></div>
               <div>
                 <h3 style="margin:0;">{{ profile_user.displayName ?? profile_user.username }} (@{{ profile_user.username }})</h3>
@@ -95,91 +93,29 @@
             <div class="tabPanels" data-panels="profile-tabs">
               <section class="tabPanel {{ active_tab == 'posts' ? 'is-active' : '' }}" data-panel="posts">
                 {% if is_own_profile and viewer_user %}
-                  <form class="panel" method="post" action="{{ path('front_profile_post_create') }}">
-                    <input type="hidden" name="_token" value="{{ csrf_token('profile_post_create') }}">
-                    <div class="field">
-                      <span class="field__label">Nouveau post</span>
-                      <textarea class="textarea" name="content_text" placeholder="Partagez une mise a jour..."></textarea>
-                    </div>
-                    <div class="postComposer__footer">
-                      <label class="field" style="min-width:220px; margin:0;">
-                        <span class="field__label">Visibilite</span>
-                        <select class="input" name="visibility">
-                          <option value="PUBLIC">Public</option>
-                          <option value="FRIENDS">Amis</option>
-                          <option value="TEAM_ONLY">Equipe</option>
-                        </select>
-                      </label>
-                      <button class="btn btn--primary" type="submit">Publier</button>
-                    </div>
-                  </form>
+                  {% include 'front/partials/_post_composer.html.twig' with {
+                    viewer_user: viewer_user,
+                    action_route: 'front_profile_post_create',
+                    csrf_token_id: 'profile_post_create',
+                    placeholder: 'Partagez une mise a jour...'
+                  } %}
                 {% endif %}
 
                 {% if posts is empty %}
                   <div class="emptyState">Aucune publication pour le moment.</div>
                 {% else %}
                   {% for postData in posts %}
-                    {% set post = postData.post %}
-                    {% set postId = post.postId ?? 0 %}
-                    <article class="panel profilePost">
-                      <div class="postCard__head">
-                        <div class="postCard__author">
-                          <div class="avatarMd" data-avatar="{{ avatarUrl }}"></div>
-                          <div>
-                            <div class="name">{{ profile_user.displayName ?? profile_user.username }}</div>
-                            <div class="sub">{{ post.createdAt ? post.createdAt|date('d/m/Y H:i') : '-' }} · {{ post.visibility }}</div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div class="postCard__body">{{ post.contentText }}</div>
-
-                      <div class="postReactionsSummary">
-                        <span>{{ postData.likes_count }} J'aime</span>
-                        <span>{{ postData.comments_count }} commentaires</span>
-                      </div>
-
-                      <div class="postReactionsBar">
-                        {% if viewer_user %}
-                          <form method="post" action="{{ path('front_profile_post_like', {id: postId}) }}">
-                            <input type="hidden" name="_token" value="{{ csrf_token('profile_post_like_' ~ postId) }}">
-                            <input type="hidden" name="profile_id" value="{{ profileId }}">
-                            <button class="reactionBtn {{ postData.is_liked_by_viewer ? 'is-active' : '' }}" type="submit">J'aime</button>
-                          </form>
-
-                          <form method="post" action="{{ path('front_profile_post_comment', {id: postId}) }}" class="commentInlineForm">
-                            <input type="hidden" name="_token" value="{{ csrf_token('profile_post_comment_' ~ postId) }}">
-                            <input type="hidden" name="profile_id" value="{{ profileId }}">
-                            <input class="input" type="text" name="content_text" placeholder="Ecrire un commentaire..." required>
-                            <button class="reactionBtn" type="submit">Commenter</button>
-                          </form>
-
-                          <form method="post" action="{{ path('front_profile_post_report', {id: postId}) }}" class="reportInlineForm">
-                            <input type="hidden" name="_token" value="{{ csrf_token('profile_post_report_' ~ postId) }}">
-                            <input type="hidden" name="profile_id" value="{{ profileId }}">
-                            <input class="input" type="text" name="reason" placeholder="Raison du signalement" maxlength="255">
-                            <button class="reactionBtn reactionBtn--danger" type="submit">Report</button>
-                          </form>
-                        {% else %}
-                          <a class="btn btn--ghost" href="{{ path('front_login', {'_target_path': app.request.uri}) }}">Connectez-vous pour interagir</a>
-                        {% endif %}
-                      </div>
-
-                      {% if postData.comments is not empty %}
-                        <div class="postCommentsList">
-                          {% for comment in postData.comments %}
-                            {% set author = comment.authorUserId %}
-                            <div class="listItem">
-                              <span>
-                                <b>{{ author ? (author.displayName ?? author.username) : 'Utilisateur' }}</b>
-                                {{ comment.contentText }}
-                              </span>
-                              <span class="listItem__meta">{{ comment.createdAt ? comment.createdAt|date('d/m H:i') : '' }}</span>
-                            </div>
-                          {% endfor %}
-                        </div>
-                      {% endif %}
-                    </article>
+                    {% include 'front/partials/_post_card.html.twig' with {
+                      post_data: postData,
+                      viewer_user: viewer_user,
+                      like_route: 'front_profile_post_like',
+                      comment_route: 'front_profile_post_comment',
+                      report_route: 'front_profile_post_report',
+                      like_token_prefix: 'profile_post_like_',
+                      comment_token_prefix: 'profile_post_comment_',
+                      report_token_prefix: 'profile_post_report_',
+                      profile_id: profileId
+                    } %}
                   {% endfor %}
                 {% endif %}
               </section>

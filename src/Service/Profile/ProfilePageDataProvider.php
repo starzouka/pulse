@@ -9,6 +9,7 @@ use App\Entity\User;
 use App\Repository\CommentRepository;
 use App\Repository\FriendRequestRepository;
 use App\Repository\FriendshipRepository;
+use App\Repository\PostImageRepository;
 use App\Repository\PostLikeRepository;
 use App\Repository\PostRepository;
 use App\Repository\TeamMemberRepository;
@@ -17,6 +18,7 @@ final class ProfilePageDataProvider
 {
     public function __construct(
         private readonly PostRepository $postRepository,
+        private readonly PostImageRepository $postImageRepository,
         private readonly PostLikeRepository $postLikeRepository,
         private readonly CommentRepository $commentRepository,
         private readonly FriendshipRepository $friendshipRepository,
@@ -33,6 +35,7 @@ final class ProfilePageDataProvider
      *   teams: list<Team>,
      *   posts: list<array{
      *     post: \App\Entity\Post,
+     *     images: list<\App\Entity\Image>,
      *     likes_count: int,
      *     comments_count: int,
      *     is_liked_by_viewer: bool,
@@ -85,9 +88,11 @@ final class ProfilePageDataProvider
             ['createdAt' => 'DESC'],
             25,
         );
+        $imagesByPostId = $this->postImageRepository->findImagesByPosts($posts);
 
         $postsData = [];
         foreach ($posts as $post) {
+            $postId = $post->getPostId();
             $likesCount = $this->postLikeRepository->count(['postId' => $post]);
             $commentsCount = $this->commentRepository->count([
                 'postId' => $post,
@@ -105,6 +110,7 @@ final class ProfilePageDataProvider
 
             $postsData[] = [
                 'post' => $post,
+                'images' => $postId !== null ? ($imagesByPostId[$postId] ?? []) : [],
                 'likes_count' => $likesCount,
                 'comments_count' => $commentsCount,
                 'is_liked_by_viewer' => $isLikedByViewer,
@@ -144,4 +150,3 @@ final class ProfilePageDataProvider
         ];
     }
 }
-

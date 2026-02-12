@@ -1,62 +1,82 @@
-{% extends 'base.html.twig' %}
+﻿{% extends 'base.html.twig' %}
 
-{% block title %}PULSE - Détail match{% endblock %}
+{% set matchId = match.matchId ?? 0 %}
+{% set tournamentId = tournament ? (tournament.tournamentId ?? 0) : 0 %}
+
+{% block title %}PULSE - Detail match{% endblock %}
 
 {% block body %}
-
-
   {% include 'front/partials/_hero_mini.html.twig' with {
-  hero_kicker: 'MATCH',
-  hero_title: 'Détail match',
-  hero_sub: 'Scores et équipes participantes.',
-  breadcrumb_current: 'Détail match'
-} %}
-
+    hero_kicker: 'MATCH',
+    hero_title: 'Detail match',
+    hero_sub: 'Scores, statut et equipes participantes.',
+    breadcrumb_current: 'Detail match'
+  } %}
 
   <main class="page">
     <section class="belowHero">
-
       <div class="layout">
         <section class="panel">
-          <h3 style="margin:0;">Nebula Five vs North Hydra</h3>
-          <p class="muted">Tournoi: CS2 Arena Cup • Round: Quarterfinal • BO3</p>
-          <div class="list" style="margin-top:10px;">
-            <div class="listItem"><span>Nebula Five</span><span class="badge badge--success">2</span></div>
-            <div class="listItem"><span>North Hydra</span><span class="badge">1</span></div>
-          </div>
+          <h3 style="margin:0;">{{ match_label }}</h3>
+          <p class="muted">
+            Tournoi: {{ tournament ? tournament.title : '-' }}
+            · Round: {{ match.roundName ?: '-' }}
+            {% if match.bestOf %} · BO{{ match.bestOf }}{% endif %}
+          </p>
+
+          {% if match_teams is empty %}
+            <div class="emptyState" style="margin-top:10px;">Aucune equipe renseignee pour ce match.</div>
+          {% else %}
+            <div class="list" style="margin-top:10px;">
+              {% for relation in match_teams %}
+                {% set team = relation.teamId %}
+                {% set score = relation.score is not null ? relation.score : '-' %}
+                <div class="listItem">
+                  <span>
+                    <b>{{ team ? team.name : 'Equipe' }}</b>
+                    {% if relation.isWinner is same as(true) %}
+                      <span class="badge badge--success">WINNER</span>
+                    {% endif %}
+                  </span>
+                  <span class="badge {{ relation.isWinner is same as(true) ? 'badge--success' : '' }}">{{ score }}</span>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
         </section>
+
         <aside class="panel">
           <h3 class="panel__title">INFOS</h3>
+          {% set status = match.status|default('SCHEDULED') %}
+          {% set statusClass = status == 'ONGOING' ? 'badge--warning' : (status == 'FINISHED' ? 'badge--success' : (status == 'CANCELLED' ? 'badge--danger' : 'badge--info')) %}
           <div class="list">
-            <div class="listItem"><span>Status</span><span class="badge badge--success">FINISHED</span></div>
-            <div class="listItem"><span>Heure</span><span class="listItem__meta">20:00</span></div>
-            <div class="listItem"><span>Arbitre</span><span class="listItem__meta">Pulse Admin</span></div>
+            <div class="listItem"><span>Status</span><span class="badge {{ statusClass }}">{{ status }}</span></div>
+            <div class="listItem"><span>Heure</span><span class="listItem__meta">{{ match.scheduledAt ? match.scheduledAt|date('d/m/Y H:i') : 'Non planifie' }}</span></div>
+            <div class="listItem"><span>Jeu</span><span class="listItem__meta">{{ game ? game.name : '-' }}</span></div>
+            <div class="listItem"><span>Categorie</span><span class="listItem__meta">{{ game and game.categoryId ? game.categoryId.name : '-' }}</span></div>
+            <div class="listItem"><span>Resultat soumis par</span><span class="listItem__meta">{{ match.resultSubmittedByUserId ? (match.resultSubmittedByUserId.displayName ?? match.resultSubmittedByUserId.username) : 'N/A' }}</span></div>
+            <div class="listItem"><span>Match ID</span><span class="listItem__meta">#{{ matchId }}</span></div>
+          </div>
+
+          {% if winner_team_names is not empty %}
+            <div class="listItem" style="margin-top:10px;">
+              <span>Gagnant(s)</span>
+              <span class="listItem__meta">{{ winner_team_names|join(', ') }}</span>
+            </div>
+          {% endif %}
+
+          <div class="postCard__actions" style="margin-top:10px;">
+            <a class="btn btn--ghost" href="{{ path('front_matches') }}">Retour matchs</a>
+            {% if tournamentId > 0 %}
+              <a class="btn btn--ghost" href="{{ path('front_tournament_detail', {id: tournamentId}) }}">Voir tournoi</a>
+            {% endif %}
           </div>
         </aside>
       </div>
 
-      
-      <div class="panel">
-        <div class="panel__head">
-          <div>
-            <h3 class="panel__title">TABLES UTILISÉES</h3>
-            <div class="panel__desc">Schéma réel + colonnes clés.</div>
-          </div>
-        </div>
-        <div class="list">
-          <div class="listItem"><span><b>matches</b></span><span class="listItem__meta">match_id, tournament_id, status, round_name, scheduled_at, best_of</span></div><div class="listItem"><span><b>match_teams</b></span><span class="listItem__meta">match_id, team_id, score, is_winner</span></div><div class="listItem"><span><b>teams</b></span><span class="listItem__meta">team_id, name, logo_image_id</span></div><div class="listItem"><span><b>images</b></span><span class="listItem__meta">image_id, file_url</span></div>
-        </div>
-      </div>
-
-    
-
       {% include 'front/partials/_footer.html.twig' %}
-
     </section>
   </main>
 
   {% include 'front/partials/_auth_modal.html.twig' %}
-
 {% endblock %}
-
-

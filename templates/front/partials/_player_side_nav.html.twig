@@ -10,6 +10,7 @@
   <a class="{{ active == 'feed' ? 'is-active' : '' }}" href="{{ path('front_feed') }}">Fil d'actualite</a>
   <a class="{{ active == 'my_teams' ? 'is-active' : '' }}" href="{{ path('front_my_teams') }}">Mes equipes</a>
   <a class="{{ active == 'my_requests' ? 'is-active' : '' }}" href="{{ path('front_my_requests') }}">Mes demandes</a>
+  <a class="{{ active == 'cart' ? 'is-active' : '' }}" href="{{ path('front_cart') }}">Mon panier</a>
   <a class="{{ active in ['orders', 'order_detail'] ? 'is-active' : '' }}" href="{{ path('front_orders') }}">Mes commandes</a>
   <a class="{{ active == 'notifications' ? 'is-active' : '' }}" href="{{ path('front_notifications') }}">Notifications</a>
 </aside>

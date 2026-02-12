@@ -1,80 +1,114 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}PULSE - Demandes rejoindre{% endblock %}
+{% block title %}PULSE - Demandes equipe{% endblock %}
 
 {% block body %}
-
-
   {% include 'front/partials/_hero_mini.html.twig' with {
-  hero_kicker: 'CAPITAINE',
-  hero_title: 'Demandes rejoindre',
-  hero_sub: 'Accepter / refuser les demandes.',
-  breadcrumb_current: 'Demandes rejoindre'
-} %}
-
+    hero_kicker: 'CAPITAINE',
+    hero_title: 'Demandes',
+    hero_sub: 'Validation des demandes de rejoindre equipe.',
+    breadcrumb_current: 'Demandes'
+  } %}
 
   <main class="page">
     <section class="belowHero">
-
       <div class="layout">
-        
-  <aside class="sideNav">
-    <div class="sideNav__title">ESPACE CAPITAINE</div>
-    <a class="" href="{{ path('front_captain_team_manage') }}">Mon équipe</a><a class="" href="{{ path('front_captain_members') }}">Membres</a><a class="is-active" href="{{ path('front_captain_requests') }}">Demandes</a><a class="" href="{{ path('front_captain_invite') }}">Inviter</a><a class="" href="{{ path('front_captain_products') }}">Produits</a><a class="" href="{{ path('front_captain_orders') }}">Commandes</a><a class="" href="{{ path('front_captain_tournaments') }}">Tournois</a>
-  </aside>
+        {% include 'front/partials/_captain_side_nav.html.twig' with {
+          active: 'requests',
+          active_team: active_team
+        } %}
 
         <div>
-          
-        
-          <div class="panel">
+          {% include 'front/partials/_captain_team_selector.html.twig' with {
+            captain_teams: captain_teams,
+            active_team: active_team,
+            selector_route: 'front_captain_requests'
+          } %}
+
+          <form class="panel" method="get" action="{{ path('front_captain_requests') }}">
             <div class="filtersRow">
+              <input type="hidden" name="team" value="{{ active_team.teamId }}">
               <div class="select">
-                <select>
-                  <option>Équipe active</option>
-                  <option>Nebula Five</option>
-                  <option>North Hydra</option>
+                <select name="status">
+                  <option value="">Tous les statuts</option>
+                  {% for status in status_options %}
+                    <option value="{{ status }}" {{ status_filter == status ? 'selected' : '' }}>{{ status }}</option>
+                  {% endfor %}
                 </select>
               </div>
-              <button class="btn btn--ghost" type="button">Changer</button>
+              <button class="btn btn--ghost" type="submit">Filtrer</button>
             </div>
-          </div>
+          </form>
 
-        <div class="panel">
-          <div class="tableWrap">
-            <table class="table">
-              <thead><tr><th>Joueur</th><th>Date</th><th>Statut</th><th>Actions</th></tr></thead>
-              <tbody>
-                <tr><td>Kairo</td><td>02/02/2026</td><td><span class="badge">PENDING</span></td><td><button class="btn btn--primary">Accepter</button></td></tr>
-                <tr><td>NovaAim</td><td>03/02/2026</td><td><span class="badge">PENDING</span></td><td><button class="btn btn--ghost">Refuser</button></td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-        
-      <div class="panel">
-        <div class="panel__head">
-          <div>
-            <h3 class="panel__title">TABLES UTILISÉES</h3>
-            <div class="panel__desc">Schéma réel + colonnes clés.</div>
-          </div>
-        </div>
-        <div class="list">
-          <div class="listItem"><span><b>team_join_requests</b></span><span class="listItem__meta">request_id, team_id, user_id, status, responded_by_captain_id</span></div><div class="listItem"><span><b>team_members</b></span><span class="listItem__meta">team_id, user_id</span></div><div class="listItem"><span><b>notifications</b></span><span class="listItem__meta">notification_id, user_id, type</span></div>
+          <section class="panel">
+            <div class="panel__head">
+              <div>
+                <h3 class="panel__title">DEMANDES DE REJOINDRE</h3>
+                <div class="panel__desc">{{ join_requests|length }} demande(s) sur {{ active_team.name }}</div>
+              </div>
+            </div>
+
+            <div class="tableWrap" style="margin-top:10px;">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Joueur</th>
+                    <th>Date</th>
+                    <th>Note</th>
+                    <th>Statut</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for join_request in join_requests %}
+                    {% set applicant = join_request.userId %}
+                    <tr>
+                      <td>{{ applicant.displayName ?: applicant.username }}</td>
+                      <td>{{ join_request.createdAt ? join_request.createdAt|date('d/m/Y H:i') : '-' }}</td>
+                      <td>{{ join_request.note ?: '-' }}</td>
+                      <td>
+                        {% set status = join_request.status ?: 'PENDING' %}
+                        <span class="badge {{ status == 'ACCEPTED' ? 'badge--success' : (status == 'REFUSED' ? 'badge--danger' : (status == 'PENDING' ? 'badge--info' : '')) }}">
+                          {{ status }}
+                        </span>
+                      </td>
+                      <td>
+                        {% if join_request.status == 'PENDING' %}
+                          <div class="postCard__actions">
+                            <form method="post" action="{{ path('front_captain_requests_respond', {id: join_request.requestId}) }}">
+                              <input type="hidden" name="_token" value="{{ csrf_token('captain_join_request_' ~ join_request.requestId) }}">
+                              <input type="hidden" name="team_id" value="{{ active_team.teamId }}">
+                              <input type="hidden" name="decision" value="ACCEPTED">
+                              <button class="btn btn--primary" type="submit">Accepter</button>
+                            </form>
+                            <form method="post" action="{{ path('front_captain_requests_respond', {id: join_request.requestId}) }}">
+                              <input type="hidden" name="_token" value="{{ csrf_token('captain_join_request_' ~ join_request.requestId) }}">
+                              <input type="hidden" name="team_id" value="{{ active_team.teamId }}">
+                              <input type="hidden" name="decision" value="REFUSED">
+                              <button class="btn btn--ghost" type="submit">Refuser</button>
+                            </form>
+                          </div>
+                        {% else %}
+                          -
+                        {% endif %}
+                      </td>
+                    </tr>
+                  {% else %}
+                    <tr>
+                      <td colspan="5">Aucune demande disponible.</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </section>
         </div>
       </div>
-
-      
-        </div>
-      </div>
-
 
       {% include 'front/partials/_footer.html.twig' %}
-
     </section>
   </main>
 
   {% include 'front/partials/_auth_modal.html.twig' %}
-
 {% endblock %}
-
 

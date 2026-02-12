@@ -3,71 +3,94 @@
 {% block title %}PULSE - Checkout{% endblock %}
 
 {% block body %}
-
-
   {% include 'front/partials/_hero_mini.html.twig' with {
-  hero_kicker: 'JOUEUR',
-  hero_title: 'Checkout',
-  hero_sub: 'Finaliser la commande.',
-  breadcrumb_current: 'Checkout'
-} %}
-
+    hero_kicker: 'JOUEUR',
+    hero_title: 'Checkout',
+    hero_sub: 'Confirmer votre commande.',
+    breadcrumb_current: 'Checkout'
+  } %}
 
   <main class="page">
     <section class="belowHero">
-
       <div class="layout">
-        
-  <aside class="sideNav">
-    <div class="sideNav__title">ESPACE JOUEUR</div>
-    <a class="" href="{{ path('front_dashboard') }}">Dashboard</a><a class="" href="{{ path('front_profile') }}">Mon profil</a><a class="" href="{{ path('front_players') }}">Recherche joueurs</a><a class="" href="{{ path('front_friends') }}">Amis</a><a class="" href="{{ path('front_messages') }}">Messages</a><a class="" href="{{ path('front_feed') }}">Fil d’actualité</a><a class="" href="{{ path('front_my_teams') }}">Mes équipes</a><a class="" href="{{ path('front_my_requests') }}">Mes demandes</a><a class="is-active" href="{{ path('front_orders') }}">Mes commandes</a><a class="" href="{{ path('front_notifications') }}">Notifications</a>
-  </aside>
+        {% include 'front/partials/_player_side_nav.html.twig' with { active: 'cart' } %}
 
-        <div>
-          
-        <div class="panel">
-          <h3 class="panel__title">Récapitulatif</h3>
-          <div class="list">
-            <div class="listItem"><span>Pulse Hoodie x1</span><span class="listItem__meta">89 DT</span></div>
-            <div class="listItem"><span>Mousepad XL x2</span><span class="listItem__meta">78 DT</span></div>
+        <div class="socialShell">
+          <div class="socialStack">
+            {% for label, messages in app.flashes %}
+              {% for message in messages %}
+                <div class="listItem">
+                  <span>{{ message }}</span>
+                  <span class="badge {{ label == 'error' ? 'badge--danger' : (label == 'info' ? 'badge--info' : 'badge--success') }}">{{ label|upper }}</span>
+                </div>
+              {% endfor %}
+            {% endfor %}
+
+            <section class="panel">
+              <h3 class="panel__title">RECAPITULATIF</h3>
+
+              <div class="list">
+                {% for item in cart_items %}
+                  {% set product = item.product %}
+                  <div class="listItem">
+                    <span>{{ product.name }} x{{ item.quantity }}</span>
+                    <span class="listItem__meta">{{ item.line_total|number_format(2, '.', ' ') }} DT</span>
+                  </div>
+                {% endfor %}
+              </div>
+
+              <div class="listItem" style="margin-top:8px;">
+                <span>Total</span>
+                <span class="badge badge--success">{{ cart_subtotal|number_format(2, '.', ' ') }} DT</span>
+              </div>
+            </section>
+
+            <form class="panel" method="post" action="{{ path('front_checkout') }}">
+              <input type="hidden" name="_token" value="{{ csrf_token('checkout_confirm') }}">
+
+              <div class="formGrid">
+                <label class="field">
+                  <span class="field__label">Adresse de livraison</span>
+                  <textarea class="textarea" name="shipping_address" rows="3" placeholder="Adresse complete..."></textarea>
+                </label>
+
+                <label class="field">
+                  <span class="field__label">Telephone</span>
+                  <input class="input" type="tel" name="phone_for_delivery" value="{{ viewer_user.phone ?? '' }}" placeholder="+216..." />
+                </label>
+
+                <label class="field">
+                  <span class="field__label">Methode de paiement</span>
+                  <select class="input" name="payment_method">
+                    <option value="CARD">CARD</option>
+                    <option value="CASH">CASH</option>
+                    <option value="OTHER">OTHER</option>
+                  </select>
+                </label>
+              </div>
+
+              <div class="formActions" style="margin-top:12px;">
+                <button class="btn btn--primary" type="submit">Confirmer la commande</button>
+                <a class="btn btn--ghost" href="{{ path('front_cart') }}">Retour panier</a>
+              </div>
+            </form>
           </div>
-          <div class="listItem" style="margin-top:8px;"><span>Total</span><span class="badge badge--success">167 DT</span></div>
-        </div>
-        <form class="panel" style="margin-top:12px;">
-          <div class="formGrid">
-            <label class="field"><span class="field__label">Adresse</span><textarea class="textarea"></textarea></label>
-            <label class="field"><span class="field__label">Téléphone</span><input class="input" type="tel" /></label>
-            <label class="field"><span class="field__label">Méthode de paiement</span><select class="input"><option>CARD</option><option>CASH</option></select></label>
-          </div>
-          <div class="formActions" style="margin-top:12px;">
-            <button class="btn btn--primary" type="submit">Confirmer</button>
-          </div>
-        </form>
-        
-      <div class="panel">
-        <div class="panel__head">
-          <div>
-            <h3 class="panel__title">TABLES UTILISÉES</h3>
-            <div class="panel__desc">Schéma réel + colonnes clés.</div>
-          </div>
-        </div>
-        <div class="list">
-          <div class="listItem"><span><b>orders</b></span><span class="listItem__meta">order_id, cart_id, user_id, status, total_amount</span></div><div class="listItem"><span><b>carts</b></span><span class="listItem__meta">cart_id, status</span></div><div class="listItem"><span><b>cart_items</b></span><span class="listItem__meta">cart_id, product_id, quantity</span></div>
+
+          <aside class="socialStack">
+            <section class="panel">
+              <h3 class="panel__title">INFO</h3>
+              <div class="list">
+                <div class="listItem"><span>Nombre d'articles</span><span class="listItem__meta">{{ cart_items|length }}</span></div>
+                <div class="listItem"><span>Montant</span><span class="listItem__meta">{{ cart_subtotal|number_format(2, '.', ' ') }} DT</span></div>
+              </div>
+            </section>
+          </aside>
         </div>
       </div>
-
-      
-        </div>
-      </div>
-
 
       {% include 'front/partials/_footer.html.twig' %}
-
     </section>
   </main>
 
   {% include 'front/partials/_auth_modal.html.twig' %}
-
 {% endblock %}
-
-

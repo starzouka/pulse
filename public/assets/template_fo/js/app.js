@@ -73,6 +73,10 @@ function wireReveal(){
   });
 
   if (reduceMotion) return;
+  if (!("IntersectionObserver" in window)) {
+    pending.forEach((el) => el.classList.add("is-visible"));
+    return;
+  }
 
   const io = new IntersectionObserver(
     (entries) => {
@@ -87,6 +91,15 @@ function wireReveal(){
   );
 
   pending.forEach((el) => io.observe(el));
+
+  // Safety net: avoid keeping content hidden if observer callbacks are delayed.
+  window.setTimeout(() => {
+    pending.forEach((el) => {
+      if (!el.classList.contains("is-visible")) {
+        el.classList.add("is-visible");
+      }
+    });
+  }, 1400);
 }
 
 function wireTabs(){
@@ -107,6 +120,223 @@ function wireTabs(){
     buttons.forEach(btn => {
       btn.addEventListener("click", () => activate(btn.dataset.tab));
     });
+  });
+}
+
+function wirePostCards(scope = document){
+  const carousels = scope.querySelectorAll("[data-post-carousel]");
+  carousels.forEach((carousel) => {
+    if (carousel.dataset.postCarouselBound === "1") return;
+    carousel.dataset.postCarouselBound = "1";
+
+    const slides = carousel.querySelectorAll(".postMedia__slide");
+    if (!slides.length) return;
+
+    const currentOutput = carousel.querySelector("[data-carousel-current]");
+
+    const setSlide = (index) => {
+      let nextIndex = index;
+      if (nextIndex < 0) nextIndex = slides.length - 1;
+      if (nextIndex >= slides.length) nextIndex = 0;
+
+      carousel.dataset.index = String(nextIndex);
+      slides.forEach((slide, i) => {
+        slide.classList.toggle("is-active", i === nextIndex);
+      });
+
+      if (currentOutput) currentOutput.textContent = String(nextIndex + 1);
+    };
+
+    setSlide(0);
+
+    const prev = carousel.querySelector("[data-carousel-prev]");
+    const next = carousel.querySelector("[data-carousel-next]");
+
+    prev?.addEventListener("click", () => {
+      const current = Number.parseInt(carousel.dataset.index || "0", 10) || 0;
+      setSlide(current - 1);
+    });
+
+    next?.addEventListener("click", () => {
+      const current = Number.parseInt(carousel.dataset.index || "0", 10) || 0;
+      setSlide(current + 1);
+    });
+  });
+
+  if (document.body.dataset.postCardsUiBound === "1") {
+    return;
+  }
+  document.body.dataset.postCardsUiBound = "1";
+
+  const closeAllPostMenus = () => {
+    document.querySelectorAll("[data-post-menu-wrap]").forEach((wrap) => {
+      const menu = wrap.querySelector("[data-post-menu]");
+      const toggle = wrap.querySelector("[data-post-menu-toggle]");
+      if (!menu || !toggle) return;
+      menu.hidden = true;
+      toggle.setAttribute("aria-expanded", "false");
+    });
+  };
+
+  document.addEventListener("click", (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+
+    const toggleBtn = target.closest("[data-post-menu-toggle]");
+    if (toggleBtn) {
+      const wrap = toggleBtn.closest("[data-post-menu-wrap]");
+      const menu = wrap?.querySelector("[data-post-menu]");
+      if (!menu) return;
+
+      const shouldOpen = menu.hidden;
+      closeAllPostMenus();
+      menu.hidden = !shouldOpen;
+      toggleBtn.setAttribute("aria-expanded", shouldOpen ? "true" : "false");
+      return;
+    }
+
+    const reportOpenBtn = target.closest("[data-post-report-open]");
+    if (reportOpenBtn) {
+      const card = reportOpenBtn.closest("[data-post-card]");
+      const reportForm = card?.querySelector("[data-post-report-form]");
+      if (reportForm) {
+        reportForm.hidden = false;
+        const firstInput = reportForm.querySelector("input[name='reason']");
+        if (firstInput instanceof HTMLElement) firstInput.focus();
+      }
+      closeAllPostMenus();
+      return;
+    }
+
+    const reportCancelBtn = target.closest("[data-post-report-cancel]");
+    if (reportCancelBtn) {
+      const reportForm = reportCancelBtn.closest("[data-post-report-form]");
+      if (reportForm) reportForm.hidden = true;
+      return;
+    }
+
+    if (!target.closest("[data-post-menu-wrap]")) {
+      closeAllPostMenus();
+    }
+  });
+}
+
+function wireInfiniteFeed(){
+  const feedContainers = document.querySelectorAll("[data-infinite-feed]");
+  feedContainers.forEach((container) => {
+    if (container.dataset.feedBound === "1") return;
+    container.dataset.feedBound = "1";
+
+    const endpoint = container.dataset.feedEndpoint || "";
+    if (!endpoint) return;
+
+    const limit = Math.max(1, Number.parseInt(container.dataset.feedLimit || "8", 10) || 8);
+    let offset = Math.max(0, Number.parseInt(container.dataset.feedOffset || "0", 10) || 0);
+    let hasMore = container.dataset.feedHasMore === "1";
+    let isLoading = false;
+
+    const parent = container.parentElement || document;
+    const emptyState = parent.querySelector("[data-feed-empty]");
+    const loader = parent.querySelector("[data-feed-loader]");
+    const endState = parent.querySelector("[data-feed-end]");
+    const sentinel = parent.querySelector("[data-feed-sentinel]");
+
+    const setEndVisibility = () => {
+      if (!endState) return;
+      endState.hidden = hasMore;
+    };
+
+    setEndVisibility();
+    if (emptyState && container.querySelector("[data-post-card]")) {
+      emptyState.remove();
+    }
+
+    const loadMore = async () => {
+      if (!hasMore || isLoading) return;
+      isLoading = true;
+      if (loader) loader.hidden = false;
+
+      try {
+        const url = new URL(endpoint, window.location.origin);
+        url.searchParams.set("offset", String(offset));
+        url.searchParams.set("limit", String(limit));
+        url.searchParams.set("redirect", window.location.href);
+
+        const response = await fetch(url.toString(), {
+          method: "GET",
+          headers: {
+            "X-Requested-With": "XMLHttpRequest",
+            "Accept": "application/json"
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`Feed chunk failed: ${response.status}`);
+        }
+
+        const payload = await response.json();
+        const html = typeof payload.html === "string" ? payload.html : "";
+        const nextOffset = Number.parseInt(String(payload.next_offset ?? offset), 10);
+        const chunkCount = Number.parseInt(String(payload.count ?? 0), 10);
+
+        if (html !== "") {
+          container.insertAdjacentHTML("beforeend", html);
+          wirePostCards(container);
+          applyDatasetBackgrounds();
+        }
+
+        if (emptyState && container.querySelector("[data-post-card]")) {
+          emptyState.remove();
+        }
+
+        offset = Number.isNaN(nextOffset) ? (offset + Math.max(0, chunkCount)) : Math.max(offset, nextOffset);
+        hasMore = payload.has_more === true;
+        setEndVisibility();
+      } catch (error) {
+        console.error(error);
+        hasMore = false;
+        setEndVisibility();
+      } finally {
+        isLoading = false;
+        if (loader) loader.hidden = true;
+      }
+    };
+
+    if (!sentinel) {
+      if (!container.querySelector("[data-post-card]") && hasMore) {
+        loadMore();
+      }
+      return;
+    }
+
+    if (!("IntersectionObserver" in window)) {
+      const onScroll = () => {
+        if (!hasMore || isLoading) return;
+        const rect = sentinel.getBoundingClientRect();
+        if (rect.top <= (window.innerHeight + 220)) {
+          loadMore();
+        }
+      };
+
+      window.addEventListener("scroll", onScroll, { passive: true });
+      window.addEventListener("resize", onScroll);
+      onScroll();
+      return;
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          loadMore();
+        }
+      });
+    }, { rootMargin: "0px 0px 220px 0px" });
+
+    observer.observe(sentinel);
+
+    if (!container.querySelector("[data-post-card]") && hasMore) {
+      loadMore();
+    }
   });
 }
 
@@ -1044,6 +1274,8 @@ function init(){
   wireHorizontalSectionScroll();
   wireSideNav();
   wireTabs();
+  wirePostCards();
+  wireInfiniteFeed();
   applyDatasetBackgrounds();
 
   // Render homepage sections

@@ -1,4 +1,4 @@
-{% extends 'base.html.twig' %}
+﻿{% extends 'base.html.twig' %}
 
 {% block title %}PULSE - Mes commandes{% endblock %}
 
@@ -18,58 +18,63 @@
         <div class="socialShell">
           <div class="socialStack">
             <section class="panel">
-              <div class="filtersRow">
+              <form class="filtersRow" method="get" action="{{ path('front_orders') }}">
                 <div class="select">
-                  <select>
-                    <option>Tous statuts</option>
-                    <option>PENDING</option>
-                    <option>PAID</option>
-                    <option>SHIPPED</option>
-                    <option>DELIVERED</option>
+                  <select name="status">
+                    <option value="" {{ filters.status is empty ? 'selected' : '' }}>Tous statuts</option>
+                    <option value="PENDING" {{ filters.status == 'PENDING' ? 'selected' : '' }}>PENDING</option>
+                    <option value="PAID" {{ filters.status == 'PAID' ? 'selected' : '' }}>PAID</option>
+                    <option value="CANCELLED" {{ filters.status == 'CANCELLED' ? 'selected' : '' }}>CANCELLED</option>
+                    <option value="SHIPPED" {{ filters.status == 'SHIPPED' ? 'selected' : '' }}>SHIPPED</option>
+                    <option value="DELIVERED" {{ filters.status == 'DELIVERED' ? 'selected' : '' }}>DELIVERED</option>
                   </select>
                 </div>
-                <input class="input" type="date" />
-                <button class="btn btn--ghost" type="button">Filtrer</button>
-              </div>
+                <input class="input" type="date" name="from" value="{{ filters.from|default('') }}" />
+                <button class="btn btn--ghost" type="submit">Filtrer</button>
+                <a class="btn btn--ghost" href="{{ path('front_orders') }}">Reset</a>
+              </form>
             </section>
 
             <section class="panel">
-              <div class="tableWrap">
-                <table class="table">
-                  <thead>
-                    <tr>
-                      <th>Commande</th>
-                      <th>Date</th>
-                      <th>Total</th>
-                      <th>Statut</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>ORD-2026-001</td>
-                      <td>02/02/2026</td>
-                      <td>167 DT</td>
-                      <td><span class="badge badge--success">PAID</span></td>
-                      <td><a class="btn btn--ghost" href="{{ path('front_order_detail') }}">Detail</a></td>
-                    </tr>
-                    <tr>
-                      <td>ORD-2026-002</td>
-                      <td>05/02/2026</td>
-                      <td>39 DT</td>
-                      <td><span class="badge">PENDING</span></td>
-                      <td><a class="btn btn--ghost" href="{{ path('front_order_detail') }}">Detail</a></td>
-                    </tr>
-                    <tr>
-                      <td>ORD-2026-003</td>
-                      <td>09/02/2026</td>
-                      <td>210 DT</td>
-                      <td><span class="badge badge--warning">SHIPPED</span></td>
-                      <td><a class="btn btn--ghost" href="{{ path('front_order_detail') }}">Detail</a></td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+              {% if orders is empty %}
+                <div class="emptyState">Aucune commande pour ces filtres.</div>
+              {% else %}
+                <div class="tableWrap">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th>Commande</th>
+                        <th>Date</th>
+                        <th>Total</th>
+                        <th>Paiement</th>
+                        <th>Statut</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for order in orders %}
+                        {% set orderId = order.orderId ?? 0 %}
+                        {% set status = order.status|default('PENDING') %}
+                        {% set statusClass = status == 'PAID' or status == 'DELIVERED' ? 'badge--success' : (status == 'SHIPPED' ? 'badge--warning' : (status == 'CANCELLED' ? 'badge--danger' : '')) %}
+                        <tr>
+                          <td>{{ order.orderNumber }}</td>
+                          <td>{{ order.createdAt ? order.createdAt|date('d/m/Y') : '-' }}</td>
+                          <td>{{ order.totalAmount|number_format(2, '.', ' ') }} DT</td>
+                          <td>{{ order.paymentStatus ?? '-' }}</td>
+                          <td><span class="badge {{ statusClass }}">{{ status }}</span></td>
+                          <td>
+                            {% if orderId > 0 %}
+                              <a class="btn btn--ghost" href="{{ path('front_order_detail', {id: orderId}) }}">Detail</a>
+                            {% else %}
+                              <a class="btn btn--ghost" href="{{ path('front_order_detail') }}">Detail</a>
+                            {% endif %}
+                          </td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              {% endif %}
             </section>
           </div>
 
@@ -77,17 +82,18 @@
             <section class="panel">
               <h3 class="panel__title">RESUME COMMANDES</h3>
               <div class="statsRow">
-                <div class="statCard"><div class="statCard__value">3</div><div class="statCard__label">Totales</div></div>
-                <div class="statCard"><div class="statCard__value">1</div><div class="statCard__label">En livraison</div></div>
-                <div class="statCard"><div class="statCard__value">1</div><div class="statCard__label">En attente</div></div>
+                <div class="statCard"><div class="statCard__value">{{ summary.total|default(0) }}</div><div class="statCard__label">Totales</div></div>
+                <div class="statCard"><div class="statCard__value">{{ summary.shipping|default(0) }}</div><div class="statCard__label">En livraison</div></div>
+                <div class="statCard"><div class="statCard__value">{{ summary.pending|default(0) }}</div><div class="statCard__label">En attente</div></div>
               </div>
             </section>
 
             <section class="panel">
               <h3 class="panel__title">RACCOURCIS</h3>
               <div class="socialQuickList">
-                <a class="listItem" href="{{ path('front_cart') }}"><span>Ouvrir panier</span><span class="listItem__meta">2 articles</span></a>
+                <a class="listItem" href="{{ path('front_cart') }}"><span>Ouvrir panier</span><span class="listItem__meta">Panier</span></a>
                 <a class="listItem" href="{{ path('front_shop') }}"><span>Retour boutique</span><span class="listItem__meta">Explorer</span></a>
+                <a class="listItem" href="{{ path('front_notifications') }}"><span>Notifications</span><span class="listItem__meta">Alertes</span></a>
               </div>
             </section>
           </aside>

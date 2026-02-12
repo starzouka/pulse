@@ -1,4 +1,4 @@
-{% extends 'base.html.twig' %}
+﻿{% extends 'base.html.twig' %}
 
 {% block title %}PULSE - Detail commande{% endblock %}
 
@@ -20,46 +20,52 @@
             <section class="panel">
               <div class="panel__head">
                 <div>
-                  <h3 class="panel__title">ORD-2026-001</h3>
-                  <div class="panel__desc">Creee le 02/02/2026 � Paiement carte</div>
+                  <h3 class="panel__title">{{ order.orderNumber }}</h3>
+                  <div class="panel__desc">
+                    Creee le {{ order.createdAt ? order.createdAt|date('d/m/Y H:i') : '-' }}
+                    {% if order.paymentMethod %} · Paiement {{ order.paymentMethod }}{% endif %}
+                  </div>
                 </div>
-                <span class="badge badge--success">PAID</span>
+                {% set status = order.status|default('PENDING') %}
+                {% set statusClass = status == 'PAID' or status == 'DELIVERED' ? 'badge--success' : (status == 'SHIPPED' ? 'badge--warning' : (status == 'CANCELLED' ? 'badge--danger' : '')) %}
+                <span class="badge {{ statusClass }}">{{ status }}</span>
               </div>
 
-              <div class="tableWrap">
-                <table class="table">
-                  <thead>
-                    <tr>
-                      <th>Produit</th>
-                      <th>Quantite</th>
-                      <th>Prix unitaire</th>
-                      <th>Sous-total</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>Pulse Hoodie</td>
-                      <td>1</td>
-                      <td>89 DT</td>
-                      <td>89 DT</td>
-                    </tr>
-                    <tr>
-                      <td>Mousepad XL</td>
-                      <td>2</td>
-                      <td>39 DT</td>
-                      <td>78 DT</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+              {% if line_items is empty %}
+                <div class="emptyState">Aucune ligne de commande disponible.</div>
+              {% else %}
+                <div class="tableWrap">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th>Produit</th>
+                        <th>Quantite</th>
+                        <th>Prix unitaire</th>
+                        <th>Sous-total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for lineItem in line_items %}
+                        <tr>
+                          <td>{{ lineItem.product_name }}</td>
+                          <td>{{ lineItem.quantity }}</td>
+                          <td>{{ lineItem.unit_price|number_format(2, '.', ' ') }} DT</td>
+                          <td>{{ lineItem.line_total|number_format(2, '.', ' ') }} DT</td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              {% endif %}
             </section>
 
             <section class="panel">
               <h3 class="panel__title">SUIVI</h3>
               <div class="socialQuickList">
-                <div class="listItem"><span>Commande confirmee</span><span class="badge badge--success">OK</span></div>
-                <div class="listItem"><span>Paiement valide</span><span class="badge badge--success">OK</span></div>
-                <div class="listItem"><span>Preparation logistique</span><span class="badge">EN COURS</span></div>
+                <div class="listItem"><span>Commande creee</span><span class="badge badge--success">OK</span></div>
+                <div class="listItem"><span>Paiement</span><span class="badge {{ order.paymentStatus == 'PAID' ? 'badge--success' : '' }}">{{ order.paymentStatus ?? 'UNPAID' }}</span></div>
+                <div class="listItem"><span>Expedition</span><span class="badge {{ order.shippedAt ? 'badge--success' : '' }}">{{ order.shippedAt ? order.shippedAt|date('d/m/Y') : 'En attente' }}</span></div>
+                <div class="listItem"><span>Livraison</span><span class="badge {{ order.deliveredAt ? 'badge--success' : '' }}">{{ order.deliveredAt ? order.deliveredAt|date('d/m/Y') : 'En attente' }}</span></div>
               </div>
             </section>
           </div>
@@ -68,18 +74,25 @@
             <section class="panel">
               <h3 class="panel__title">RESUME</h3>
               <div class="list">
-                <div class="listItem"><span>Sous-total</span><span class="listItem__meta">167 DT</span></div>
-                <div class="listItem"><span>Livraison</span><span class="listItem__meta">0 DT</span></div>
-                <div class="listItem"><span>Total</span><span class="listItem__meta">167 DT</span></div>
+                <div class="listItem"><span>Sous-total</span><span class="listItem__meta">{{ items_subtotal|number_format(2, '.', ' ') }} DT</span></div>
+                <div class="listItem"><span>Livraison</span><span class="listItem__meta">{{ shipping_amount|number_format(2, '.', ' ') }} DT</span></div>
+                <div class="listItem"><span>Total</span><span class="listItem__meta">{{ order_total|number_format(2, '.', ' ') }} DT</span></div>
+              </div>
+            </section>
+
+            <section class="panel">
+              <h3 class="panel__title">LIVRAISON</h3>
+              <div class="list">
+                <div class="listItem"><span>Adresse</span><span class="listItem__meta">{{ order.shippingAddress ?? 'Non renseignee' }}</span></div>
+                <div class="listItem"><span>Telephone</span><span class="listItem__meta">{{ order.phoneForDelivery ?? 'Non renseigne' }}</span></div>
               </div>
             </section>
 
             <section class="panel">
               <h3 class="panel__title">ACTIONS</h3>
               <div class="postCard__actions">
-                <button class="btn btn--ghost" type="button">Telecharger facture</button>
-                <button class="btn btn--ghost" type="button">Contacter support</button>
                 <a class="btn btn--ghost" href="{{ path('front_orders') }}">Retour commandes</a>
+                <a class="btn btn--ghost" href="{{ path('front_notifications') }}">Voir notifications</a>
               </div>
             </section>
           </aside>

@@ -1,164 +1,157 @@
-{% extends 'base.html.twig' %}
+﻿{% extends 'base.html.twig' %}
 
 {% block title %}PULSE - Catalogue des tournois{% endblock %}
 
 {% block body %}
-
-
   {% include 'front/partials/_hero_mini.html.twig' with {
-  hero_kicker: 'TOURNOIS',
-  hero_title: 'Catalogue des tournois',
-  hero_sub: 'Filtres avancés + progress bar.',
-  breadcrumb_current: 'Catalogue des tournois'
-} %}
-
+    hero_kicker: 'TOURNOIS',
+    hero_title: 'Catalogue des tournois',
+    hero_sub: 'Recherche dynamique sur la base de donnees.',
+    breadcrumb_current: 'Catalogue des tournois'
+  } %}
 
   <main class="page">
     <section class="belowHero">
-
       <div class="pageHeader">
         <div>
           <h1>Catalogue des tournois</h1>
-          <p>Recherche par titre + filtres jeu, statut, format, dates et prize pool.</p>
-        </div>
-        <div class="pageHeader__actions">
-          <button class="btn btn--soft">Plus récents</button>
-          <button class="btn btn--ghost">Prize pool</button>
-          <button class="btn btn--ghost">Progression</button>
+          <p>La recherche et les filtres sont traites au back-end puis affiches depuis la base.</p>
         </div>
       </div>
 
-      <div class="panel">
-        <div class="filtersRow">
-          <input class="input" type="search" placeholder="Rechercher un tournoi..." />
-          <div class="select"><select><option>Jeu</option><option>Valorant</option><option>CS2</option></select></div>
-          <div class="select"><select><option>Catégorie</option><option>FPS</option><option>MOBA</option></select></div>
-          <div class="select"><select><option>Statut</option><option>OPEN</option><option>ONGOING</option><option>FINISHED</option></select></div>
-          <div class="select"><select><option>Format</option><option>BO1</option><option>BO3</option><option>BO5</option></select></div>
-          <div class="select"><select><option>Registration</option><option>OPEN</option><option>APPROVAL</option></select></div>
-          <input class="input" type="date" />
-          <input class="input" type="number" placeholder="Prize min" />
-          <input class="input" type="number" placeholder="Prize max" />
-        </div>
-      </div>
+      <section class="panel">
+        <form method="get" action="{{ path('front_tournaments') }}">
+          <div class="filtersRow">
+            <input class="input" type="search" name="q" value="{{ filters.q|default('') }}" placeholder="Rechercher un tournoi..." />
 
-      <div class="cardsGrid">
+            <div class="select">
+              <select name="game">
+                <option value="">Jeu</option>
+                {% for game in available_games %}
+                  <option value="{{ game.gameId }}" {{ filters.game is not null and filters.game == game.gameId ? 'selected' : '' }}>
+                    {{ game.name }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
 
-    <article class="card card--tournament">
-      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_t1/1200/800">
-        <div class="card__chips">
-          <span class="chip chip--status">OPEN</span>
-          <span class="chip chip--format">BO3</span>
-          <span class="chip">Valorant</span>
-        </div>
-      </div>
-      <div class="card__body">
-        <h4 class="card__title">Pulse Invitational — Valorant</h4>
-        <p class="card__desc">Dates: <b>18–22 Fév</b> • Prize pool: <b>1200 DT</b></p>
-        <div class="card__metaRow">
-          <span class="metaPill">Matchs: <b>7/20</b></span>
-          <span class="metaPill">Statut: <b>OPEN</b></span>
-        </div>
-        <div class="progress"><div class="progress__bar" style="width:35%"></div></div>
-        <div class="card__actions">
-          <a class="btn btn--ghost" href="{{ path('front_tournament_detail') }}">Voir détail</a>
-        </div>
-      </div>
-    </article>
+            <div class="select">
+              <select name="category">
+                <option value="">Categorie</option>
+                {% for category in available_categories %}
+                  <option value="{{ category.categoryId }}" {{ filters.category is not null and filters.category == category.categoryId ? 'selected' : '' }}>
+                    {{ category.name }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
 
+            <div class="select">
+              <select name="status">
+                <option value="">Statut</option>
+                {% for statusValue in filter_options.statuses %}
+                  <option value="{{ statusValue }}" {{ filters.status == statusValue ? 'selected' : '' }}>{{ statusValue }}</option>
+                {% endfor %}
+              </select>
+            </div>
 
-    <article class="card card--tournament">
-      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_t2/1200/800">
-        <div class="card__chips">
-          <span class="chip chip--status">ONGOING</span>
-          <span class="chip chip--format">BO1</span>
-          <span class="chip">CS2</span>
-        </div>
-      </div>
-      <div class="card__body">
-        <h4 class="card__title">CS2 Arena Cup — Winter Split</h4>
-        <p class="card__desc">Dates: <b>20–23 Fév</b> • Prize pool: <b>900 DT</b></p>
-        <div class="card__metaRow">
-          <span class="metaPill">Matchs: <b>12/20</b></span>
-          <span class="metaPill">Statut: <b>ONGOING</b></span>
-        </div>
-        <div class="progress"><div class="progress__bar" style="width:60%"></div></div>
-        <div class="card__actions">
-          <a class="btn btn--ghost" href="{{ path('front_tournament_detail') }}">Voir détail</a>
-        </div>
-      </div>
-    </article>
+            <div class="select">
+              <select name="format">
+                <option value="">Format</option>
+                {% for formatValue in filter_options.formats %}
+                  <option value="{{ formatValue }}" {{ filters.format == formatValue ? 'selected' : '' }}>{{ formatValue }}</option>
+                {% endfor %}
+              </select>
+            </div>
 
+            <div class="select">
+              <select name="registration_mode">
+                <option value="">Inscription</option>
+                {% for modeValue in filter_options.registration_modes %}
+                  <option value="{{ modeValue }}" {{ filters.registration_mode == modeValue ? 'selected' : '' }}>{{ modeValue }}</option>
+                {% endfor %}
+              </select>
+            </div>
 
-    <article class="card card--tournament">
-      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_t3/1200/800">
-        <div class="card__chips">
-          <span class="chip chip--status">OPEN</span>
-          <span class="chip chip--format">BO5</span>
-          <span class="chip">League of Legends</span>
-        </div>
-      </div>
-      <div class="card__body">
-        <h4 class="card__title">League Clash — Weekend Major</h4>
-        <p class="card__desc">Dates: <b>23–25 Fév</b> • Prize pool: <b>2500 DT</b></p>
-        <div class="card__metaRow">
-          <span class="metaPill">Matchs: <b>0/16</b></span>
-          <span class="metaPill">Statut: <b>OPEN</b></span>
-        </div>
-        <div class="progress"><div class="progress__bar" style="width:0%"></div></div>
-        <div class="card__actions">
-          <a class="btn btn--ghost" href="{{ path('front_tournament_detail') }}">Voir détail</a>
-        </div>
-      </div>
-    </article>
+            <input class="input" type="date" name="date_from" value="{{ filters.date_from|default('') }}" />
+            <input class="input" type="date" name="date_to" value="{{ filters.date_to|default('') }}" />
+            <input class="input" type="number" min="0" step="0.01" name="prize_min" value="{{ filters.prize_min|default('') }}" placeholder="Prize min" />
+            <input class="input" type="number" min="0" step="0.01" name="prize_max" value="{{ filters.prize_max|default('') }}" placeholder="Prize max" />
 
+            <div class="select">
+              <select name="sort">
+                <option value="latest" {{ filters.sort == 'latest' ? 'selected' : '' }}>Plus recents</option>
+                <option value="prize" {{ filters.sort == 'prize' ? 'selected' : '' }}>Prize pool</option>
+                <option value="progress" {{ filters.sort == 'progress' ? 'selected' : '' }}>Progression</option>
+              </select>
+            </div>
 
-    <article class="card card--tournament">
-      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_t4/1200/800">
-        <div class="card__chips">
-          <span class="chip chip--status">OPEN</span>
-          <span class="chip chip--format">BO1</span>
-          <span class="chip">Fortnite</span>
-        </div>
-      </div>
-      <div class="card__body">
-        <h4 class="card__title">Fortnite Zero Build Cup</h4>
-        <p class="card__desc">Dates: <b>25 Fév</b> • Prize pool: <b>700 DT</b></p>
-        <div class="card__metaRow">
-          <span class="metaPill">Matchs: <b>0/24</b></span>
-          <span class="metaPill">Statut: <b>OPEN</b></span>
-        </div>
-        <div class="progress"><div class="progress__bar" style="width:0%"></div></div>
-        <div class="card__actions">
-          <a class="btn btn--ghost" href="{{ path('front_tournament_detail') }}">Voir détail</a>
-        </div>
-      </div>
-    </article>
-
-</div>
-
-      
-      <div class="panel">
-        <div class="panel__head">
-          <div>
-            <h3 class="panel__title">TABLES UTILISÉES</h3>
-            <div class="panel__desc">Schéma réel + colonnes clés.</div>
+            <button class="btn btn--primary" type="submit">Filtrer</button>
+            <a class="btn btn--ghost" href="{{ path('front_tournaments') }}">Reset</a>
           </div>
-        </div>
-        <div class="list">
-          <div class="listItem"><span><b>tournaments</b></span><span class="listItem__meta">tournament_id, game_id, title, status, start_date, end_date, max_teams, prize_pool</span></div><div class="listItem"><span><b>games</b></span><span class="listItem__meta">game_id, category_id, name</span></div><div class="listItem"><span><b>categories</b></span><span class="listItem__meta">category_id, name</span></div><div class="listItem"><span><b>matches</b></span><span class="listItem__meta">match_id, tournament_id, status</span></div>
-        </div>
-      </div>
+        </form>
+      </section>
 
-    
+      <section class="panel">
+        <div class="panel__head">
+          <h3 class="panel__title">RESULTATS</h3>
+          <div class="panel__desc">{{ tournaments_data|length }} tournoi(s) trouves</div>
+        </div>
+      </section>
+
+      {% if tournaments_data is empty %}
+        <section class="panel">
+          <div class="emptyState">Aucun tournoi ne correspond aux filtres selectionnes.</div>
+        </section>
+      {% else %}
+        <div class="cardsGrid">
+          {% for item in tournaments_data %}
+            {% set tournament = item.tournament %}
+            {% set tournamentId = tournament.tournamentId ?? 0 %}
+            {% set game = tournament.gameId %}
+            {% set category = game ? game.categoryId : null %}
+            {% set photoPath = tournament.photoPath ?? '' %}
+            {% set photoUrl = photoPath ? (photoPath starts with 'http' ? photoPath : asset(photoPath)) : 'https://picsum.photos/seed/pulse_tournament_' ~ tournamentId ~ '/1200/800' %}
+            {% set status = tournament.status|default('DRAFT') %}
+            {% set statusClass = status == 'OPEN' ? 'chip--status' : (status == 'ONGOING' ? 'chip--format' : '') %}
+
+            <article class="card card--tournament">
+              <div class="card__media" data-bg="{{ photoUrl }}">
+                <div class="card__chips">
+                  <span class="chip {{ statusClass }}">{{ status }}</span>
+                  <span class="chip">{{ tournament.format }}</span>
+                  <span class="chip">{{ game ? game.name : 'Jeu' }}</span>
+                </div>
+              </div>
+              <div class="card__body">
+                <h4 class="card__title">{{ tournament.title }}</h4>
+                <p class="card__desc">
+                  Dates: <b>{{ tournament.startDate ? tournament.startDate|date('d/m/Y') : '-' }} - {{ tournament.endDate ? tournament.endDate|date('d/m/Y') : '-' }}</b>
+                  · Prize pool: <b>{{ tournament.prizePool|number_format(2, '.', ' ') }} DT</b>
+                </p>
+                <div class="card__metaRow">
+                  <span class="metaPill">Jeu: <b>{{ game ? game.name : '-' }}</b></span>
+                  <span class="metaPill">Categorie: <b>{{ category ? category.name : '-' }}</b></span>
+                </div>
+                <div class="card__metaRow" style="margin-top:8px;">
+                  <span class="metaPill">Equipes: <b>{{ item.accepted_count }}/{{ tournament.maxTeams }}</b></span>
+                  <span class="metaPill">Matchs: <b>{{ item.matches_finished }}/{{ item.matches_total }}</b></span>
+                </div>
+                <div class="progress"><div class="progress__bar" style="width: {{ item.progress_percent }}%"></div></div>
+                <div class="card__actions">
+                  {% if tournamentId > 0 %}
+                    <a class="btn btn--ghost" href="{{ path('front_tournament_detail', {id: tournamentId}) }}">Voir detail</a>
+                  {% endif %}
+                </div>
+              </div>
+            </article>
+          {% endfor %}
+        </div>
+      {% endif %}
 
       {% include 'front/partials/_footer.html.twig' %}
-
     </section>
   </main>
 
   {% include 'front/partials/_auth_modal.html.twig' %}
-
 {% endblock %}
-
-

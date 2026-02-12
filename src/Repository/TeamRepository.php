@@ -28,4 +28,38 @@ class TeamRepository extends ServiceEntityRepository
 
         return $result !== null;
     }
+
+    /**
+     * @return list<Team>
+     */
+    public function findByCaptainUser(User $user, int $limit = 50): array
+    {
+        return $this->createQueryBuilder('team')
+            ->leftJoin('team.logoImageId', 'logo')
+            ->addSelect('logo')
+            ->andWhere('team.captainUserId = :user')
+            ->setParameter('user', $user)
+            ->orderBy('team.name', 'ASC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findOneByCaptainAndId(User $user, int $teamId): ?Team
+    {
+        if ($teamId <= 0) {
+            return null;
+        }
+
+        return $this->createQueryBuilder('team')
+            ->leftJoin('team.logoImageId', 'logo')
+            ->addSelect('logo')
+            ->andWhere('team.captainUserId = :user')
+            ->andWhere('team.teamId = :teamId')
+            ->setParameter('user', $user)
+            ->setParameter('teamId', $teamId)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }

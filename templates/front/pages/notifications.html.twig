@@ -1,4 +1,4 @@
-{% extends 'base.html.twig' %}
+﻿{% extends 'base.html.twig' %}
 
 {% block title %}PULSE - Notifications{% endblock %}
 
@@ -17,18 +17,50 @@
 
         <div class="socialShell">
           <div class="socialStack">
+            {% for label, messages in app.flashes %}
+              {% for message in messages %}
+                <div class="listItem">
+                  <span>{{ message }}</span>
+                  <span class="badge {{ label == 'error' ? 'badge--danger' : (label == 'info' ? 'badge--info' : 'badge--success') }}">{{ label|upper }}</span>
+                </div>
+              {% endfor %}
+            {% endfor %}
+
             <section class="panel">
               <div class="panel__head">
                 <h3 class="panel__title">ALERTES</h3>
-                <button class="btn btn--ghost" type="button">Tout marquer lu</button>
+                <form method="post" action="{{ path('front_notifications_mark_all_read') }}">
+                  <input type="hidden" name="_token" value="{{ csrf_token('notifications_mark_all_read') }}">
+                  <button class="btn btn--ghost" type="submit">Tout marquer lu</button>
+                </form>
               </div>
 
-              <div class="list">
-                <article class="listItem"><span>Invitation equipe Aurora Squad</span><span class="badge">Nouveau</span></article>
-                <article class="listItem"><span>Nouveau message de FrostByte</span><span class="listItem__meta">1h</span></article>
-                <article class="listItem"><span>Commande ORD-2026-001 payee</span><span class="badge badge--success">PAID</span></article>
-                <article class="listItem"><span>Tournoi Pulse Invitational: check-in demain</span><span class="badge badge--warning">Rappel</span></article>
-              </div>
+              {% if notifications is empty %}
+                <div class="emptyState">Aucune notification a afficher.</div>
+              {% else %}
+                <div class="list">
+                  {% for notification in notifications %}
+                    {% set isNew = not notification.isRead %}
+                    {% set link = path('front_notifications') %}
+                    {% if notification.type == 'NEW_MESSAGE' %}
+                      {% set link = path('front_messages') %}
+                    {% elseif notification.type == 'TEAM_INVITE' %}
+                      {% set link = path('front_my_teams') %}
+                    {% elseif notification.type == 'TEAM_JOIN_RESPONSE' %}
+                      {% set link = path('front_my_requests') %}
+                    {% elseif notification.type == 'ORDER_STATUS' %}
+                      {% set link = path('front_orders') %}
+                    {% elseif notification.type == 'TOURNAMENT_REQUEST_STATUS' %}
+                      {% set link = path('front_organizer_requests') %}
+                    {% endif %}
+
+                    <a class="listItem" href="{{ link }}">
+                      <span>{{ notification.content }}</span>
+                      <span class="badge {{ isNew ? 'badge--info' : '' }}">{{ isNew ? 'Nouveau' : (notification.createdAt ? notification.createdAt|date('d/m H:i') : 'Lu') }}</span>
+                    </a>
+                  {% endfor %}
+                </div>
+              {% endif %}
             </section>
           </div>
 
@@ -36,19 +68,25 @@
             <section class="panel">
               <h3 class="panel__title">FILTRES</h3>
               <div class="postCard__actions">
-                <button class="btn btn--soft" type="button">Toutes</button>
-                <button class="btn btn--ghost" type="button">Non lues</button>
-                <button class="btn btn--ghost" type="button">Messages</button>
-                <button class="btn btn--ghost" type="button">Tournois</button>
+                <a class="btn {{ not only_unread ? 'btn--soft' : 'btn--ghost' }}" href="{{ path('front_notifications') }}">Toutes</a>
+                <a class="btn {{ only_unread ? 'btn--soft' : 'btn--ghost' }}" href="{{ path('front_notifications', {unread: 1}) }}">Non lues</a>
               </div>
             </section>
 
             <section class="panel">
-              <h3 class="panel__title">PREFERENCES</h3>
+              <h3 class="panel__title">STATISTIQUES</h3>
+              <div class="statsRow">
+                <div class="statCard"><div class="statCard__value">{{ notifications|length }}</div><div class="statCard__label">Affichees</div></div>
+                <div class="statCard"><div class="statCard__value">{{ unread_count }}</div><div class="statCard__label">Non lues</div></div>
+              </div>
+            </section>
+
+            <section class="panel">
+              <h3 class="panel__title">RACCOURCIS</h3>
               <div class="socialQuickList">
-                <div class="listItem"><span>Email notifications</span><span class="listItem__meta">Active</span></div>
-                <div class="listItem"><span>Push in-app</span><span class="listItem__meta">Active</span></div>
-                <div class="listItem"><span>Commandes uniquement</span><span class="listItem__meta">Desactive</span></div>
+                <a class="listItem" href="{{ path('front_messages') }}"><span>Messages</span><span class="listItem__meta">Ouvrir</span></a>
+                <a class="listItem" href="{{ path('front_my_teams') }}"><span>Mes equipes</span><span class="listItem__meta">Gerer</span></a>
+                <a class="listItem" href="{{ path('front_orders') }}"><span>Mes commandes</span><span class="listItem__meta">Suivi</span></a>
               </div>
             </section>
           </aside>

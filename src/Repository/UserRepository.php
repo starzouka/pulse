@@ -41,4 +41,62 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->getQuery()
             ->getOneOrNullResult();
     }
+
+    /**
+     * @return list<User>
+     */
+    public function searchUsers(?User $excludeUser, ?string $query, ?string $role, ?string $country, int $limit = 30): array
+    {
+        $builder = $this->createQueryBuilder('user')
+            ->orderBy('user.updatedAt', 'DESC')
+            ->setMaxResults($limit);
+
+        if ($excludeUser instanceof User && $excludeUser->getUserId() !== null) {
+            $builder
+                ->andWhere('user.userId != :excludeUserId')
+                ->setParameter('excludeUserId', $excludeUser->getUserId());
+        }
+
+        $queryValue = trim((string) $query);
+        if ($queryValue !== '') {
+            $builder
+                ->andWhere('(LOWER(user.username) LIKE :query OR LOWER(user.displayName) LIKE :query)')
+                ->setParameter('query', '%' . mb_strtolower($queryValue) . '%');
+        }
+
+        $roleValue = strtoupper(trim((string) $role));
+        if (in_array($roleValue, [User::DOMAIN_ROLE_PLAYER, User::DOMAIN_ROLE_CAPTAIN, User::DOMAIN_ROLE_ORGANIZER, User::DOMAIN_ROLE_ADMIN], true)) {
+            $builder
+                ->andWhere('user.role = :role')
+                ->setParameter('role', $roleValue);
+        }
+
+        $countryValue = trim((string) $country);
+        if ($countryValue !== '') {
+            $builder
+                ->andWhere('LOWER(COALESCE(user.country, \'\')) = :country')
+                ->setParameter('country', mb_strtolower($countryValue));
+        }
+
+        return $builder->getQuery()->getResult();
+    }
+
+    /**
+     * @param list<int> $userIds
+     * @return list<User>
+     */
+    public function findByUserIds(array $userIds): array
+    {
+        $filteredIds = array_values(array_unique(array_filter($userIds, static fn (mixed $id): bool => is_int($id) && $id > 0)));
+        if ($filteredIds === []) {
+            return [];
+        }
+
+        return $this->createQueryBuilder('user')
+            ->andWhere('user.userId IN (:userIds)')
+            ->setParameter('userIds', $filteredIds)
+            ->orderBy('user.displayName', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

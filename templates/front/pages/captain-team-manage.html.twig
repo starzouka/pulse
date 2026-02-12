@@ -1,89 +1,180 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}PULSE - Gestion équipe{% endblock %}
+{% block title %}PULSE - Mon equipe{% endblock %}
 
 {% block body %}
-
-
   {% include 'front/partials/_hero_mini.html.twig' with {
-  hero_kicker: 'CAPITAINE',
-  hero_title: 'Gestion équipe',
-  hero_sub: 'Modifier les infos de l’équipe.',
-  breadcrumb_current: 'Gestion équipe'
-} %}
-
+    hero_kicker: 'CAPITAINE',
+    hero_title: 'Mon equipe',
+    hero_sub: 'Creation et modification dans une seule page.',
+    breadcrumb_current: 'Mon equipe'
+  } %}
 
   <main class="page">
     <section class="belowHero">
-
       <div class="layout">
-        
-  <aside class="sideNav">
-    <div class="sideNav__title">ESPACE CAPITAINE</div>
-    <a class="is-active" href="{{ path('front_captain_team_manage') }}">Mon équipe</a><a class="" href="{{ path('front_captain_members') }}">Membres</a><a class="" href="{{ path('front_captain_requests') }}">Demandes</a><a class="" href="{{ path('front_captain_invite') }}">Inviter</a><a class="" href="{{ path('front_captain_products') }}">Produits</a><a class="" href="{{ path('front_captain_orders') }}">Commandes</a><a class="" href="{{ path('front_captain_tournaments') }}">Tournois</a>
-  </aside>
+        {% include 'front/partials/_captain_side_nav.html.twig' with {
+          active: 'team',
+          active_team: active_team
+        } %}
 
         <div>
-          
-        
+          {% include 'front/partials/_captain_team_selector.html.twig' with {
+            captain_teams: captain_teams,
+            active_team: active_team,
+            selector_route: 'front_captain_team_manage'
+          } %}
+
           <div class="panel">
-            <div class="filtersRow">
-              <div class="select">
-                <select>
-                  <option>Équipe active</option>
-                  <option>Nebula Five</option>
-                  <option>North Hydra</option>
-                </select>
+            <div class="panel__head">
+              <div>
+                <h3 class="panel__title">MODE ACTUEL</h3>
+                <div class="panel__desc">
+                  {% if team_form_mode == 'create' %}
+                    Creation d'une nouvelle equipe.
+                  {% else %}
+                    Modification de l'equipe active.
+                  {% endif %}
+                </div>
               </div>
-              <button class="btn btn--ghost" type="button">Changer</button>
+              <div class="panel__actions">
+                <a class="btn btn--ghost" href="{{ path('front_captain_team_manage', {mode: 'create'}) }}">Nouvelle equipe</a>
+                {% if active_team %}
+                  <a class="btn btn--ghost" href="{{ path('front_captain_team_manage', {team: active_team.teamId}) }}">Modifier active</a>
+                {% endif %}
+              </div>
             </div>
           </div>
 
-        <div class="panel">
-          <h3 class="panel__title">Nebula Five</h3>
-          <div class="statsRow">
-            <div class="statCard"><div class="statCard__value">12</div><div class="statCard__label">Membres</div></div>
-            <div class="statCard"><div class="statCard__value">8</div><div class="statCard__label">Produits</div></div>
-            <div class="statCard"><div class="statCard__value">5</div><div class="statCard__label">Tournois</div></div>
-          </div>
-        </div>
-        <form class="panel" style="margin-top:12px;">
-          <div class="formGrid">
-            <label class="field"><span class="field__label">Nom</span><input class="input" type="text" value="Nebula Five" /></label>
-            <label class="field"><span class="field__label">Région</span><input class="input" type="text" value="MENA" /></label>
-            <label class="field"><span class="field__label">Description</span><textarea class="textarea">Équipe e-sport</textarea></label>
-            <label class="field"><span class="field__label">Logo</span><input class="input" type="file" /></label>
-          </div>
-          <div class="formActions" style="margin-top:12px;">
-            <button class="btn btn--primary" type="submit">Enregistrer</button>
-            <button class="btn btn--ghost" type="button">Supprimer équipe</button>
-          </div>
-        </form>
-        
-      <div class="panel">
-        <div class="panel__head">
-          <div>
-            <h3 class="panel__title">TABLES UTILISÉES</h3>
-            <div class="panel__desc">Schéma réel + colonnes clés.</div>
-          </div>
-        </div>
-        <div class="list">
-          <div class="listItem"><span><b>teams</b></span><span class="listItem__meta">team_id, name, region, description, logo_image_id</span></div><div class="listItem"><span><b>team_members</b></span><span class="listItem__meta">team_id, user_id, is_active</span></div><div class="listItem"><span><b>products</b></span><span class="listItem__meta">product_id, team_id</span></div><div class="listItem"><span><b>tournament_teams</b></span><span class="listItem__meta">tournament_id, team_id</span></div>
+          {% if active_team %}
+            {% set teamLogoPath = active_team.logoImageId ? active_team.logoImageId.fileUrl : '' %}
+            {% set teamLogoUrl = teamLogoPath ? (teamLogoPath starts with 'http' ? teamLogoPath : asset(teamLogoPath)) : 'https://picsum.photos/seed/captain_team_' ~ active_team.teamId ~ '/320/320' %}
+            <section class="panel">
+              <div class="profileHeader">
+                <div class="avatarLg" data-avatar="{{ teamLogoUrl }}"></div>
+                <div>
+                  <h3 style="margin:0;">{{ active_team.name }}</h3>
+                  <div class="muted">{{ active_team.region ?: 'Region non definie' }}</div>
+                </div>
+              </div>
+
+              <div class="statsRow" style="margin-top:12px;">
+                <div class="statCard">
+                  <div class="statCard__value">{{ team_stats.members }}</div>
+                  <div class="statCard__label">Membres actifs</div>
+                </div>
+                <div class="statCard">
+                  <div class="statCard__value">{{ team_stats.products }}</div>
+                  <div class="statCard__label">Produits</div>
+                </div>
+                <div class="statCard">
+                  <div class="statCard__value">{{ team_stats.tournaments }}</div>
+                  <div class="statCard__label">Inscriptions tournoi</div>
+                </div>
+              </div>
+            </section>
+          {% endif %}
+
+          {% if team_form_mode == 'create' %}
+            <form class="panel" method="post" action="{{ path('front_captain_team_manage_create') }}" enctype="multipart/form-data">
+              <h3 class="panel__title">CREER UNE EQUIPE</h3>
+
+              <div class="formGrid" style="margin-top:12px;">
+                <label class="field">
+                  <span class="field__label">Nom de l'equipe *</span>
+                  <input class="input" type="text" name="name" required maxlength="100">
+                </label>
+
+                <label class="field">
+                  <span class="field__label">Region</span>
+                  <input class="input" type="text" name="region" maxlength="80">
+                </label>
+
+                <label class="field">
+                  <span class="field__label">Description</span>
+                  <textarea class="textarea" name="description" rows="5"></textarea>
+                </label>
+
+                <label class="field">
+                  <span class="field__label">Logo equipe</span>
+                  <input class="input" type="file" name="logo_file" accept="image/png,image/jpeg,image/webp,image/gif">
+                </label>
+              </div>
+
+              <div class="formActions" style="margin-top:12px;">
+                <input type="hidden" name="_token" value="{{ csrf_token('captain_team_create') }}">
+                <button class="btn btn--primary" type="submit">Creer equipe</button>
+              </div>
+            </form>
+          {% elseif active_team %}
+            <form class="panel" method="post" action="{{ path('front_captain_team_manage_update', {id: active_team.teamId}) }}" enctype="multipart/form-data">
+              <h3 class="panel__title">MODIFIER L'EQUIPE ACTIVE</h3>
+
+              <div class="formGrid" style="margin-top:12px;">
+                <label class="field">
+                  <span class="field__label">Nom de l'equipe *</span>
+                  <input class="input" type="text" name="name" value="{{ active_team.name }}" required maxlength="100">
+                </label>
+
+                <label class="field">
+                  <span class="field__label">Region</span>
+                  <input class="input" type="text" name="region" value="{{ active_team.region }}" maxlength="80">
+                </label>
+
+                <label class="field">
+                  <span class="field__label">Description</span>
+                  <textarea class="textarea" name="description" rows="5">{{ active_team.description }}</textarea>
+                </label>
+
+                <label class="field">
+                  <span class="field__label">Changer le logo</span>
+                  <input class="input" type="file" name="logo_file" accept="image/png,image/jpeg,image/webp,image/gif">
+                </label>
+              </div>
+
+              <div class="formActions" style="margin-top:12px;">
+                <input type="hidden" name="_token" value="{{ csrf_token('captain_team_update_' ~ active_team.teamId) }}">
+                <button class="btn btn--primary" type="submit">Enregistrer</button>
+              </div>
+            </form>
+          {% endif %}
+
+          <section class="panel">
+            <h3 class="panel__title">MES EQUIPES</h3>
+            <div class="tableWrap" style="margin-top:10px;">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Equipe</th>
+                    <th>Region</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for team in captain_teams %}
+                    <tr>
+                      <td>{{ team.name }}</td>
+                      <td>{{ team.region ?: '-' }}</td>
+                      <td>
+                        <a class="btn btn--ghost" href="{{ path('front_captain_team_manage', {team: team.teamId}) }}">Gerer</a>
+                      </td>
+                    </tr>
+                  {% else %}
+                    <tr>
+                      <td colspan="3">Aucune equipe pour le moment.</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </section>
         </div>
       </div>
-
-      
-        </div>
-      </div>
-
 
       {% include 'front/partials/_footer.html.twig' %}
-
     </section>
   </main>
 
   {% include 'front/partials/_auth_modal.html.twig' %}
-
 {% endblock %}
-
 

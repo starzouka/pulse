@@ -1,4 +1,7 @@
-{% extends 'base.html.twig' %}
+﻿{% extends 'base.html.twig' %}
+
+{% set avatarPath = viewer_user.profileImageId ? viewer_user.profileImageId.fileUrl : '' %}
+{% set avatarUrl = avatarPath ? (avatarPath starts with 'http' ? avatarPath : asset(avatarPath)) : 'https://picsum.photos/seed/pulse_profile_edit_' ~ (viewer_user.userId ?? 0) ~ '/200/200' %}
 
 {% block title %}PULSE - Modifier profil{% endblock %}
 
@@ -17,32 +20,91 @@
 
         <div class="socialShell">
           <div class="socialStack">
-            <form class="panel">
+            {% for label, messages in app.flashes %}
+              {% for message in messages %}
+                <div class="listItem">
+                  <span>{{ message }}</span>
+                  <span class="badge {{ label == 'error' ? 'badge--danger' : 'badge--success' }}">{{ label|upper }}</span>
+                </div>
+              {% endfor %}
+            {% endfor %}
+
+            <div class="panel gadget gadget--profile">
+              <div class="profileHeader">
+                <div class="avatarLg" data-avatar="{{ avatarUrl }}"></div>
+                <div>
+                  <h3 style="margin:0;">{{ viewer_user.displayName ?? viewer_user.username }}</h3>
+                  <div class="muted">@{{ viewer_user.username }}{% if viewer_user.country %} · {{ viewer_user.country }}{% endif %}</div>
+                </div>
+              </div>
+            </div>
+
+            {{ form_start(profileEditForm, {attr: {class: 'panel gadget'}, enctype: 'multipart/form-data'}) }}
               <h3 class="panel__title">INFORMATIONS PROFIL</h3>
               <div class="formGrid">
-                <label class="field"><span class="field__label">Photo profil</span><input class="input" type="file" /></label>
-                <label class="field"><span class="field__label">Display name</span><input class="input" type="text" value="Zed" /></label>
-                <label class="field"><span class="field__label">Bio</span><textarea class="textarea">FPS player</textarea></label>
-                <label class="field"><span class="field__label">Pays</span><input class="input" type="text" value="TN" /></label>
-                <label class="field"><span class="field__label">Telephone</span><input class="input" type="tel" /></label>
-                <label class="field"><span class="field__label">Date de naissance</span><input class="input" type="date" /></label>
-                <label class="field"><span class="field__label">Genre</span><select class="input"><option>UNKNOWN</option><option>MALE</option><option>FEMALE</option><option>OTHER</option></select></label>
-                <label class="field"><span class="field__label">Compte actif</span><select class="input"><option>Oui</option><option>Non</option></select></label>
+                <label class="field">
+                  <span class="field__label">Photo profil</span>
+                  {{ form_widget(profileEditForm.profilePhoto, {attr: {class: 'input'}}) }}
+                  {{ form_errors(profileEditForm.profilePhoto) }}
+                </label>
+
+                <label class="field">
+                  <span class="field__label">Display name</span>
+                  {{ form_widget(profileEditForm.displayName, {attr: {class: 'input'}}) }}
+                  {{ form_errors(profileEditForm.displayName) }}
+                </label>
+
+                <label class="field">
+                  <span class="field__label">Bio</span>
+                  {{ form_widget(profileEditForm.bio, {attr: {class: 'textarea'}}) }}
+                  {{ form_errors(profileEditForm.bio) }}
+                </label>
+
+                <label class="field">
+                  <span class="field__label">Pays</span>
+                  {{ form_widget(profileEditForm.country, {attr: {class: 'input'}}) }}
+                  {{ form_errors(profileEditForm.country) }}
+                </label>
+
+                <label class="field">
+                  <span class="field__label">Telephone</span>
+                  {{ form_widget(profileEditForm.phone, {attr: {class: 'input'}}) }}
+                  {{ form_errors(profileEditForm.phone) }}
+                </label>
+
+                <label class="field">
+                  <span class="field__label">Date de naissance</span>
+                  {{ form_widget(profileEditForm.birthDate, {attr: {class: 'input'}}) }}
+                  {{ form_errors(profileEditForm.birthDate) }}
+                </label>
+
+                <label class="field">
+                  <span class="field__label">Genre</span>
+                  {{ form_widget(profileEditForm.gender, {attr: {class: 'input'}}) }}
+                  {{ form_errors(profileEditForm.gender) }}
+                </label>
+
+                <label class="field" style="display:flex; justify-content:space-between; align-items:center;">
+                  <span class="field__label">Compte actif</span>
+                  {{ form_widget(profileEditForm.isActive) }}
+                  {{ form_errors(profileEditForm.isActive) }}
+                </label>
               </div>
+
               <div class="formActions" style="margin-top:12px;">
                 <button class="btn btn--primary" type="submit">Sauvegarder</button>
                 <a class="btn btn--ghost" href="{{ path('front_profile') }}">Annuler</a>
               </div>
-            </form>
+            {{ form_end(profileEditForm) }}
           </div>
 
           <aside class="socialStack">
-            <section class="panel">
+            <section class="panel gadget">
               <h3 class="panel__title">CONSEILS</h3>
               <div class="list">
                 <div class="listItem"><span>Ajoutez une bio claire</span><span class="listItem__meta">+ visibilite</span></div>
                 <div class="listItem"><span>Photo recente</span><span class="listItem__meta">+ confiance</span></div>
-                <div class="listItem"><span>Renseignez votre pays</span><span class="listItem__meta">+ matching</span></div>
+                <div class="listItem"><span>Pays renseigne</span><span class="listItem__meta">+ matching</span></div>
               </div>
             </section>
           </aside>

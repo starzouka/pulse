@@ -7,6 +7,7 @@ namespace App\Controller\Front\Page;
 use App\Entity\Comment;
 use App\Entity\FriendRequest;
 use App\Entity\Post;
+use App\Entity\PostImage;
 use App\Entity\PostLike;
 use App\Entity\Report;
 use App\Entity\User;
@@ -17,6 +18,7 @@ use App\Repository\PostRepository;
 use App\Repository\ReportRepository;
 use App\Repository\UserRepository;
 use App\Service\Profile\ProfilePageDataProvider;
+use App\Service\Post\PostImageUploader;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -49,6 +51,7 @@ final class ProfileController extends AbstractController
     #[Route('/pages/profile/posts/create', name: 'front_profile_post_create', methods: ['POST'])]
     public function createPost(
         Request $request,
+        PostImageUploader $postImageUploader,
         EntityManagerInterface $entityManager,
     ): Response
     {
@@ -63,8 +66,10 @@ final class ProfileController extends AbstractController
         }
 
         $content = trim((string) $request->request->get('content_text', ''));
-        if ($content == '') {
-            $this->addFlash('error', 'Le contenu du post est obligatoire.');
+        $rawFiles = (array) $request->files->all('images');
+        $hasUpload = $postImageUploader->hasAnyUpload($rawFiles);
+        if ($content === '' && !$hasUpload) {
+            $this->addFlash('error', 'Le post doit contenir du texte ou au moins une image.');
             return $this->redirectToRoute('front_profile', ['tab' => 'posts']);
         }
 
@@ -85,6 +90,32 @@ final class ProfileController extends AbstractController
         ;
 
         $entityManager->persist($post);
+
+        try {
+            $uploadResult = $postImageUploader->createPostImages($rawFiles, $viewer, $post);
+            /** @var list<PostImage> $postImages */
+            $postImages = $uploadResult['post_images'];
+            foreach ($postImages as $postImage) {
+                $image = $postImage->getImageId();
+                if ($image !== null) {
+                    $entityManager->persist($image);
+                }
+                $entityManager->persist($postImage);
+            }
+
+            if ($content === '' && $postImages === []) {
+                $this->addFlash('error', 'Aucune image valide trouvee. Formats acceptes: JPG, PNG, WEBP, GIF.');
+                return $this->redirectToRoute('front_profile', ['tab' => 'posts']);
+            }
+
+            if (($uploadResult['skipped'] ?? 0) > 0) {
+                $this->addFlash('info', 'Certaines images ont ete ignorees (format non supporte ou fichier invalide).');
+            }
+        } catch (\Throwable) {
+            $this->addFlash('error', 'Impossible de traiter les images du post.');
+            return $this->redirectToRoute('front_profile', ['tab' => 'posts']);
+        }
+
         $entityManager->flush();
 
         $this->addFlash('success', 'Post publie avec succes.');

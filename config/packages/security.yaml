@@ -40,7 +40,7 @@ security:
         - { path: ^/admin, roles: ROLE_ADMIN }
         - { path: ^/pages/organizer, roles: ROLE_ORGANIZER }
         - { path: ^/pages/captain, roles: ROLE_CAPTAIN }
-        - { path: ^/pages/(dashboard|messages|conversation|notifications|cart|checkout|orders|order-detail|my-teams|my-requests|post-create|profile-edit|password-change|friends)$, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/pages/(dashboard|messages|conversation|notifications|cart|checkout|orders|order-detail|my-teams|my-requests|post-create|profile-edit|password-change|friends), roles: IS_AUTHENTICATED_FULLY }
 
 when@test:
     security:

@@ -1,82 +1,92 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}PULSE - Créer produit{% endblock %}
+{% block title %}PULSE - Creer produit{% endblock %}
 
 {% block body %}
-
-
   {% include 'front/partials/_hero_mini.html.twig' with {
-  hero_kicker: 'CAPITAINE',
-  hero_title: 'Créer produit',
-  hero_sub: 'Ajouter un nouveau produit.',
-  breadcrumb_current: 'Créer produit'
-} %}
-
+    hero_kicker: 'CAPITAINE',
+    hero_title: 'Creer produit',
+    hero_sub: "Ajout d'un nouveau produit dans l'equipe active.",
+    breadcrumb_current: 'Creer produit'
+  } %}
 
   <main class="page">
     <section class="belowHero">
-
       <div class="layout">
-        
-  <aside class="sideNav">
-    <div class="sideNav__title">ESPACE CAPITAINE</div>
-    <a class="" href="{{ path('front_captain_team_manage') }}">Mon équipe</a><a class="" href="{{ path('front_captain_members') }}">Membres</a><a class="" href="{{ path('front_captain_requests') }}">Demandes</a><a class="" href="{{ path('front_captain_invite') }}">Inviter</a><a class="is-active" href="{{ path('front_captain_products') }}">Produits</a><a class="" href="{{ path('front_captain_orders') }}">Commandes</a><a class="" href="{{ path('front_captain_tournaments') }}">Tournois</a>
-  </aside>
+        {% include 'front/partials/_captain_side_nav.html.twig' with {
+          active: 'products',
+          active_team: active_team
+        } %}
 
         <div>
-          
-        
-          <div class="panel">
-            <div class="filtersRow">
-              <div class="select">
-                <select>
-                  <option>Équipe active</option>
-                  <option>Nebula Five</option>
-                  <option>North Hydra</option>
-                </select>
+          {% include 'front/partials/_captain_team_selector.html.twig' with {
+            captain_teams: captain_teams,
+            active_team: active_team,
+            selector_route: 'front_captain_product_create'
+          } %}
+
+          <form class="panel" method="post" action="{{ path('front_captain_product_create', {team: active_team.teamId}) }}" enctype="multipart/form-data">
+            <div class="panel__head">
+              <div>
+                <h3 class="panel__title">NOUVEAU PRODUIT</h3>
+                <div class="panel__desc">Tous les champs relies a la table products + upload images.</div>
               </div>
-              <button class="btn btn--ghost" type="button">Changer</button>
             </div>
-          </div>
 
-        <form class="panel">
-          <div class="formGrid">
-            <label class="field"><span class="field__label">Nom</span><input class="input" type="text" /></label>
-            <label class="field"><span class="field__label">Prix</span><input class="input" type="number" /></label>
-            <label class="field"><span class="field__label">Stock</span><input class="input" type="number" /></label>
-            <label class="field"><span class="field__label">SKU</span><input class="input" type="text" /></label>
-            <label class="field"><span class="field__label">Description</span><textarea class="textarea"></textarea></label>
-            <label class="field"><span class="field__label">Images</span><input class="input" type="file" multiple /></label>
-          </div>
-          <div class="formActions" style="margin-top:12px;">
-            <button class="btn btn--primary" type="submit">Créer</button>
-          </div>
-        </form>
-        
-      <div class="panel">
-        <div class="panel__head">
-          <div>
-            <h3 class="panel__title">TABLES UTILISÉES</h3>
-            <div class="panel__desc">Schéma réel + colonnes clés.</div>
-          </div>
-        </div>
-        <div class="list">
-          <div class="listItem"><span><b>products</b></span><span class="listItem__meta">name, description, price, stock_qty, sku, is_active</span></div><div class="listItem"><span><b>images</b></span><span class="listItem__meta">image_id, file_url</span></div><div class="listItem"><span><b>product_images</b></span><span class="listItem__meta">product_id, image_id, position</span></div>
+            <div class="formGrid" style="margin-top:12px;">
+              <label class="field">
+                <span class="field__label">Nom *</span>
+                <input class="input" type="text" name="name" required maxlength="150">
+              </label>
+
+              <label class="field">
+                <span class="field__label">Prix (DT) *</span>
+                <input class="input" type="number" name="price" min="0" step="0.01" required>
+              </label>
+
+              <label class="field">
+                <span class="field__label">Stock *</span>
+                <input class="input" type="number" name="stock_qty" min="0" step="1" value="0" required>
+              </label>
+
+              <label class="field">
+                <span class="field__label">SKU</span>
+                <input class="input" type="text" name="sku" maxlength="64">
+              </label>
+
+              <label class="field">
+                <span class="field__label">Statut</span>
+                <select class="input" name="is_active">
+                  <option value="1">Actif</option>
+                  <option value="0">Inactif</option>
+                </select>
+              </label>
+
+              <label class="field">
+                <span class="field__label">Description</span>
+                <textarea class="textarea" name="description" rows="5"></textarea>
+              </label>
+
+              <label class="field">
+                <span class="field__label">Images produit</span>
+                <input class="input" type="file" name="images[]" accept="image/png,image/jpeg,image/webp,image/gif" multiple>
+              </label>
+            </div>
+
+            <div class="formActions" style="margin-top:12px;">
+              <input type="hidden" name="_token" value="{{ csrf_token('captain_product_create') }}">
+              <input type="hidden" name="team_id" value="{{ active_team.teamId }}">
+              <button class="btn btn--primary" type="submit">Creer produit</button>
+              <a class="btn btn--ghost" href="{{ path('front_captain_products', {team: active_team.teamId}) }}">Retour liste</a>
+            </div>
+          </form>
         </div>
       </div>
-
-      
-        </div>
-      </div>
-
 
       {% include 'front/partials/_footer.html.twig' %}
-
     </section>
   </main>
 
   {% include 'front/partials/_auth_modal.html.twig' %}
-
 {% endblock %}
-
 

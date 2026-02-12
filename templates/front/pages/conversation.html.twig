@@ -1,4 +1,4 @@
-{% extends 'base.html.twig' %}
+﻿{% extends 'base.html.twig' %}
 
 {% block title %}PULSE - Conversation{% endblock %}
 
@@ -6,7 +6,7 @@
   {% include 'front/partials/_hero_mini.html.twig' with {
     hero_kicker: 'JOUEUR',
     hero_title: 'Conversation',
-    hero_sub: 'Thread complet avec actions rapides.',
+    hero_sub: 'Discussion privee en temps reel.',
     breadcrumb_current: 'Conversation'
   } %}
 
@@ -17,37 +17,65 @@
 
         <div class="socialShell--chat">
           <aside class="socialStack">
-            <section class="panel">
+            <section class="panel gadget">
               <h3 class="panel__title">CONVERSATIONS</h3>
               <div class="socialQuickList">
-                <a class="listItem" href="{{ path('front_conversation') }}"><span>FrostByte</span><span class="badge">Actif</span></a>
-                <a class="listItem" href="{{ path('front_conversation') }}"><span>NovaAim</span><span class="listItem__meta">Dernier msg: hier</span></a>
-                <a class="listItem" href="{{ path('front_conversation') }}"><span>Kairo</span><span class="listItem__meta">Dernier msg: lun</span></a>
+                {% for conversation in conversations %}
+                  {% set partner = conversation.partner %}
+                  {% set partnerId = partner.userId ?? 0 %}
+                  {% set active = selected_partner and selected_partner.userId == partnerId %}
+                  <a class="listItem {{ active ? 'is-active' : '' }}" href="{{ path('front_conversation', {id: partnerId}) }}">
+                    <span>{{ partner.displayName ?? partner.username }}</span>
+                    {% if conversation.unread_count > 0 %}
+                      <span class="badge">{{ conversation.unread_count }}</span>
+                    {% elseif conversation.latest_message %}
+                      <span class="listItem__meta">{{ conversation.latest_message.createdAt ? conversation.latest_message.createdAt|date('d/m H:i') : '' }}</span>
+                    {% else %}
+                      <span class="listItem__meta">-</span>
+                    {% endif %}
+                  </a>
+                {% else %}
+                  <div class="emptyState">Aucune conversation disponible.</div>
+                {% endfor %}
               </div>
             </section>
           </aside>
 
           <div class="socialStack">
-            <section class="panel">
-              <div class="panel__head">
-                <div>
-                  <h3 class="panel__title">CHAT AVEC FROSTBYTE</h3>
-                  <div class="panel__desc">Connecte maintenant</div>
+            <section class="panel gadget">
+              {% if selected_partner %}
+                {% set partnerId = selected_partner.userId ?? 0 %}
+                <div class="panel__head">
+                  <div>
+                    <h3 class="panel__title">CHAT AVEC {{ selected_partner.displayName ?? selected_partner.username }}</h3>
+                    <div class="panel__desc">Messages les plus recents</div>
+                  </div>
+                  <a class="btn btn--ghost" href="{{ path('front_player_profile', {id: partnerId}) }}">Voir profil</a>
                 </div>
-                <a class="btn btn--ghost" href="{{ path('front_player_profile') }}">Voir profil</a>
-              </div>
 
-              <div class="list">
-                <div class="listItem"><span>FrostByte: GG pour hier !</span><span class="listItem__meta">10:05</span></div>
-                <div class="listItem"><span>Moi: Merci, bien joue aussi.</span><span class="listItem__meta">10:06</span></div>
-                <div class="listItem"><span>FrostByte: On planifie le prochain match samedi ?</span><span class="listItem__meta">10:07</span></div>
-                <div class="listItem"><span>Moi: Oui, je reserve 20h.</span><span class="listItem__meta">10:08</span></div>
-              </div>
+                <div class="list" style="max-height: 420px; overflow:auto;">
+                  {% for message in messages %}
+                    {% set mine = viewer_user and message.senderUserId and message.senderUserId.userId == viewer_user.userId %}
+                    <div class="listItem {{ mine ? 'is-mine' : '' }}">
+                      <span>
+                        <b>{{ mine ? 'Moi' : (message.senderUserId ? (message.senderUserId.displayName ?? message.senderUserId.username) : 'User') }}:</b>
+                        {{ message.bodyText }}
+                      </span>
+                      <span class="listItem__meta">{{ message.createdAt ? message.createdAt|date('d/m H:i') : '' }}</span>
+                    </div>
+                  {% else %}
+                    <div class="emptyState">Aucun message.</div>
+                  {% endfor %}
+                </div>
 
-              <div class="socialComposer" style="margin-top:10px;">
-                <input class="input" type="text" placeholder="Ecrire un message..." />
-                <button class="btn btn--primary" type="button">Envoyer</button>
-              </div>
+                <form method="post" action="{{ path('front_conversation', {id: partnerId}) }}" style="margin-top:10px; display:flex; gap:8px; align-items:flex-start;">
+                  <input type="hidden" name="_token" value="{{ csrf_token('conversation_send') }}">
+                  <textarea class="textarea" name="body_text" placeholder="Ecrire un message..." style="min-height: 70px; flex:1;" required></textarea>
+                  <button class="btn btn--primary" type="submit">Envoyer</button>
+                </form>
+              {% else %}
+                <div class="emptyState">Aucun destinataire selectionne.</div>
+              {% endif %}
             </section>
           </div>
         </div>

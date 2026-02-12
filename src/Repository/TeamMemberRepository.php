@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
+use App\Entity\Team;
 use App\Entity\TeamMember;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -31,5 +32,63 @@ class TeamMemberRepository extends ServiceEntityRepository
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
+    }
+
+    public function findOneByTeamAndUser(Team $team, User $user): ?TeamMember
+    {
+        return $this->findOneBy([
+            'teamId' => $team,
+            'userId' => $user,
+        ]);
+    }
+
+    /**
+     * @return list<TeamMember>
+     */
+    public function findByTeamWithUser(Team $team, bool $activeOnly = true): array
+    {
+        $builder = $this->createQueryBuilder('teamMember')
+            ->innerJoin('teamMember.userId', 'user')
+            ->addSelect('user')
+            ->leftJoin('user.profileImageId', 'profileImage')
+            ->addSelect('profileImage')
+            ->andWhere('teamMember.teamId = :team')
+            ->setParameter('team', $team)
+            ->orderBy('teamMember.joinedAt', 'ASC');
+
+        if ($activeOnly) {
+            $builder
+                ->andWhere('teamMember.isActive = :active')
+                ->andWhere('teamMember.leftAt IS NULL')
+                ->setParameter('active', true);
+        }
+
+        return $builder->getQuery()->getResult();
+    }
+
+    /**
+     * @return list<int>
+     */
+    public function findActiveUserIdsByTeam(Team $team): array
+    {
+        $rows = $this->createQueryBuilder('teamMember')
+            ->select('IDENTITY(teamMember.userId) AS userId')
+            ->andWhere('teamMember.teamId = :team')
+            ->andWhere('teamMember.isActive = :active')
+            ->andWhere('teamMember.leftAt IS NULL')
+            ->setParameter('team', $team)
+            ->setParameter('active', true)
+            ->getQuery()
+            ->getArrayResult();
+
+        $userIds = [];
+        foreach ($rows as $row) {
+            $userId = (int) ($row['userId'] ?? 0);
+            if ($userId > 0) {
+                $userIds[] = $userId;
+            }
+        }
+
+        return array_values(array_unique($userIds));
     }
 }
