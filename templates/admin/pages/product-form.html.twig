@@ -4,15 +4,16 @@
 
 {% block admin_content %}
 
-        
   <div class="pageHeader">
     <div>
       <h2>Form produit</h2>
       <div class="pageSub"></div>
     </div>
   </div>
+
+  {{ form_start(form) }}
+  
   <section class="panel">
-    {{ form_start(form) }}
     <div class="formGrid">
       <div class="field">
         {{ form_label(form.teamId) }}
@@ -41,21 +42,25 @@
       </div>
       <div class="field">
         {{ form_label(form.isActive) }}
-        {{ form_widget(form.isActive, {'attr': {'class': 'input-dark'}}) }}
+        {{ form_widget(form.isActive) }}
         {{ form_errors(form.isActive) }}
       </div>
-      <div class="field">
+      <div class="field field--wide">
         {{ form_label(form.description) }}
         {{ form_widget(form.description, {'attr': {'class': 'input-dark'}}) }}
         {{ form_errors(form.description) }}
       </div>
+      <div class="field field--wide">
+        {{ form_row(form.productImages) }}
+      </div>
+      <div class="formActions">
+        <button class="btn btnPrimary" type="submit">Enregistrer</button>
+        <a class="btn btnSecondary" style="padding: 0.5em 1.5em; border-radius: 8px; background: #222; color: #fff; text-decoration: none; margin-left: 1em; display: inline-block; text-align: center; font-weight: 600; transition: background 0.2s;" href="{{ path('admin_products') }}">Annuler</a>
+      </div>
     </div>
-    <div class="formActions" style="margin-top:12px;">
-      <button class="btn btnPrimary" type="submit">Enregistrer</button>
-      <a class="btn btnGhost" href="{{ path('admin_products') }}">Annuler</a>
-    </div>
-    {{ form_end(form) }}
   </section>
+  
+  {{ form_end(form) }}
   
   <section class="panel">
     <div class="panelHeader">
@@ -69,6 +74,4 @@
     </div>
   </section>
 
-
-      
 {% endblock %}

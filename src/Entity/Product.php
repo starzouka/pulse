@@ -6,6 +6,7 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use Doctrine\DBAL\Types\Types;
+use Symfony\Component\Validator\Constraints as Assert;
 use App\Repository\ProductRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -24,21 +25,30 @@ class Product
     
     #[ORM\ManyToOne(targetEntity: Team::class)]
     #[ORM\JoinColumn(name: 'team_id', referencedColumnName: 'team_id', nullable: false, onDelete: 'CASCADE')]
+    #[Assert\NotNull(message: 'L’équipe est obligatoire.')]
     private Team $teamId;
     
     #[ORM\Column(name: 'name', type: Types::STRING, length: 150)]
+    #[Assert\NotBlank(message: 'Le nom est obligatoire.')]
+    #[Assert\Length(min: 3, max: 150, minMessage: 'Le nom doit faire au moins {{ limit }} caractères.')]
     private string $name;
     
     #[ORM\Column(name: 'description', type: Types::TEXT, nullable: true)]
+    #[Assert\Length(max: 1000, maxMessage: 'La description ne doit pas dépasser {{ limit }} caractères.')]
     private ?string $description = null;
     
     #[ORM\Column(name: 'price', type: Types::DECIMAL, precision: 10, scale: 2)]
+    #[Assert\NotBlank(message: 'Le prix est obligatoire.')]
+    #[Assert\Positive(message: 'Le prix doit être positif.')]
     private string $price;
     
     #[ORM\Column(name: 'stock_qty', type: Types::INTEGER, options: ['unsigned' => true, 'default' => 0])]
+    #[Assert\NotNull(message: 'La quantité en stock est obligatoire.')]
+    #[Assert\GreaterThanOrEqual(value: 0, message: 'La quantité doit être positive ou nulle.')]
     private int $stockQty = 0;
     
     #[ORM\Column(name: 'sku', type: Types::STRING, length: 64, nullable: true)]
+    #[Assert\Length(max: 64, maxMessage: 'Le SKU ne doit pas dépasser {{ limit }} caractères.')]
     private ?string $sku = null;
     
     #[ORM\Column(name: 'is_active', type: Types::BOOLEAN, options: ['default' => true])]

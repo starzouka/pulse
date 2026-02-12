@@ -220,35 +220,78 @@ class __TwigTemplate_d61dc4d98f80aad7be27ed7748f438bb extends Template
         </div>
       </div>
       <div class=\"cardsGrid\">
-
-    <article class=\"card card--product\">
-      <div class=\"card__media\" data-bg=\"https://picsum.photos/seed/pulse_p1/1200/800\">
-        <div class=\"card__chips\">
-          <span class=\"chip chip--price\">89 DT</span>
-          <span class=\"chip\">Stock: 14</span>
-          <span class=\"chip\">Nebula Five</span>
-        </div>
-      </div>
-      <div class=\"card__body\">
-        <h4 class=\"card__title\">Pulse Hoodie — Neon</h4>
-        <p class=\"card__desc\">Vendeur: <b>Nebula Five</b></p>
-        <div class=\"card__actions\">
-          <a class=\"btn btn--ghost\" href=\"";
-        // line 112
-        yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_product_detail");
-        yield "\">Détail</a>
-          <a class=\"btn btn--primary\" href=\"";
-        // line 113
-        yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_login");
-        yield "\">Ajouter au panier</a>
-        </div>
-      </div>
-    </article>
-
-
-    <article class=\"card card--product\">
-      <div class=\"card__media\" data-bg=\"https://picsum.photos/seed/pulse_p2/1200/800\">
-        <div class=\"card__chips\">
+        ";
+        // line 99
+        $context['_parent'] = $context;
+        $context['_seq'] = CoreExtension::ensureTraversable((isset($context["products"]) || array_key_exists("products", $context) ? $context["products"] : (function () { throw new RuntimeError('Variable "products" does not exist.', 99, $this->source); })()));
+        $context['_iterated'] = false;
+        foreach ($context['_seq'] as $context["_key"] => $context["product"]) {
+            // line 100
+            yield "        <article class=\"card card--product\">
+          <div class=\"card__media\">
+            ";
+            // line 102
+            $context["image"] = (((($tmp = Twig\Extension\CoreExtension::first($this->env->getCharset(), CoreExtension::getAttribute($this->env, $this->source, $context["product"], "productImages", [], "any", false, false, false, 102))) && $tmp instanceof Markup ? (string) $tmp : $tmp)) ? (CoreExtension::getAttribute($this->env, $this->source, Twig\Extension\CoreExtension::first($this->env->getCharset(), CoreExtension::getAttribute($this->env, $this->source, $context["product"], "productImages", [], "any", false, false, false, 102)), "image", [], "any", false, false, false, 102)) : (null));
+            // line 103
+            yield "            ";
+            if (((isset($context["image"]) || array_key_exists("image", $context) ? $context["image"] : (function () { throw new RuntimeError('Variable "image" does not exist.', 103, $this->source); })()) && CoreExtension::getAttribute($this->env, $this->source, (isset($context["image"]) || array_key_exists("image", $context) ? $context["image"] : (function () { throw new RuntimeError('Variable "image" does not exist.', 103, $this->source); })()), "fileUrl", [], "any", false, false, false, 103))) {
+                // line 104
+                yield "              <img src=\"";
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, (isset($context["image"]) || array_key_exists("image", $context) ? $context["image"] : (function () { throw new RuntimeError('Variable "image" does not exist.', 104, $this->source); })()), "fileUrl", [], "any", false, false, false, 104), "html", null, true);
+                yield "\" alt=\"";
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["product"], "name", [], "any", false, false, false, 104), "html", null, true);
+                yield "\" style=\"width:100%;height:180px;object-fit:cover;border-radius:8px 8px 0 0;\" />
+            ";
+            } else {
+                // line 106
+                yield "              <div style=\"width:100%;height:180px;background:#eee;border-radius:8px 8px 0 0;display:flex;align-items:center;justify-content:center;color:#aaa;\">Aucune image</div>
+            ";
+            }
+            // line 108
+            yield "            <div class=\"card__chips\">
+              <span class=\"chip chip--price\">";
+            // line 109
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["product"], "price", [], "any", false, false, false, 109), "html", null, true);
+            yield " DT</span>
+              <span class=\"chip\">Stock: ";
+            // line 110
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["product"], "stockQty", [], "any", false, false, false, 110), "html", null, true);
+            yield "</span>
+              <span class=\"chip\">";
+            // line 111
+            yield (((($tmp = CoreExtension::getAttribute($this->env, $this->source, $context["product"], "teamId", [], "any", false, false, false, 111)) && $tmp instanceof Markup ? (string) $tmp : $tmp)) ? ($this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["product"], "teamId", [], "any", false, false, false, 111), "name", [], "any", false, false, false, 111), "html", null, true)) : ("—"));
+            yield "</span>
+            </div>
+          </div>
+          <div class=\"card__body\">
+            <h4 class=\"card__title\">";
+            // line 115
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["product"], "name", [], "any", false, false, false, 115), "html", null, true);
+            yield "</h4>
+            <p class=\"card__desc\">Vendeur: <b>";
+            // line 116
+            yield (((($tmp = CoreExtension::getAttribute($this->env, $this->source, $context["product"], "teamId", [], "any", false, false, false, 116)) && $tmp instanceof Markup ? (string) $tmp : $tmp)) ? ($this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["product"], "teamId", [], "any", false, false, false, 116), "name", [], "any", false, false, false, 116), "html", null, true)) : ("—"));
+            yield "</b></p>
+            <div class=\"card__actions\">
+              <a class=\"btn btn--ghost\" href=\"#\">Détail</a>
+              <a class=\"btn btn--primary\" href=\"#\">Ajouter au panier</a>
+            </div>
+          </div>
+        </article>
+        ";
+            $context['_iterated'] = true;
+        }
+        // line 123
+        if (!$context['_iterated']) {
+            // line 124
+            yield "        <div class=\"alert alert-warning\">Aucun produit disponible.</div>
+        ";
+        }
+        $_parent = $context['_parent'];
+        unset($context['_seq'], $context['_key'], $context['product'], $context['_parent'], $context['_iterated']);
+        $context = array_intersect_key($context, $_parent) + $_parent;
+        // line 126
+        yield "        <div class=\"card__chips\">
           <span class=\"chip chip--price\">69 DT</span>
           <span class=\"chip\">Stock: 7</span>
           <span class=\"chip\">North Hydra</span>
@@ -259,11 +302,11 @@ class __TwigTemplate_d61dc4d98f80aad7be27ed7748f438bb extends Template
         <p class=\"card__desc\">Vendeur: <b>North Hydra</b></p>
         <div class=\"card__actions\">
           <a class=\"btn btn--ghost\" href=\"";
-        // line 131
+        // line 136
         yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_product_detail");
         yield "\">Détail</a>
           <a class=\"btn btn--primary\" href=\"";
-        // line 132
+        // line 137
         yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_login");
         yield "\">Ajouter au panier</a>
         </div>
@@ -284,11 +327,11 @@ class __TwigTemplate_d61dc4d98f80aad7be27ed7748f438bb extends Template
         <p class=\"card__desc\">Vendeur: <b>Aurora Squad</b></p>
         <div class=\"card__actions\">
           <a class=\"btn btn--ghost\" href=\"";
-        // line 150
+        // line 155
         yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_product_detail");
         yield "\">Détail</a>
           <a class=\"btn btn--primary\" href=\"";
-        // line 151
+        // line 156
         yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_login");
         yield "\">Ajouter au panier</a>
         </div>
@@ -309,11 +352,11 @@ class __TwigTemplate_d61dc4d98f80aad7be27ed7748f438bb extends Template
         <p class=\"card__desc\">Vendeur: <b>Sandstorm</b></p>
         <div class=\"card__actions\">
           <a class=\"btn btn--ghost\" href=\"";
-        // line 169
+        // line 174
         yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_product_detail");
         yield "\">Détail</a>
           <a class=\"btn btn--primary\" href=\"";
-        // line 170
+        // line 175
         yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_login");
         yield "\">Ajouter au panier</a>
         </div>
@@ -340,15 +383,15 @@ class __TwigTemplate_d61dc4d98f80aad7be27ed7748f438bb extends Template
         <div>© 2026 Pulse — Front-office</div>
         <div class=\"footer__links\">
           <a href=\"";
-        // line 194
+        // line 199
         yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_about");
         yield "\">À propos</a>
           <a href=\"";
-        // line 195
+        // line 200
         yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_contact");
         yield "\">Contact</a>
           <a href=\"";
-        // line 196
+        // line 201
         yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_faq");
         yield "\">FAQ</a>
         </div>
@@ -383,7 +426,7 @@ class __TwigTemplate_d61dc4d98f80aad7be27ed7748f438bb extends Template
         <button class=\"btn btn--primary authForm__submit\" type=\"submit\">Se connecter</button>
         <div class=\"authForm__bottom\">
           <a class=\"authLink\" href=\"";
-        // line 228
+        // line 233
         yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_forgot_password");
         yield "\" id=\"forgotLink\">Mot de passe oublié ?</a>
         </div>
@@ -424,7 +467,7 @@ class __TwigTemplate_d61dc4d98f80aad7be27ed7748f438bb extends Template
      */
     public function getDebugInfo(): array
     {
-        return array (  387 => 228,  352 => 196,  348 => 195,  344 => 194,  317 => 170,  313 => 169,  292 => 151,  288 => 150,  267 => 132,  263 => 131,  242 => 113,  238 => 112,  188 => 65,  168 => 48,  160 => 43,  153 => 39,  146 => 35,  139 => 31,  132 => 27,  125 => 23,  111 => 12,  105 => 9,  100 => 6,  87 => 5,  64 => 3,  41 => 1,);
+        return array (  430 => 233,  395 => 201,  391 => 200,  387 => 199,  360 => 175,  356 => 174,  335 => 156,  331 => 155,  310 => 137,  306 => 136,  294 => 126,  287 => 124,  285 => 123,  273 => 116,  269 => 115,  262 => 111,  258 => 110,  254 => 109,  251 => 108,  247 => 106,  239 => 104,  236 => 103,  234 => 102,  230 => 100,  225 => 99,  188 => 65,  168 => 48,  160 => 43,  153 => 39,  146 => 35,  139 => 31,  132 => 27,  125 => 23,  111 => 12,  105 => 9,  100 => 6,  87 => 5,  64 => 3,  41 => 1,);
     }
 
     public function getSourceContext(): Source
@@ -527,28 +570,33 @@ class __TwigTemplate_d61dc4d98f80aad7be27ed7748f438bb extends Template
         </div>
       </div>
       <div class=\"cardsGrid\">
-
-    <article class=\"card card--product\">
-      <div class=\"card__media\" data-bg=\"https://picsum.photos/seed/pulse_p1/1200/800\">
-        <div class=\"card__chips\">
-          <span class=\"chip chip--price\">89 DT</span>
-          <span class=\"chip\">Stock: 14</span>
-          <span class=\"chip\">Nebula Five</span>
-        </div>
-      </div>
-      <div class=\"card__body\">
-        <h4 class=\"card__title\">Pulse Hoodie — Neon</h4>
-        <p class=\"card__desc\">Vendeur: <b>Nebula Five</b></p>
-        <div class=\"card__actions\">
-          <a class=\"btn btn--ghost\" href=\"{{ path('front_product_detail') }}\">Détail</a>
-          <a class=\"btn btn--primary\" href=\"{{ path('front_login') }}\">Ajouter au panier</a>
-        </div>
-      </div>
-    </article>
-
-
-    <article class=\"card card--product\">
-      <div class=\"card__media\" data-bg=\"https://picsum.photos/seed/pulse_p2/1200/800\">
+        {% for product in products %}
+        <article class=\"card card--product\">
+          <div class=\"card__media\">
+            {% set image = (product.productImages|first) ? (product.productImages|first).image : null %}
+            {% if image and image.fileUrl %}
+              <img src=\"{{ image.fileUrl }}\" alt=\"{{ product.name }}\" style=\"width:100%;height:180px;object-fit:cover;border-radius:8px 8px 0 0;\" />
+            {% else %}
+              <div style=\"width:100%;height:180px;background:#eee;border-radius:8px 8px 0 0;display:flex;align-items:center;justify-content:center;color:#aaa;\">Aucune image</div>
+            {% endif %}
+            <div class=\"card__chips\">
+              <span class=\"chip chip--price\">{{ product.price }} DT</span>
+              <span class=\"chip\">Stock: {{ product.stockQty }}</span>
+              <span class=\"chip\">{{ product.teamId ? product.teamId.name : '—' }}</span>
+            </div>
+          </div>
+          <div class=\"card__body\">
+            <h4 class=\"card__title\">{{ product.name }}</h4>
+            <p class=\"card__desc\">Vendeur: <b>{{ product.teamId ? product.teamId.name : '—' }}</b></p>
+            <div class=\"card__actions\">
+              <a class=\"btn btn--ghost\" href=\"#\">Détail</a>
+              <a class=\"btn btn--primary\" href=\"#\">Ajouter au panier</a>
+            </div>
+          </div>
+        </article>
+        {% else %}
+        <div class=\"alert alert-warning\">Aucun produit disponible.</div>
+        {% endfor %}
         <div class=\"card__chips\">
           <span class=\"chip chip--price\">69 DT</span>
           <span class=\"chip\">Stock: 7</span>

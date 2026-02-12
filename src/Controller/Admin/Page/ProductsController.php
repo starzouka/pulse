@@ -22,11 +22,39 @@ final class ProductsController extends AbstractController
         return $this->redirectToRoute('admin_products');
     }
     #[Route('/admin/products', name: 'admin_products', methods: ['GET'])]
-    public function index(ProductRepository $productRepository): Response
+    public function index(ProductRepository $productRepository, Request $request): Response
     {
-        $products = $productRepository->findAll();
+        $qb = $productRepository->createQueryBuilder('p');
+
+        // Recherche par nom ou SKU
+        $search = $request->query->get('search');
+        if ($search) {
+            $qb->andWhere('p.name LIKE :search OR p.productId LIKE :search')
+                ->setParameter('search', '%' . $search . '%');
+        }
+
+        // Recherche par équipe
+        $team = $request->query->get('team');
+        if ($team) {
+            $qb->leftJoin('p.teamId', 't')
+                ->andWhere('t.name LIKE :team')
+                ->setParameter('team', '%' . $team . '%');
+        }
+
+        // Filtre actif
+        $isActive = $request->query->get('is_active');
+        if ($isActive === 'true') {
+            $qb->andWhere('p.isActive = true');
+        } elseif ($isActive === 'false') {
+            $qb->andWhere('p.isActive = false');
+        }
+
+        $products = $qb->getQuery()->getResult();
         return $this->render('admin/pages/products.html.twig', [
             'products' => $products,
+            'search' => $search,
+            'team' => $team,
+            'is_active' => $isActive,
         ]);
     }
 

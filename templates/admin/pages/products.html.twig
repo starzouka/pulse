@@ -13,11 +13,27 @@
     <div class="formActions"><a class="btn btnPrimary" href="{{ path('admin_product_new') }}">+ Nouveau produit</a></div>
   </div>
   
-  <div class="filtersBar">
-    <div class="filterGroup"><label>Recherche</label><input type="text" placeholder="name, sku" /></div>
-<div class="filterGroup"><label>Team</label><input type="text" placeholder="team" /></div>
-<div class="filterGroup"><label>Actif</label><select><option>ALL</option><option>true</option><option>false</option></select></div>
-  </div>
+  <form class="filtersBar" method="get" action="">
+    <div class="filterGroup">
+      <label>Recherche</label>
+      <input type="text" name="search" placeholder="name, sku" value="{{ search|default('') }}" />
+    </div>
+    <div class="filterGroup">
+      <label>Team</label>
+      <input type="text" name="team" placeholder="team" value="{{ team|default('') }}" />
+    </div>
+    <div class="filterGroup">
+      <label>Actif</label>
+      <select name="is_active">
+        <option value="">ALL</option>
+        <option value="true" {% if is_active == 'true' %}selected{% endif %}>true</option>
+        <option value="false" {% if is_active == 'false' %}selected{% endif %}>false</option>
+      </select>
+    </div>
+    <div class="filterGroup">
+      <button class="btn btnPrimary" type="submit">Filtrer</button>
+    </div>
+  </form>
   <section class="panel">
     <div class="panelHeader"><h3 class="panelTitle">LISTE</h3></div>
     
