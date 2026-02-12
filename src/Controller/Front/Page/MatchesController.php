@@ -15,6 +15,8 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class MatchesController extends AbstractController
 {
+    use PaginatesCollectionsTrait;
+
     private const STATUSES = ['SCHEDULED', 'ONGOING', 'FINISHED', 'CANCELLED'];
     private const SORTS = ['upcoming', 'latest'];
 
@@ -49,6 +51,8 @@ final class MatchesController extends AbstractController
             $sort,
             200,
         );
+        $pagination = $this->paginateItems($matches, $this->readPage($request), 12);
+        $matches = $pagination['items'];
 
         $matchIds = [];
         foreach ($matches as $match) {
@@ -96,6 +100,7 @@ final class MatchesController extends AbstractController
             'matches_data' => $matchesData,
             'available_tournaments' => $tournamentRepository->findAllWithGameOrdered(300),
             'available_games' => $gameRepository->findAllWithCategoryOrdered(),
+            'pagination' => $pagination,
             'filters' => [
                 'q' => $query,
                 'tournament' => $tournamentId,

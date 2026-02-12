@@ -32,6 +32,29 @@
                 <a class="btn btn--ghost" href="{{ path('front_teams_explore') }}">Nouvelle demande</a>
               </div>
 
+              <form class="filtersRow" method="get" action="{{ path('front_my_requests') }}" style="margin-bottom:12px;" data-auto-submit="1">
+                <input class="input" type="search" name="q" value="{{ filters.q|default('') }}" placeholder="Rechercher equipe/note..." />
+                <div class="select">
+                  <select name="status">
+                    <option value="" {{ (filters.status|default('')) == '' ? 'selected' : '' }}>Tous statuts</option>
+                    <option value="PENDING" {{ (filters.status|default('')) == 'PENDING' ? 'selected' : '' }}>PENDING</option>
+                    <option value="ACCEPTED" {{ (filters.status|default('')) == 'ACCEPTED' ? 'selected' : '' }}>ACCEPTED</option>
+                    <option value="REFUSED" {{ (filters.status|default('')) == 'REFUSED' ? 'selected' : '' }}>REFUSED</option>
+                    <option value="CANCELLED" {{ (filters.status|default('')) == 'CANCELLED' ? 'selected' : '' }}>CANCELLED</option>
+                  </select>
+                </div>
+                <div class="select">
+                  <select name="sort">
+                    <option value="latest" {{ (filters.sort|default('latest')) == 'latest' ? 'selected' : '' }}>Plus recentes</option>
+                    <option value="oldest" {{ (filters.sort|default('latest')) == 'oldest' ? 'selected' : '' }}>Plus anciennes</option>
+                    <option value="team" {{ (filters.sort|default('latest')) == 'team' ? 'selected' : '' }}>Equipe</option>
+                    <option value="status" {{ (filters.sort|default('latest')) == 'status' ? 'selected' : '' }}>Statut</option>
+                  </select>
+                </div>
+                <button class="btn btn--ghost" type="submit">Filtrer</button>
+                <a class="btn btn--ghost" href="{{ path('front_my_requests') }}">Reset</a>
+              </form>
+
               {% if join_requests is empty %}
                 <div class="emptyState">Aucune demande envoyee pour le moment.</div>
               {% else %}
@@ -76,6 +99,11 @@
                 </div>
               {% endif %}
             </section>
+
+            {% include 'front/partials/_pagination.html.twig' with {
+              pagination: pagination,
+              route_name: 'front_my_requests'
+            } %}
           </div>
 
           <aside class="socialStack">

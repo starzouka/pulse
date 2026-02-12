@@ -144,4 +144,113 @@ class TournamentTeamRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * @return list<TournamentTeam>
+     */
+    public function findByTeamWithFilters(
+        Team $team,
+        ?string $query = null,
+        ?string $status = null,
+        string $sort = 'latest',
+        int $limit = 200
+    ): array {
+        $builder = $this->createQueryBuilder('tournamentTeam')
+            ->innerJoin('tournamentTeam.tournamentId', 'tournament')
+            ->addSelect('tournament')
+            ->innerJoin('tournament.gameId', 'game')
+            ->addSelect('game')
+            ->leftJoin('game.categoryId', 'category')
+            ->addSelect('category')
+            ->andWhere('tournamentTeam.teamId = :team')
+            ->setParameter('team', $team)
+            ->setMaxResults($limit);
+
+        $queryValue = trim((string) $query);
+        if ($queryValue !== '') {
+            $builder
+                ->andWhere(
+                    'LOWER(tournament.title) LIKE :query
+                    OR LOWER(COALESCE(tournament.description, \'\')) LIKE :query
+                    OR LOWER(game.name) LIKE :query'
+                )
+                ->setParameter('query', '%' . mb_strtolower($queryValue) . '%');
+        }
+
+        $statusValue = strtoupper(trim((string) $status));
+        if (in_array($statusValue, ['PENDING', 'ACCEPTED', 'REFUSED', 'CANCELLED'], true)) {
+            $builder
+                ->andWhere('tournamentTeam.status = :status')
+                ->setParameter('status', $statusValue);
+        }
+
+        $sortValue = strtolower(trim($sort));
+        switch ($sortValue) {
+            case 'oldest':
+                $builder
+                    ->orderBy('tournament.startDate', 'ASC')
+                    ->addOrderBy('tournamentTeam.registeredAt', 'ASC');
+                break;
+
+            case 'title':
+                $builder
+                    ->orderBy('tournament.title', 'ASC')
+                    ->addOrderBy('tournament.startDate', 'DESC');
+                break;
+
+            case 'status':
+                $builder
+                    ->addSelect('(CASE tournamentTeam.status WHEN \'ACCEPTED\' THEN 0 WHEN \'PENDING\' THEN 1 WHEN \'REFUSED\' THEN 2 ELSE 3 END) AS HIDDEN statusRank')
+                    ->orderBy('statusRank', 'ASC')
+                    ->addOrderBy('tournament.startDate', 'DESC');
+                break;
+
+            case 'latest':
+            default:
+                $builder
+                    ->orderBy('tournament.startDate', 'DESC')
+                    ->addOrderBy('tournamentTeam.registeredAt', 'DESC');
+                break;
+        }
+
+        return $builder->getQuery()->getResult();
+    }
+
+    /**
+     * @param list<int> $teamIds
+     * @param list<string>|null $statuses
+     * @return array<int, int>
+     */
+    public function countByTeamIds(array $teamIds, ?array $statuses = null): array
+    {
+        $filteredIds = array_values(array_unique(array_filter(
+            $teamIds,
+            static fn (mixed $id): bool => is_int($id) && $id > 0
+        )));
+
+        if ($filteredIds === []) {
+            return [];
+        }
+
+        $builder = $this->createQueryBuilder('tournamentTeam')
+            ->select('IDENTITY(tournamentTeam.teamId) AS teamId')
+            ->addSelect('COUNT(tournamentTeam.tournamentId) AS tournamentsCount')
+            ->andWhere('IDENTITY(tournamentTeam.teamId) IN (:teamIds)')
+            ->setParameter('teamIds', $filteredIds)
+            ->groupBy('tournamentTeam.teamId');
+
+        if (is_array($statuses) && $statuses !== []) {
+            $builder
+                ->andWhere('tournamentTeam.status IN (:statuses)')
+                ->setParameter('statuses', array_map('strtoupper', $statuses));
+        }
+
+        $rows = $builder->getQuery()->getArrayResult();
+        $counts = [];
+        foreach ($rows as $row) {
+            $counts[(int) $row['teamId']] = (int) $row['tournamentsCount'];
+        }
+
+        return $counts;
+    }
 }

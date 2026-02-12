@@ -21,12 +21,19 @@ class OrderRepository extends ServiceEntityRepository
     /**
      * @return list<Order>
      */
-    public function findByUserWithFilters(User $user, ?string $status, ?\DateTimeInterface $fromDate, int $limit = 100): array
+    public function findByUserWithFilters(
+        User $user,
+        ?string $status,
+        ?\DateTimeInterface $fromDate,
+        int $limit = 100,
+        ?string $query = null,
+        ?\DateTimeInterface $toDate = null,
+        string $sort = 'latest'
+    ): array
     {
         $builder = $this->createQueryBuilder('orderRecord')
             ->andWhere('orderRecord.userId = :user')
             ->setParameter('user', $user)
-            ->orderBy('orderRecord.createdAt', 'DESC')
             ->setMaxResults($limit);
 
         $statusValue = strtoupper(trim((string) $status));
@@ -41,6 +48,59 @@ class OrderRepository extends ServiceEntityRepository
             $builder
                 ->andWhere('orderRecord.createdAt >= :fromDate')
                 ->setParameter('fromDate', $startOfDay);
+        }
+
+        if ($toDate instanceof \DateTimeInterface) {
+            $endOfDay = (new \DateTime($toDate->format('Y-m-d')))->setTime(23, 59, 59);
+            $builder
+                ->andWhere('orderRecord.createdAt <= :toDate')
+                ->setParameter('toDate', $endOfDay);
+        }
+
+        $queryValue = trim((string) $query);
+        if ($queryValue !== '') {
+            $builder
+                ->andWhere(
+                    'LOWER(orderRecord.orderNumber) LIKE :query
+                    OR LOWER(orderRecord.paymentStatus) LIKE :query
+                    OR LOWER(COALESCE(orderRecord.shippingAddress, \'\')) LIKE :query
+                    OR LOWER(COALESCE(orderRecord.phoneForDelivery, \'\')) LIKE :query'
+                )
+                ->setParameter('query', '%' . mb_strtolower($queryValue) . '%');
+        }
+
+        $sortValue = strtolower(trim($sort));
+        switch ($sortValue) {
+            case 'oldest':
+                $builder
+                    ->orderBy('orderRecord.createdAt', 'ASC')
+                    ->addOrderBy('orderRecord.orderId', 'ASC');
+                break;
+
+            case 'amount_high':
+                $builder
+                    ->orderBy('orderRecord.totalAmount', 'DESC')
+                    ->addOrderBy('orderRecord.createdAt', 'DESC');
+                break;
+
+            case 'amount_low':
+                $builder
+                    ->orderBy('orderRecord.totalAmount', 'ASC')
+                    ->addOrderBy('orderRecord.createdAt', 'DESC');
+                break;
+
+            case 'status':
+                $builder
+                    ->orderBy('orderRecord.status', 'ASC')
+                    ->addOrderBy('orderRecord.createdAt', 'DESC');
+                break;
+
+            case 'latest':
+            default:
+                $builder
+                    ->orderBy('orderRecord.createdAt', 'DESC')
+                    ->addOrderBy('orderRecord.orderId', 'DESC');
+                break;
         }
 
         return $builder->getQuery()->getResult();

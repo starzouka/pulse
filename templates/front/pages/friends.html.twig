@@ -27,14 +27,46 @@
             {% endfor %}
 
             <section class="panel gadget">
+              <form class="filtersRow" method="get" action="{{ path('front_friends') }}" style="margin-bottom:12px;" data-auto-submit="1">
+                <input type="hidden" name="tab" value="{{ active_tab|default('my-friends') }}">
+                <input class="input" type="search" name="friend_q" value="{{ filters.friend_q|default('') }}" placeholder="Rechercher un ami..." />
+                <div class="select">
+                  <select name="friends_sort">
+                    <option value="recent" {{ (filters.friends_sort|default('recent')) == 'recent' ? 'selected' : '' }}>Amis recents</option>
+                    <option value="oldest" {{ (filters.friends_sort|default('recent')) == 'oldest' ? 'selected' : '' }}>Amis anciens</option>
+                    <option value="name" {{ (filters.friends_sort|default('recent')) == 'name' ? 'selected' : '' }}>Nom A-Z</option>
+                  </select>
+                </div>
+                <input class="input" type="search" name="requests_q" value="{{ filters.requests_q|default('') }}" placeholder="Rechercher une demande..." />
+                <div class="select">
+                  <select name="requests_status">
+                    <option value="" {{ (filters.requests_status|default('PENDING')) == '' ? 'selected' : '' }}>Tous statuts</option>
+                    <option value="PENDING" {{ (filters.requests_status|default('PENDING')) == 'PENDING' ? 'selected' : '' }}>PENDING</option>
+                    <option value="ACCEPTED" {{ (filters.requests_status|default('PENDING')) == 'ACCEPTED' ? 'selected' : '' }}>ACCEPTED</option>
+                    <option value="REFUSED" {{ (filters.requests_status|default('PENDING')) == 'REFUSED' ? 'selected' : '' }}>REFUSED</option>
+                    <option value="CANCELLED" {{ (filters.requests_status|default('PENDING')) == 'CANCELLED' ? 'selected' : '' }}>CANCELLED</option>
+                  </select>
+                </div>
+                <div class="select">
+                  <select name="requests_sort">
+                    <option value="latest" {{ (filters.requests_sort|default('latest')) == 'latest' ? 'selected' : '' }}>Demandes recentes</option>
+                    <option value="oldest" {{ (filters.requests_sort|default('latest')) == 'oldest' ? 'selected' : '' }}>Demandes anciennes</option>
+                    <option value="name" {{ (filters.requests_sort|default('latest')) == 'name' ? 'selected' : '' }}>Nom</option>
+                    <option value="status" {{ (filters.requests_sort|default('latest')) == 'status' ? 'selected' : '' }}>Statut</option>
+                  </select>
+                </div>
+                <button class="btn btn--ghost" type="submit">Filtrer</button>
+                <a class="btn btn--ghost" href="{{ path('front_friends') }}">Reset</a>
+              </form>
+
               <div class="tabs" data-tabs="friends-tabs">
-                <button class="tab is-active" data-tab="my-friends">Mes amis</button>
-                <button class="tab" data-tab="received">Demandes recues</button>
-                <button class="tab" data-tab="sent">Demandes envoyees</button>
+                <button class="tab {{ (active_tab|default('my-friends')) == 'my-friends' ? 'is-active' : '' }}" data-tab="my-friends">Mes amis</button>
+                <button class="tab {{ (active_tab|default('my-friends')) == 'received' ? 'is-active' : '' }}" data-tab="received">Demandes recues</button>
+                <button class="tab {{ (active_tab|default('my-friends')) == 'sent' ? 'is-active' : '' }}" data-tab="sent">Demandes envoyees</button>
               </div>
 
               <div class="tabPanels" data-panels="friends-tabs">
-                <section class="tabPanel is-active" data-panel="my-friends">
+                <section class="tabPanel {{ (active_tab|default('my-friends')) == 'my-friends' ? 'is-active' : '' }}" data-panel="my-friends">
                   {% if friends is empty %}
                     <div class="emptyState">Aucun ami pour le moment.</div>
                   {% else %}
@@ -48,14 +80,20 @@
                       {% endfor %}
                     </div>
                   {% endif %}
+
+                  {% include 'front/partials/_pagination.html.twig' with {
+                    pagination: pagination.friends|default(null),
+                    route_name: 'front_friends',
+                    page_param: 'friends_page',
+                    query_params: app.request.query.all|merge({tab: 'my-friends'})
+                  } %}
                 </section>
 
-                <section class="tabPanel" data-panel="received">
-                  {% set pendingReceived = received_requests|filter(request => request.status == 'PENDING') %}
-                  {% if pendingReceived is empty %}
-                    <div class="emptyState">Aucune demande recue en attente.</div>
+                <section class="tabPanel {{ (active_tab|default('my-friends')) == 'received' ? 'is-active' : '' }}" data-panel="received">
+                  {% if received_requests is empty %}
+                    <div class="emptyState">Aucune demande recue avec ces filtres.</div>
                   {% else %}
-                    {% for request in pendingReceived %}
+                    {% for request in received_requests %}
                       {% set sender = request.fromUserId %}
                       <article class="panel profilePost">
                         <div class="postCard__head">
@@ -80,14 +118,20 @@
                       </article>
                     {% endfor %}
                   {% endif %}
+
+                  {% include 'front/partials/_pagination.html.twig' with {
+                    pagination: pagination.received|default(null),
+                    route_name: 'front_friends',
+                    page_param: 'received_page',
+                    query_params: app.request.query.all|merge({tab: 'received'})
+                  } %}
                 </section>
 
-                <section class="tabPanel" data-panel="sent">
-                  {% set pendingSent = sent_requests|filter(request => request.status == 'PENDING') %}
-                  {% if pendingSent is empty %}
-                    <div class="emptyState">Aucune demande envoyee en attente.</div>
+                <section class="tabPanel {{ (active_tab|default('my-friends')) == 'sent' ? 'is-active' : '' }}" data-panel="sent">
+                  {% if sent_requests is empty %}
+                    <div class="emptyState">Aucune demande envoyee avec ces filtres.</div>
                   {% else %}
-                    {% for request in pendingSent %}
+                    {% for request in sent_requests %}
                       {% set target = request.toUserId %}
                       <article class="panel profilePost">
                         <div class="postCard__head">
@@ -108,6 +152,13 @@
                       </article>
                     {% endfor %}
                   {% endif %}
+
+                  {% include 'front/partials/_pagination.html.twig' with {
+                    pagination: pagination.sent|default(null),
+                    route_name: 'front_friends',
+                    page_param: 'sent_page',
+                    query_params: app.request.query.all|merge({tab: 'sent'})
+                  } %}
                 </section>
               </div>
             </section>

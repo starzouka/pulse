@@ -22,17 +22,76 @@ class TeamInviteRepository extends ServiceEntityRepository
      */
     public function findLatestForInvitedUser(User $user, ?string $status = null, int $limit = 50): array
     {
+        return $this->findForInvitedUserFiltered($user, $status, null, 'latest', $limit);
+    }
+
+    /**
+     * @return list<TeamInvite>
+     */
+    public function findForInvitedUserFiltered(
+        User $user,
+        ?string $status = null,
+        ?string $query = null,
+        string $sort = 'latest',
+        int $limit = 50
+    ): array {
         $builder = $this->createQueryBuilder('teamInvite')
+            ->innerJoin('teamInvite.teamId', 'team')
+            ->addSelect('team')
+            ->leftJoin('team.logoImageId', 'teamLogo')
+            ->addSelect('teamLogo')
+            ->leftJoin('teamInvite.invitedByUserId', 'invitedBy')
+            ->addSelect('invitedBy')
             ->andWhere('teamInvite.invitedUserId = :user')
             ->setParameter('user', $user)
-            ->orderBy('teamInvite.createdAt', 'DESC')
             ->setMaxResults($limit);
 
         $statusValue = strtoupper(trim((string) $status));
-        if ($statusValue !== '') {
+        if (in_array($statusValue, ['PENDING', 'ACCEPTED', 'REFUSED', 'CANCELLED'], true)) {
             $builder
                 ->andWhere('teamInvite.status = :status')
                 ->setParameter('status', $statusValue);
+        }
+
+        $queryValue = trim((string) $query);
+        if ($queryValue !== '') {
+            $builder
+                ->andWhere(
+                    'LOWER(team.name) LIKE :query
+                    OR LOWER(COALESCE(team.region, \'\')) LIKE :query
+                    OR LOWER(COALESCE(teamInvite.message, \'\')) LIKE :query
+                    OR LOWER(invitedBy.username) LIKE :query
+                    OR LOWER(invitedBy.displayName) LIKE :query'
+                )
+                ->setParameter('query', '%' . mb_strtolower($queryValue) . '%');
+        }
+
+        $sortValue = strtolower(trim($sort));
+        switch ($sortValue) {
+            case 'oldest':
+                $builder
+                    ->orderBy('teamInvite.createdAt', 'ASC')
+                    ->addOrderBy('teamInvite.inviteId', 'ASC');
+                break;
+
+            case 'team':
+                $builder
+                    ->orderBy('team.name', 'ASC')
+                    ->addOrderBy('teamInvite.createdAt', 'DESC');
+                break;
+
+            case 'status':
+                $builder
+                    ->orderBy('teamInvite.status', 'ASC')
+                    ->addOrderBy('teamInvite.createdAt', 'DESC');
+                break;
+
+            case 'latest':
+            default:
+                $builder
+                    ->orderBy('teamInvite.createdAt', 'DESC')
+                    ->addOrderBy('teamInvite.inviteId', 'DESC');
+                break;
         }
 
         return $builder->getQuery()->getResult();

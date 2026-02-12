@@ -26,20 +26,24 @@ final class FeedController extends AbstractController
 {
     #[Route('/pages/feed', name: 'front_feed', methods: ['GET'])]
     public function index(
+        Request $request,
         FeedPostAssembler $feedPostAssembler,
     ): Response
     {
         $viewer = $this->getUser();
         $viewerUser = $viewer instanceof User ? $viewer : null;
 
+        $feedFilters = $this->extractFeedFilters($request, $viewerUser);
         $initialLimit = 12;
-        $feedPosts = $feedPostAssembler->latest($viewerUser, $initialLimit, 0);
+        $feedPosts = $feedPostAssembler->latest($viewerUser, $initialLimit, 0, $feedFilters['criteria']);
 
         return $this->render('front/pages/feed.html.twig', [
             'viewer_user' => $viewerUser,
             'feed_posts' => $feedPosts,
             'feed_limit' => $initialLimit,
             'feed_has_more' => count($feedPosts) === $initialLimit,
+            'filters' => $feedFilters['form'],
+            'feed_query_string' => http_build_query($feedFilters['query']),
         ]);
     }
 
@@ -57,8 +61,9 @@ final class FeedController extends AbstractController
         $offset = is_scalar($offsetRaw) ? max(0, (int) $offsetRaw) : 0;
         $limit = is_scalar($limitRaw) ? max(1, min(20, (int) $limitRaw)) : 10;
         $redirectUri = trim((string) $request->query->get('redirect', ''));
+        $feedFilters = $this->extractFeedFilters($request, $viewerUser);
 
-        $chunkPosts = $feedPostAssembler->latest($viewerUser, $limit, $offset);
+        $chunkPosts = $feedPostAssembler->latest($viewerUser, $limit, $offset, $feedFilters['criteria']);
         $html = '';
         foreach ($chunkPosts as $postData) {
             $html .= $this->renderView('front/partials/_post_card.html.twig', [
@@ -341,6 +346,68 @@ final class FeedController extends AbstractController
         $this->addFlash('success', 'Post supprime.');
 
         return $this->redirectToRequestTarget($request, 'front_feed');
+    }
+
+    /**
+     * @return array{
+     *   criteria: array{
+     *     q:string,
+     *     visibility:string,
+     *     sort:string,
+     *     author?:User
+     *   },
+     *   form: array{q:string,visibility:string,sort:string,author:string},
+     *   query: array<string,string>
+     * }
+     */
+    private function extractFeedFilters(Request $request, ?User $viewerUser): array
+    {
+        $query = trim((string) $request->query->get('q', ''));
+
+        $visibility = strtoupper(trim((string) $request->query->get('visibility', '')));
+        if (!in_array($visibility, ['PUBLIC', 'FRIENDS', 'TEAM_ONLY'], true)) {
+            $visibility = '';
+        }
+
+        $sort = strtolower(trim((string) $request->query->get('sort', 'latest')));
+        if (!in_array($sort, ['latest', 'oldest', 'liked', 'commented'], true)) {
+            $sort = 'latest';
+        }
+
+        $authorValue = strtolower(trim((string) $request->query->get('author', '')));
+        if (!in_array($authorValue, ['', 'me'], true)) {
+            $authorValue = '';
+        }
+
+        $criteria = [
+            'q' => $query,
+            'visibility' => $visibility,
+            'sort' => $sort,
+        ];
+
+        if ($authorValue === 'me' && $viewerUser instanceof User) {
+            $criteria['author'] = $viewerUser;
+        } else {
+            $authorValue = '';
+        }
+
+        $queryParams = array_filter([
+            'q' => $query,
+            'visibility' => $visibility,
+            'sort' => $sort,
+            'author' => $authorValue,
+        ], static fn (mixed $value): bool => is_string($value) && $value !== '');
+
+        return [
+            'criteria' => $criteria,
+            'form' => [
+                'q' => $query,
+                'visibility' => $visibility,
+                'sort' => $sort,
+                'author' => $authorValue,
+            ],
+            'query' => $queryParams,
+        ];
     }
 
     private function redirectToRequestTarget(Request $request, string $fallbackRoute): Response

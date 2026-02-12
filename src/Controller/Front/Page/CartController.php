@@ -6,6 +6,7 @@ namespace App\Controller\Front\Page;
 
 use App\Entity\Product;
 use App\Entity\User;
+use App\Repository\CartItemRepository;
 use App\Repository\CartRepository;
 use App\Repository\OrderRepository;
 use App\Repository\ProductRepository;
@@ -18,10 +19,13 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class CartController extends AbstractController
 {
+    use PaginatesCollectionsTrait;
+
     #[Route('/pages/cart', name: 'front_cart', methods: ['GET'])]
     public function index(
         Request $request,
         CartRepository $cartRepository,
+        CartItemRepository $cartItemRepository,
         OrderRepository $orderRepository,
         CartManager $cartManager,
     ): Response
@@ -34,9 +38,63 @@ final class CartController extends AbstractController
         }
 
         $cart = $cartRepository->findOneByUser($viewer);
-        $summary = $cart !== null
+        $fullSummary = $cart !== null
             ? $cartManager->buildSummary($cart)
             : ['items' => [], 'subtotal' => 0.0, 'total_quantity' => 0];
+
+        $query = trim((string) $request->query->get('q', ''));
+        $teamId = $this->toPositiveInt($request->query->get('team'));
+        $sort = strtolower(trim((string) $request->query->get('sort', 'added_asc')));
+        if (!in_array($sort, ['added_asc', 'added_desc', 'name', 'price_high', 'price_low', 'qty_high'], true)) {
+            $sort = 'added_asc';
+        }
+
+        $filteredRows = [];
+        if ($cart !== null) {
+            $cartItems = $cartItemRepository->findByCartWithFilters($cart, $query, $teamId, $sort, 500);
+            foreach ($cartItems as $cartItem) {
+                $product = $cartItem->getProductId();
+                if (!$product instanceof Product) {
+                    continue;
+                }
+
+                $quantity = max(0, (int) $cartItem->getQuantity());
+                $unitPrice = (float) ($cartItem->getUnitPriceAtAdd() ?? 0);
+                $lineTotal = $quantity * $unitPrice;
+
+                $filteredRows[] = [
+                    'product' => $product,
+                    'quantity' => $quantity,
+                    'unit_price' => $unitPrice,
+                    'line_total' => $lineTotal,
+                ];
+            }
+        }
+
+        $pagination = $this->paginateItems($filteredRows, $this->readPage($request), 10);
+        $filteredRows = $pagination['items'];
+
+        $visibleSubtotal = 0.0;
+        $visibleQuantity = 0;
+        foreach ($filteredRows as $row) {
+            $visibleSubtotal += (float) ($row['line_total'] ?? 0.0);
+            $visibleQuantity += (int) ($row['quantity'] ?? 0);
+        }
+
+        $teamOptions = [];
+        foreach ($fullSummary['items'] as $item) {
+            $team = $item['product']->getTeamId();
+            $optionId = $team?->getTeamId();
+            if ($optionId === null) {
+                continue;
+            }
+
+            $teamOptions[$optionId] = [
+                'id' => $optionId,
+                'name' => $team?->getName() ?? ('Equipe #' . $optionId),
+            ];
+        }
+        ksort($teamOptions);
 
         $lockedReason = null;
         if ($cart !== null && $cart->getStatus() !== 'OPEN') {
@@ -50,11 +108,20 @@ final class CartController extends AbstractController
 
         return $this->render('front/pages/cart.html.twig', [
             'cart' => $cart,
-            'cart_items' => $summary['items'],
-            'cart_subtotal' => $summary['subtotal'],
-            'cart_total_quantity' => $summary['total_quantity'],
+            'cart_items' => $filteredRows,
+            'cart_subtotal' => $fullSummary['subtotal'],
+            'cart_total_quantity' => $fullSummary['total_quantity'],
+            'cart_visible_subtotal' => $visibleSubtotal,
+            'cart_visible_quantity' => $visibleQuantity,
             'cart_is_editable' => $cart === null || $cart->getStatus() === 'OPEN',
             'locked_reason' => $lockedReason,
+            'filters' => [
+                'q' => $query,
+                'team' => $teamId,
+                'sort' => $sort,
+            ],
+            'pagination' => $pagination,
+            'team_filter_options' => array_values($teamOptions),
         ]);
     }
 
@@ -205,5 +272,16 @@ final class CartController extends AbstractController
         }
 
         return $this->redirectToRoute('front_cart');
+    }
+
+    private function toPositiveInt(mixed $value): ?int
+    {
+        if (!is_scalar($value)) {
+            return null;
+        }
+
+        $asInt = (int) $value;
+
+        return $asInt > 0 ? $asInt : null;
     }
 }

@@ -17,6 +17,8 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class ShopController extends AbstractController
 {
+    use PaginatesCollectionsTrait;
+
     #[Route('/pages/shop', name: 'front_shop', methods: ['GET'])]
     public function index(
         Request $request,
@@ -38,6 +40,10 @@ final class ShopController extends AbstractController
 
         $inStockOnly = (string) $request->query->get('stock', '') === '1';
         $activeOnly = (string) $request->query->get('active', '1') !== '0';
+        $sort = strtolower(trim((string) $request->query->get('sort', 'latest')));
+        if (!in_array($sort, ['latest', 'oldest', 'name', 'price_high', 'price_low', 'stock_high'], true)) {
+            $sort = 'latest';
+        }
 
         $products = $productRepository->searchForShop(
             query: $query,
@@ -46,8 +52,11 @@ final class ShopController extends AbstractController
             maxPrice: $maxPrice,
             inStockOnly: $inStockOnly,
             activeOnly: $activeOnly,
-            limit: 120,
+            sort: $sort,
+            limit: 500,
         );
+        $pagination = $this->paginateItems($products, $this->readPage($request), 12);
+        $products = $pagination['items'];
         $primaryImagesByProductId = $productImageRepository->findPrimaryImagesByProducts($products);
 
         $viewer = $this->getUser();
@@ -70,7 +79,9 @@ final class ShopController extends AbstractController
                 'max' => $maxPriceRaw,
                 'stock' => $inStockOnly,
                 'active' => $activeOnly,
+                'sort' => $sort,
             ],
+            'pagination' => $pagination,
             'cart_items_count' => $cartItemsCount,
         ]);
     }

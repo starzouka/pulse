@@ -30,9 +30,32 @@ final class FeedPostAssembler
      *   is_liked_by_viewer:bool
      * }>
      */
-    public function latest(?User $viewerUser, int $limit = 10, int $offset = 0): array
+    public function latest(?User $viewerUser, int $limit = 10, int $offset = 0, array $filters = []): array
     {
-        $posts = $this->postRepository->findLatestVisiblePaged($limit, $offset);
+        $query = trim((string) ($filters['q'] ?? ''));
+        $visibility = strtoupper(trim((string) ($filters['visibility'] ?? '')));
+        if (!in_array($visibility, ['PUBLIC', 'FRIENDS', 'TEAM_ONLY'], true)) {
+            $visibility = '';
+        }
+
+        $sort = strtolower(trim((string) ($filters['sort'] ?? 'latest')));
+        if (!in_array($sort, ['latest', 'oldest', 'liked', 'commented'], true)) {
+            $sort = 'latest';
+        }
+
+        $author = null;
+        if (($filters['author'] ?? null) instanceof User) {
+            $author = $filters['author'];
+        }
+
+        $posts = $this->postRepository->searchVisiblePaged(
+            $query !== '' ? $query : null,
+            $visibility !== '' ? $visibility : null,
+            $author,
+            $sort,
+            $limit,
+            $offset
+        );
         if ($posts === []) {
             return [];
         }

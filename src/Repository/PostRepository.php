@@ -35,17 +35,14 @@ class PostRepository extends ServiceEntityRepository
      */
     public function findLatestVisiblePaged(int $limit = 25, int $offset = 0): array
     {
-        $safeLimit = max(1, min(50, $limit));
-        $safeOffset = max(0, $offset);
-
-        return $this->createQueryBuilder('post')
-            ->andWhere('(post.isDeleted = :isDeleted OR post.isDeleted IS NULL)')
-            ->setParameter('isDeleted', false)
-            ->orderBy('post.createdAt', 'DESC')
-            ->setFirstResult($safeOffset)
-            ->setMaxResults($safeLimit)
-            ->getQuery()
-            ->getResult();
+        return $this->searchVisiblePaged(
+            query: null,
+            visibility: null,
+            author: null,
+            sort: 'latest',
+            limit: $limit,
+            offset: $offset,
+        );
     }
 
     /**
@@ -53,15 +50,93 @@ class PostRepository extends ServiceEntityRepository
      */
     public function findLatestByAuthor(User $author, int $limit = 25): array
     {
-        return $this->createQueryBuilder('post')
-            ->andWhere('post.authorUserId = :author')
+        return $this->searchVisiblePaged(
+            query: null,
+            visibility: null,
+            author: $author,
+            sort: 'latest',
+            limit: $limit,
+            offset: 0,
+        );
+    }
+
+    /**
+     * @return list<Post>
+     */
+    public function searchVisiblePaged(
+        ?string $query = null,
+        ?string $visibility = null,
+        ?User $author = null,
+        string $sort = 'latest',
+        int $limit = 25,
+        int $offset = 0
+    ): array {
+        $safeLimit = max(1, min(80, $limit));
+        $safeOffset = max(0, $offset);
+
+        $builder = $this->createQueryBuilder('post')
+            ->leftJoin('post.authorUserId', 'author')
+            ->addSelect('author')
             ->andWhere('(post.isDeleted = :isDeleted OR post.isDeleted IS NULL)')
-            ->setParameter('author', $author)
             ->setParameter('isDeleted', false)
-            ->orderBy('post.createdAt', 'DESC')
-            ->setMaxResults($limit)
-            ->getQuery()
-            ->getResult();
+            ->setFirstResult($safeOffset)
+            ->setMaxResults($safeLimit);
+
+        if ($author instanceof User) {
+            $builder
+                ->andWhere('post.authorUserId = :author')
+                ->setParameter('author', $author);
+        }
+
+        $visibilityValue = strtoupper(trim((string) $visibility));
+        if (in_array($visibilityValue, ['PUBLIC', 'FRIENDS', 'TEAM_ONLY'], true)) {
+            $builder
+                ->andWhere('post.visibility = :visibility')
+                ->setParameter('visibility', $visibilityValue);
+        }
+
+        $queryValue = trim((string) $query);
+        if ($queryValue !== '') {
+            $builder
+                ->andWhere(
+                    'LOWER(COALESCE(post.contentText, \'\')) LIKE :query
+                    OR LOWER(author.username) LIKE :query
+                    OR LOWER(author.displayName) LIKE :query'
+                )
+                ->setParameter('query', '%' . mb_strtolower($queryValue) . '%');
+        }
+
+        $sortValue = strtolower(trim($sort));
+        switch ($sortValue) {
+            case 'oldest':
+                $builder
+                    ->orderBy('post.createdAt', 'ASC')
+                    ->addOrderBy('post.postId', 'ASC');
+                break;
+
+            case 'liked':
+                $builder
+                    ->addSelect('(SELECT COUNT(postLikeSub.userId) FROM App\Entity\PostLike postLikeSub WHERE postLikeSub.postId = post) AS HIDDEN likesCount')
+                    ->orderBy('likesCount', 'DESC')
+                    ->addOrderBy('post.createdAt', 'DESC');
+                break;
+
+            case 'commented':
+                $builder
+                    ->addSelect('(SELECT COUNT(commentSub.commentId) FROM App\Entity\Comment commentSub WHERE commentSub.postId = post AND commentSub.isDeleted = false) AS HIDDEN commentsCount')
+                    ->orderBy('commentsCount', 'DESC')
+                    ->addOrderBy('post.createdAt', 'DESC');
+                break;
+
+            case 'latest':
+            default:
+                $builder
+                    ->orderBy('post.createdAt', 'DESC')
+                    ->addOrderBy('post.postId', 'DESC');
+                break;
+        }
+
+        return $builder->getQuery()->getResult();
     }
 
     /**

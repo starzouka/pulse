@@ -49,9 +49,45 @@
                 <div class="panel__desc">{{ feed_posts|length }} publication(s)</div>
               </div>
 
-              {% if feed_posts is empty %}
-                <div class="emptyState">Aucune publication disponible.</div>
-              {% else %}
+              <form class="filtersRow" method="get" action="{{ path('front_feed') }}" style="margin-bottom:12px;">
+                <input class="input" type="search" name="q" value="{{ filters.q|default('') }}" placeholder="Rechercher auteur, texte..." />
+                <div class="select">
+                  <select name="visibility">
+                    <option value="" {{ (filters.visibility|default('')) == '' ? 'selected' : '' }}>Toutes visibilites</option>
+                    <option value="PUBLIC" {{ (filters.visibility|default('')) == 'PUBLIC' ? 'selected' : '' }}>PUBLIC</option>
+                    <option value="FRIENDS" {{ (filters.visibility|default('')) == 'FRIENDS' ? 'selected' : '' }}>FRIENDS</option>
+                    <option value="TEAM_ONLY" {{ (filters.visibility|default('')) == 'TEAM_ONLY' ? 'selected' : '' }}>TEAM_ONLY</option>
+                  </select>
+                </div>
+                {% if viewer_user %}
+                  <div class="select">
+                    <select name="author">
+                      <option value="" {{ (filters.author|default('')) == '' ? 'selected' : '' }}>Tous les auteurs</option>
+                      <option value="me" {{ (filters.author|default('')) == 'me' ? 'selected' : '' }}>Mes posts</option>
+                    </select>
+                  </div>
+                {% endif %}
+                <div class="select">
+                  <select name="sort">
+                    <option value="latest" {{ (filters.sort|default('latest')) == 'latest' ? 'selected' : '' }}>Plus recents</option>
+                    <option value="oldest" {{ (filters.sort|default('latest')) == 'oldest' ? 'selected' : '' }}>Plus anciens</option>
+                    <option value="liked" {{ (filters.sort|default('latest')) == 'liked' ? 'selected' : '' }}>Plus likes</option>
+                    <option value="commented" {{ (filters.sort|default('latest')) == 'commented' ? 'selected' : '' }}>Plus commentes</option>
+                  </select>
+                </div>
+                <button class="btn btn--ghost" type="submit">Filtrer</button>
+                <a class="btn btn--ghost" href="{{ path('front_feed') }}">Reset</a>
+              </form>
+
+              <div
+                id="feedContainer"
+                data-infinite-feed
+                data-feed-endpoint="{{ path('front_feed_chunk') }}"
+                data-feed-query="{{ feed_query_string|default('') }}"
+                data-feed-limit="{{ feed_limit|default(12) }}"
+                data-feed-offset="{{ feed_posts|length }}"
+                data-feed-has-more="{{ feed_has_more|default(false) ? '1' : '0' }}"
+              >
                 {% for postData in feed_posts %}
                   {% include 'front/partials/_post_card.html.twig' with {
                     post_data: postData,
@@ -64,7 +100,15 @@
                     report_token_prefix: 'feed_post_report_'
                   } %}
                 {% endfor %}
+              </div>
+
+              {% if feed_posts is empty %}
+                <div class="emptyState" data-feed-empty>Aucune publication disponible.</div>
               {% endif %}
+
+              <div class="emptyState" data-feed-loader hidden>Chargement...</div>
+              <div class="emptyState" data-feed-end {{ feed_has_more|default(false) ? 'hidden' : '' }}>Fin du fil.</div>
+              <div data-feed-sentinel></div>
             </section>
           </div>
 

@@ -30,19 +30,50 @@
               <div class="panel__head">
                 <div>
                   <h3 class="panel__title">ARTICLES DU PANIER</h3>
-                  <div class="panel__desc">{{ cart_total_quantity|default(0) }} article(s)</div>
+                  <div class="panel__desc">{{ cart_visible_quantity|default(cart_total_quantity|default(0)) }} article(s) affiches</div>
                 </div>
                 {% if cart and cart.status %}
                   <span class="badge {{ cart.status == 'OPEN' ? 'badge--success' : 'badge--warning' }}">{{ cart.status }}</span>
                 {% endif %}
               </div>
 
+              <form class="filtersRow" method="get" action="{{ path('front_cart') }}" style="margin-bottom:12px;" data-auto-submit="1">
+                <input class="input" type="search" name="q" value="{{ filters.q|default('') }}" placeholder="Rechercher un article..." />
+                <div class="select">
+                  <select name="team">
+                    <option value="">Toutes les equipes</option>
+                    {% for teamOption in team_filter_options|default([]) %}
+                      <option value="{{ teamOption.id }}" {{ (filters.team|default(null)) == teamOption.id ? 'selected' : '' }}>{{ teamOption.name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="select">
+                  <select name="sort">
+                    <option value="added_asc" {{ (filters.sort|default('added_asc')) == 'added_asc' ? 'selected' : '' }}>Ajout ancien</option>
+                    <option value="added_desc" {{ (filters.sort|default('added_asc')) == 'added_desc' ? 'selected' : '' }}>Ajout recent</option>
+                    <option value="name" {{ (filters.sort|default('added_asc')) == 'name' ? 'selected' : '' }}>Nom A-Z</option>
+                    <option value="price_high" {{ (filters.sort|default('added_asc')) == 'price_high' ? 'selected' : '' }}>Prix DESC</option>
+                    <option value="price_low" {{ (filters.sort|default('added_asc')) == 'price_low' ? 'selected' : '' }}>Prix ASC</option>
+                    <option value="qty_high" {{ (filters.sort|default('added_asc')) == 'qty_high' ? 'selected' : '' }}>Quantite DESC</option>
+                  </select>
+                </div>
+                <button class="btn btn--ghost" type="submit">Filtrer</button>
+                <a class="btn btn--ghost" href="{{ path('front_cart') }}">Reset</a>
+              </form>
+
               {% if cart_items is empty %}
                 <div class="emptyState">
-                  Votre panier est vide.
-                  <div style="margin-top:10px;">
-                    <a class="btn btn--primary" href="{{ path('front_shop') }}">Aller a la boutique</a>
-                  </div>
+                  {% if cart_total_quantity|default(0) > 0 %}
+                    Aucun article ne correspond aux filtres.
+                    <div style="margin-top:10px;">
+                      <a class="btn btn--ghost" href="{{ path('front_cart') }}">Reinitialiser les filtres</a>
+                    </div>
+                  {% else %}
+                    Votre panier est vide.
+                    <div style="margin-top:10px;">
+                      <a class="btn btn--primary" href="{{ path('front_shop') }}">Aller a la boutique</a>
+                    </div>
+                  {% endif %}
                 </div>
               {% else %}
                 <div class="tableWrap">
@@ -100,6 +131,11 @@
                 </div>
               {% endif %}
             </section>
+
+            {% include 'front/partials/_pagination.html.twig' with {
+              pagination: pagination,
+              route_name: 'front_cart'
+            } %}
           </div>
 
           <aside class="socialStack">
@@ -108,6 +144,8 @@
               <div class="list">
                 <div class="listItem"><span>Articles</span><span class="listItem__meta">{{ cart_total_quantity|default(0) }}</span></div>
                 <div class="listItem"><span>Sous-total</span><span class="listItem__meta">{{ cart_subtotal|default(0)|number_format(2, '.', ' ') }} DT</span></div>
+                <div class="listItem"><span>Articles affiches</span><span class="listItem__meta">{{ cart_visible_quantity|default(0) }}</span></div>
+                <div class="listItem"><span>Sous-total affiche</span><span class="listItem__meta">{{ cart_visible_subtotal|default(0)|number_format(2, '.', ' ') }} DT</span></div>
               </div>
 
               {% if locked_reason %}

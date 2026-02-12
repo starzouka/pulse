@@ -18,9 +18,21 @@
         <div class="socialShell--chat">
           <aside class="socialStack">
             <section class="panel gadget">
-              <form class="filtersRow" method="get" action="{{ path('front_messages') }}">
-                <input class="input" type="search" name="q" value="{{ search }}" placeholder="Rechercher une conversation..." />
+              <form class="filtersRow" method="get" action="{{ path('front_messages') }}" data-auto-submit="1">
+                <input class="input" type="search" name="q" value="{{ filters.q|default(search) }}" placeholder="Rechercher une conversation..." />
+                <div class="select">
+                  <select name="sort">
+                    <option value="latest" {{ (filters.sort|default('latest')) == 'latest' ? 'selected' : '' }}>Plus recentes</option>
+                    <option value="oldest" {{ (filters.sort|default('latest')) == 'oldest' ? 'selected' : '' }}>Plus anciennes</option>
+                    <option value="unread" {{ (filters.sort|default('latest')) == 'unread' ? 'selected' : '' }}>Priorite non lues</option>
+                  </select>
+                </div>
+                <label class="listItem__meta" style="display:flex; align-items:center; gap:6px;">
+                  <input type="checkbox" name="unread" value="1" {{ filters.unread|default(false) ? 'checked' : '' }}>
+                  Non lues
+                </label>
                 <button class="btn btn--ghost" type="submit">Filtrer</button>
+                <a class="btn btn--ghost" href="{{ path('front_messages') }}">Reset</a>
               </form>
 
               <div class="socialQuickList" style="margin-top:10px;">
@@ -42,6 +54,11 @@
                   <div class="emptyState">Aucune conversation.</div>
                 {% endfor %}
               </div>
+
+              {% include 'front/partials/_pagination.html.twig' with {
+                pagination: pagination,
+                route_name: 'front_messages'
+              } %}
             </section>
           </aside>
 

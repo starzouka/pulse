@@ -16,6 +16,8 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class FriendsController extends AbstractController
 {
+    use PaginatesCollectionsTrait;
+
     #[Route('/pages/friends', name: 'front_friends', methods: ['GET'])]
     public function index(
         Request $request,
@@ -30,29 +32,61 @@ final class FriendsController extends AbstractController
             ]);
         }
 
-        $friendships = $friendshipRepository->findByUser($viewer, 100);
-        $friends = [];
-        foreach ($friendships as $friendship) {
-            $userOne = $friendship->getUserId1();
-            $userTwo = $friendship->getUserId2();
-            if (!$userOne instanceof User || !$userTwo instanceof User) {
-                continue;
-            }
-
-            $friend = $userOne->getUserId() === $viewer->getUserId() ? $userTwo : $userOne;
-            $friendId = $friend->getUserId();
-            if ($friendId === null) {
-                continue;
-            }
-
-            $friends[$friendId] = $friend;
+        $friendQuery = trim((string) $request->query->get('friend_q', ''));
+        $friendsSort = strtolower(trim((string) $request->query->get('friends_sort', 'recent')));
+        if (!in_array($friendsSort, ['recent', 'oldest', 'name'], true)) {
+            $friendsSort = 'recent';
         }
+
+        $requestsQuery = trim((string) $request->query->get('requests_q', ''));
+        $requestsStatus = strtoupper(trim((string) $request->query->get('requests_status', 'PENDING')));
+        if (!in_array($requestsStatus, ['PENDING', 'ACCEPTED', 'REFUSED', 'CANCELLED', ''], true)) {
+            $requestsStatus = 'PENDING';
+        }
+
+        $requestsSort = strtolower(trim((string) $request->query->get('requests_sort', 'latest')));
+        if (!in_array($requestsSort, ['latest', 'oldest', 'name', 'status'], true)) {
+            $requestsSort = 'latest';
+        }
+
+        $friends = $friendshipRepository->findFriendsByUser($viewer, $friendQuery, $friendsSort, 500);
+        $receivedRequests = $friendRequestRepository->findReceivedByUserFiltered(
+            $viewer,
+            $requestsStatus !== '' ? $requestsStatus : null,
+            $requestsQuery,
+            $requestsSort,
+            500
+        );
+        $sentRequests = $friendRequestRepository->findSentByUserFiltered(
+            $viewer,
+            $requestsStatus !== '' ? $requestsStatus : null,
+            $requestsQuery,
+            $requestsSort,
+            500
+        );
+
+        $friendsPagination = $this->paginateItems($friends, $this->readPage($request, 'friends_page'), 12);
+        $receivedPagination = $this->paginateItems($receivedRequests, $this->readPage($request, 'received_page'), 12);
+        $sentPagination = $this->paginateItems($sentRequests, $this->readPage($request, 'sent_page'), 12);
 
         return $this->render('front/pages/friends.html.twig', [
             'viewer_user' => $viewer,
-            'friends' => array_values($friends),
-            'received_requests' => $friendRequestRepository->findLatestReceivedByUser($viewer, 100),
-            'sent_requests' => $friendRequestRepository->findLatestSentByUser($viewer, 100),
+            'friends' => $friendsPagination['items'],
+            'received_requests' => $receivedPagination['items'],
+            'sent_requests' => $sentPagination['items'],
+            'pagination' => [
+                'friends' => $friendsPagination,
+                'received' => $receivedPagination,
+                'sent' => $sentPagination,
+            ],
+            'active_tab' => $this->sanitizeTab((string) $request->query->get('tab', 'my-friends')),
+            'filters' => [
+                'friend_q' => $friendQuery,
+                'friends_sort' => $friendsSort,
+                'requests_q' => $requestsQuery,
+                'requests_status' => $requestsStatus,
+                'requests_sort' => $requestsSort,
+            ],
         ]);
     }
 
@@ -184,5 +218,13 @@ final class FriendsController extends AbstractController
         }
 
         return $friendship->setCreatedAt(new \DateTime());
+    }
+
+    private function sanitizeTab(string $tab): string
+    {
+        return match ($tab) {
+            'received', 'sent', 'my-friends' => $tab,
+            default => 'my-friends',
+        };
     }
 }

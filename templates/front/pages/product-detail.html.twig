@@ -3,15 +3,16 @@
 {% block title %}PULSE - Detail produit{% endblock %}
 
 {% block body %}
-  {% include 'front/partials/_hero_mini.html.twig' with {
-    hero_kicker: 'PRODUIT',
-    hero_title: 'Detail produit',
-    hero_sub: 'Fiche produit avec ajout au panier.',
-    breadcrumb_current: 'Detail produit'
-  } %}
-
   {% set productId = product.productId ?? 0 %}
   {% set team = product.teamId %}
+  {% set teamId = team ? (team.teamId ?? 0) : 0 %}
+
+  {% include 'front/partials/_hero_mini.html.twig' with {
+    hero_kicker: 'PRODUIT',
+    hero_title: product.name,
+    hero_sub: 'Fiche produit complete avec ajout panier.',
+    breadcrumb_current: 'Detail produit'
+  } %}
 
   <main class="page">
     <section class="belowHero">
@@ -41,7 +42,7 @@
             <div style="flex:1; min-width:260px;">
               <h3 style="margin:0;">{{ product.name }}</h3>
               <div class="muted">
-                Vendeur: {{ team ? team.name : 'Equipe' }} · Stock: {{ product.stockQty }}
+                Vendeur: {{ team ? team.name : 'Equipe' }} | Stock: {{ product.stockQty }}
               </div>
               <div class="badge badge--warning" style="margin-top:8px;">{{ product.price|number_format(2, '.', ' ') }} DT</div>
 
@@ -90,12 +91,52 @@
             <div class="listItem"><span>Statut</span><span class="listItem__meta">{{ product.isActive ? 'ACTIF' : 'INACTIF' }}</span></div>
           </div>
 
-          <div class="panel__actions" style="margin-top:12px;">
+          <div class="panel__actions" style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
             <a class="btn btn--ghost" href="{{ path('front_shop') }}">Retour boutique</a>
+            {% if teamId > 0 %}
+              <a class="btn btn--ghost" href="{{ path('front_team_detail', {id: teamId}) }}">Voir equipe</a>
+            {% endif %}
             <a class="btn btn--ghost" href="{{ path('front_orders') }}">Mes commandes</a>
           </div>
         </aside>
       </div>
+
+      {% if related_products is not empty %}
+        <section class="panel" style="margin-top:12px;">
+          <div class="panel__head">
+            <div>
+              <h3 class="panel__title">Produits similaires</h3>
+              <div class="panel__desc">Autres produits de la meme equipe.</div>
+            </div>
+          </div>
+
+          <div class="cardsGrid" style="margin-top:12px;">
+            {% for related in related_products %}
+              {% set relatedId = related.productId ?? 0 %}
+              {% set relatedImage = related_primary_images_by_product_id[relatedId]|default(null) %}
+              {% set relatedPath = relatedImage ? relatedImage.fileUrl : '' %}
+              {% set relatedUrl = relatedPath ? (relatedPath starts with 'http' ? relatedPath : asset(relatedPath)) : 'https://picsum.photos/seed/pulse_related_product_' ~ relatedId ~ '/1200/800' %}
+
+              <article class="card card--product">
+                <div class="card__media" data-bg="{{ relatedUrl }}">
+                  <div class="card__chips">
+                    <span class="chip chip--price">{{ related.price|number_format(2, '.', ' ') }} DT</span>
+                    <span class="chip">Stock: {{ related.stockQty }}</span>
+                  </div>
+                </div>
+
+                <div class="card__body">
+                  <h4 class="card__title">{{ related.name }}</h4>
+                  <p class="card__desc">{{ related.description ? related.description|slice(0, 78) ~ (related.description|length > 78 ? '...' : '') : 'Produit de la meme equipe.' }}</p>
+                  <div class="card__actions">
+                    <a class="btn btn--ghost" href="{{ path('front_product_detail', {id: relatedId}) }}">Voir detail</a>
+                  </div>
+                </div>
+              </article>
+            {% endfor %}
+          </div>
+        </section>
+      {% endif %}
 
       {% include 'front/partials/_footer.html.twig' %}
     </section>

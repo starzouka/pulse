@@ -40,11 +40,27 @@ class MessageRepository extends ServiceEntityRepository
     /**
      * @return list<int>
      */
-    public function findConversationPartnerIds(User $viewer, ?string $search = null, int $limit = 50): array
+    public function findConversationPartnerIds(
+        User $viewer,
+        ?string $search = null,
+        int $limit = 50,
+        string $sort = 'latest',
+        bool $onlyUnread = false
+    ): array
     {
         $builder = $this->createQueryBuilder('message')
-            ->select(
-                'DISTINCT CASE WHEN IDENTITY(message.senderUserId) = :viewerId THEN IDENTITY(message.receiverUserId) ELSE IDENTITY(message.senderUserId) END AS partnerId'
+            ->select('CASE WHEN IDENTITY(message.senderUserId) = :viewerId THEN IDENTITY(message.receiverUserId) ELSE IDENTITY(message.senderUserId) END AS partnerId')
+            ->addSelect('MAX(message.createdAt) AS HIDDEN lastMessageAt')
+            ->addSelect(
+                'SUM(
+                    CASE
+                        WHEN IDENTITY(message.receiverUserId) = :viewerId
+                            AND message.isRead = :isReadFalse
+                            AND message.isDeletedByReceiver = :notDeletedByReceiver
+                        THEN 1
+                        ELSE 0
+                    END
+                ) AS HIDDEN unreadCount'
             )
             ->andWhere(
                 '(message.senderUserId = :viewer AND message.isDeletedBySender = :notDeletedBySender)
@@ -53,8 +69,10 @@ class MessageRepository extends ServiceEntityRepository
             )
             ->setParameter('viewer', $viewer)
             ->setParameter('viewerId', $viewer->getUserId())
+            ->setParameter('isReadFalse', false)
             ->setParameter('notDeletedBySender', false)
             ->setParameter('notDeletedByReceiver', false)
+            ->groupBy('CASE WHEN IDENTITY(message.senderUserId) = :viewerId THEN IDENTITY(message.receiverUserId) ELSE IDENTITY(message.senderUserId) END')
             ->setMaxResults($limit);
 
         $searchValue = trim((string) $search);
@@ -66,6 +84,32 @@ class MessageRepository extends ServiceEntityRepository
                     'LOWER(senderUser.username) LIKE :search OR LOWER(senderUser.displayName) LIKE :search OR LOWER(receiverUser.username) LIKE :search OR LOWER(receiverUser.displayName) LIKE :search'
                 )
                 ->setParameter('search', '%' . mb_strtolower($searchValue) . '%');
+        }
+
+        if ($onlyUnread) {
+            $builder->having('unreadCount > 0');
+        }
+
+        $sortValue = strtolower(trim($sort));
+        switch ($sortValue) {
+            case 'oldest':
+                $builder
+                    ->orderBy('lastMessageAt', 'ASC')
+                    ->addOrderBy('partnerId', 'ASC');
+                break;
+
+            case 'unread':
+                $builder
+                    ->orderBy('unreadCount', 'DESC')
+                    ->addOrderBy('lastMessageAt', 'DESC');
+                break;
+
+            case 'latest':
+            default:
+                $builder
+                    ->orderBy('lastMessageAt', 'DESC')
+                    ->addOrderBy('partnerId', 'DESC');
+                break;
         }
 
         $rows = $builder->getQuery()->getArrayResult();

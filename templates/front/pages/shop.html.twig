@@ -33,7 +33,7 @@
       </div>
 
       <section class="panel">
-        <form class="filtersRow" method="get" action="{{ path('front_shop') }}">
+        <form class="filtersRow" method="get" action="{{ path('front_shop') }}" data-auto-submit="1">
           <input class="input" type="search" name="q" value="{{ filters.q|default('') }}" placeholder="Rechercher un produit..." />
 
           <div class="select">
@@ -52,6 +52,17 @@
             <input type="checkbox" name="stock" value="1" {{ filters.stock ? 'checked' : '' }} />
             En stock
           </label>
+
+          <div class="select">
+            <select name="sort">
+              <option value="latest" {{ (filters.sort|default('latest')) == 'latest' ? 'selected' : '' }}>Plus recents</option>
+              <option value="oldest" {{ (filters.sort|default('latest')) == 'oldest' ? 'selected' : '' }}>Plus anciens</option>
+              <option value="name" {{ (filters.sort|default('latest')) == 'name' ? 'selected' : '' }}>Nom A-Z</option>
+              <option value="price_high" {{ (filters.sort|default('latest')) == 'price_high' ? 'selected' : '' }}>Prix DESC</option>
+              <option value="price_low" {{ (filters.sort|default('latest')) == 'price_low' ? 'selected' : '' }}>Prix ASC</option>
+              <option value="stock_high" {{ (filters.sort|default('latest')) == 'stock_high' ? 'selected' : '' }}>Stock DESC</option>
+            </select>
+          </div>
 
           <button class="btn btn--primary" type="submit">Filtrer</button>
           <a class="btn btn--ghost" href="{{ path('front_shop') }}">Reset</a>
@@ -90,6 +101,11 @@
                     <a class="btn btn--ghost" href="{{ path('front_product_detail') }}">Detail</a>
                   {% endif %}
 
+                  {% set productTeam = product.teamId %}
+                  {% if productTeam and productTeam.teamId %}
+                    <a class="btn btn--ghost" href="{{ path('front_team_detail', {id: productTeam.teamId}) }}">Equipe</a>
+                  {% endif %}
+
                   {% if app.user %}
                     <form method="post" action="{{ path('front_cart_add', {id: productId}) }}">
                       <input type="hidden" name="_token" value="{{ csrf_token('cart_add_' ~ productId) }}">
@@ -107,6 +123,11 @@
           {% endfor %}
         {% endif %}
       </section>
+
+      {% include 'front/partials/_pagination.html.twig' with {
+        pagination: pagination,
+        route_name: 'front_shop'
+      } %}
 
       {% include 'front/partials/_footer.html.twig' %}
     </section>

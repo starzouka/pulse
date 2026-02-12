@@ -17,6 +17,8 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class TournamentsController extends AbstractController
 {
+    use PaginatesCollectionsTrait;
+
     private const STATUSES = ['DRAFT', 'OPEN', 'ONGOING', 'FINISHED', 'CANCELLED'];
     private const FORMATS = ['BO1', 'BO3', 'BO5'];
     private const REGISTRATION_MODES = ['OPEN', 'APPROVAL'];
@@ -102,10 +104,14 @@ final class TournamentsController extends AbstractController
             ];
         }
 
+        $pagination = $this->paginateItems($tournamentsData, $this->readPage($request), 9);
+        $tournamentsData = $pagination['items'];
+
         return $this->render('front/pages/tournaments.html.twig', [
             'tournaments_data' => $tournamentsData,
             'available_games' => $gameRepository->findAllWithCategoryOrdered(),
             'available_categories' => $categoryRepository->findAllOrdered(),
+            'pagination' => $pagination,
             'filters' => [
                 'q' => $query,
                 'game' => $gameId,

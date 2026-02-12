@@ -38,7 +38,7 @@ final class ProfileController extends AbstractController
             return $this->redirectToLogin($request);
         }
 
-        $profileData = $profilePageDataProvider->build($viewer, $viewer);
+        $profileData = $profilePageDataProvider->build($viewer, $viewer, $this->extractProfileFilters($request));
 
         return $this->render('front/pages/profile.html.twig', [
             'profile_user' => $viewer,
@@ -333,6 +333,52 @@ final class ProfileController extends AbstractController
         $tabAsString = is_string($tab) ? $tab : 'posts';
 
         return in_array($tabAsString, $allowedTabs, true) ? $tabAsString : 'posts';
+    }
+
+    /**
+     * @return array{
+     *   posts_q:string,
+     *   posts_visibility:string,
+     *   posts_sort:string,
+     *   friends_q:string,
+     *   friends_sort:string,
+     *   teams_q:string,
+     *   teams_region:string,
+     *   teams_sort:string
+     * }
+     */
+    private function extractProfileFilters(Request $request): array
+    {
+        $postsVisibility = strtoupper(trim((string) $request->query->get('posts_visibility', '')));
+        if (!in_array($postsVisibility, ['PUBLIC', 'FRIENDS', 'TEAM_ONLY'], true)) {
+            $postsVisibility = '';
+        }
+
+        $postsSort = strtolower(trim((string) $request->query->get('posts_sort', 'latest')));
+        if (!in_array($postsSort, ['latest', 'oldest', 'liked', 'commented'], true)) {
+            $postsSort = 'latest';
+        }
+
+        $friendsSort = strtolower(trim((string) $request->query->get('friends_sort', 'recent')));
+        if (!in_array($friendsSort, ['recent', 'oldest', 'name'], true)) {
+            $friendsSort = 'recent';
+        }
+
+        $teamsSort = strtolower(trim((string) $request->query->get('teams_sort', 'latest')));
+        if (!in_array($teamsSort, ['latest', 'oldest', 'name', 'region'], true)) {
+            $teamsSort = 'latest';
+        }
+
+        return [
+            'posts_q' => trim((string) $request->query->get('posts_q', '')),
+            'posts_visibility' => $postsVisibility,
+            'posts_sort' => $postsSort,
+            'friends_q' => trim((string) $request->query->get('friends_q', '')),
+            'friends_sort' => $friendsSort,
+            'teams_q' => trim((string) $request->query->get('teams_q', '')),
+            'teams_region' => trim((string) $request->query->get('teams_region', '')),
+            'teams_sort' => $teamsSort,
+        ];
     }
 
     private function redirectToLogin(Request $request): Response

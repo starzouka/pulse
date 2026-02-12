@@ -1,337 +1,308 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}PULSE - Détail équipe{% endblock %}
+{% block title %}PULSE - Detail equipe{% endblock %}
 
 {% block body %}
-
+  {% set teamId = team.teamId ?? 0 %}
+  {% set captain = team.captainUserId %}
+  {% set captainId = captain ? captain.userId : null %}
+  {% set viewerId = viewer_user ? viewer_user.userId : null %}
+  {% set logoPath = team.logoImageId ? team.logoImageId.fileUrl : '' %}
+  {% set logoUrl = logoPath ? (logoPath starts with 'http' ? logoPath : asset(logoPath)) : 'https://picsum.photos/seed/pulse_team_logo_detail_' ~ teamId ~ '/600/600' %}
 
   {% include 'front/partials/_hero_mini.html.twig' with {
-  hero_kicker: 'ÉQUIPE',
-  hero_title: 'Détail équipe',
-  hero_sub: 'Tournois, membres et boutique.',
-  breadcrumb_current: 'Détail équipe'
-} %}
-
+    hero_kicker: 'EQUIPE',
+    hero_title: team.name,
+    hero_sub: 'Detail equipe: tournois, membres et produits.',
+    breadcrumb_current: 'Detail equipe'
+  } %}
 
   <main class="page">
     <section class="belowHero">
+      {% for label, messages in app.flashes %}
+        {% for message in messages %}
+          <div class="listItem">
+            <span>{{ message }}</span>
+            <span class="badge {{ label == 'error' ? 'badge--danger' : (label == 'info' ? 'badge--info' : 'badge--success') }}">{{ label|upper }}</span>
+          </div>
+        {% endfor %}
+      {% endfor %}
 
       <div class="layout">
         <section class="panel">
-          <div style="display:flex; gap:14px; align-items:center;">
-            <div class="avatarLg" data-avatar="https://picsum.photos/seed/pulse_logo_1/200/200"></div>
-            <div>
-              <h3 style="margin:0;">Nebula Five</h3>
-              <div class="muted">Région: MENA • Capitaine: FrostByte</div>
-              <div style="margin-top:8px;">
-                <a class="btn btn--primary" href="{{ path('front_login') }}">Demander rejoindre</a>
-                <a class="btn btn--ghost" href="{{ path('front_login') }}">Message capitaine</a>
+          <div style="display:flex; gap:14px; align-items:flex-start; flex-wrap:wrap;">
+            <div class="avatarLg" data-avatar="{{ logoUrl }}"></div>
+            <div style="flex:1; min-width:260px;">
+              <h3 style="margin:0;">{{ team.name }}</h3>
+              <div class="muted">
+                Region: {{ team.region ?: '-' }} | Capitaine: {{ captain ? (captain.displayName ?: captain.username) : '-' }}
+              </div>
+
+              <p class="muted" style="margin-top:8px;">
+                {{ team.description ?: 'Aucune description disponible pour cette equipe.' }}
+              </p>
+
+              <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;">
+                {% if join_state.code == 'guest' %}
+                  <a class="btn btn--primary" href="{{ path('front_login', {'_target_path': app.request.uri}) }}">Se connecter pour rejoindre</a>
+                {% elseif join_state.code == 'can_join' %}
+                  <form method="post" action="{{ path('front_team_detail_join', {id: teamId}) }}" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('team_join_' ~ teamId) }}">
+                    <input class="input" type="text" name="note" maxlength="255" placeholder="Message au capitaine (optionnel)">
+                    <button class="btn btn--primary" type="submit">Demander a rejoindre</button>
+                  </form>
+                {% elseif join_state.code == 'captain' %}
+                  <a class="btn btn--primary" href="{{ path('front_captain_team_manage', {team: teamId}) }}">Gerer mon equipe</a>
+                {% else %}
+                  <span class="badge badge--info">{{ join_state.message }}</span>
+                {% endif %}
+
+                {% if captainId and viewer_user and viewerId != captainId %}
+                  <a class="btn btn--ghost" href="{{ path('front_conversation', {id: captainId}) }}">Message capitaine</a>
+                {% elseif captainId and not viewer_user %}
+                  <a class="btn btn--ghost" href="{{ path('front_login', {'_target_path': app.request.uri}) }}">Message capitaine</a>
+                {% endif %}
               </div>
             </div>
           </div>
         </section>
+
         <aside class="panel">
           <h3 class="panel__title">STATS</h3>
           <div class="statsRow">
-            <div class="statCard"><div class="statCard__value">12</div><div class="statCard__label">Membres</div></div>
-            <div class="statCard"><div class="statCard__value">8</div><div class="statCard__label">Produits</div></div>
+            <div class="statCard"><div class="statCard__value">{{ stats.members|default(0) }}</div><div class="statCard__label">Membres</div></div>
+            <div class="statCard"><div class="statCard__value">{{ stats.products|default(0) }}</div><div class="statCard__label">Produits</div></div>
+            <div class="statCard"><div class="statCard__value">{{ stats.tournaments|default(0) }}</div><div class="statCard__label">Tournois</div></div>
+          </div>
+
+          <div class="list" style="margin-top:12px;">
+            <div class="listItem"><span>Etat demande</span><span class="listItem__meta">{{ join_state.code|upper }}</span></div>
+            <div class="listItem"><span>Message</span><span class="listItem__meta">{{ join_state.message }}</span></div>
           </div>
         </aside>
       </div>
 
-      <div class="panel">
-        <div class="tabs" data-tabs="team-tabs">
-          <button class="tab is-active" data-tab="tournaments">Tournois</button>
-          <button class="tab" data-tab="members">Membres</button>
-          <button class="tab" data-tab="products">Produits</button>
+      <section class="panel">
+        <div class="tabs">
+          <a class="tab {{ active_tab == 'tournaments' ? 'is-active' : '' }}" href="{{ path('front_team_detail', {id: teamId, tab: 'tournaments'}) }}">Tournois</a>
+          <a class="tab {{ active_tab == 'members' ? 'is-active' : '' }}" href="{{ path('front_team_detail', {id: teamId, tab: 'members'}) }}">Membres</a>
+          <a class="tab {{ active_tab == 'products' ? 'is-active' : '' }}" href="{{ path('front_team_detail', {id: teamId, tab: 'products'}) }}">Produits</a>
         </div>
-        <div class="tabPanels" data-panels="team-tabs">
-          <section class="tabPanel is-active" data-panel="tournaments">
-            <div class="cardsGrid">
 
-    <article class="card card--tournament">
-      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_t1/1200/800">
-        <div class="card__chips">
-          <span class="chip chip--status">OPEN</span>
-          <span class="chip chip--format">BO3</span>
-          <span class="chip">Valorant</span>
-        </div>
-      </div>
-      <div class="card__body">
-        <h4 class="card__title">Pulse Invitational — Valorant</h4>
-        <p class="card__desc">Dates: <b>18–22 Fév</b> • Prize pool: <b>1200 DT</b></p>
-        <div class="card__metaRow">
-          <span class="metaPill">Matchs: <b>7/20</b></span>
-          <span class="metaPill">Statut: <b>OPEN</b></span>
-        </div>
-        <div class="progress"><div class="progress__bar" style="width:35%"></div></div>
-        <div class="card__actions">
-          <a class="btn btn--ghost" href="{{ path('front_tournament_detail') }}">Voir détail</a>
-        </div>
-      </div>
-    </article>
+        <div class="tabPanels">
+          <section class="tabPanel {{ active_tab == 'tournaments' ? 'is-active' : '' }}">
+            <form class="filtersRow" method="get" action="{{ path('front_team_detail', {id: teamId}) }}" data-auto-submit="1" style="margin-top:12px;">
+              <input type="hidden" name="tab" value="tournaments">
+              <input class="input" type="search" name="t_q" value="{{ filters.t_q|default('') }}" placeholder="Rechercher un tournoi...">
 
+              <div class="select">
+                <select name="t_status">
+                  <option value="" {{ (filters.t_status|default('')) == '' ? 'selected' : '' }}>Tous statuts</option>
+                  <option value="PENDING" {{ (filters.t_status|default('')) == 'PENDING' ? 'selected' : '' }}>PENDING</option>
+                  <option value="ACCEPTED" {{ (filters.t_status|default('')) == 'ACCEPTED' ? 'selected' : '' }}>ACCEPTED</option>
+                  <option value="REFUSED" {{ (filters.t_status|default('')) == 'REFUSED' ? 'selected' : '' }}>REFUSED</option>
+                  <option value="CANCELLED" {{ (filters.t_status|default('')) == 'CANCELLED' ? 'selected' : '' }}>CANCELLED</option>
+                </select>
+              </div>
 
-    <article class="card card--tournament">
-      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_t2/1200/800">
-        <div class="card__chips">
-          <span class="chip chip--status">ONGOING</span>
-          <span class="chip chip--format">BO1</span>
-          <span class="chip">CS2</span>
-        </div>
-      </div>
-      <div class="card__body">
-        <h4 class="card__title">CS2 Arena Cup — Winter Split</h4>
-        <p class="card__desc">Dates: <b>20–23 Fév</b> • Prize pool: <b>900 DT</b></p>
-        <div class="card__metaRow">
-          <span class="metaPill">Matchs: <b>12/20</b></span>
-          <span class="metaPill">Statut: <b>ONGOING</b></span>
-        </div>
-        <div class="progress"><div class="progress__bar" style="width:60%"></div></div>
-        <div class="card__actions">
-          <a class="btn btn--ghost" href="{{ path('front_tournament_detail') }}">Voir détail</a>
-        </div>
-      </div>
-    </article>
+              <div class="select">
+                <select name="t_sort">
+                  <option value="latest" {{ (filters.t_sort|default('latest')) == 'latest' ? 'selected' : '' }}>Plus recents</option>
+                  <option value="oldest" {{ (filters.t_sort|default('latest')) == 'oldest' ? 'selected' : '' }}>Plus anciens</option>
+                  <option value="title" {{ (filters.t_sort|default('latest')) == 'title' ? 'selected' : '' }}>Titre</option>
+                  <option value="status" {{ (filters.t_sort|default('latest')) == 'status' ? 'selected' : '' }}>Statut inscription</option>
+                </select>
+              </div>
 
+              <button class="btn btn--primary" type="submit">Filtrer</button>
+              <a class="btn btn--ghost" href="{{ path('front_team_detail', {id: teamId, tab: 'tournaments'}) }}">Reset</a>
+            </form>
 
-    <article class="card card--tournament">
-      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_t3/1200/800">
-        <div class="card__chips">
-          <span class="chip chip--status">OPEN</span>
-          <span class="chip chip--format">BO5</span>
-          <span class="chip">League of Legends</span>
-        </div>
-      </div>
-      <div class="card__body">
-        <h4 class="card__title">League Clash — Weekend Major</h4>
-        <p class="card__desc">Dates: <b>23–25 Fév</b> • Prize pool: <b>2500 DT</b></p>
-        <div class="card__metaRow">
-          <span class="metaPill">Matchs: <b>0/16</b></span>
-          <span class="metaPill">Statut: <b>OPEN</b></span>
-        </div>
-        <div class="progress"><div class="progress__bar" style="width:0%"></div></div>
-        <div class="card__actions">
-          <a class="btn btn--ghost" href="{{ path('front_tournament_detail') }}">Voir détail</a>
-        </div>
-      </div>
-    </article>
+            {% if team_tournaments is empty %}
+              <div class="emptyState" style="margin-top:12px;">Aucun tournoi trouve.</div>
+            {% else %}
+              <div class="cardsGrid" style="margin-top:12px;">
+                {% for row in team_tournaments %}
+                  {% set tournament = row.tournamentId %}
+                  {% set tournamentId = tournament ? (tournament.tournamentId ?? 0) : 0 %}
+                  {% set tournamentImagePath = tournament and tournament.photoPath ? tournament.photoPath : '' %}
+                  {% set tournamentImageUrl = tournamentImagePath ? (tournamentImagePath starts with 'http' ? tournamentImagePath : asset(tournamentImagePath)) : 'https://picsum.photos/seed/pulse_team_tournament_' ~ tournamentId ~ '/1200/800' %}
 
-</div>
+                  <article class="card card--tournament">
+                    <div class="card__media" data-bg="{{ tournamentImageUrl }}">
+                      <div class="card__chips">
+                        <span class="chip chip--status">{{ tournament ? tournament.status : '-' }}</span>
+                        <span class="chip chip--format">{{ tournament ? tournament.format : '-' }}</span>
+                        <span class="chip">Inscription: {{ row.status }}</span>
+                      </div>
+                    </div>
+
+                    <div class="card__body">
+                      <h4 class="card__title">{{ tournament ? tournament.title : 'Tournoi' }}</h4>
+                      <p class="card__desc">
+                        Jeu: <b>{{ tournament and tournament.gameId ? tournament.gameId.name : '-' }}</b>
+                        | Date: <b>{{ tournament and tournament.startDate ? tournament.startDate|date('d/m/Y') : '-' }}</b>
+                      </p>
+                      <div class="card__metaRow">
+                        <span class="metaPill">Prize: <b>{{ tournament ? tournament.prizePool : '0' }}</b></span>
+                        <span class="metaPill">Enregistre le: <b>{{ row.registeredAt ? row.registeredAt|date('d/m/Y H:i') : '-' }}</b></span>
+                      </div>
+
+                      <div class="card__actions">
+                        <a class="btn btn--ghost" href="{{ tournamentId > 0 ? path('front_tournament_detail', {id: tournamentId}) : path('front_tournaments') }}">Voir detail</a>
+                      </div>
+                    </div>
+                  </article>
+                {% endfor %}
+              </div>
+            {% endif %}
           </section>
-          <section class="tabPanel" data-panel="members">
-            <div class="cardsGrid">
 
-    <article class="card card--member">
-      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_u1/1200/800">
-        <div class="card__chips">
-          <span class="chip chip--role">PLAYER</span>
-          <span class="chip">TN</span>
-          <span class="chip">@ZED_99</span>
-        </div>
-      </div>
-      <div class="card__body">
-        <h4 class="card__title">Zed</h4>
-        <p class="card__desc">Profil public • Message • Invitation équipe</p>
-        <div class="avatarRow">
-          <div class="avatar" data-avatar="https://picsum.photos/seed/pulse_a1/200/200" aria-hidden="true"></div>
-          <div class="avatarText">
-            <div class="name">Zed</div>
-            <div class="sub">PLAYER • TN</div>
-          </div>
-        </div>
-        <div class="card__actions">
-          <a class="btn btn--ghost" href="{{ path('front_player_profile') }}">Voir profil</a>
-          <a class="btn btn--primary" href="{{ path('front_login') }}">Ajouter ami</a>
-        </div>
-      </div>
-    </article>
+          <section class="tabPanel {{ active_tab == 'members' ? 'is-active' : '' }}">
+            <form class="filtersRow" method="get" action="{{ path('front_team_detail', {id: teamId}) }}" data-auto-submit="1" style="margin-top:12px;">
+              <input type="hidden" name="tab" value="members">
+              <input class="input" type="search" name="m_q" value="{{ filters.m_q|default('') }}" placeholder="Rechercher un membre...">
 
+              <div class="select">
+                <select name="m_role">
+                  <option value="" {{ (filters.m_role|default('')) == '' ? 'selected' : '' }}>Tous roles</option>
+                  <option value="PLAYER" {{ (filters.m_role|default('')) == 'PLAYER' ? 'selected' : '' }}>PLAYER</option>
+                  <option value="CAPTAIN" {{ (filters.m_role|default('')) == 'CAPTAIN' ? 'selected' : '' }}>CAPTAIN</option>
+                  <option value="ORGANIZER" {{ (filters.m_role|default('')) == 'ORGANIZER' ? 'selected' : '' }}>ORGANIZER</option>
+                  <option value="ADMIN" {{ (filters.m_role|default('')) == 'ADMIN' ? 'selected' : '' }}>ADMIN</option>
+                </select>
+              </div>
 
-    <article class="card card--member">
-      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_u2/1200/800">
-        <div class="card__chips">
-          <span class="chip chip--role">CAPTAIN</span>
-          <span class="chip">FR</span>
-          <span class="chip">@FrostByte</span>
-        </div>
-      </div>
-      <div class="card__body">
-        <h4 class="card__title">Frost</h4>
-        <p class="card__desc">Profil public • Message • Invitation équipe</p>
-        <div class="avatarRow">
-          <div class="avatar" data-avatar="https://picsum.photos/seed/pulse_a2/200/200" aria-hidden="true"></div>
-          <div class="avatarText">
-            <div class="name">Frost</div>
-            <div class="sub">CAPTAIN • FR</div>
-          </div>
-        </div>
-        <div class="card__actions">
-          <a class="btn btn--ghost" href="{{ path('front_player_profile') }}">Voir profil</a>
-          <a class="btn btn--primary" href="{{ path('front_login') }}">Ajouter ami</a>
-        </div>
-      </div>
-    </article>
+              <div class="select">
+                <select name="m_sort">
+                  <option value="joined_oldest" {{ (filters.m_sort|default('joined_oldest')) == 'joined_oldest' ? 'selected' : '' }}>Anciennete ASC</option>
+                  <option value="joined_latest" {{ (filters.m_sort|default('joined_oldest')) == 'joined_latest' ? 'selected' : '' }}>Anciennete DESC</option>
+                  <option value="name" {{ (filters.m_sort|default('joined_oldest')) == 'name' ? 'selected' : '' }}>Nom</option>
+                  <option value="role" {{ (filters.m_sort|default('joined_oldest')) == 'role' ? 'selected' : '' }}>Role</option>
+                </select>
+              </div>
 
+              <label class="btn btn--ghost" style="display:flex; align-items:center; gap:8px;">
+                <input type="checkbox" name="m_active" value="1" {{ filters.m_active|default(true) ? 'checked' : '' }}>
+                Membres actifs
+              </label>
 
-    <article class="card card--member">
-      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_u3/1200/800">
-        <div class="card__chips">
-          <span class="chip chip--role">PLAYER</span>
-          <span class="chip">TN</span>
-          <span class="chip">@Kairo</span>
-        </div>
-      </div>
-      <div class="card__body">
-        <h4 class="card__title">Kairo</h4>
-        <p class="card__desc">Profil public • Message • Invitation équipe</p>
-        <div class="avatarRow">
-          <div class="avatar" data-avatar="https://picsum.photos/seed/pulse_a3/200/200" aria-hidden="true"></div>
-          <div class="avatarText">
-            <div class="name">Kairo</div>
-            <div class="sub">PLAYER • TN</div>
-          </div>
-        </div>
-        <div class="card__actions">
-          <a class="btn btn--ghost" href="{{ path('front_player_profile') }}">Voir profil</a>
-          <a class="btn btn--primary" href="{{ path('front_login') }}">Ajouter ami</a>
-        </div>
-      </div>
-    </article>
+              <button class="btn btn--primary" type="submit">Filtrer</button>
+              <a class="btn btn--ghost" href="{{ path('front_team_detail', {id: teamId, tab: 'members'}) }}">Reset</a>
+            </form>
 
+            {% if team_members is empty %}
+              <div class="emptyState" style="margin-top:12px;">Aucun membre trouve.</div>
+            {% else %}
+              <div class="cardsGrid" style="margin-top:12px;">
+                {% for row in team_members %}
+                  {% set member = row.userId %}
+                  {% set memberId = member ? (member.userId ?? 0) : 0 %}
+                  {% set memberImagePath = member and member.profileImageId ? member.profileImageId.fileUrl : '' %}
+                  {% set memberImageUrl = memberImagePath ? (memberImagePath starts with 'http' ? memberImagePath : asset(memberImagePath)) : 'https://picsum.photos/seed/pulse_team_member_' ~ memberId ~ '/800/800' %}
 
-    <article class="card card--member">
-      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_u4/1200/800">
-        <div class="card__chips">
-          <span class="chip chip--role">PLAYER</span>
-          <span class="chip">US</span>
-          <span class="chip">@NovaAim</span>
-        </div>
-      </div>
-      <div class="card__body">
-        <h4 class="card__title">Nova</h4>
-        <p class="card__desc">Profil public • Message • Invitation équipe</p>
-        <div class="avatarRow">
-          <div class="avatar" data-avatar="https://picsum.photos/seed/pulse_a4/200/200" aria-hidden="true"></div>
-          <div class="avatarText">
-            <div class="name">Nova</div>
-            <div class="sub">PLAYER • US</div>
-          </div>
-        </div>
-        <div class="card__actions">
-          <a class="btn btn--ghost" href="{{ path('front_player_profile') }}">Voir profil</a>
-          <a class="btn btn--primary" href="{{ path('front_login') }}">Ajouter ami</a>
-        </div>
-      </div>
-    </article>
+                  <article class="card card--member">
+                    <div class="card__media" data-bg="{{ memberImageUrl }}">
+                      <div class="card__chips">
+                        <span class="chip chip--role">{{ member ? member.role : '-' }}</span>
+                        <span class="chip">{{ member and member.country ? member.country : '-' }}</span>
+                        <span class="chip">Depuis: {{ row.joinedAt ? row.joinedAt|date('m/Y') : '-' }}</span>
+                      </div>
+                    </div>
 
-</div>
+                    <div class="card__body">
+                      <h4 class="card__title">{{ member ? (member.displayName ?: member.username) : 'Membre' }}</h4>
+                      <p class="card__desc">Username: <b>{{ member ? member.username : '-' }}</b></p>
+
+                      <div class="card__actions">
+                        <a class="btn btn--ghost" href="{{ memberId > 0 ? path('front_player_profile', {id: memberId}) : path('front_players') }}">Voir profil</a>
+                        {% if viewer_user and memberId > 0 and viewerId != memberId %}
+                          <a class="btn btn--primary" href="{{ path('front_conversation', {id: memberId}) }}">Message</a>
+                        {% elseif not viewer_user %}
+                          <a class="btn btn--primary" href="{{ path('front_login', {'_target_path': app.request.uri}) }}">Message</a>
+                        {% endif %}
+                      </div>
+                    </div>
+                  </article>
+                {% endfor %}
+              </div>
+            {% endif %}
           </section>
-          <section class="tabPanel" data-panel="products">
-            <div class="cardsGrid">
 
-    <article class="card card--product">
-      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_p1/1200/800">
-        <div class="card__chips">
-          <span class="chip chip--price">89 DT</span>
-          <span class="chip">Stock: 14</span>
-          <span class="chip">Nebula Five</span>
-        </div>
-      </div>
-      <div class="card__body">
-        <h4 class="card__title">Pulse Hoodie — Neon</h4>
-        <p class="card__desc">Vendeur: <b>Nebula Five</b></p>
-        <div class="card__actions">
-          <a class="btn btn--ghost" href="{{ path('front_product_detail') }}">Détail</a>
-          <a class="btn btn--primary" href="{{ path('front_login') }}">Ajouter au panier</a>
-        </div>
-      </div>
-    </article>
+          <section class="tabPanel {{ active_tab == 'products' ? 'is-active' : '' }}">
+            <form class="filtersRow" method="get" action="{{ path('front_team_detail', {id: teamId}) }}" data-auto-submit="1" style="margin-top:12px;">
+              <input type="hidden" name="tab" value="products">
+              <input class="input" type="search" name="p_q" value="{{ filters.p_q|default('') }}" placeholder="Rechercher un produit...">
 
+              <div class="select">
+                <select name="p_sort">
+                  <option value="latest" {{ (filters.p_sort|default('latest')) == 'latest' ? 'selected' : '' }}>Plus recents</option>
+                  <option value="oldest" {{ (filters.p_sort|default('latest')) == 'oldest' ? 'selected' : '' }}>Plus anciens</option>
+                  <option value="name" {{ (filters.p_sort|default('latest')) == 'name' ? 'selected' : '' }}>Nom</option>
+                  <option value="price_high" {{ (filters.p_sort|default('latest')) == 'price_high' ? 'selected' : '' }}>Prix DESC</option>
+                  <option value="price_low" {{ (filters.p_sort|default('latest')) == 'price_low' ? 'selected' : '' }}>Prix ASC</option>
+                  <option value="stock_high" {{ (filters.p_sort|default('latest')) == 'stock_high' ? 'selected' : '' }}>Stock DESC</option>
+                </select>
+              </div>
 
-    <article class="card card--product">
-      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_p2/1200/800">
-        <div class="card__chips">
-          <span class="chip chip--price">69 DT</span>
-          <span class="chip">Stock: 7</span>
-          <span class="chip">North Hydra</span>
-        </div>
-      </div>
-      <div class="card__body">
-        <h4 class="card__title">Team Jersey — Pro Edition</h4>
-        <p class="card__desc">Vendeur: <b>North Hydra</b></p>
-        <div class="card__actions">
-          <a class="btn btn--ghost" href="{{ path('front_product_detail') }}">Détail</a>
-          <a class="btn btn--primary" href="{{ path('front_login') }}">Ajouter au panier</a>
-        </div>
-      </div>
-    </article>
+              <label class="btn btn--ghost" style="display:flex; align-items:center; gap:8px;">
+                <input type="checkbox" name="p_stock" value="1" {{ filters.p_stock|default(false) ? 'checked' : '' }}>
+                En stock
+              </label>
 
+              <button class="btn btn--primary" type="submit">Filtrer</button>
+              <a class="btn btn--ghost" href="{{ path('front_team_detail', {id: teamId, tab: 'products'}) }}">Reset</a>
+            </form>
 
-    <article class="card card--product">
-      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_p3/1200/800">
-        <div class="card__chips">
-          <span class="chip chip--price">39 DT</span>
-          <span class="chip">Stock: 33</span>
-          <span class="chip">Aurora Squad</span>
-        </div>
-      </div>
-      <div class="card__body">
-        <h4 class="card__title">Mousepad XL — Arena</h4>
-        <p class="card__desc">Vendeur: <b>Aurora Squad</b></p>
-        <div class="card__actions">
-          <a class="btn btn--ghost" href="{{ path('front_product_detail') }}">Détail</a>
-          <a class="btn btn--primary" href="{{ path('front_login') }}">Ajouter au panier</a>
-        </div>
-      </div>
-    </article>
+            {% if team_products is empty %}
+              <div class="emptyState" style="margin-top:12px;">Aucun produit trouve.</div>
+            {% else %}
+              <div class="cardsGrid" style="margin-top:12px;">
+                {% for product in team_products %}
+                  {% set productId = product.productId ?? 0 %}
+                  {% set primaryImage = team_products_primary_images_by_product_id[productId]|default(null) %}
+                  {% set imagePath = primaryImage ? primaryImage.fileUrl : '' %}
+                  {% set imageUrl = imagePath ? (imagePath starts with 'http' ? imagePath : asset(imagePath)) : 'https://picsum.photos/seed/pulse_team_product_' ~ productId ~ '/1200/800' %}
 
+                  <article class="card card--product">
+                    <div class="card__media" data-bg="{{ imageUrl }}">
+                      <div class="card__chips">
+                        <span class="chip chip--price">{{ product.price|number_format(2, '.', ' ') }} DT</span>
+                        <span class="chip">Stock: {{ product.stockQty }}</span>
+                        <span class="chip">{{ product.isActive ? 'ACTIF' : 'INACTIF' }}</span>
+                      </div>
+                    </div>
 
-    <article class="card card--product">
-      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_p4/1200/800">
-        <div class="card__chips">
-          <span class="chip chip--price">29 DT</span>
-          <span class="chip">Stock: 5</span>
-          <span class="chip">Sandstorm</span>
-        </div>
-      </div>
-      <div class="card__body">
-        <h4 class="card__title">Cap — Limited Drop</h4>
-        <p class="card__desc">Vendeur: <b>Sandstorm</b></p>
-        <div class="card__actions">
-          <a class="btn btn--ghost" href="{{ path('front_product_detail') }}">Détail</a>
-          <a class="btn btn--primary" href="{{ path('front_login') }}">Ajouter au panier</a>
-        </div>
-      </div>
-    </article>
+                    <div class="card__body">
+                      <h4 class="card__title">{{ product.name }}</h4>
+                      <p class="card__desc">{{ product.description ? product.description|slice(0, 80) ~ (product.description|length > 80 ? '...' : '') : 'Produit officiel equipe.' }}</p>
 
-</div>
+                      <div class="card__actions">
+                        <a class="btn btn--ghost" href="{{ productId > 0 ? path('front_product_detail', {id: productId}) : path('front_shop') }}">Detail</a>
+                        {% if app.user and productId > 0 %}
+                          <form method="post" action="{{ path('front_cart_add', {id: productId}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('cart_add_' ~ productId) }}">
+                            <input type="hidden" name="quantity" value="1">
+                            <button class="btn btn--primary" type="submit" {{ product.stockQty <= 0 ? 'disabled' : '' }}>
+                              {{ product.stockQty <= 0 ? 'Rupture' : 'Ajouter au panier' }}
+                            </button>
+                          </form>
+                        {% else %}
+                          <a class="btn btn--primary" href="{{ path('front_login', {'_target_path': app.request.uri}) }}">Ajouter au panier</a>
+                        {% endif %}
+                      </div>
+                    </div>
+                  </article>
+                {% endfor %}
+              </div>
+            {% endif %}
           </section>
         </div>
-      </div>
-
-      
-      <div class="panel">
-        <div class="panel__head">
-          <div>
-            <h3 class="panel__title">TABLES UTILISÉES</h3>
-            <div class="panel__desc">Schéma réel + colonnes clés.</div>
-          </div>
-        </div>
-        <div class="list">
-          <div class="listItem"><span><b>teams</b></span><span class="listItem__meta">team_id, name, captain_user_id, logo_image_id</span></div><div class="listItem"><span><b>team_members</b></span><span class="listItem__meta">team_id, user_id, is_active</span></div><div class="listItem"><span><b>tournament_teams</b></span><span class="listItem__meta">tournament_id, team_id, status</span></div><div class="listItem"><span><b>products</b></span><span class="listItem__meta">product_id, team_id, name, price, stock_qty</span></div><div class="listItem"><span><b>team_join_requests</b></span><span class="listItem__meta">request_id, team_id, user_id, status</span></div>
-        </div>
-      </div>
-
-    
+      </section>
 
       {% include 'front/partials/_footer.html.twig' %}
-
     </section>
   </main>
 
   {% include 'front/partials/_auth_modal.html.twig' %}
-
 {% endblock %}
-
-

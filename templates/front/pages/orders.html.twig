@@ -18,7 +18,8 @@
         <div class="socialShell">
           <div class="socialStack">
             <section class="panel">
-              <form class="filtersRow" method="get" action="{{ path('front_orders') }}">
+              <form class="filtersRow" method="get" action="{{ path('front_orders') }}" data-auto-submit="1">
+                <input class="input" type="search" name="q" value="{{ filters.q|default('') }}" placeholder="Numero, adresse, paiement..." />
                 <div class="select">
                   <select name="status">
                     <option value="" {{ filters.status is empty ? 'selected' : '' }}>Tous statuts</option>
@@ -30,6 +31,16 @@
                   </select>
                 </div>
                 <input class="input" type="date" name="from" value="{{ filters.from|default('') }}" />
+                <input class="input" type="date" name="to" value="{{ filters.to|default('') }}" />
+                <div class="select">
+                  <select name="sort">
+                    <option value="latest" {{ (filters.sort|default('latest')) == 'latest' ? 'selected' : '' }}>Plus recentes</option>
+                    <option value="oldest" {{ (filters.sort|default('latest')) == 'oldest' ? 'selected' : '' }}>Plus anciennes</option>
+                    <option value="amount_high" {{ (filters.sort|default('latest')) == 'amount_high' ? 'selected' : '' }}>Montant DESC</option>
+                    <option value="amount_low" {{ (filters.sort|default('latest')) == 'amount_low' ? 'selected' : '' }}>Montant ASC</option>
+                    <option value="status" {{ (filters.sort|default('latest')) == 'status' ? 'selected' : '' }}>Statut</option>
+                  </select>
+                </div>
                 <button class="btn btn--ghost" type="submit">Filtrer</button>
                 <a class="btn btn--ghost" href="{{ path('front_orders') }}">Reset</a>
               </form>
@@ -76,6 +87,11 @@
                 </div>
               {% endif %}
             </section>
+
+            {% include 'front/partials/_pagination.html.twig' with {
+              pagination: pagination,
+              route_name: 'front_orders'
+            } %}
           </div>
 
           <aside class="socialStack">

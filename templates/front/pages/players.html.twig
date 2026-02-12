@@ -17,7 +17,7 @@
 
         <div class="socialShell">
           <div class="socialStack">
-            <form class="panel gadget" method="get" action="{{ path('front_players') }}">
+            <form class="panel gadget" method="get" action="{{ path('front_players') }}" data-auto-submit="1">
               <div class="filtersRow">
                 <input class="input" type="search" name="q" value="{{ filters.q }}" placeholder="Rechercher par pseudo ou display name..." />
                 <div class="select">
@@ -30,14 +30,31 @@
                   </select>
                 </div>
                 <input class="input" type="text" name="country" value="{{ filters.country }}" placeholder="Pays (ex: TN)" maxlength="80" />
+                <div class="select">
+                  <select name="sort">
+                    <option value="updated_at" {{ filters.sort == 'updated_at' ? 'selected' : '' }}>Derniere activite</option>
+                    <option value="created_at" {{ filters.sort == 'created_at' ? 'selected' : '' }}>Nouveaux comptes</option>
+                    <option value="display_name" {{ filters.sort == 'display_name' ? 'selected' : '' }}>Nom affichage</option>
+                    <option value="username" {{ filters.sort == 'username' ? 'selected' : '' }}>Username</option>
+                    <option value="country" {{ filters.sort == 'country' ? 'selected' : '' }}>Pays</option>
+                    <option value="role" {{ filters.sort == 'role' ? 'selected' : '' }}>Role</option>
+                  </select>
+                </div>
+                <div class="select">
+                  <select name="dir">
+                    <option value="desc" {{ filters.dir == 'desc' ? 'selected' : '' }}>DESC</option>
+                    <option value="asc" {{ filters.dir == 'asc' ? 'selected' : '' }}>ASC</option>
+                  </select>
+                </div>
                 <button class="btn btn--ghost" type="submit">Rechercher</button>
+                <a class="btn btn--ghost" href="{{ path('front_players') }}">Reset</a>
               </div>
             </form>
 
             <section class="panel gadget">
               <div class="panel__head">
                 <h3 class="panel__title">RESULTATS</h3>
-                <span class="panel__desc">{{ player_cards|length }} profil(s)</span>
+                <span class="panel__desc">{{ pagination.total_items|default(player_cards|length) }} profil(s)</span>
               </div>
 
               {% if player_cards is empty %}
@@ -86,6 +103,11 @@
                 {% endfor %}
               {% endif %}
             </section>
+
+            {% include 'front/partials/_pagination.html.twig' with {
+              pagination: pagination,
+              route_name: 'front_players'
+            } %}
           </div>
 
           <aside class="socialStack">

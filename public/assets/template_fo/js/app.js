@@ -261,6 +261,15 @@ function wireInfiniteFeed(){
         url.searchParams.set("offset", String(offset));
         url.searchParams.set("limit", String(limit));
         url.searchParams.set("redirect", window.location.href);
+        const extraQuery = container.dataset.feedQuery || "";
+        if (extraQuery) {
+          const extraParams = new URLSearchParams(extraQuery);
+          extraParams.forEach((value, key) => {
+            if (value !== "") {
+              url.searchParams.set(key, value);
+            }
+          });
+        }
 
         const response = await fetch(url.toString(), {
           method: "GET",
@@ -742,6 +751,10 @@ const matches = [
 function renderWeekTournaments(){
   const grid = $("#weekTournamentsGrid");
   if (!grid) return;
+  if (grid.dataset.serverRendered === "1" || grid.children.length > 0) {
+    $$("#weekTournamentsGrid .card__media").forEach(el => setBgSafe(el, el.dataset.bg));
+    return;
+  }
   grid.innerHTML = weekTournaments.map(t => `
     <article class="card card--tournament" data-type="tournament" data-id="${t.id}">
       <div class="card__media" data-bg="${t.img}">
@@ -815,6 +828,10 @@ function renderWeekChampions(){
 function renderBestSellers(){
   const grid = $("#bestSellersGrid");
   if (!grid) return;
+  if (grid.dataset.serverRendered === "1" || grid.children.length > 0) {
+    $$("#bestSellersGrid .card__media").forEach(el => setBgSafe(el, el.dataset.bg));
+    return;
+  }
   grid.innerHTML = bestSellers.map(p => `
     <article class="card card--product" data-type="product" data-id="${p.id}">
       <div class="card__media" data-bg="${p.img}">
@@ -853,6 +870,10 @@ function renderBestSellers(){
 function renderPopularGames(){
   const grid = $("#popularGamesGrid");
   if (!grid) return;
+  if (grid.dataset.serverRendered === "1" || grid.children.length > 0) {
+    $$("#popularGamesGrid .card__media").forEach(el => setBgSafe(el, el.dataset.bg));
+    return;
+  }
   grid.innerHTML = popularGames.map(g => `
     <article class="card card--game" data-type="game" data-id="${g.id}">
       <div class="card__media" data-bg="${g.img}">
@@ -891,6 +912,11 @@ function renderPopularGames(){
 function renderTopTeams(){
   const grid = $("#topTeamsGrid");
   if (!grid) return;
+  if (grid.dataset.serverRendered === "1" || grid.children.length > 0) {
+    $$("#topTeamsGrid .card__media").forEach(el => setBgSafe(el, el.dataset.bg));
+    $$("#topTeamsGrid .avatar").forEach(el => setBgSafe(el, el.dataset.avatar));
+    return;
+  }
   grid.innerHTML = teams.map(t => `
     <article class="card card--team" data-type="team" data-id="${t.id}">
       <div class="card__media" data-bg="${t.img}">
@@ -1185,6 +1211,87 @@ function renderSearchCardByType(typeKey, item){
   `;
 }
 
+function wireAutoSubmitForms(){
+  const forms = Array.from(document.querySelectorAll('form[method="get"]')).filter((form) => {
+    if (!(form instanceof HTMLFormElement)) return false;
+    if (form.id === "globalSearchForm" || form.classList.contains("globalSearch")) return false;
+    if (form.dataset.autoSubmit === "0") return false;
+
+    if (form.dataset.autoSubmit === "1") return true;
+    if (form.classList.contains("filtersRow") || form.classList.contains("filtersBar")) return true;
+    if (form.querySelector(".filtersRow, .filtersBar")) return true;
+
+    return form.querySelector("input[type='search'], input[type='text'], input[type='date'], input[type='number'], select, textarea") !== null;
+  });
+
+  forms.forEach((form) => {
+    if (form.dataset.autoSubmitBound === "1") return;
+    form.dataset.autoSubmitBound = "1";
+
+    let timerId = null;
+    const resetPagingToFirstPage = () => {
+      form.querySelectorAll('input[name="page"], input[name$="_page"]').forEach((field) => {
+        if (!(field instanceof HTMLInputElement)) return;
+        field.value = "1";
+      });
+    };
+
+    const submitForm = (delay = 0, resetPage = true) => {
+      if (resetPage) {
+        resetPagingToFirstPage();
+      }
+
+      window.clearTimeout(timerId);
+      timerId = window.setTimeout(() => {
+        if (typeof form.requestSubmit === "function") {
+          form.requestSubmit();
+          return;
+        }
+        form.submit();
+      }, Math.max(0, delay));
+    };
+
+    form.querySelectorAll("input, select, textarea").forEach((field) => {
+      const tagName = field.tagName.toLowerCase();
+      const fieldType = String(field.getAttribute("type") || "").toLowerCase();
+      const fieldName = String(field.getAttribute("name") || "");
+      const isPageField = fieldName === "page" || fieldName.endsWith("_page");
+
+      if (tagName === "select") {
+        field.addEventListener("change", () => submitForm(0, !isPageField));
+        return;
+      }
+
+      if (tagName === "textarea") {
+        field.addEventListener("input", () => submitForm(380, !isPageField));
+        field.addEventListener("change", () => submitForm(0, !isPageField));
+        return;
+      }
+
+      if (tagName !== "input") {
+        field.addEventListener("change", () => submitForm(0, !isPageField));
+        return;
+      }
+
+      if (fieldType === "checkbox" || fieldType === "radio" || fieldType === "date") {
+        field.addEventListener("change", () => submitForm(0, !isPageField));
+        return;
+      }
+
+      if (fieldType === "hidden" || fieldType === "submit" || fieldType === "button") {
+        return;
+      }
+
+      field.addEventListener("input", () => submitForm(380, !isPageField));
+      field.addEventListener("change", () => submitForm(0, !isPageField));
+    });
+
+    form.addEventListener("submit", () => {
+      window.clearTimeout(timerId);
+    });
+  });
+}
+
 function wireGlobalSearch(){
   const input = $("#globalSearchInput");
   const form = $("#globalSearchForm");
@@ -1274,6 +1381,7 @@ function init(){
   wireHorizontalSectionScroll();
   wireSideNav();
   wireTabs();
+  wireAutoSubmitForms();
   wirePostCards();
   wireInfiniteFeed();
   applyDatasetBackgrounds();

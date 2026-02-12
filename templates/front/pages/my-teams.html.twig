@@ -32,6 +32,20 @@
                 <a class="btn btn--ghost" href="{{ path('front_teams_explore') }}">Explorer</a>
               </div>
 
+              <form class="filtersRow" method="get" action="{{ path('front_my_teams') }}" style="margin-bottom:12px;" data-auto-submit="1">
+                <input class="input" type="search" name="teams_q" value="{{ filters.teams_q|default('') }}" placeholder="Rechercher une equipe..." />
+                <input class="input" type="text" name="teams_region" value="{{ filters.teams_region|default('') }}" placeholder="Region" />
+                <div class="select">
+                  <select name="teams_sort">
+                    <option value="latest" {{ (filters.teams_sort|default('latest')) == 'latest' ? 'selected' : '' }}>Rejoint recemment</option>
+                    <option value="oldest" {{ (filters.teams_sort|default('latest')) == 'oldest' ? 'selected' : '' }}>Rejoint anciennement</option>
+                    <option value="name" {{ (filters.teams_sort|default('latest')) == 'name' ? 'selected' : '' }}>Nom A-Z</option>
+                    <option value="region" {{ (filters.teams_sort|default('latest')) == 'region' ? 'selected' : '' }}>Region</option>
+                  </select>
+                </div>
+                <button class="btn btn--ghost" type="submit">Filtrer</button>
+              </form>
+
               {% if active_team_members is empty %}
                 <div class="emptyState">Vous n'avez aucune equipe active.</div>
               {% else %}
@@ -70,13 +84,45 @@
                 {% endfor %}
               {% endif %}
             </section>
+
+            {% include 'front/partials/_pagination.html.twig' with {
+              pagination: pagination.teams|default(null),
+              route_name: 'front_my_teams',
+              page_param: 'teams_page'
+            } %}
           </div>
 
           <aside class="socialStack">
             <section class="panel">
               <h3 class="panel__title">INVITATIONS</h3>
+              <form class="filtersRow" method="get" action="{{ path('front_my_teams') }}" style="margin-bottom:12px;" data-auto-submit="1">
+                <input type="hidden" name="teams_q" value="{{ filters.teams_q|default('') }}">
+                <input type="hidden" name="teams_region" value="{{ filters.teams_region|default('') }}">
+                <input type="hidden" name="teams_sort" value="{{ filters.teams_sort|default('latest') }}">
+                <input class="input" type="search" name="invites_q" value="{{ filters.invites_q|default('') }}" placeholder="Rechercher une invitation..." />
+                <div class="select">
+                  <select name="invites_status">
+                    <option value="" {{ (filters.invites_status|default('PENDING')) == '' ? 'selected' : '' }}>Tous statuts</option>
+                    <option value="PENDING" {{ (filters.invites_status|default('PENDING')) == 'PENDING' ? 'selected' : '' }}>PENDING</option>
+                    <option value="ACCEPTED" {{ (filters.invites_status|default('PENDING')) == 'ACCEPTED' ? 'selected' : '' }}>ACCEPTED</option>
+                    <option value="REFUSED" {{ (filters.invites_status|default('PENDING')) == 'REFUSED' ? 'selected' : '' }}>REFUSED</option>
+                    <option value="CANCELLED" {{ (filters.invites_status|default('PENDING')) == 'CANCELLED' ? 'selected' : '' }}>CANCELLED</option>
+                  </select>
+                </div>
+                <div class="select">
+                  <select name="invites_sort">
+                    <option value="latest" {{ (filters.invites_sort|default('latest')) == 'latest' ? 'selected' : '' }}>Plus recentes</option>
+                    <option value="oldest" {{ (filters.invites_sort|default('latest')) == 'oldest' ? 'selected' : '' }}>Plus anciennes</option>
+                    <option value="team" {{ (filters.invites_sort|default('latest')) == 'team' ? 'selected' : '' }}>Equipe</option>
+                    <option value="status" {{ (filters.invites_sort|default('latest')) == 'status' ? 'selected' : '' }}>Statut</option>
+                  </select>
+                </div>
+                <button class="btn btn--ghost" type="submit">Filtrer</button>
+                <a class="btn btn--ghost" href="{{ path('front_my_teams') }}">Reset</a>
+              </form>
+
               {% if pending_team_invites is empty %}
-                <div class="emptyState">Aucune invitation en attente.</div>
+                <div class="emptyState">Aucune invitation avec ces filtres.</div>
               {% else %}
                 <div class="socialQuickList">
                   {% for invite in pending_team_invites %}
@@ -115,6 +161,12 @@
               {% endif %}
             </section>
 
+            {% include 'front/partials/_pagination.html.twig' with {
+              pagination: pagination.invites|default(null),
+              route_name: 'front_my_teams',
+              page_param: 'invites_page'
+            } %}
+
             <section class="panel">
               <h3 class="panel__title">RACCOURCIS</h3>
               <div class="socialQuickList">
@@ -127,8 +179,8 @@
             <section class="panel">
               <h3 class="panel__title">RESUME</h3>
               <div class="statsRow">
-                <div class="statCard"><div class="statCard__value">{{ active_team_members|length }}</div><div class="statCard__label">Equipes actives</div></div>
-                <div class="statCard"><div class="statCard__value">{{ pending_team_invites|length }}</div><div class="statCard__label">Invitations</div></div>
+                <div class="statCard"><div class="statCard__value">{{ pagination.teams.total_items|default(active_team_members|length) }}</div><div class="statCard__label">Equipes actives</div></div>
+                <div class="statCard"><div class="statCard__value">{{ pagination.invites.total_items|default(pending_team_invites|length) }}</div><div class="statCard__label">Invitations</div></div>
               </div>
             </section>
           </aside>

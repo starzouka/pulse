@@ -18,6 +18,54 @@ class TournamentRepository extends ServiceEntityRepository
     /**
      * @return list<Tournament>
      */
+    public function findForHomeWeek(\DateTimeInterface $weekStart, \DateTimeInterface $weekEnd, int $limit = 12): array
+    {
+        return $this->createQueryBuilder('tournament')
+            ->leftJoin('tournament.gameId', 'game')
+            ->addSelect('game')
+            ->leftJoin('game.categoryId', 'category')
+            ->addSelect('category')
+            ->leftJoin('tournament.organizerUserId', 'organizer')
+            ->addSelect('organizer')
+            ->andWhere('tournament.startDate >= :weekStart')
+            ->andWhere('tournament.startDate <= :weekEnd')
+            ->andWhere('tournament.status IN (:visibleStatuses)')
+            ->setParameter('weekStart', $weekStart->format('Y-m-d'))
+            ->setParameter('weekEnd', $weekEnd->format('Y-m-d'))
+            ->setParameter('visibleStatuses', ['OPEN', 'ONGOING', 'FINISHED'])
+            ->addSelect('(CASE tournament.status WHEN \'ONGOING\' THEN 0 WHEN \'OPEN\' THEN 1 ELSE 2 END) AS HIDDEN statusRank')
+            ->orderBy('statusRank', 'ASC')
+            ->addOrderBy('tournament.startDate', 'ASC')
+            ->addOrderBy('tournament.createdAt', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return list<Tournament>
+     */
+    public function findLatestVisibleForHome(int $limit = 12): array
+    {
+        return $this->createQueryBuilder('tournament')
+            ->leftJoin('tournament.gameId', 'game')
+            ->addSelect('game')
+            ->leftJoin('game.categoryId', 'category')
+            ->addSelect('category')
+            ->leftJoin('tournament.organizerUserId', 'organizer')
+            ->addSelect('organizer')
+            ->andWhere('tournament.status IN (:visibleStatuses)')
+            ->setParameter('visibleStatuses', ['OPEN', 'ONGOING', 'FINISHED'])
+            ->orderBy('tournament.startDate', 'DESC')
+            ->addOrderBy('tournament.createdAt', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return list<Tournament>
+     */
     public function searchCatalog(
         ?string $query,
         ?int $gameId,
@@ -103,6 +151,11 @@ class TournamentRepository extends ServiceEntityRepository
         }
 
         switch ($sort) {
+            case 'oldest':
+                $builder
+                    ->orderBy('tournament.startDate', 'ASC')
+                    ->addOrderBy('tournament.createdAt', 'ASC');
+                break;
             case 'prize':
                 $builder
                     ->orderBy('tournament.prizePool', 'DESC')
@@ -123,6 +176,44 @@ class TournamentRepository extends ServiceEntityRepository
         }
 
         return $builder->getQuery()->getResult();
+    }
+
+    /**
+     * @param list<int> $gameIds
+     * @param list<string>|null $statuses
+     * @return array<int, int>
+     */
+    public function countByGameIds(array $gameIds, ?array $statuses = null): array
+    {
+        $filteredIds = array_values(array_unique(array_filter(
+            $gameIds,
+            static fn (mixed $id): bool => is_int($id) && $id > 0
+        )));
+
+        if ($filteredIds === []) {
+            return [];
+        }
+
+        $builder = $this->createQueryBuilder('tournament')
+            ->select('IDENTITY(tournament.gameId) AS gameId')
+            ->addSelect('COUNT(tournament.tournamentId) AS tournamentCount')
+            ->andWhere('IDENTITY(tournament.gameId) IN (:gameIds)')
+            ->setParameter('gameIds', $filteredIds)
+            ->groupBy('tournament.gameId');
+
+        if (is_array($statuses) && $statuses !== []) {
+            $builder
+                ->andWhere('tournament.status IN (:statuses)')
+                ->setParameter('statuses', array_map('strtoupper', $statuses));
+        }
+
+        $rows = $builder->getQuery()->getArrayResult();
+        $counts = [];
+        foreach ($rows as $row) {
+            $counts[(int) $row['gameId']] = (int) $row['tournamentCount'];
+        }
+
+        return $counts;
     }
 
     /**

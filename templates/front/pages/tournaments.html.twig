@@ -50,7 +50,7 @@
       </div>
 
       <section class="panel">
-        <form method="get" action="{{ path('front_tournaments') }}">
+        <form method="get" action="{{ path('front_tournaments') }}" data-auto-submit="1">
           <div class="filtersRow">
             <input class="input" type="search" name="q" value="{{ filters.q|default('') }}" placeholder="Rechercher un tournoi..." />
 
@@ -125,7 +125,7 @@
       <section class="panel">
         <div class="panel__head">
           <h3 class="panel__title">RESULTATS</h3>
-          <div class="panel__desc">{{ tournaments_data|length }} tournoi(s) trouves</div>
+          <div class="panel__desc">{{ pagination.total_items|default(tournaments_data|length) }} tournoi(s) trouves</div>
         </div>
       </section>
 
@@ -178,6 +178,11 @@
           {% endfor %}
         </div>
       {% endif %}
+
+      {% include 'front/partials/_pagination.html.twig' with {
+        pagination: pagination,
+        route_name: 'front_tournaments'
+      } %}
 
       {% include 'front/partials/_footer.html.twig' %}
     </section>

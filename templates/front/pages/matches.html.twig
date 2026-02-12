@@ -20,7 +20,7 @@
       </div>
 
       <section class="panel">
-        <form method="get" action="{{ path('front_matches') }}">
+        <form method="get" action="{{ path('front_matches') }}" data-auto-submit="1">
           <div class="filtersRow">
             <input class="input" type="search" name="q" value="{{ filters.q|default('') }}" placeholder="Rechercher round/tournoi/jeu" />
 
@@ -74,7 +74,7 @@
       <section class="panel">
         <div class="panel__head">
           <h3 class="panel__title">MATCHS</h3>
-          <div class="panel__desc">{{ matches_data|length }} match(s) trouve(s)</div>
+          <div class="panel__desc">{{ pagination.total_items|default(matches_data|length) }} match(s) trouve(s)</div>
         </div>
 
         {% if matches_data is empty %}
@@ -140,6 +140,11 @@
           </div>
         {% endif %}
       </section>
+
+      {% include 'front/partials/_pagination.html.twig' with {
+        pagination: pagination,
+        route_name: 'front_matches'
+      } %}
 
       {% include 'front/partials/_footer.html.twig' %}
     </section>

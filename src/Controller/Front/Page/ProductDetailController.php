@@ -27,6 +27,11 @@ final class ProductDetailController extends AbstractController
         CartManager $cartManager,
     ): Response
     {
+        $queryId = $request->query->getInt('id', 0);
+        if ($id === null && $queryId > 0) {
+            $id = $queryId;
+        }
+
         $product = null;
         if ($id !== null) {
             $product = $productRepository->findOneBy([
@@ -61,9 +66,14 @@ final class ProductDetailController extends AbstractController
             }
         }
 
+        $relatedProducts = $productRepository->findRelatedActiveByProduct($product, 8);
+        $relatedPrimaryImagesByProductId = $productImageRepository->findPrimaryImagesByProducts($relatedProducts);
+
         return $this->render('front/pages/product-detail.html.twig', [
             'product' => $product,
             'product_images' => $productImageRepository->findImagesByProduct($product),
+            'related_products' => $relatedProducts,
+            'related_primary_images_by_product_id' => $relatedPrimaryImagesByProductId,
             'cart_quantity_for_product' => $cartQuantityForProduct,
             'login_target_path' => $request->getUri(),
         ]);

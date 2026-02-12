@@ -1662,6 +1662,28 @@ body.accountSidebar-open{
   vertical-align: top;
 }
 
+.paginationBar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-top: 12px;
+}
+.paginationBar__meta{
+  color: var(--muted);
+  font-size: 12.5px;
+}
+.paginationBar__actions{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap: wrap;
+}
+.btn.is-disabled{
+  pointer-events:none;
+  opacity:.55;
+}
+
 .badge{
   display:inline-flex;
   align-items:center;

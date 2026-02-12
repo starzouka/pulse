@@ -4,6 +4,7 @@
 {% set viewerId = viewer_user ? viewer_user.userId : 0 %}
 {% set avatarPath = profile_user.profileImageId ? profile_user.profileImageId.fileUrl : '' %}
 {% set avatarUrl = avatarPath ? (avatarPath starts with 'http' ? avatarPath : asset(avatarPath)) : 'https://picsum.photos/seed/pulse_profile_' ~ profileId ~ '/200/200' %}
+{% set pf = applied_filters|default({}) %}
 
 {% block title %}
   PULSE - {{ is_own_profile ? 'Mon profil' : ('Profil de ' ~ (profile_user.displayName ?? profile_user.username)) }}
@@ -92,6 +93,28 @@
 
             <div class="tabPanels" data-panels="profile-tabs">
               <section class="tabPanel {{ active_tab == 'posts' ? 'is-active' : '' }}" data-panel="posts">
+                <form class="filtersRow" method="get" action="{{ is_own_profile ? path('front_profile') : path('front_player_profile', {id: profileId}) }}" style="margin-bottom:12px;">
+                  <input type="hidden" name="tab" value="posts">
+                  <input class="input" type="search" name="posts_q" value="{{ pf.posts_q|default('') }}" placeholder="Rechercher une publication..." />
+                  <div class="select">
+                    <select name="posts_visibility">
+                      <option value="" {{ (pf.posts_visibility|default('')) == '' ? 'selected' : '' }}>Toutes visibilites</option>
+                      <option value="PUBLIC" {{ (pf.posts_visibility|default('')) == 'PUBLIC' ? 'selected' : '' }}>PUBLIC</option>
+                      <option value="FRIENDS" {{ (pf.posts_visibility|default('')) == 'FRIENDS' ? 'selected' : '' }}>FRIENDS</option>
+                      <option value="TEAM_ONLY" {{ (pf.posts_visibility|default('')) == 'TEAM_ONLY' ? 'selected' : '' }}>TEAM_ONLY</option>
+                    </select>
+                  </div>
+                  <div class="select">
+                    <select name="posts_sort">
+                      <option value="latest" {{ (pf.posts_sort|default('latest')) == 'latest' ? 'selected' : '' }}>Plus recents</option>
+                      <option value="oldest" {{ (pf.posts_sort|default('latest')) == 'oldest' ? 'selected' : '' }}>Plus anciens</option>
+                      <option value="liked" {{ (pf.posts_sort|default('latest')) == 'liked' ? 'selected' : '' }}>Plus likes</option>
+                      <option value="commented" {{ (pf.posts_sort|default('latest')) == 'commented' ? 'selected' : '' }}>Plus commentes</option>
+                    </select>
+                  </div>
+                  <button class="btn btn--ghost" type="submit">Filtrer</button>
+                </form>
+
                 {% if is_own_profile and viewer_user %}
                   {% include 'front/partials/_post_composer.html.twig' with {
                     viewer_user: viewer_user,
@@ -132,6 +155,19 @@
               </section>
 
               <section class="tabPanel {{ active_tab == 'friends' ? 'is-active' : '' }}" data-panel="friends">
+                <form class="filtersRow" method="get" action="{{ is_own_profile ? path('front_profile') : path('front_player_profile', {id: profileId}) }}" style="margin-bottom:12px;">
+                  <input type="hidden" name="tab" value="friends">
+                  <input class="input" type="search" name="friends_q" value="{{ pf.friends_q|default('') }}" placeholder="Rechercher un ami..." />
+                  <div class="select">
+                    <select name="friends_sort">
+                      <option value="recent" {{ (pf.friends_sort|default('recent')) == 'recent' ? 'selected' : '' }}>Plus recents</option>
+                      <option value="oldest" {{ (pf.friends_sort|default('recent')) == 'oldest' ? 'selected' : '' }}>Plus anciens</option>
+                      <option value="name" {{ (pf.friends_sort|default('recent')) == 'name' ? 'selected' : '' }}>Nom A-Z</option>
+                    </select>
+                  </div>
+                  <button class="btn btn--ghost" type="submit">Filtrer</button>
+                </form>
+
                 {% if friends is empty %}
                   <div class="emptyState">Aucun ami affiche.</div>
                 {% else %}
@@ -149,6 +185,21 @@
               </section>
 
               <section class="tabPanel {{ active_tab == 'teams' ? 'is-active' : '' }}" data-panel="teams">
+                <form class="filtersRow" method="get" action="{{ is_own_profile ? path('front_profile') : path('front_player_profile', {id: profileId}) }}" style="margin-bottom:12px;">
+                  <input type="hidden" name="tab" value="teams">
+                  <input class="input" type="search" name="teams_q" value="{{ pf.teams_q|default('') }}" placeholder="Rechercher une equipe..." />
+                  <input class="input" type="text" name="teams_region" value="{{ pf.teams_region|default('') }}" placeholder="Region" />
+                  <div class="select">
+                    <select name="teams_sort">
+                      <option value="latest" {{ (pf.teams_sort|default('latest')) == 'latest' ? 'selected' : '' }}>Plus recents</option>
+                      <option value="oldest" {{ (pf.teams_sort|default('latest')) == 'oldest' ? 'selected' : '' }}>Plus anciens</option>
+                      <option value="name" {{ (pf.teams_sort|default('latest')) == 'name' ? 'selected' : '' }}>Nom A-Z</option>
+                      <option value="region" {{ (pf.teams_sort|default('latest')) == 'region' ? 'selected' : '' }}>Region</option>
+                    </select>
+                  </div>
+                  <button class="btn btn--ghost" type="submit">Filtrer</button>
+                </form>
+
                 {% if teams is empty %}
                   <div class="emptyState">Aucune equipe active.</div>
                 {% else %}

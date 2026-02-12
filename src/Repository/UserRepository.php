@@ -45,10 +45,17 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     /**
      * @return list<User>
      */
-    public function searchUsers(?User $excludeUser, ?string $query, ?string $role, ?string $country, int $limit = 30): array
+    public function searchUsers(
+        ?User $excludeUser,
+        ?string $query,
+        ?string $role,
+        ?string $country,
+        int $limit = 30,
+        string $sortBy = 'updated_at',
+        string $direction = 'desc'
+    ): array
     {
         $builder = $this->createQueryBuilder('user')
-            ->orderBy('user.updatedAt', 'DESC')
             ->setMaxResults($limit);
 
         if ($excludeUser instanceof User && $excludeUser->getUserId() !== null) {
@@ -76,6 +83,24 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             $builder
                 ->andWhere('LOWER(COALESCE(user.country, \'\')) = :country')
                 ->setParameter('country', mb_strtolower($countryValue));
+        }
+
+        $sortMap = [
+            'updated_at' => 'user.updatedAt',
+            'created_at' => 'user.createdAt',
+            'username' => 'user.username',
+            'display_name' => 'user.displayName',
+            'country' => 'user.country',
+            'role' => 'user.role',
+        ];
+
+        $sortKey = strtolower(trim($sortBy));
+        $sortField = $sortMap[$sortKey] ?? 'user.updatedAt';
+        $sortDirection = strtoupper(trim($direction)) === 'ASC' ? 'ASC' : 'DESC';
+
+        $builder->orderBy($sortField, $sortDirection);
+        if ($sortField !== 'user.userId') {
+            $builder->addOrderBy('user.userId', 'DESC');
         }
 
         return $builder->getQuery()->getResult();

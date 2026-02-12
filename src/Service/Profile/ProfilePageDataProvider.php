@@ -41,36 +41,63 @@ final class ProfilePageDataProvider
      *     is_liked_by_viewer: bool,
      *     comments: list<\App\Entity\Comment>
      *   }>,
-     *   stats: array{friends: int, teams: int, posts: int}
+     *   stats: array{friends: int, teams: int, posts: int},
+     *   applied_filters: array{
+     *     posts_q:string,
+     *     posts_visibility:string,
+     *     posts_sort:string,
+     *     friends_q:string,
+     *     friends_sort:string,
+     *     teams_q:string,
+     *     teams_region:string,
+     *     teams_sort:string
+     *   }
      * }
      */
-    public function build(User $profileUser, ?User $viewer): array
+    public function build(User $profileUser, ?User $viewer, array $filters = []): array
     {
         $isOwnProfile = $viewer instanceof User
             && $viewer->getUserId() !== null
             && $viewer->getUserId() === $profileUser->getUserId();
 
-        $friendships = $this->friendshipRepository->findByUser($profileUser, 200);
-        $friendsById = [];
-        foreach ($friendships as $friendship) {
-            $firstUser = $friendship->getUserId1();
-            $secondUser = $friendship->getUserId2();
-            if (!$firstUser instanceof User || !$secondUser instanceof User) {
-                continue;
-            }
-
-            $friend = $firstUser->getUserId() === $profileUser->getUserId() ? $secondUser : $firstUser;
-            $friendId = $friend->getUserId();
-            if ($friendId === null) {
-                continue;
-            }
-
-            $friendsById[$friendId] = $friend;
+        $postsQuery = trim((string) ($filters['posts_q'] ?? ''));
+        $postsVisibility = strtoupper(trim((string) ($filters['posts_visibility'] ?? '')));
+        if (!in_array($postsVisibility, ['PUBLIC', 'FRIENDS', 'TEAM_ONLY'], true)) {
+            $postsVisibility = '';
         }
 
-        $friends = array_values($friendsById);
+        $postsSort = strtolower(trim((string) ($filters['posts_sort'] ?? 'latest')));
+        if (!in_array($postsSort, ['latest', 'oldest', 'liked', 'commented'], true)) {
+            $postsSort = 'latest';
+        }
 
-        $teamMembers = $this->teamMemberRepository->findActiveByUser($profileUser, 20);
+        $friendsQuery = trim((string) ($filters['friends_q'] ?? ''));
+        $friendsSort = strtolower(trim((string) ($filters['friends_sort'] ?? 'recent')));
+        if (!in_array($friendsSort, ['recent', 'oldest', 'name'], true)) {
+            $friendsSort = 'recent';
+        }
+
+        $teamsQuery = trim((string) ($filters['teams_q'] ?? ''));
+        $teamsRegion = trim((string) ($filters['teams_region'] ?? ''));
+        $teamsSort = strtolower(trim((string) ($filters['teams_sort'] ?? 'latest')));
+        if (!in_array($teamsSort, ['latest', 'oldest', 'name', 'region'], true)) {
+            $teamsSort = 'latest';
+        }
+
+        $friends = $this->friendshipRepository->findFriendsByUser(
+            $profileUser,
+            $friendsQuery,
+            $friendsSort,
+            200
+        );
+
+        $teamMembers = $this->teamMemberRepository->findActiveByUserFiltered(
+            $profileUser,
+            $teamsQuery,
+            $teamsRegion !== '' ? $teamsRegion : null,
+            $teamsSort,
+            50
+        );
         $teamsById = [];
         foreach ($teamMembers as $teamMember) {
             $team = $teamMember->getTeamId();
@@ -83,10 +110,13 @@ final class ProfilePageDataProvider
         }
         $teams = array_values($teamsById);
 
-        $posts = $this->postRepository->findBy(
-            ['authorUserId' => $profileUser, 'isDeleted' => false],
-            ['createdAt' => 'DESC'],
+        $posts = $this->postRepository->searchVisiblePaged(
+            $postsQuery,
+            $postsVisibility !== '' ? $postsVisibility : null,
+            $profileUser,
+            $postsSort,
             25,
+            0,
         );
         $imagesByPostId = $this->postImageRepository->findImagesByPosts($posts);
 
@@ -146,6 +176,16 @@ final class ProfilePageDataProvider
                 'friends' => count($friends),
                 'teams' => count($teams),
                 'posts' => count($postsData),
+            ],
+            'applied_filters' => [
+                'posts_q' => $postsQuery,
+                'posts_visibility' => $postsVisibility,
+                'posts_sort' => $postsSort,
+                'friends_q' => $friendsQuery,
+                'friends_sort' => $friendsSort,
+                'teams_q' => $teamsQuery,
+                'teams_region' => $teamsRegion,
+                'teams_sort' => $teamsSort,
             ],
         ];
     }

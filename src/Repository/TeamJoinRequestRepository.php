@@ -22,13 +22,79 @@ class TeamJoinRequestRepository extends ServiceEntityRepository
      */
     public function findLatestByUser(User $user, int $limit = 100): array
     {
-        return $this->createQueryBuilder('teamJoinRequest')
+        return $this->findByUserWithFilters($user, null, null, 'latest', $limit);
+    }
+
+    /**
+     * @return list<TeamJoinRequest>
+     */
+    public function findByUserWithFilters(
+        User $user,
+        ?string $status = null,
+        ?string $query = null,
+        string $sort = 'latest',
+        int $limit = 100
+    ): array {
+        $builder = $this->createQueryBuilder('teamJoinRequest')
+            ->innerJoin('teamJoinRequest.teamId', 'team')
+            ->addSelect('team')
+            ->leftJoin('team.logoImageId', 'teamLogo')
+            ->addSelect('teamLogo')
+            ->leftJoin('teamJoinRequest.respondedByCaptainId', 'captainResponder')
+            ->addSelect('captainResponder')
             ->andWhere('teamJoinRequest.userId = :user')
             ->setParameter('user', $user)
-            ->orderBy('teamJoinRequest.createdAt', 'DESC')
-            ->setMaxResults($limit)
-            ->getQuery()
-            ->getResult();
+            ->setMaxResults($limit);
+
+        $statusValue = strtoupper(trim((string) $status));
+        if (in_array($statusValue, ['PENDING', 'ACCEPTED', 'REFUSED', 'CANCELLED'], true)) {
+            $builder
+                ->andWhere('teamJoinRequest.status = :status')
+                ->setParameter('status', $statusValue);
+        }
+
+        $queryValue = trim((string) $query);
+        if ($queryValue !== '') {
+            $builder
+                ->andWhere(
+                    'LOWER(team.name) LIKE :query
+                    OR LOWER(COALESCE(team.region, \'\')) LIKE :query
+                    OR LOWER(COALESCE(teamJoinRequest.note, \'\')) LIKE :query
+                    OR LOWER(COALESCE(captainResponder.username, \'\')) LIKE :query
+                    OR LOWER(COALESCE(captainResponder.displayName, \'\')) LIKE :query'
+                )
+                ->setParameter('query', '%' . mb_strtolower($queryValue) . '%');
+        }
+
+        $sortValue = strtolower(trim($sort));
+        switch ($sortValue) {
+            case 'oldest':
+                $builder
+                    ->orderBy('teamJoinRequest.createdAt', 'ASC')
+                    ->addOrderBy('teamJoinRequest.requestId', 'ASC');
+                break;
+
+            case 'team':
+                $builder
+                    ->orderBy('team.name', 'ASC')
+                    ->addOrderBy('teamJoinRequest.createdAt', 'DESC');
+                break;
+
+            case 'status':
+                $builder
+                    ->orderBy('teamJoinRequest.status', 'ASC')
+                    ->addOrderBy('teamJoinRequest.createdAt', 'DESC');
+                break;
+
+            case 'latest':
+            default:
+                $builder
+                    ->orderBy('teamJoinRequest.createdAt', 'DESC')
+                    ->addOrderBy('teamJoinRequest.requestId', 'DESC');
+                break;
+        }
+
+        return $builder->getQuery()->getResult();
     }
 
     /**

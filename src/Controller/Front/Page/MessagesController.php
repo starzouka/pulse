@@ -14,6 +14,8 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class MessagesController extends AbstractController
 {
+    use PaginatesCollectionsTrait;
+
     #[Route('/pages/messages', name: 'front_messages', methods: ['GET'])]
     public function index(
         Request $request,
@@ -29,14 +31,21 @@ final class MessagesController extends AbstractController
         }
 
         $search = trim((string) $request->query->get('q', ''));
+        $sort = strtolower(trim((string) $request->query->get('sort', 'latest')));
+        if (!in_array($sort, ['latest', 'oldest', 'unread'], true)) {
+            $sort = 'latest';
+        }
+        $onlyUnread = $request->query->getBoolean('unread');
         $requestedPartnerId = (int) $request->query->get('with', 0);
 
-        $partnerIds = $messageRepository->findConversationPartnerIds($viewer, $search, 60);
+        $partnerIds = $messageRepository->findConversationPartnerIds($viewer, $search, 500, $sort, $onlyUnread);
         if ($requestedPartnerId > 0 && $requestedPartnerId !== $viewer->getUserId() && !in_array($requestedPartnerId, $partnerIds, true)) {
             $partnerIds[] = $requestedPartnerId;
         }
 
         $partners = $this->sortUsersByIds($userRepository->findByUserIds($partnerIds), $partnerIds);
+        $pagination = $this->paginateItems($partners, $this->readPage($request), 12);
+        $partnersForSidebar = $pagination['items'];
 
         $selectedPartner = null;
         foreach ($partners as $partner) {
@@ -45,8 +54,8 @@ final class MessagesController extends AbstractController
                 break;
             }
         }
-        if ($selectedPartner === null && $partners !== []) {
-            $selectedPartner = $partners[0];
+        if ($selectedPartner === null && $partnersForSidebar !== []) {
+            $selectedPartner = $partnersForSidebar[0];
         }
 
         $previewMessages = [];
@@ -56,7 +65,7 @@ final class MessagesController extends AbstractController
         }
 
         $conversations = [];
-        foreach ($partners as $partner) {
+        foreach ($partnersForSidebar as $partner) {
             $latestMessage = $messageRepository->findLatestBetweenUsers($viewer, $partner);
             $conversations[] = [
                 'partner' => $partner,
@@ -68,9 +77,15 @@ final class MessagesController extends AbstractController
         return $this->render('front/pages/messages.html.twig', [
             'viewer_user' => $viewer,
             'conversations' => $conversations,
+            'pagination' => $pagination,
             'selected_partner' => $selectedPartner,
             'preview_messages' => $previewMessages,
             'search' => $search,
+            'filters' => [
+                'q' => $search,
+                'sort' => $sort,
+                'unread' => $onlyUnread,
+            ],
         ]);
     }
 

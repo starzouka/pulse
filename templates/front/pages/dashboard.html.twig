@@ -35,10 +35,33 @@
                   <a class="btn btn--ghost" href="{{ path('front_feed') }}">Voir tout</a>
                 </div>
 
+                <form class="filtersRow" method="get" action="{{ path('front_dashboard') }}" style="margin-bottom:12px;">
+                  <input class="input" type="search" name="feed_q" value="{{ dashboard_feed_filters.q|default('') }}" placeholder="Rechercher dans les publications..." />
+                  <div class="select">
+                    <select name="feed_visibility">
+                      <option value="" {{ (dashboard_feed_filters.visibility|default('')) == '' ? 'selected' : '' }}>Toutes visibilites</option>
+                      <option value="PUBLIC" {{ (dashboard_feed_filters.visibility|default('')) == 'PUBLIC' ? 'selected' : '' }}>PUBLIC</option>
+                      <option value="FRIENDS" {{ (dashboard_feed_filters.visibility|default('')) == 'FRIENDS' ? 'selected' : '' }}>FRIENDS</option>
+                      <option value="TEAM_ONLY" {{ (dashboard_feed_filters.visibility|default('')) == 'TEAM_ONLY' ? 'selected' : '' }}>TEAM_ONLY</option>
+                    </select>
+                  </div>
+                  <div class="select">
+                    <select name="feed_sort">
+                      <option value="latest" {{ (dashboard_feed_filters.sort|default('latest')) == 'latest' ? 'selected' : '' }}>Plus recents</option>
+                      <option value="oldest" {{ (dashboard_feed_filters.sort|default('latest')) == 'oldest' ? 'selected' : '' }}>Plus anciens</option>
+                      <option value="liked" {{ (dashboard_feed_filters.sort|default('latest')) == 'liked' ? 'selected' : '' }}>Plus likes</option>
+                      <option value="commented" {{ (dashboard_feed_filters.sort|default('latest')) == 'commented' ? 'selected' : '' }}>Plus commentes</option>
+                    </select>
+                  </div>
+                  <button class="btn btn--ghost" type="submit">Filtrer</button>
+                  <a class="btn btn--ghost" href="{{ path('front_dashboard') }}">Reset</a>
+                </form>
+
                 <div
                   id="dashboardFeedContainer"
                   data-infinite-feed
                   data-feed-endpoint="{{ path('front_feed_chunk') }}"
+                  data-feed-query="{{ dashboard_feed_query_string|default('') }}"
                   data-feed-limit="{{ dashboard_feed_limit|default(8) }}"
                   data-feed-offset="{{ dashboard_feed_posts|length }}"
                   data-feed-has-more="{{ dashboard_feed_has_more|default(false) ? '1' : '0' }}"

@@ -16,6 +16,8 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class MyTeamsController extends AbstractController
 {
+    use PaginatesCollectionsTrait;
+
     #[Route('/pages/my-teams', name: 'front_my_teams', methods: ['GET'])]
     public function index(
         Request $request,
@@ -30,13 +32,61 @@ final class MyTeamsController extends AbstractController
             ]);
         }
 
-        $activeTeamMembers = $teamMemberRepository->findActiveByUser($viewer, 50);
-        $pendingInvites = $teamInviteRepository->findLatestForInvitedUser($viewer, 'PENDING', 50);
+        $teamQuery = trim((string) $request->query->get('teams_q', ''));
+        $teamRegion = trim((string) $request->query->get('teams_region', ''));
+        $teamSort = strtolower(trim((string) $request->query->get('teams_sort', 'latest')));
+        if (!in_array($teamSort, ['latest', 'oldest', 'name', 'region'], true)) {
+            $teamSort = 'latest';
+        }
+
+        $inviteQuery = trim((string) $request->query->get('invites_q', ''));
+        $inviteStatus = strtoupper(trim((string) $request->query->get('invites_status', 'PENDING')));
+        if (!in_array($inviteStatus, ['PENDING', 'ACCEPTED', 'REFUSED', 'CANCELLED', ''], true)) {
+            $inviteStatus = 'PENDING';
+        }
+
+        $inviteSort = strtolower(trim((string) $request->query->get('invites_sort', 'latest')));
+        if (!in_array($inviteSort, ['latest', 'oldest', 'team', 'status'], true)) {
+            $inviteSort = 'latest';
+        }
+
+        $activeTeamMembers = $teamMemberRepository->findActiveByUserFiltered(
+            $viewer,
+            $teamQuery,
+            $teamRegion !== '' ? $teamRegion : null,
+            $teamSort,
+            500
+        );
+        $pendingInvites = $teamInviteRepository->findForInvitedUserFiltered(
+            $viewer,
+            $inviteStatus !== '' ? $inviteStatus : null,
+            $inviteQuery,
+            $inviteSort,
+            500
+        );
+
+        $teamsPagination = $this->paginateItems($activeTeamMembers, $this->readPage($request, 'teams_page'), 8);
+        $activeTeamMembers = $teamsPagination['items'];
+
+        $invitesPagination = $this->paginateItems($pendingInvites, $this->readPage($request, 'invites_page'), 8);
+        $pendingInvites = $invitesPagination['items'];
 
         return $this->render('front/pages/my-teams.html.twig', [
             'viewer_user' => $viewer,
             'active_team_members' => $activeTeamMembers,
             'pending_team_invites' => $pendingInvites,
+            'pagination' => [
+                'teams' => $teamsPagination,
+                'invites' => $invitesPagination,
+            ],
+            'filters' => [
+                'teams_q' => $teamQuery,
+                'teams_region' => $teamRegion,
+                'teams_sort' => $teamSort,
+                'invites_q' => $inviteQuery,
+                'invites_status' => $inviteStatus,
+                'invites_sort' => $inviteSort,
+            ],
         ]);
     }
 

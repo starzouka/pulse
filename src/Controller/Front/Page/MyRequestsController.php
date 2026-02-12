@@ -14,6 +14,8 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class MyRequestsController extends AbstractController
 {
+    use PaginatesCollectionsTrait;
+
     #[Route('/pages/my-requests', name: 'front_my_requests', methods: ['GET'])]
     public function index(
         Request $request,
@@ -27,10 +29,36 @@ final class MyRequestsController extends AbstractController
             ]);
         }
 
+        $status = strtoupper(trim((string) $request->query->get('status', '')));
+        if (!in_array($status, ['PENDING', 'ACCEPTED', 'REFUSED', 'CANCELLED', ''], true)) {
+            $status = '';
+        }
+
+        $query = trim((string) $request->query->get('q', ''));
+        $sort = strtolower(trim((string) $request->query->get('sort', 'latest')));
+        if (!in_array($sort, ['latest', 'oldest', 'team', 'status'], true)) {
+            $sort = 'latest';
+        }
+
+        $joinRequests = $teamJoinRequestRepository->findByUserWithFilters(
+            $viewer,
+            $status !== '' ? $status : null,
+            $query,
+            $sort,
+            500
+        );
+        $pagination = $this->paginateItems($joinRequests, $this->readPage($request), 12);
+
         return $this->render('front/pages/my-requests.html.twig', [
             'viewer_user' => $viewer,
-            'join_requests' => $teamJoinRequestRepository->findLatestByUser($viewer, 100),
+            'join_requests' => $pagination['items'],
+            'pagination' => $pagination,
             'join_requests_summary' => $teamJoinRequestRepository->summarizeStatusesForUser($viewer),
+            'filters' => [
+                'status' => $status,
+                'q' => $query,
+                'sort' => $sort,
+            ],
         ]);
     }
 

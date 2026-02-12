@@ -9,8 +9,8 @@
     <parameter key="kernel.runtime_mode.cli">%env(not:default:kernel.runtime_mode.web:)%</parameter>
     <parameter key="kernel.runtime_mode.worker">%env(bool:default::key:worker:default:kernel.runtime_mode:)%</parameter>
     <parameter key="kernel.debug">true</parameter>
-    <parameter key="kernel.build_dir">C:\Users\ilyes\OneDrive\Bureau\PULSE\PULSE\var\cache\dev</parameter>
-    <parameter key="kernel.cache_dir">C:\Users\ilyes\OneDrive\Bureau\PULSE\PULSE\var\cache\dev</parameter>
+    <parameter key="kernel.build_dir">C:/Users/ilyes/OneDrive/Bureau/PULSE/PULSE/var/cache/dev</parameter>
+    <parameter key="kernel.cache_dir">C:/Users/ilyes/OneDrive/Bureau/PULSE/PULSE/var/cache/dev</parameter>
     <parameter key="kernel.logs_dir">C:\Users\ilyes\OneDrive\Bureau\PULSE\PULSE\var\log</parameter>
     <parameter key="kernel.bundles" type="collection">
       <parameter key="FrameworkBundle">Symfony\Bundle\FrameworkBundle\FrameworkBundle</parameter>
@@ -120,15 +120,15 @@
     <parameter key="translator.logging">false</parameter>
     <parameter key="translator.default_path">C:\Users\ilyes\OneDrive\Bureau\PULSE\PULSE/translations</parameter>
     <parameter key="debug.error_handler.throw_at">-1</parameter>
-    <parameter key="debug.container.dump">C:\Users\ilyes\OneDrive\Bureau\PULSE\PULSE\var\cache\dev/App_KernelDevDebugContainer.xml</parameter>
+    <parameter key="debug.container.dump">C:/Users/ilyes/OneDrive/Bureau/PULSE/PULSE/var/cache/dev/App_KernelDevDebugContainer.xml</parameter>
     <parameter key="router.request_context.host">localhost</parameter>
     <parameter key="router.request_context.scheme">http</parameter>
     <parameter key="router.request_context.base_url"></parameter>
     <parameter key="router.resource">kernel::loadRoutes</parameter>
-    <parameter key="router.cache_dir">C:\Users\ilyes\OneDrive\Bureau\PULSE\PULSE\var\cache\dev</parameter>
+    <parameter key="router.cache_dir">C:/Users/ilyes/OneDrive/Bureau/PULSE/PULSE/var/cache/dev</parameter>
     <parameter key="request_listener.http_port">80</parameter>
     <parameter key="request_listener.https_port">443</parameter>
-    <parameter key="serializer.mapping.cache.file">C:\Users\ilyes\OneDrive\Bureau\PULSE\PULSE\var\cache\dev/serialization.php</parameter>
+    <parameter key="serializer.mapping.cache.file">C:/Users/ilyes/OneDrive/Bureau/PULSE/PULSE/var/cache/dev/serialization.php</parameter>
     <parameter key="cache.prefix.seed">_C:\Users\ilyes\OneDrive\Bureau\PULSE\PULSE.App_KernelDevDebugContainer</parameter>
     <parameter key="session.metadata.storage_key">_sf2_meta</parameter>
     <parameter key="session.storage.options" type="collection">
@@ -142,11 +142,11 @@
     <parameter key="session.metadata.update_threshold">0</parameter>
     <parameter key="form.type_extension.csrf.enabled">true</parameter>
     <parameter key="form.type_extension.csrf.field_name">_token</parameter>
-    <parameter key="validator.mapping.cache.file">C:\Users\ilyes\OneDrive\Bureau\PULSE\PULSE\var\cache\dev/validation.php</parameter>
+    <parameter key="validator.mapping.cache.file">C:/Users/ilyes/OneDrive/Bureau/PULSE/PULSE/var/cache/dev/validation.php</parameter>
     <parameter key="validator.translation_domain">validators</parameter>
     <parameter key="profiler_listener.only_exceptions">false</parameter>
     <parameter key="profiler_listener.only_main_requests">false</parameter>
-    <parameter key="profiler.storage.dsn">file:C:\Users\ilyes\OneDrive\Bureau\PULSE\PULSE\var\cache\dev/profiler</parameter>
+    <parameter key="profiler.storage.dsn">file:C:/Users/ilyes/OneDrive/Bureau/PULSE/PULSE/var/cache/dev/profiler</parameter>
     <parameter key="doctrine.dbal.configuration.class">Doctrine\DBAL\Configuration</parameter>
     <parameter key="doctrine.data_collector.class">Doctrine\Bundle\DoctrineBundle\DataCollector\DoctrineDataCollector</parameter>
     <parameter key="doctrine.dbal.connection.event_manager.class">Symfony\Bridge\Doctrine\ContainerAwareEventManager</parameter>
@@ -213,7 +213,7 @@
     <parameter key="doctrine.orm.auto_generate_proxy_classes">true</parameter>
     <parameter key="doctrine.orm.enable_lazy_ghost_objects">true</parameter>
     <parameter key="doctrine.orm.enable_native_lazy_objects">false</parameter>
-    <parameter key="doctrine.orm.proxy_dir">C:\Users\ilyes\OneDrive\Bureau\PULSE\PULSE\var\cache\dev/doctrine/orm/Proxies</parameter>
+    <parameter key="doctrine.orm.proxy_dir">C:/Users/ilyes/OneDrive/Bureau/PULSE/PULSE/var/cache/dev/doctrine/orm/Proxies</parameter>
     <parameter key="doctrine.orm.proxy_namespace">Proxies</parameter>
     <parameter key="doctrine.migrations.preferred_em">null</parameter>
     <parameter key="doctrine.migrations.preferred_connection">null</parameter>
@@ -1375,7 +1375,7 @@
     </service>
     <service id="argument_resolver.service" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\ServiceValueResolver">
       <tag priority="-50" name="Symfony\Component\HttpKernel\Controller\ArgumentResolver\ServiceValueResolver">controller.argument_value_resolver</tag>
-      <argument type="service" id=".service_locator.HEwNjNj"/>
+      <argument type="service" id=".service_locator.rIMV2Dt"/>
     </service>
     <service id="argument_resolver.default" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\DefaultValueResolver">
       <tag priority="-100" name="Symfony\Component\HttpKernel\Controller\ArgumentResolver\DefaultValueResolver">controller.argument_value_resolver</tag>
@@ -1458,7 +1458,7 @@
       </argument>
     </service>
     <service id="http_cache.store" class="Symfony\Component\HttpKernel\HttpCache\Store">
-      <argument>C:\Users\ilyes\OneDrive\Bureau\PULSE\PULSE\var\cache\dev/http_cache</argument>
+      <argument>C:/Users/ilyes/OneDrive/Bureau/PULSE/PULSE/var/cache/dev/http_cache</argument>
     </service>
     <service id="url_helper" class="Symfony\Component\HttpFoundation\UrlHelper">
       <argument type="service" id="request_stack"/>
@@ -1468,7 +1468,7 @@
       <tag name="container.no_preload"/>
       <argument type="tagged_iterator" tag="kernel.cache_warmer"/>
       <argument>true</argument>
-      <argument>C:\Users\ilyes\OneDrive\Bureau\PULSE\PULSE\var\cache\dev/App_KernelDevDebugContainerDeprecations.log</argument>
+      <argument>C:/Users/ilyes/OneDrive/Bureau/PULSE/PULSE/var/cache/dev/App_KernelDevDebugContainerDeprecations.log</argument>
     </service>
     <service id="cache_clearer" class="Symfony\Component\HttpKernel\CacheClearer\ChainCacheClearer">
       <argument type="tagged_iterator" tag="kernel.cache_clearer"/>
@@ -2499,7 +2499,7 @@
       <argument></argument>
       <argument>0</argument>
       <argument>%container.build_id%</argument>
-      <argument>C:\Users\ilyes\OneDrive\Bureau\PULSE\PULSE\var\cache\dev/pools/system</argument>
+      <argument>C:/Users/ilyes/OneDrive/Bureau/PULSE/PULSE/var/cache/dev/pools/system</argument>
       <argument type="service" id="monolog.logger.cache" on-invalid="ignore"/>
       <factory class="Symfony\Component\Cache\Adapter\AbstractAdapter" method="createSystemCache"/>
     </service>
@@ -2518,7 +2518,7 @@
       <tag name="monolog.logger" channel="cache"/>
       <argument></argument>
       <argument>0</argument>
-      <argument>C:\Users\ilyes\OneDrive\Bureau\PULSE\PULSE\var\cache\dev/pools/app</argument>
+      <argument>C:/Users/ilyes/OneDrive/Bureau/PULSE/PULSE/var/cache/dev/pools/app</argument>
       <argument type="service" id="cache.default_marshaller" on-invalid="ignore"/>
       <call method="setLogger">
         <argument type="service" id="monolog.logger.cache" on-invalid="ignore"/>
@@ -2689,7 +2689,7 @@
     <service id="asset_mapper.cached_mapped_asset_factory" class="Symfony\Component\AssetMapper\Factory\CachedMappedAssetFactory">
       <tag name="container.decorator" id="asset_mapper.mapped_asset_factory" inner="asset_mapper.cached_mapped_asset_factory.inner"/>
       <argument type="service" id="asset_mapper.cached_mapped_asset_factory.inner"/>
-      <argument>C:\Users\ilyes\OneDrive\Bureau\PULSE\PULSE\var\cache\dev/asset_mapper</argument>
+      <argument>C:/Users/ilyes/OneDrive/Bureau/PULSE/PULSE/var/cache/dev/asset_mapper</argument>
       <argument>true</argument>
     </service>
     <service id="asset_mapper.repository" class="Symfony\Component\AssetMapper\AssetMapperRepository">
@@ -3059,7 +3059,7 @@
         </argument>
       </argument>
       <argument type="collection">
-        <argument key="cache_dir">C:\Users\ilyes\OneDrive\Bureau\PULSE\PULSE\var\cache\dev/translations</argument>
+        <argument key="cache_dir">C:/Users/ilyes/OneDrive/Bureau/PULSE/PULSE/var/cache/dev/translations</argument>
         <argument key="debug">true</argument>
         <argument key="resource_files" type="collection">
           <argument key="af" type="collection">
@@ -4359,7 +4359,7 @@
     </service>
     <service id="argument_resolver.not_tagged_controller" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\NotTaggedControllerValueResolver">
       <tag name="controller.argument_value_resolver" priority="-200"/>
-      <argument type="service" id=".service_locator.HEwNjNj"/>
+      <argument type="service" id=".service_locator.rIMV2Dt"/>
     </service>
     <service id="debug.log_processor" class="Symfony\Bridge\Monolog\Processor\DebugProcessor">
       <tag name="kernel.reset" method="reset"/>
@@ -4462,7 +4462,7 @@
       <argument type="service" id=".service_locator.bN.V_Nq.router.default"/>
       <argument>kernel::loadRoutes</argument>
       <argument type="collection">
-        <argument key="cache_dir">C:\Users\ilyes\OneDrive\Bureau\PULSE\PULSE\var\cache\dev</argument>
+        <argument key="cache_dir">C:/Users/ilyes/OneDrive/Bureau/PULSE/PULSE/var/cache/dev</argument>
         <argument key="debug">true</argument>
         <argument key="generator_class">Symfony\Component\Routing\Generator\CompiledUrlGenerator</argument>
         <argument key="generator_dumper_class">Symfony\Component\Routing\Generator\Dumper\CompiledUrlGeneratorDumper</argument>
@@ -4641,10 +4641,10 @@
           </service>
         </argument>
       </argument>
-      <argument>C:\Users\ilyes\OneDrive\Bureau\PULSE\PULSE\var\cache\dev/serialization.php</argument>
+      <argument>C:/Users/ilyes/OneDrive/Bureau/PULSE/PULSE/var/cache/dev/serialization.php</argument>
     </service>
     <service id="serializer.mapping.cache.symfony" class="Psr\Cache\CacheItemPoolInterface">
-      <argument>C:\Users\ilyes\OneDrive\Bureau\PULSE\PULSE\var\cache\dev/serialization.php</argument>
+      <argument>C:/Users/ilyes/OneDrive/Bureau/PULSE/PULSE/var/cache/dev/serialization.php</argument>
       <argument type="service" id="cache.serializer"/>
       <factory class="Symfony\Component\Cache\Adapter\PhpArrayAdapter" method="create"/>
     </service>
@@ -4780,7 +4780,7 @@
       <argument>true</argument>
     </service>
     <service id="session.storage.factory.mock_file" class="Symfony\Component\HttpFoundation\Session\Storage\MockFileSessionStorageFactory">
-      <argument>C:\Users\ilyes\OneDrive\Bureau\PULSE\PULSE\var\cache\dev/sessions</argument>
+      <argument>C:/Users/ilyes/OneDrive/Bureau/PULSE/PULSE/var/cache/dev/sessions</argument>
       <argument>MOCKSESSID</argument>
       <argument type="service">
         <service class="Symfony\Component\HttpFoundation\Session\Storage\MetadataBag">
@@ -4985,10 +4985,10 @@
     <service id="validator.mapping.cache_warmer" class="Symfony\Bundle\FrameworkBundle\CacheWarmer\ValidatorCacheWarmer">
       <tag name="kernel.cache_warmer"/>
       <argument type="service" id="validator.builder"/>
-      <argument>C:\Users\ilyes\OneDrive\Bureau\PULSE\PULSE\var\cache\dev/validation.php</argument>
+      <argument>C:/Users/ilyes/OneDrive/Bureau/PULSE/PULSE/var/cache/dev/validation.php</argument>
     </service>
     <service id="validator.mapping.cache.adapter" class="Symfony\Component\Cache\Adapter\PhpArrayAdapter" constructor="create">
-      <argument>C:\Users\ilyes\OneDrive\Bureau\PULSE\PULSE\var\cache\dev/validation.php</argument>
+      <argument>C:/Users/ilyes/OneDrive/Bureau/PULSE/PULSE/var/cache/dev/validation.php</argument>
       <argument type="service" id="cache.validator"/>
     </service>
     <service id="validator.validator_factory" class="Symfony\Component\Validator\ContainerConstraintValidatorFactory">
@@ -5646,7 +5646,7 @@
       </call>
     </service>
     <service id="profiler.storage" class="Symfony\Component\HttpKernel\Profiler\FileProfilerStorage">
-      <argument>file:C:\Users\ilyes\OneDrive\Bureau\PULSE\PULSE\var\cache\dev/profiler</argument>
+      <argument>file:C:/Users/ilyes/OneDrive/Bureau/PULSE/PULSE/var/cache/dev/profiler</argument>
     </service>
     <service id="profiler_listener" class="Symfony\Component\HttpKernel\EventListener\ProfilerListener">
       <tag name="kernel.event_subscriber"/>
@@ -5711,7 +5711,7 @@
       <tag name="monolog.logger" channel="profiler"/>
       <tag name="data_collector" template="@WebProfiler/Collector/logger.html.twig" id="logger" priority="300"/>
       <argument type="service" id="monolog.logger.profiler" on-invalid="ignore"/>
-      <argument>C:\Users\ilyes\OneDrive\Bureau\PULSE\PULSE\var\cache\dev/App_KernelDevDebugContainer</argument>
+      <argument>C:/Users/ilyes/OneDrive/Bureau/PULSE/PULSE/var/cache/dev/App_KernelDevDebugContainer</argument>
       <argument type="service" id=".virtual_request_stack" on-invalid="ignore"/>
     </service>
     <service id="data_collector.time" class="Symfony\Component\HttpKernel\DataCollector\TimeDataCollector">
@@ -6302,7 +6302,7 @@
         <argument type="service" id=".doctrine.orm.default_metadata_driver"/>
       </call>
       <call method="setProxyDir">
-        <argument>C:\Users\ilyes\OneDrive\Bureau\PULSE\PULSE\var\cache\dev/doctrine/orm/Proxies</argument>
+        <argument>C:/Users/ilyes/OneDrive/Bureau/PULSE/PULSE/var/cache/dev/doctrine/orm/Proxies</argument>
       </call>
       <call method="setProxyNamespace">
         <argument>Proxies</argument>
@@ -6722,7 +6722,7 @@
       <argument type="service" id="twig.loader.native_filesystem"/>
       <argument type="collection">
         <argument key="autoescape">name</argument>
-        <argument key="cache">C:\Users\ilyes\OneDrive\Bureau\PULSE\PULSE\var\cache\dev/twig</argument>
+        <argument key="cache">C:/Users/ilyes/OneDrive/Bureau/PULSE/PULSE/var/cache/dev/twig</argument>
         <argument key="charset">UTF-8</argument>
         <argument key="debug">true</argument>
         <argument key="strict_variables">true</argument>
@@ -9452,6 +9452,20 @@
         <argument key="userRepository" type="service_closure" id="App\Repository\UserRepository"/>
       </argument>
     </service>
+    <service id=".service_locator.9g_W4nt" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator"/>
+      <argument type="collection">
+        <argument key="gameRepository" type="service_closure" id="App\Repository\GameRepository"/>
+        <argument key="productImageRepository" type="service_closure" id="App\Repository\ProductImageRepository"/>
+        <argument key="productRepository" type="service_closure" id="App\Repository\ProductRepository"/>
+        <argument key="teamMemberRepository" type="service_closure" id="App\Repository\TeamMemberRepository"/>
+        <argument key="teamRepository" type="service_closure" id="App\Repository\TeamRepository"/>
+        <argument key="tournamentMatchRepository" type="service_closure" id="App\Repository\TournamentMatchRepository"/>
+        <argument key="tournamentRepository" type="service_closure" id="App\Repository\TournamentRepository"/>
+        <argument key="tournamentTeamRepository" type="service_closure" id="App\Repository\TournamentTeamRepository"/>
+        <argument key="userRepository" type="service_closure" id="App\Repository\UserRepository"/>
+      </argument>
+    </service>
     <service id=".service_locator.wQsrZI3" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
@@ -9599,9 +9613,10 @@
         <argument key="tournamentTeamRepository" type="service_closure" id="App\Repository\TournamentTeamRepository"/>
       </argument>
     </service>
-    <service id=".service_locator.Nsz.N5t" class="Symfony\Component\DependencyInjection\ServiceLocator">
+    <service id=".service_locator.LCHqYhx" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
+        <argument key="cartItemRepository" type="service_closure" id="App\Repository\CartItemRepository"/>
         <argument key="cartManager" type="service_closure" id="App\Service\Shop\CartManager"/>
         <argument key="cartRepository" type="service_closure" id="App\Repository\CartRepository"/>
         <argument key="orderRepository" type="service_closure" id="App\Repository\OrderRepository"/>
@@ -9711,6 +9726,23 @@
       <argument type="collection">
         <argument key="entityManager" type="service_closure" id="doctrine.orm.default_entity_manager"/>
         <argument key="friendRequestRepository" type="service_closure" id="App\Repository\FriendRequestRepository"/>
+      </argument>
+    </service>
+    <service id=".service_locator.K0wMvAJ" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator"/>
+      <argument type="collection">
+        <argument key="gameRepository" type="service_closure" id="App\Repository\GameRepository"/>
+        <argument key="tournamentMatchRepository" type="service_closure" id="App\Repository\TournamentMatchRepository"/>
+        <argument key="tournamentRepository" type="service_closure" id="App\Repository\TournamentRepository"/>
+        <argument key="tournamentTeamRepository" type="service_closure" id="App\Repository\TournamentTeamRepository"/>
+      </argument>
+    </service>
+    <service id=".service_locator.obGRT4G" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator"/>
+      <argument type="collection">
+        <argument key="categoryRepository" type="service_closure" id="App\Repository\CategoryRepository"/>
+        <argument key="gameRepository" type="service_closure" id="App\Repository\GameRepository"/>
+        <argument key="tournamentRepository" type="service_closure" id="App\Repository\TournamentRepository"/>
       </argument>
     </service>
     <service id=".service_locator.rSTd.nA" class="Symfony\Component\DependencyInjection\ServiceLocator">
@@ -9927,6 +9959,35 @@
         <argument key="teamRepository" type="service_closure" id="App\Repository\TeamRepository"/>
       </argument>
     </service>
+    <service id=".service_locator.TKO6aFh" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator"/>
+      <argument type="collection">
+        <argument key="productImageRepository" type="service_closure" id="App\Repository\ProductImageRepository"/>
+        <argument key="productRepository" type="service_closure" id="App\Repository\ProductRepository"/>
+        <argument key="teamJoinRequestRepository" type="service_closure" id="App\Repository\TeamJoinRequestRepository"/>
+        <argument key="teamMemberRepository" type="service_closure" id="App\Repository\TeamMemberRepository"/>
+        <argument key="teamRepository" type="service_closure" id="App\Repository\TeamRepository"/>
+        <argument key="tournamentTeamRepository" type="service_closure" id="App\Repository\TournamentTeamRepository"/>
+      </argument>
+    </service>
+    <service id=".service_locator.i2ylD58" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator"/>
+      <argument type="collection">
+        <argument key="entityManager" type="service_closure" id="doctrine.orm.default_entity_manager"/>
+        <argument key="teamJoinRequestRepository" type="service_closure" id="App\Repository\TeamJoinRequestRepository"/>
+        <argument key="teamMemberRepository" type="service_closure" id="App\Repository\TeamMemberRepository"/>
+        <argument key="teamRepository" type="service_closure" id="App\Repository\TeamRepository"/>
+      </argument>
+    </service>
+    <service id=".service_locator..c4BC12" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator"/>
+      <argument type="collection">
+        <argument key="productRepository" type="service_closure" id="App\Repository\ProductRepository"/>
+        <argument key="teamMemberRepository" type="service_closure" id="App\Repository\TeamMemberRepository"/>
+        <argument key="teamRepository" type="service_closure" id="App\Repository\TeamRepository"/>
+        <argument key="tournamentTeamRepository" type="service_closure" id="App\Repository\TournamentTeamRepository"/>
+      </argument>
+    </service>
     <service id=".service_locator.EYKRSYZ" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
@@ -9962,7 +10023,7 @@
         <argument key="userRepository" type="service_closure" id="App\Repository\UserRepository"/>
       </argument>
     </service>
-    <service id=".service_locator.HEwNjNj" class="Symfony\Component\DependencyInjection\ServiceLocator">
+    <service id=".service_locator.rIMV2Dt" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
         <argument key="App\Controller\Admin\Page\CommentsController::delete" type="service_closure" id=".service_locator.GLAgVdS"/>
@@ -9997,6 +10058,7 @@
         <argument key="App\Controller\Admin\Page\UsersController::delete" type="service_closure" id=".service_locator.NjUBG3v"/>
         <argument key="App\Controller\Admin\Page\UsersController::export" type="service_closure" id=".service_locator.yMsuOqV"/>
         <argument key="App\Controller\Admin\Page\UsersController::index" type="service_closure" id=".service_locator.kPUOGb8"/>
+        <argument key="App\Controller\Front\HomeController::index" type="service_closure" id=".service_locator.9g_W4nt"/>
         <argument key="App\Controller\Front\Page\CaptainInviteController::index" type="service_closure" id=".service_locator.wQsrZI3"/>
         <argument key="App\Controller\Front\Page\CaptainInviteController::send" type="service_closure" id=".service_locator.sSKnT4V"/>
         <argument key="App\Controller\Front\Page\CaptainMembersController::index" type="service_closure" id=".service_locator.HHcAkvC"/>
@@ -10017,7 +10079,7 @@
         <argument key="App\Controller\Front\Page\CaptainTournamentsController::index" type="service_closure" id=".service_locator.c2Wsntv"/>
         <argument key="App\Controller\Front\Page\CaptainTournamentsController::register" type="service_closure" id=".service_locator.h3uBRAv"/>
         <argument key="App\Controller\Front\Page\CartController::add" type="service_closure" id=".service_locator..LU7saX"/>
-        <argument key="App\Controller\Front\Page\CartController::index" type="service_closure" id=".service_locator.Nsz.N5t"/>
+        <argument key="App\Controller\Front\Page\CartController::index" type="service_closure" id=".service_locator.LCHqYhx"/>
         <argument key="App\Controller\Front\Page\CartController::remove" type="service_closure" id=".service_locator.MtHSHN0"/>
         <argument key="App\Controller\Front\Page\CartController::updateQuantity" type="service_closure" id=".service_locator.MtHSHN0"/>
         <argument key="App\Controller\Front\Page\CheckoutController::index" type="service_closure" id=".service_locator.HNlp7dQ"/>
@@ -10035,6 +10097,8 @@
         <argument key="App\Controller\Front\Page\FriendsController::cancelRequest" type="service_closure" id=".service_locator.BlLwou1"/>
         <argument key="App\Controller\Front\Page\FriendsController::index" type="service_closure" id=".service_locator.UR8xdnK"/>
         <argument key="App\Controller\Front\Page\FriendsController::refuseRequest" type="service_closure" id=".service_locator.BlLwou1"/>
+        <argument key="App\Controller\Front\Page\GameDetailController::index" type="service_closure" id=".service_locator.K0wMvAJ"/>
+        <argument key="App\Controller\Front\Page\GamesController::index" type="service_closure" id=".service_locator.obGRT4G"/>
         <argument key="App\Controller\Front\Page\LoginController::index" type="service_closure" id=".service_locator.rSTd.nA"/>
         <argument key="App\Controller\Front\Page\MatchDetailController::index" type="service_closure" id=".service_locator.iBRXVNX"/>
         <argument key="App\Controller\Front\Page\MatchesController::index" type="service_closure" id=".service_locator.YuUhcrt"/>
@@ -10073,6 +10137,9 @@
         <argument key="App\Controller\Front\Page\RegisterController::index" type="service_closure" id=".service_locator.pP.FdsX"/>
         <argument key="App\Controller\Front\Page\ResetPasswordController::index" type="service_closure" id=".service_locator.KVWvkFB"/>
         <argument key="App\Controller\Front\Page\ShopController::index" type="service_closure" id=".service_locator.bMHRIMl"/>
+        <argument key="App\Controller\Front\Page\TeamDetailController::index" type="service_closure" id=".service_locator.TKO6aFh"/>
+        <argument key="App\Controller\Front\Page\TeamDetailController::join" type="service_closure" id=".service_locator.i2ylD58"/>
+        <argument key="App\Controller\Front\Page\TeamsController::index" type="service_closure" id=".service_locator..c4BC12"/>
         <argument key="App\Controller\Front\Page\TournamentDetailController::index" type="service_closure" id=".service_locator.EYKRSYZ"/>
         <argument key="App\Controller\Front\Page\TournamentDetailController::participate" type="service_closure" id=".service_locator.b7EK_.O"/>
         <argument key="App\Controller\Front\Page\TournamentsController::export" type="service_closure" id=".service_locator.VBibqjr"/>
@@ -10115,6 +10182,7 @@
         <argument key="App\Controller\Admin\Page\UsersController:delete" type="service_closure" id=".service_locator.NjUBG3v"/>
         <argument key="App\Controller\Admin\Page\UsersController:export" type="service_closure" id=".service_locator.yMsuOqV"/>
         <argument key="App\Controller\Admin\Page\UsersController:index" type="service_closure" id=".service_locator.kPUOGb8"/>
+        <argument key="App\Controller\Front\HomeController:index" type="service_closure" id=".service_locator.9g_W4nt"/>
         <argument key="App\Controller\Front\Page\CaptainInviteController:index" type="service_closure" id=".service_locator.wQsrZI3"/>
         <argument key="App\Controller\Front\Page\CaptainInviteController:send" type="service_closure" id=".service_locator.sSKnT4V"/>
         <argument key="App\Controller\Front\Page\CaptainMembersController:index" type="service_closure" id=".service_locator.HHcAkvC"/>
@@ -10135,7 +10203,7 @@
         <argument key="App\Controller\Front\Page\CaptainTournamentsController:index" type="service_closure" id=".service_locator.c2Wsntv"/>
         <argument key="App\Controller\Front\Page\CaptainTournamentsController:register" type="service_closure" id=".service_locator.h3uBRAv"/>
         <argument key="App\Controller\Front\Page\CartController:add" type="service_closure" id=".service_locator..LU7saX"/>
-        <argument key="App\Controller\Front\Page\CartController:index" type="service_closure" id=".service_locator.Nsz.N5t"/>
+        <argument key="App\Controller\Front\Page\CartController:index" type="service_closure" id=".service_locator.LCHqYhx"/>
         <argument key="App\Controller\Front\Page\CartController:remove" type="service_closure" id=".service_locator.MtHSHN0"/>
         <argument key="App\Controller\Front\Page\CartController:updateQuantity" type="service_closure" id=".service_locator.MtHSHN0"/>
         <argument key="App\Controller\Front\Page\CheckoutController:index" type="service_closure" id=".service_locator.HNlp7dQ"/>
@@ -10153,6 +10221,8 @@
         <argument key="App\Controller\Front\Page\FriendsController:cancelRequest" type="service_closure" id=".service_locator.BlLwou1"/>
         <argument key="App\Controller\Front\Page\FriendsController:index" type="service_closure" id=".service_locator.UR8xdnK"/>
         <argument key="App\Controller\Front\Page\FriendsController:refuseRequest" type="service_closure" id=".service_locator.BlLwou1"/>
+        <argument key="App\Controller\Front\Page\GameDetailController:index" type="service_closure" id=".service_locator.K0wMvAJ"/>
+        <argument key="App\Controller\Front\Page\GamesController:index" type="service_closure" id=".service_locator.obGRT4G"/>
         <argument key="App\Controller\Front\Page\LoginController:index" type="service_closure" id=".service_locator.rSTd.nA"/>
         <argument key="App\Controller\Front\Page\MatchDetailController:index" type="service_closure" id=".service_locator.iBRXVNX"/>
         <argument key="App\Controller\Front\Page\MatchesController:index" type="service_closure" id=".service_locator.YuUhcrt"/>
@@ -10191,6 +10261,9 @@
         <argument key="App\Controller\Front\Page\RegisterController:index" type="service_closure" id=".service_locator.pP.FdsX"/>
         <argument key="App\Controller\Front\Page\ResetPasswordController:index" type="service_closure" id=".service_locator.KVWvkFB"/>
         <argument key="App\Controller\Front\Page\ShopController:index" type="service_closure" id=".service_locator.bMHRIMl"/>
+        <argument key="App\Controller\Front\Page\TeamDetailController:index" type="service_closure" id=".service_locator.TKO6aFh"/>
+        <argument key="App\Controller\Front\Page\TeamDetailController:join" type="service_closure" id=".service_locator.i2ylD58"/>
+        <argument key="App\Controller\Front\Page\TeamsController:index" type="service_closure" id=".service_locator..c4BC12"/>
         <argument key="App\Controller\Front\Page\TournamentDetailController:index" type="service_closure" id=".service_locator.EYKRSYZ"/>
         <argument key="App\Controller\Front\Page\TournamentDetailController:participate" type="service_closure" id=".service_locator.b7EK_.O"/>
         <argument key="App\Controller\Front\Page\TournamentsController:export" type="service_closure" id=".service_locator.VBibqjr"/>
@@ -12973,7 +13046,7 @@
     <service id="cache.app.recorder_inner" class="Symfony\Component\Cache\Adapter\FilesystemAdapter">
       <argument>N1eaIBn2ul</argument>
       <argument>0</argument>
-      <argument>C:\Users\ilyes\OneDrive\Bureau\PULSE\PULSE\var\cache\dev/pools/app</argument>
+      <argument>C:/Users/ilyes/OneDrive/Bureau/PULSE/PULSE/var/cache/dev/pools/app</argument>
       <argument type="service" id="cache.default_marshaller" on-invalid="ignore"/>
       <call method="setLogger">
         <argument type="service" id="monolog.logger.cache" on-invalid="ignore"/>
@@ -12983,7 +13056,7 @@
       <argument>dhl4G-uQN8</argument>
       <argument>0</argument>
       <argument>%container.build_id%</argument>
-      <argument>C:\Users\ilyes\OneDrive\Bureau\PULSE\PULSE\var\cache\dev/pools/system</argument>
+      <argument>C:/Users/ilyes/OneDrive/Bureau/PULSE/PULSE/var/cache/dev/pools/system</argument>
       <argument type="service" id="monolog.logger.cache" on-invalid="ignore"/>
       <factory class="Symfony\Component\Cache\Adapter\AbstractAdapter" method="createSystemCache"/>
     </service>
@@ -12991,7 +13064,7 @@
       <argument>9NRFn03N1Y</argument>
       <argument>0</argument>
       <argument>%container.build_id%</argument>
-      <argument>C:\Users\ilyes\OneDrive\Bureau\PULSE\PULSE\var\cache\dev/pools/system</argument>
+      <argument>C:/Users/ilyes/OneDrive/Bureau/PULSE/PULSE/var/cache/dev/pools/system</argument>
       <argument type="service" id="monolog.logger.cache" on-invalid="ignore"/>
       <factory class="Symfony\Component\Cache\Adapter\AbstractAdapter" method="createSystemCache"/>
     </service>
@@ -12999,7 +13072,7 @@
       <argument>3hJRl7zbxu</argument>
       <argument>0</argument>
       <argument>%container.build_id%</argument>
-      <argument>C:\Users\ilyes\OneDrive\Bureau\PULSE\PULSE\var\cache\dev/pools/system</argument>
+      <argument>C:/Users/ilyes/OneDrive/Bureau/PULSE/PULSE/var/cache/dev/pools/system</argument>
       <argument type="service" id="monolog.logger.cache" on-invalid="ignore"/>
       <factory class="Symfony\Component\Cache\Adapter\AbstractAdapter" method="createSystemCache"/>
     </service>
@@ -13007,7 +13080,7 @@
       <argument>0lyOMDdwyy</argument>
       <argument>0</argument>
       <argument>%container.build_id%</argument>
-      <argument>C:\Users\ilyes\OneDrive\Bureau\PULSE\PULSE\var\cache\dev/pools/system</argument>
+      <argument>C:/Users/ilyes/OneDrive/Bureau/PULSE/PULSE/var/cache/dev/pools/system</argument>
       <argument type="service" id="monolog.logger.cache" on-invalid="ignore"/>
       <factory class="Symfony\Component\Cache\Adapter\AbstractAdapter" method="createSystemCache"/>
     </service>
@@ -13015,7 +13088,7 @@
       <argument>-MY6jdBv98</argument>
       <argument>0</argument>
       <argument>%container.build_id%</argument>
-      <argument>C:\Users\ilyes\OneDrive\Bureau\PULSE\PULSE\var\cache\dev/pools/system</argument>
+      <argument>C:/Users/ilyes/OneDrive/Bureau/PULSE/PULSE/var/cache/dev/pools/system</argument>
       <argument type="service" id="monolog.logger.cache" on-invalid="ignore"/>
       <factory class="Symfony\Component\Cache\Adapter\AbstractAdapter" method="createSystemCache"/>
     </service>
@@ -13023,14 +13096,14 @@
       <argument>Ol7byc0D6m</argument>
       <argument>0</argument>
       <argument>%container.build_id%</argument>
-      <argument>C:\Users\ilyes\OneDrive\Bureau\PULSE\PULSE\var\cache\dev/pools/system</argument>
+      <argument>C:/Users/ilyes/OneDrive/Bureau/PULSE/PULSE/var/cache/dev/pools/system</argument>
       <argument type="service" id="monolog.logger.cache" on-invalid="ignore"/>
       <factory class="Symfony\Component\Cache\Adapter\AbstractAdapter" method="createSystemCache"/>
     </service>
     <service id="cache.messenger.restart_workers_signal.recorder_inner" class="Symfony\Component\Cache\Adapter\FilesystemAdapter">
       <argument>nr5b2Xqk2G</argument>
       <argument>0</argument>
-      <argument>C:\Users\ilyes\OneDrive\Bureau\PULSE\PULSE\var\cache\dev/pools/app</argument>
+      <argument>C:/Users/ilyes/OneDrive/Bureau/PULSE/PULSE/var/cache/dev/pools/app</argument>
       <argument type="service" id="cache.default_marshaller" on-invalid="ignore"/>
       <call method="setLogger">
         <argument type="service" id="monolog.logger.cache" on-invalid="ignore"/>
@@ -13040,7 +13113,7 @@
       <argument>OzRE+5FCwD</argument>
       <argument>0</argument>
       <argument>%container.build_id%</argument>
-      <argument>C:\Users\ilyes\OneDrive\Bureau\PULSE\PULSE\var\cache\dev/pools/system</argument>
+      <argument>C:/Users/ilyes/OneDrive/Bureau/PULSE/PULSE/var/cache/dev/pools/system</argument>
       <argument type="service" id="monolog.logger.cache" on-invalid="ignore"/>
       <factory class="Symfony\Component\Cache\Adapter\AbstractAdapter" method="createSystemCache"/>
     </service>
@@ -13050,7 +13123,7 @@
       <argument>pxmEcNoDsX</argument>
       <argument>0</argument>
       <argument>%container.build_id%</argument>
-      <argument>C:\Users\ilyes\OneDrive\Bureau\PULSE\PULSE\var\cache\dev/pools/system</argument>
+      <argument>C:/Users/ilyes/OneDrive/Bureau/PULSE/PULSE/var/cache/dev/pools/system</argument>
       <argument type="service" id="monolog.logger.cache" on-invalid="ignore"/>
       <factory class="Symfony\Component\Cache\Adapter\AbstractAdapter" method="createSystemCache"/>
     </service>
@@ -13058,7 +13131,7 @@
       <argument>nFAAt00XMJ</argument>
       <argument>0</argument>
       <argument>%container.build_id%</argument>
-      <argument>C:\Users\ilyes\OneDrive\Bureau\PULSE\PULSE\var\cache\dev/pools/system</argument>
+      <argument>C:/Users/ilyes/OneDrive/Bureau/PULSE/PULSE/var/cache/dev/pools/system</argument>
       <argument type="service" id="monolog.logger.cache" on-invalid="ignore"/>
       <factory class="Symfony\Component\Cache\Adapter\AbstractAdapter" method="createSystemCache"/>
     </service>
@@ -13066,7 +13139,7 @@
       <argument>nN7mrcYwOw</argument>
       <argument>0</argument>
       <argument>%container.build_id%</argument>
-      <argument>C:\Users\ilyes\OneDrive\Bureau\PULSE\PULSE\var\cache\dev/pools/system</argument>
+      <argument>C:/Users/ilyes/OneDrive/Bureau/PULSE/PULSE/var/cache/dev/pools/system</argument>
       <argument type="service" id="monolog.logger.cache" on-invalid="ignore"/>
       <factory class="Symfony\Component\Cache\Adapter\AbstractAdapter" method="createSystemCache"/>
     </service>
@@ -13252,7 +13325,7 @@
     <service id="SymfonyCasts\Bundle\VerifyEmail\VerifyEmailHelperInterface" alias="symfonycasts.verify_email.helper"/>
     <service id="container.env_var_processors_locator" alias=".service_locator.w7.f4fT" public="true"/>
     <service id="twig.loader.filesystem" alias="twig.loader.native_filesystem"/>
-    <service id="argument_resolver.controller_locator" alias=".service_locator.HEwNjNj"/>
+    <service id="argument_resolver.controller_locator" alias=".service_locator.rIMV2Dt"/>
     <service id="doctrine.id_generator_locator" alias=".service_locator.KLVvNIq"/>
     <service id="twig.loader" alias="twig.loader.native_filesystem"/>
     <service id=".Psr\Log\LoggerInterface $request.logger" alias="monolog.logger.request"/>
@@ -13305,13 +13378,14 @@
     <service id=".service_locator.yYKGas8" alias=".service_locator.Ekhw6GB"/>
     <service id=".service_locator.ZrVo8jJ" alias=".service_locator.oyB2adC"/>
     <service id=".service_locator.Ff3B_Vv" alias=".service_locator.SJtf5Ns"/>
-    <service id=".service_locator.P.xqEsm" alias=".service_locator.LMjdLda"/>
+    <service id=".service_locator.P.xqEsm" alias=".service_locator.K0wMvAJ"/>
     <service id=".service_locator.5K5I7xc" alias=".service_locator.ReQrth8"/>
     <service id=".service_locator.k5uSXkw" alias=".service_locator.7Lxf0it"/>
     <service id=".service_locator.X_88STp" alias=".service_locator.TdT8Eo7"/>
     <service id=".service_locator.yZn_IzL" alias=".service_locator.KVWvkFB"/>
     <service id=".service_locator.8IbU9zc" alias=".service_locator.NjUBG3v"/>
     <service id=".service_locator.FDMpInd" alias=".service_locator.yMsuOqV"/>
+    <service id=".service_locator.uoXAMmd" alias=".service_locator.9g_W4nt"/>
     <service id=".service_locator.8MC2dS2" alias=".service_locator.sSKnT4V"/>
     <service id=".service_locator.AGFy_y3" alias=".service_locator.EZiu9_e"/>
     <service id=".service_locator.9Ne3SIZ" alias=".service_locator.KiLOua."/>
@@ -13326,7 +13400,7 @@
     <service id=".service_locator.f3_qR5c" alias=".service_locator.ftUtNGp"/>
     <service id=".service_locator.l3hrhrj" alias=".service_locator.c2Wsntv"/>
     <service id=".service_locator.fxApGTi" alias=".service_locator.h3uBRAv"/>
-    <service id=".service_locator.P_FlZZD" alias=".service_locator.Nsz.N5t"/>
+    <service id=".service_locator.LG.zotW" alias=".service_locator.LCHqYhx"/>
     <service id=".service_locator..rxRVtX" alias=".service_locator..LU7saX"/>
     <service id=".service_locator.ikKumM9" alias=".service_locator.MtHSHN0"/>
     <service id=".service_locator.9BLSCj4" alias=".service_locator.HNlp7dQ"/>
@@ -13339,6 +13413,7 @@
     <service id=".service_locator.yGfXhJ_" alias=".service_locator.UR8xdnK"/>
     <service id=".service_locator.DOJ4kwl" alias=".service_locator.K0zMSwZ"/>
     <service id=".service_locator.ANIrwO9" alias=".service_locator.BlLwou1"/>
+    <service id=".service_locator.KbmqsHf" alias=".service_locator.obGRT4G"/>
     <service id=".service_locator.ruczCNP" alias=".service_locator.YuUhcrt"/>
     <service id=".service_locator.8fdVHzn" alias=".service_locator.qGnkaDa"/>
     <service id=".service_locator.ntc..uX" alias=".service_locator.d_TTxNm"/>
@@ -13358,11 +13433,14 @@
     <service id=".service_locator.ie72Vqn" alias=".service_locator.hmHP_XA"/>
     <service id=".service_locator.cdCix5t" alias=".service_locator.pP.FdsX"/>
     <service id=".service_locator.04ttP50" alias=".service_locator.bMHRIMl"/>
+    <service id=".service_locator.y4k_dMv" alias=".service_locator.TKO6aFh"/>
+    <service id=".service_locator.9DonQjU" alias=".service_locator.i2ylD58"/>
+    <service id=".service_locator.lKEjdWQ" alias=".service_locator..c4BC12"/>
     <service id=".service_locator.Cy8t1CD" alias=".service_locator.EYKRSYZ"/>
     <service id=".service_locator.eaZs.9e" alias=".service_locator.edjg.f6"/>
     <service id=".service_locator.AVfjW7W" alias=".service_locator.VBibqjr"/>
     <service id=".service_locator.NIZDy73" alias=".service_locator.66ORwCM"/>
-    <service id=".service_locator.n8w55eo" alias=".service_locator.HEwNjNj"/>
+    <service id=".service_locator.jO2wWC." alias=".service_locator.rIMV2Dt"/>
     <service id=".service_locator.BFrsqsn" alias=".service_locator.F9PKc.7"/>
     <service id=".service_locator.9M81fJ0" alias=".service_locator.YBKZsNJ"/>
     <service id=".service_locator.XtmiKbi" alias=".service_locator.MfxSDRP"/>
@@ -13408,7 +13486,7 @@
     <service id=".service_locator.d93gRUx" alias=".service_locator.Ekhw6GB"/>
     <service id=".service_locator.lVavqxu" alias=".service_locator.oyB2adC"/>
     <service id=".service_locator.ZF9aGDi" alias=".service_locator.SJtf5Ns"/>
-    <service id=".service_locator.vnxAnBQ" alias=".service_locator.LMjdLda"/>
+    <service id=".service_locator.vnxAnBQ" alias=".service_locator.K0wMvAJ"/>
     <service id=".service_locator.dHexqFC" alias=".service_locator.ReQrth8"/>
     <service id=".service_locator.daPDtFY" alias=".service_locator.7Lxf0it"/>
     <service id=".service_locator.8xdNxWf" alias=".service_locator.TdT8Eo7"/>
@@ -13416,6 +13494,7 @@
     <service id=".service_locator.025Wi8b" alias=".service_locator.kPUOGb8"/>
     <service id=".service_locator.SPFAmCQ" alias=".service_locator.NjUBG3v"/>
     <service id=".service_locator.w93T0Fk" alias=".service_locator.yMsuOqV"/>
+    <service id=".service_locator.KqrzvWC" alias=".service_locator.9g_W4nt"/>
     <service id=".service_locator.FPGX8uC" alias=".service_locator.wQsrZI3"/>
     <service id=".service_locator._wMCvQ8" alias=".service_locator.sSKnT4V"/>
     <service id=".service_locator.stwHcbY" alias=".service_locator.HHcAkvC"/>
@@ -13433,7 +13512,7 @@
     <service id=".service_locator.TFBNtVt" alias=".service_locator.ftUtNGp"/>
     <service id=".service_locator.NpTtwLa" alias=".service_locator.c2Wsntv"/>
     <service id=".service_locator.brav._l" alias=".service_locator.h3uBRAv"/>
-    <service id=".service_locator.3NU8PZK" alias=".service_locator.Nsz.N5t"/>
+    <service id=".service_locator.XZkQUyn" alias=".service_locator.LCHqYhx"/>
     <service id=".service_locator.nXWIgoc" alias=".service_locator..LU7saX"/>
     <service id=".service_locator.oyRYO0F" alias=".service_locator.MtHSHN0"/>
     <service id=".service_locator.A3fUHgL" alias=".service_locator.HNlp7dQ"/>
@@ -13447,6 +13526,7 @@
     <service id=".service_locator.wZZRGGP" alias=".service_locator.UR8xdnK"/>
     <service id=".service_locator.n_4.oaG" alias=".service_locator.K0zMSwZ"/>
     <service id=".service_locator.Wqqu.rM" alias=".service_locator.BlLwou1"/>
+    <service id=".service_locator.aq_B5l5" alias=".service_locator.obGRT4G"/>
     <service id=".service_locator.7NIAq8D" alias=".service_locator.rSTd.nA"/>
     <service id=".service_locator.8JONKtI" alias=".service_locator.YuUhcrt"/>
     <service id=".service_locator.daFiEra" alias=".service_locator.iK3Dxq9"/>
@@ -13474,6 +13554,9 @@
     <service id=".service_locator.HehzfP1" alias=".service_locator.hmHP_XA"/>
     <service id=".service_locator.YMsoH.2" alias=".service_locator.pP.FdsX"/>
     <service id=".service_locator.piXFGe_" alias=".service_locator.bMHRIMl"/>
+    <service id=".service_locator.cyE_RqK" alias=".service_locator.TKO6aFh"/>
+    <service id=".service_locator.QwuLWJl" alias=".service_locator.i2ylD58"/>
+    <service id=".service_locator.b3Ll7VX" alias=".service_locator..c4BC12"/>
     <service id=".service_locator.wEtQsC6" alias=".service_locator.EYKRSYZ"/>
     <service id=".service_locator.EgKRIm1" alias=".service_locator.edjg.f6"/>
     <service id=".service_locator.TNO3ka0" alias=".service_locator.VBibqjr"/>
