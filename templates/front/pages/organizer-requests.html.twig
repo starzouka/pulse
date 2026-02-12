@@ -3,64 +3,97 @@
 {% block title %}PULSE - Mes demandes{% endblock %}
 
 {% block body %}
-
-
   {% include 'front/partials/_hero_mini.html.twig' with {
-  hero_kicker: 'ORGANISATEUR',
-  hero_title: 'Mes demandes',
-  hero_sub: 'Suivi des demandes envoyées.',
-  breadcrumb_current: 'Mes demandes'
-} %}
-
+    hero_kicker: 'ORGANISATEUR',
+    hero_title: 'Mes demandes',
+    hero_sub: 'Suivi detaille des demandes de tournoi envoyees.',
+    breadcrumb_current: 'Mes demandes'
+  } %}
 
   <main class="page">
     <section class="belowHero">
-
       <div class="layout">
-        
-  <aside class="sideNav">
-    <div class="sideNav__title">ESPACE ORGANISATEUR</div>
-    <a class="" href="{{ path('front_organizer_request_create') }}">Demande tournoi</a><a class="is-active" href="{{ path('front_organizer_requests') }}">Mes demandes</a><a class="" href="{{ path('front_organizer_tournaments') }}">Mes tournois</a><a class="" href="{{ path('front_organizer_registrations') }}">Inscriptions</a><a class="" href="{{ path('front_organizer_matches') }}">Matchs</a>
-  </aside>
+        {% include 'front/partials/_organizer_side_nav.html.twig' with {active: 'requests'} %}
 
         <div>
-          
-        <div class="panel">
-          <div class="tableWrap">
-            <table class="table">
-              <thead><tr><th>Titre</th><th>Jeu</th><th>Statut</th><th>Action</th></tr></thead>
-              <tbody>
-                <tr><td>Pulse Invitational</td><td>Valorant</td><td><span class="badge">PENDING</span></td><td><a class="btn btn--ghost" href="{{ path('front_organizer_request_detail') }}">Voir</a></td></tr>
-                <tr><td>CS2 Arena Cup</td><td>CS2</td><td><span class="badge badge--success">ACCEPTED</span></td><td><a class="btn btn--ghost" href="{{ path('front_organizer_request_detail') }}">Voir</a></td></tr>
-              </tbody>
-            </table>
+          {% for label, messages in app.flashes %}
+            {% for message in messages %}
+              <div class="listItem">
+                <span>{{ message }}</span>
+                <span class="badge {{ label == 'error' ? 'badge--danger' : 'badge--success' }}">{{ label|upper }}</span>
+              </div>
+            {% endfor %}
+          {% endfor %}
+
+          <div class="panel">
+            <div class="panel__head">
+              <h3 class="panel__title">DEMANDES ENVOYEES</h3>
+              <div class="panel__actions">
+                <a class="btn btn--primary" href="{{ path('front_organizer_request_create') }}">Nouvelle demande</a>
+              </div>
+            </div>
+            <div class="tableWrap">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Titre</th>
+                    <th>Jeu</th>
+                    <th>Periode</th>
+                    <th>Statut</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for requestItem in tournamentRequests %}
+                    {% set statusClass = requestItem.status == 'ACCEPTED'
+                      ? 'badge--success'
+                      : (requestItem.status == 'REFUSED' ? 'badge--danger' : (requestItem.status == 'CANCELLED' ? 'badge--muted' : ''))
+                    %}
+                    <tr>
+                      <td>#{{ requestItem.requestId }}</td>
+                      <td>{{ requestItem.title }}</td>
+                      <td>{{ requestItem.gameId ? requestItem.gameId.name : '-' }}</td>
+                      <td>
+                        {{ requestItem.startDate ? requestItem.startDate|date('Y-m-d') : '-' }}
+                        -
+                        {{ requestItem.endDate ? requestItem.endDate|date('Y-m-d') : '-' }}
+                      </td>
+                      <td><span class="badge {{ statusClass }}">{{ requestItem.status }}</span></td>
+                      <td>
+                        <a class="btn btn--ghost" href="{{ path('front_organizer_request_detail', {id: requestItem.requestId}) }}">Voir</a>
+                      </td>
+                    </tr>
+                  {% else %}
+                    <tr>
+                      <td colspan="6" class="muted">Aucune demande pour le moment.</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel__head">
+              <div>
+                <h3 class="panel__title">TABLES UTILISEES</h3>
+                <div class="panel__desc">Donnees extraites depuis le schema reel.</div>
+              </div>
+            </div>
+            <div class="list">
+              <div class="listItem">
+                <span><b>tournament_requests</b></span>
+                <span class="listItem__meta">request_id, organizer_user_id, game_id, title, status, reviewed_at</span>
+              </div>
+            </div>
           </div>
         </div>
-        
-      <div class="panel">
-        <div class="panel__head">
-          <div>
-            <h3 class="panel__title">TABLES UTILISÉES</h3>
-            <div class="panel__desc">Schéma réel + colonnes clés.</div>
-          </div>
-        </div>
-        <div class="list">
-          <div class="listItem"><span><b>tournament_requests</b></span><span class="listItem__meta">request_id, title, status, reviewed_at, admin_response_note</span></div>
-        </div>
       </div>
-
-      
-        </div>
-      </div>
-
 
       {% include 'front/partials/_footer.html.twig' %}
-
     </section>
   </main>
 
   {% include 'front/partials/_auth_modal.html.twig' %}
-
 {% endblock %}
-
-

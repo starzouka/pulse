@@ -1,0 +1,38 @@
+<div class="formGrid">
+  <div class="field">
+    {{ form_label(form.tournamentId, 'tournoi*') }}
+    {{ form_widget(form.tournamentId, {attr: {class: 'input'}}) }}
+    {{ form_errors(form.tournamentId) }}
+  </div>
+
+  <div class="field">
+    {{ form_label(form.roundName, 'round_name') }}
+    {{ form_widget(form.roundName, {attr: {class: 'input', placeholder: 'Quarterfinal / Group A...'}}) }}
+    {{ form_errors(form.roundName) }}
+  </div>
+
+  <div class="field">
+    {{ form_label(form.scheduledAt, 'scheduled_at') }}
+    {{ form_widget(form.scheduledAt, {attr: {class: 'input'}}) }}
+    {{ form_errors(form.scheduledAt) }}
+  </div>
+
+  <div class="field">
+    {{ form_label(form.bestOf, 'best_of') }}
+    {{ form_widget(form.bestOf, {attr: {class: 'input'}}) }}
+    {{ form_errors(form.bestOf) }}
+  </div>
+
+  <div class="field">
+    {{ form_label(form.status, 'status*') }}
+    {{ form_widget(form.status, {attr: {class: 'input'}}) }}
+    {{ form_errors(form.status) }}
+  </div>
+
+  <div class="field">
+    {{ form_label(form.participantTeams, 'equipes_participantes*') }}
+    {{ form_widget(form.participantTeams, {attr: {class: 'input', size: 8}}) }}
+    {{ form_errors(form.participantTeams) }}
+    <div class="panelDesc">Utilisez Ctrl/Cmd + clic pour selection multiple.</div>
+  </div>
+</div>

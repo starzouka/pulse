@@ -13,14 +13,7 @@
   <main class="page">
     <section class="belowHero">
       <div class="layout">
-        <aside class="sideNav">
-          <div class="sideNav__title">ESPACE ORGANISATEUR</div>
-          <a class="is-active" href="{{ path('front_organizer_request_create') }}">Demande tournoi</a>
-          <a href="{{ path('front_organizer_requests') }}">Mes demandes</a>
-          <a href="{{ path('front_organizer_tournaments') }}">Mes tournois</a>
-          <a href="{{ path('front_organizer_registrations') }}">Inscriptions</a>
-          <a href="{{ path('front_organizer_matches') }}">Matchs</a>
-        </aside>
+        {% include 'front/partials/_organizer_side_nav.html.twig' with {active: 'request_create'} %}
 
         <div>
           {% for label, messages in app.flashes %}

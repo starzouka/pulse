@@ -3,63 +3,91 @@
 {% block title %}PULSE - Mes tournois{% endblock %}
 
 {% block body %}
-
-
   {% include 'front/partials/_hero_mini.html.twig' with {
-  hero_kicker: 'ORGANISATEUR',
-  hero_title: 'Mes tournois',
-  hero_sub: 'Tournois validés et actifs.',
-  breadcrumb_current: 'Mes tournois'
-} %}
-
+    hero_kicker: 'ORGANISATEUR',
+    hero_title: 'Mes tournois',
+    hero_sub: 'Tournois valides, ouverts ou en cours.',
+    breadcrumb_current: 'Mes tournois'
+  } %}
 
   <main class="page">
     <section class="belowHero">
-
       <div class="layout">
-        
-  <aside class="sideNav">
-    <div class="sideNav__title">ESPACE ORGANISATEUR</div>
-    <a class="" href="{{ path('front_organizer_request_create') }}">Demande tournoi</a><a class="" href="{{ path('front_organizer_requests') }}">Mes demandes</a><a class="is-active" href="{{ path('front_organizer_tournaments') }}">Mes tournois</a><a class="" href="{{ path('front_organizer_registrations') }}">Inscriptions</a><a class="" href="{{ path('front_organizer_matches') }}">Matchs</a>
-  </aside>
+        {% include 'front/partials/_organizer_side_nav.html.twig' with {active: 'tournaments'} %}
 
         <div>
-          
-        <div class="panel">
-          <div class="tableWrap">
-            <table class="table">
-              <thead><tr><th>Tournoi</th><th>Statut</th><th>Action</th></tr></thead>
-              <tbody>
-                <tr><td>Pulse Invitational</td><td><span class="badge badge--info">OPEN</span></td><td><a class="btn btn--ghost" href="{{ path('front_organizer_tournament_detail') }}">Gérer</a></td></tr>
-              </tbody>
-            </table>
+          {% for label, messages in app.flashes %}
+            {% for message in messages %}
+              <div class="listItem">
+                <span>{{ message }}</span>
+                <span class="badge {{ label == 'error' ? 'badge--danger' : 'badge--success' }}">{{ label|upper }}</span>
+              </div>
+            {% endfor %}
+          {% endfor %}
+
+          <div class="panel">
+            <div class="tableWrap">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Tournoi</th>
+                    <th>Jeu</th>
+                    <th>Statut</th>
+                    <th>Equipes inscrites</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for tournament in tournaments %}
+                    {% set statusClass = tournament.status == 'OPEN'
+                      ? 'badge--success'
+                      : (tournament.status == 'ONGOING' ? 'badge--info' : (tournament.status == 'CANCELLED' ? 'badge--danger' : ''))
+                    %}
+                    <tr>
+                      <td>#{{ tournament.tournamentId }}</td>
+                      <td>{{ tournament.title }}</td>
+                      <td>{{ tournament.gameId ? tournament.gameId.name : '-' }}</td>
+                      <td><span class="badge {{ statusClass }}">{{ tournament.status }}</span></td>
+                      <td>{{ registrationsByTournamentId[tournament.tournamentId] ?? 0 }}</td>
+                      <td>
+                        <a class="btn btn--ghost" href="{{ path('front_organizer_tournament_detail', {id: tournament.tournamentId}) }}">Gerer</a>
+                      </td>
+                    </tr>
+                  {% else %}
+                    <tr>
+                      <td colspan="6" class="muted">Aucun tournoi pour le moment.</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel__head">
+              <div>
+                <h3 class="panel__title">TABLES UTILISEES</h3>
+                <div class="panel__desc">Donnees extraites depuis le schema reel.</div>
+              </div>
+            </div>
+            <div class="list">
+              <div class="listItem">
+                <span><b>tournaments</b></span>
+                <span class="listItem__meta">tournament_id, organizer_user_id, game_id, title, status, photo_path</span>
+              </div>
+              <div class="listItem">
+                <span><b>tournament_teams</b></span>
+                <span class="listItem__meta">tournament_id, team_id, status, registered_at</span>
+              </div>
+            </div>
           </div>
         </div>
-        
-      <div class="panel">
-        <div class="panel__head">
-          <div>
-            <h3 class="panel__title">TABLES UTILISÉES</h3>
-            <div class="panel__desc">Schéma réel + colonnes clés.</div>
-          </div>
-        </div>
-        <div class="list">
-          <div class="listItem"><span><b>tournaments</b></span><span class="listItem__meta">tournament_id, organizer_user_id, status, start_date, end_date</span></div>
-        </div>
       </div>
-
-      
-        </div>
-      </div>
-
 
       {% include 'front/partials/_footer.html.twig' %}
-
     </section>
   </main>
 
   {% include 'front/partials/_auth_modal.html.twig' %}
-
 {% endblock %}
-
-

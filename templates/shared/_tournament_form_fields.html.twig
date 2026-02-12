@@ -90,4 +90,12 @@
       </div>
     {% endif %}
   </div>
+
+  {% if form.status is defined %}
+    <div class="field">
+      {{ form_label(form.status, 'status*') }}
+      {{ form_widget(form.status, {attr: {class: 'input'}}) }}
+      {{ form_errors(form.status) }}
+    </div>
+  {% endif %}
 </div>

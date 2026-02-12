@@ -3,63 +3,122 @@
 {% block title %}PULSE - Inscriptions{% endblock %}
 
 {% block body %}
-
-
   {% include 'front/partials/_hero_mini.html.twig' with {
-  hero_kicker: 'ORGANISATEUR',
-  hero_title: 'Inscriptions',
-  hero_sub: 'Accepter / refuser équipes.',
-  breadcrumb_current: 'Inscriptions'
-} %}
-
+    hero_kicker: 'ORGANISATEUR',
+    hero_title: 'Inscriptions equipes',
+    hero_sub: 'Validation des equipes inscrites a vos tournois.',
+    breadcrumb_current: 'Inscriptions'
+  } %}
 
   <main class="page">
     <section class="belowHero">
-
       <div class="layout">
-        
-  <aside class="sideNav">
-    <div class="sideNav__title">ESPACE ORGANISATEUR</div>
-    <a class="" href="{{ path('front_organizer_request_create') }}">Demande tournoi</a><a class="" href="{{ path('front_organizer_requests') }}">Mes demandes</a><a class="" href="{{ path('front_organizer_tournaments') }}">Mes tournois</a><a class="is-active" href="{{ path('front_organizer_registrations') }}">Inscriptions</a><a class="" href="{{ path('front_organizer_matches') }}">Matchs</a>
-  </aside>
+        {% include 'front/partials/_organizer_side_nav.html.twig' with {active: 'registrations'} %}
 
         <div>
-          
-        <div class="panel">
-          <div class="tableWrap">
-            <table class="table">
-              <thead><tr><th>Équipe</th><th>Statut</th><th>Action</th></tr></thead>
-              <tbody>
-                <tr><td>Nebula Five</td><td><span class="badge">PENDING</span></td><td><button class="btn btn--primary">Accepter</button></td></tr>
-              </tbody>
-            </table>
+          {% for label, messages in app.flashes %}
+            {% for message in messages %}
+              <div class="listItem">
+                <span>{{ message }}</span>
+                <span class="badge {{ label == 'error' ? 'badge--danger' : 'badge--success' }}">{{ label|upper }}</span>
+              </div>
+            {% endfor %}
+          {% endfor %}
+
+          <div class="panel">
+            <form method="get" action="{{ path('front_organizer_registrations') }}" class="filtersBar">
+              <div class="filterGroup">
+                <label for="tournament">Tournoi</label>
+                <select id="tournament" name="tournament" class="input" onchange="this.form.submit()">
+                  {% for tournament in tournaments %}
+                    <option value="{{ tournament.tournamentId }}" {{ selectedTournament and selectedTournament.tournamentId == tournament.tournamentId ? 'selected' : '' }}>
+                      #{{ tournament.tournamentId }} - {{ tournament.title }}
+                    </option>
+                  {% endfor %}
+                </select>
+              </div>
+              <noscript><button class="btn btn--primary" type="submit">Filtrer</button></noscript>
+            </form>
+
+            <div class="tableWrap">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Equipe</th>
+                    <th>Statut</th>
+                    <th>Inscrite le</th>
+                    <th>Seed</th>
+                    <th>Check-in</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for registration in registrations %}
+                    {% set statusClass = registration.status == 'ACCEPTED'
+                      ? 'badge--success'
+                      : (registration.status == 'REFUSED' ? 'badge--danger' : (registration.status == 'CANCELLED' ? 'badge--muted' : ''))
+                    %}
+                    <tr>
+                      <td>{{ registration.teamId ? registration.teamId.name : '-' }}</td>
+                      <td><span class="badge {{ statusClass }}">{{ registration.status }}</span></td>
+                      <td>{{ registration.registeredAt ? registration.registeredAt|date('Y-m-d H:i') : '-' }}</td>
+                      <td>{{ registration.seed is not null ? registration.seed : '-' }}</td>
+                      <td>{{ registration.checkedIn ? 'Oui' : 'Non' }}</td>
+                      <td>
+                        <div class="formActions">
+                          <form method="post" action="{{ path('front_organizer_registration_status', {tournamentId: selectedTournament.tournamentId, teamId: registration.teamId.teamId}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('organizer_registration_status_' ~ selectedTournament.tournamentId ~ '_' ~ registration.teamId.teamId) }}">
+                            <input type="hidden" name="status" value="ACCEPTED">
+                            <button class="btn btn--primary" type="submit">Accepter</button>
+                          </form>
+                          <form method="post" action="{{ path('front_organizer_registration_status', {tournamentId: selectedTournament.tournamentId, teamId: registration.teamId.teamId}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('organizer_registration_status_' ~ selectedTournament.tournamentId ~ '_' ~ registration.teamId.teamId) }}">
+                            <input type="hidden" name="status" value="REFUSED">
+                            <button class="btn btn--ghost" type="submit">Refuser</button>
+                          </form>
+                        </div>
+                      </td>
+                    </tr>
+                  {% else %}
+                    <tr>
+                      <td colspan="6" class="muted">
+                        {% if selectedTournament %}
+                          Aucune inscription pour ce tournoi.
+                        {% else %}
+                          Aucun tournoi disponible.
+                        {% endif %}
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel__head">
+              <div>
+                <h3 class="panel__title">TABLES UTILISEES</h3>
+                <div class="panel__desc">Donnees extraites depuis le schema reel.</div>
+              </div>
+            </div>
+            <div class="list">
+              <div class="listItem">
+                <span><b>tournament_teams</b></span>
+                <span class="listItem__meta">tournament_id, team_id, status, seed, checked_in, decided_at, decided_by_user_id</span>
+              </div>
+              <div class="listItem">
+                <span><b>teams</b></span>
+                <span class="listItem__meta">team_id, name</span>
+              </div>
+            </div>
           </div>
         </div>
-        
-      <div class="panel">
-        <div class="panel__head">
-          <div>
-            <h3 class="panel__title">TABLES UTILISÉES</h3>
-            <div class="panel__desc">Schéma réel + colonnes clés.</div>
-          </div>
-        </div>
-        <div class="list">
-          <div class="listItem"><span><b>tournament_teams</b></span><span class="listItem__meta">tournament_id, team_id, status, seed</span></div><div class="listItem"><span><b>teams</b></span><span class="listItem__meta">team_id, name, logo_image_id</span></div>
-        </div>
       </div>
-
-      
-        </div>
-      </div>
-
 
       {% include 'front/partials/_footer.html.twig' %}
-
     </section>
   </main>
 
   {% include 'front/partials/_auth_modal.html.twig' %}
-
 {% endblock %}
-
-

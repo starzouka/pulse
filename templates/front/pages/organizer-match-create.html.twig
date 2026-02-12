@@ -1,65 +1,71 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}PULSE - Créer match{% endblock %}
+{% block title %}PULSE - Creer match{% endblock %}
 
 {% block body %}
-
-
   {% include 'front/partials/_hero_mini.html.twig' with {
-  hero_kicker: 'ORGANISATEUR',
-  hero_title: 'Créer match',
-  hero_sub: 'Ajouter un match au tournoi.',
-  breadcrumb_current: 'Créer match'
-} %}
-
+    hero_kicker: 'ORGANISATEUR',
+    hero_title: 'Creer match',
+    hero_sub: 'Ajout d un match avec plusieurs equipes participantes.',
+    breadcrumb_current: 'Creer match'
+  } %}
 
   <main class="page">
     <section class="belowHero">
-
       <div class="layout">
-        
-  <aside class="sideNav">
-    <div class="sideNav__title">ESPACE ORGANISATEUR</div>
-    <a class="" href="{{ path('front_organizer_request_create') }}">Demande tournoi</a><a class="" href="{{ path('front_organizer_requests') }}">Mes demandes</a><a class="" href="{{ path('front_organizer_tournaments') }}">Mes tournois</a><a class="" href="{{ path('front_organizer_registrations') }}">Inscriptions</a><a class="is-active" href="{{ path('front_organizer_matches') }}">Matchs</a>
-  </aside>
+        {% include 'front/partials/_organizer_side_nav.html.twig' with {active: 'match_create'} %}
 
         <div>
-          
-        <form class="panel">
-          <div class="formGrid">
-            <label class="field"><span class="field__label">Round</span><input class="input" type="text" placeholder="Quarterfinal" /></label>
-            <label class="field"><span class="field__label">Date</span><input class="input" type="datetime-local" /></label>
-            <label class="field"><span class="field__label">Équipes</span><input class="input" type="text" placeholder="Team A vs Team B" /></label>
+          {% for label, messages in app.flashes %}
+            {% for message in messages %}
+              <div class="listItem">
+                <span>{{ message }}</span>
+                <span class="badge {{ label == 'error' ? 'badge--danger' : 'badge--success' }}">{{ label|upper }}</span>
+              </div>
+            {% endfor %}
+          {% endfor %}
+
+          <section class="panel">
+            {{ form_start(matchForm, {attr: {novalidate: 'novalidate'}}) }}
+              {% include 'shared/_organizer_match_form_fields.html.twig' with {form: matchForm} %}
+              <div class="panelDesc" style="margin-top:8px;">
+                Equipes disponibles pour le tournoi selectionne: {{ availableTeamsCount }}
+              </div>
+              <div class="formActions" style="margin-top:12px;">
+                <button class="btn btn--primary" type="submit">Creer match</button>
+                <a class="btn btn--ghost" href="{{ path('front_organizer_matches', selectedTournament ? {tournament: selectedTournament.tournamentId} : {}) }}">Annuler</a>
+              </div>
+            {{ form_end(matchForm) }}
+          </section>
+
+          <div class="panel">
+            <div class="panel__head">
+              <div>
+                <h3 class="panel__title">TABLES UTILISEES</h3>
+                <div class="panel__desc">Donnees extraites depuis le schema reel.</div>
+              </div>
+            </div>
+            <div class="list">
+              <div class="listItem">
+                <span><b>matches</b></span>
+                <span class="listItem__meta">tournament_id, scheduled_at, round_name, best_of, status</span>
+              </div>
+              <div class="listItem">
+                <span><b>match_teams</b></span>
+                <span class="listItem__meta">match_id, team_id, score, is_winner</span>
+              </div>
+              <div class="listItem">
+                <span><b>tournament_teams</b></span>
+                <span class="listItem__meta">source des equipes participantes (status ACCEPTED)</span>
+              </div>
+            </div>
           </div>
-          <div class="formActions" style="margin-top:12px;">
-            <button class="btn btn--primary" type="submit">Créer match</button>
-          </div>
-        </form>
-        
-      <div class="panel">
-        <div class="panel__head">
-          <div>
-            <h3 class="panel__title">TABLES UTILISÉES</h3>
-            <div class="panel__desc">Schéma réel + colonnes clés.</div>
-          </div>
-        </div>
-        <div class="list">
-          <div class="listItem"><span><b>matches</b></span><span class="listItem__meta">tournament_id, round_name, scheduled_at, best_of, status</span></div><div class="listItem"><span><b>match_teams</b></span><span class="listItem__meta">match_id, team_id, score, is_winner</span></div>
         </div>
       </div>
-
-      
-        </div>
-      </div>
-
 
       {% include 'front/partials/_footer.html.twig' %}
-
     </section>
   </main>
 
   {% include 'front/partials/_auth_modal.html.twig' %}
-
 {% endblock %}
-
-
