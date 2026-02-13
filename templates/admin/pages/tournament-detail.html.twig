@@ -3,69 +3,175 @@
 {% block title %}PULSE - Detail tournoi{% endblock %}
 
 {% block admin_content %}
+  {% set tournamentId = tournament.tournamentId ?? 0 %}
 
-        
   <div class="pageHeader">
     <div>
-      <h2>Detail tournoi</h2>
-      <div class="pageSub">Infos + inscriptions + matchs + classement.</div>
+      <h2>Detail tournoi #{{ tournamentId }}</h2>
+      <div class="pageSub">Infos, inscriptions, matchs et classement.</div>
     </div>
-    
+    <div class="formActions">
+      <a class="btn btnGhost" href="{{ path('admin_tournaments') }}">Retour liste</a>
+      <a class="btn btnPrimary" href="{{ path('admin_tournament_edit', {id: tournamentId}) }}">Update tournoi</a>
+    </div>
   </div>
-  
+
   <div class="tabs" data-tabs="tournament">
     <button class="tab isActive" data-tab="info">Infos</button>
-<button class="tab" data-tab="teams">Inscriptions</button>
-<button class="tab" data-tab="matches">Matchs</button>
-<button class="tab" data-tab="results">Classement</button>
+    <button class="tab" data-tab="teams">Inscriptions</button>
+    <button class="tab" data-tab="matches">Matchs</button>
+    <button class="tab" data-tab="results">Classement</button>
   </div>
+
   <div class="tabPanels" data-panels="tournament">
-    <div class="tabPanel isActive" data-panel="info"><section class="panel"><div class="list"><div class="listItem"><span>title</span><span class="listMeta">Pulse Invitational</span></div><div class="listItem"><span>status</span><span class="listMeta"><span class="badge badge--warning">PENDING</span></span></div><div class="listItem"><span>format</span><span class="listMeta">BO3</span></div><div class="listItem"><span>prize_pool</span><span class="listMeta">—</span></div></div></section></div>
-<div class="tabPanel" data-panel="teams"><section class="panel">
-  <div class="dataTableWrap">
-    <table class="dataTable">
-      <thead><tr><th>team</th><th>status</th><th>seed</th></tr></thead>
-      <tbody>
-        <tr><td>Nebula Five</td><td><span class="badge badge--warning">PENDING</span></td><td>1</td></tr>
-        <tr><td>Nebula Five</td><td><span class="badge badge--warning">PENDING</span></td><td>1</td></tr>
-      </tbody>
-    </table>
-  </div></section></div>
-<div class="tabPanel" data-panel="matches"><section class="panel">
-  <div class="dataTableWrap">
-    <table class="dataTable">
-      <thead><tr><th>match_id</th><th>round_name</th><th>scheduled_at</th><th>status</th></tr></thead>
-      <tbody>
-        <tr><td>1</td><td>—</td><td>—</td><td><span class="badge badge--warning">PENDING</span></td></tr>
-        <tr><td>1</td><td>—</td><td>—</td><td><span class="badge badge--warning">PENDING</span></td></tr>
-      </tbody>
-    </table>
-  </div></section></div>
-<div class="tabPanel" data-panel="results"><section class="panel">
-  <div class="dataTableWrap">
-    <table class="dataTable">
-      <thead><tr><th>team</th><th>W</th><th>L</th><th>points</th></tr></thead>
-      <tbody>
-        <tr><td>Nebula Five</td><td>—</td><td>—</td><td>—</td></tr>
-        <tr><td>Nebula Five</td><td>—</td><td>—</td><td>—</td></tr>
-      </tbody>
-    </table>
-  </div></section></div>
+    <div class="tabPanel isActive" data-panel="info">
+      <section class="panel">
+        <div class="list">
+          <div class="listItem"><span>Titre</span><span class="listMeta">{{ tournament.title }}</span></div>
+          <div class="listItem"><span>Jeu</span><span class="listMeta">{{ tournament.gameId ? tournament.gameId.name : '-' }}</span></div>
+          <div class="listItem"><span>Organisateur</span><span class="listMeta">{{ tournament.organizerUserId ? tournament.organizerUserId.username : '-' }}</span></div>
+          <div class="listItem"><span>Status</span><span class="listMeta"><span class="badge">{{ tournament.status }}</span></span></div>
+          <div class="listItem"><span>Format</span><span class="listMeta">{{ tournament.format }}</span></div>
+          <div class="listItem"><span>Mode inscription</span><span class="listMeta">{{ tournament.registrationMode }}</span></div>
+          <div class="listItem"><span>Dates</span><span class="listMeta">{{ tournament.startDate ? tournament.startDate|date('d/m/Y') : '-' }} -> {{ tournament.endDate ? tournament.endDate|date('d/m/Y') : '-' }}</span></div>
+          <div class="listItem"><span>Deadline inscription</span><span class="listMeta">{{ tournament.registrationDeadline ? tournament.registrationDeadline|date('d/m/Y') : '-' }}</span></div>
+          <div class="listItem"><span>Prize pool</span><span class="listMeta">{{ tournament.prizePool|number_format(2, '.', ' ') }} DT</span></div>
+          <div class="listItem"><span>Equipes</span><span class="listMeta">{{ acceptedCount }}/{{ tournament.maxTeams }} (total: {{ registeredCount }})</span></div>
+          <div class="listItem"><span>Matchs</span><span class="listMeta">{{ matchesCount }}</span></div>
+          {% if tournament.photoPath %}
+            <div class="listItem"><span>Photo</span><span class="listMeta"><a href="{{ tournament.photoPath starts with 'http' ? tournament.photoPath : asset(tournament.photoPath) }}" target="_blank" rel="noopener">Voir image</a></span></div>
+          {% endif %}
+        </div>
+      </section>
+    </div>
+
+    <div class="tabPanel" data-panel="teams">
+      <section class="panel">
+        <div class="panelHeader">
+          <h3 class="panelTitle">Inscriptions equipes</h3>
+          <span class="listMeta">{{ participants|length }} ligne(s)</span>
+        </div>
+        <div class="dataTableWrap">
+          <table class="dataTable">
+            <thead>
+              <tr>
+                <th>Equipe</th>
+                <th>Status</th>
+                <th>Seed</th>
+                <th>Registered at</th>
+                <th>Checked in</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in participants %}
+                {% set status = row.status|default('PENDING') %}
+                {% set badge = status == 'ACCEPTED' ? 'badge--success' : (status == 'REFUSED' or status == 'CANCELLED' ? 'badge--danger' : 'badge--warning') %}
+                <tr>
+                  <td>{{ row.teamId ? row.teamId.name : '-' }}</td>
+                  <td><span class="badge {{ badge }}">{{ status }}</span></td>
+                  <td>{{ row.seed is not null ? row.seed : '-' }}</td>
+                  <td>{{ row.registeredAt ? row.registeredAt|date('d/m/Y H:i') : '-' }}</td>
+                  <td>{{ row.checkedIn ? 'Oui' : 'Non' }}</td>
+                </tr>
+              {% else %}
+                <tr><td colspan="5" class="listMeta">Aucune inscription pour ce tournoi.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <div class="tabPanel" data-panel="matches">
+      <section class="panel">
+        <div class="panelHeader"><h3 class="panelTitle">Matchs en cours</h3><span class="listMeta">{{ matchesByStatus.ONGOING|length }}</span></div>
+        <div class="dataTableWrap">
+          <table class="dataTable">
+            <thead><tr><th>ID</th><th>Round</th><th>Scheduled</th><th>Best of</th><th>Status</th></tr></thead>
+            <tbody>
+              {% for match in matchesByStatus.ONGOING %}
+                <tr>
+                  <td>#{{ match.matchId }}</td>
+                  <td>{{ match.roundName ?: '-' }}</td>
+                  <td>{{ match.scheduledAt ? match.scheduledAt|date('d/m/Y H:i') : '-' }}</td>
+                  <td>{{ match.bestOf ?: '-' }}</td>
+                  <td><span class="badge badge--info">{{ match.status }}</span></td>
+                </tr>
+              {% else %}
+                <tr><td colspan="5" class="listMeta">Aucun match en cours.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panelHeader"><h3 class="panelTitle">Matchs programmes</h3><span class="listMeta">{{ matchesByStatus.SCHEDULED|length }}</span></div>
+        <div class="dataTableWrap">
+          <table class="dataTable">
+            <thead><tr><th>ID</th><th>Round</th><th>Scheduled</th><th>Best of</th><th>Status</th></tr></thead>
+            <tbody>
+              {% for match in matchesByStatus.SCHEDULED %}
+                <tr>
+                  <td>#{{ match.matchId }}</td>
+                  <td>{{ match.roundName ?: '-' }}</td>
+                  <td>{{ match.scheduledAt ? match.scheduledAt|date('d/m/Y H:i') : '-' }}</td>
+                  <td>{{ match.bestOf ?: '-' }}</td>
+                  <td><span class="badge">{{ match.status }}</span></td>
+                </tr>
+              {% else %}
+                <tr><td colspan="5" class="listMeta">Aucun match programme.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panelHeader"><h3 class="panelTitle">Matchs termines</h3><span class="listMeta">{{ matchesByStatus.FINISHED|length }}</span></div>
+        <div class="dataTableWrap">
+          <table class="dataTable">
+            <thead><tr><th>ID</th><th>Round</th><th>Scheduled</th><th>Best of</th><th>Status</th></tr></thead>
+            <tbody>
+              {% for match in matchesByStatus.FINISHED %}
+                <tr>
+                  <td>#{{ match.matchId }}</td>
+                  <td>{{ match.roundName ?: '-' }}</td>
+                  <td>{{ match.scheduledAt ? match.scheduledAt|date('d/m/Y H:i') : '-' }}</td>
+                  <td>{{ match.bestOf ?: '-' }}</td>
+                  <td><span class="badge badge--success">{{ match.status }}</span></td>
+                </tr>
+              {% else %}
+                <tr><td colspan="5" class="listMeta">Aucun match termine.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <div class="tabPanel" data-panel="results">
+      <section class="panel">
+        <div class="panelHeader"><h3 class="panelTitle">Classement</h3></div>
+        <div class="dataTableWrap">
+          <table class="dataTable">
+            <thead><tr><th>Equipe</th><th>Played</th><th>Wins</th><th>Losses</th><th>Points</th></tr></thead>
+            <tbody>
+              {% for row in scoreboardRows %}
+                <tr>
+                  <td>{{ row.team_name }}</td>
+                  <td>{{ row.played }}</td>
+                  <td>{{ row.wins }}</td>
+                  <td>{{ row.losses }}</td>
+                  <td>{{ row.points }}</td>
+                </tr>
+              {% else %}
+                <tr><td colspan="5" class="listMeta">Classement indisponible.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
   </div>
-
-  
-  <section class="panel">
-    <div class="panelHeader">
-      <div>
-        <h3 class="panelTitle">SCHEMA UTILISE</h3>
-        <div class="panelDesc">Tables et colonnes principales.</div>
-      </div>
-    </div>
-    <div class="list">
-      <div class="listItem"><span><b>tournaments</b></span><span class="listMeta">title, status, format, prize_pool, team, status, seed, match_id, round_name, scheduled_at, status, team, W, L, points</span></div>
-    </div>
-  </section>
-
-
-      
 {% endblock %}

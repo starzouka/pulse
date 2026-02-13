@@ -1,254 +1,229 @@
-{% extends 'base.html.twig' %}
+﻿{% extends 'base.html.twig' %}
 
-{% block title %}PULSE - Mon profil{% endblock %}
+{% set profileId = profile_user.userId ?? 0 %}
+{% set viewerId = viewer_user ? viewer_user.userId : 0 %}
+{% set avatarPath = profile_user.profileImageId ? profile_user.profileImageId.fileUrl : '' %}
+{% set avatarUrl = avatarPath ? (avatarPath starts with 'http' ? avatarPath : asset(avatarPath)) : 'https://picsum.photos/seed/pulse_profile_' ~ profileId ~ '/200/200' %}
+{% set pf = applied_filters|default({}) %}
+
+{% block title %}
+  PULSE - {{ is_own_profile ? 'Mon profil' : ('Profil de ' ~ (profile_user.displayName ?? profile_user.username)) }}
+{% endblock %}
 
 {% block body %}
-
-
-  <header class="heroMini">
-    <div class="heroFull__bg heroMini__bg" data-bg="{{ asset('assets/template_fo/img/ll.png') }}"></div>
-    <div class="heroFull__overlay"></div>
-    <div class="heroTop">
-      <a class="brand" href="{{ path('front_home') }}" aria-label="Pulse">
-        <span class="brand__logo" aria-hidden="true">
-          <svg viewBox="0 0 24 24" class="ico">
-            <path d="M4 4h16v16H4V4zm3 3v10h10V7H7zm2 2h6v6H9V9z"/>
-          </svg>
-        </span>
-        <span class="brand__text">
-          <span class="brand__name">PULSE</span>
-          <span class="brand__small">e-sport arena</span>
-        </span>
-      </a>
-      <nav class="topbar" aria-label="Navigation principale"><a class="topbar__item is-active" href="{{ path('front_home') }}">
-          <span class="topbar__icon"><svg viewBox="0 0 24 24" class="ico"><path d="M12 3l9 8h-3v10h-5v-6H11v6H6V11H3l9-8z"/></svg></span>
-          <span class="topbar__label">Accueil</span>
-        </a>
-<a class="topbar__item" href="{{ path('front_tournaments') }}">
-          <span class="topbar__icon"><svg viewBox="0 0 24 24" class="ico"><path d="M6 4h12v2H6V4zm2 4h8l1 4H7l1-4zm-2 6h12v2H6v-2zm2 4h8v2H8v-2z"/></svg></span>
-          <span class="topbar__label">Tournois</span>
-        </a>
-<a class="topbar__item" href="{{ path('front_games') }}">
-          <span class="topbar__icon"><svg viewBox="0 0 24 24" class="ico"><path d="M7 6h10a4 4 0 014 4v2a4 4 0 01-4 4h-1l-2 2H10l-2-2H7a4 4 0 01-4-4v-2a4 4 0 014-4zm2 5a1 1 0 100 2 1 1 0 000-2zm6 0a1 1 0 100 2 1 1 0 000-2z"/></svg></span>
-          <span class="topbar__label">Jeux</span>
-        </a>
-<a class="topbar__item" href="{{ path('front_matches') }}">
-          <span class="topbar__icon"><svg viewBox="0 0 24 24" class="ico"><path d="M7 3h10v2H7V3zm2 6h6v2H9V9zm-2 5h10v2H7v-2zm2 5h6v2H9v-2z"/></svg></span>
-          <span class="topbar__label">Matchs</span>
-        </a>
-<a class="topbar__item" href="{{ path('front_shop') }}">
-          <span class="topbar__icon"><svg viewBox="0 0 24 24" class="ico"><path d="M7 18c-1.1 0-2-.9-2-2V6h2v10h12v2H7zM9 6h10v10H9V6zm2 2v6h6V8h-6z"/></svg></span>
-          <span class="topbar__label">Boutique</span>
-        </a>
-<a class="topbar__item" href="{{ path('front_teams') }}">
-          <span class="topbar__icon"><svg viewBox="0 0 24 24" class="ico"><path d="M16 11c1.66 0 3-1.34 3-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zM8 11c1.66 0 3-1.34 3-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.95 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></span>
-          <span class="topbar__label">Équipe</span>
-        </a></nav>
-      <div class="heroTop__right">
-        <a class="btn btn--ghost" href="{{ path('front_register') }}">S’inscrire</a>
-        <button class="signInBtn" id="btnOpenAuth" type="button">
-          <span class="signInBtn__icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" class="ico">
-              <path d="M10 17l1.4-1.4-2.6-2.6H20v-2H8.8l2.6-2.6L10 7l-7 7 7 7zm-6 4h6v-2H4V5h6V3H4a2 2 0 00-2 2v14a2 2 0 002 2z"/>
-            </svg>
-          </span>
-          <span class="signInBtn__text">SIGN IN</span>
-        </button>
-        <button class="menuBtn" type="button" aria-label="Menu"><span></span><span></span><span></span></button>
-      </div>
-    </div>
-    <div class="heroMini__center">
-      <div class="heroKicker">JOUEUR</div>
-      <h1 class="heroMini__title">Mon profil</h1>
-      <div class="heroMini__sub">Infos + posts + stats.</div>
-      <div class="breadcrumbs">
-        <a href="{{ path('front_home') }}">Accueil</a>
-        <span>•</span>
-        <span>Mon profil</span>
-      </div>
-    </div>
-    <div class="heroSlash" aria-hidden="true"></div>
-  </header>
-
+  {% include 'front/partials/_hero_mini.html.twig' with {
+    hero_kicker: 'JOUEUR',
+    hero_title: is_own_profile ? 'Mon profil' : ('Profil de ' ~ (profile_user.displayName ?? profile_user.username)),
+    hero_sub: 'Publications, details, amis et equipes.',
+    breadcrumb_current: is_own_profile ? 'Mon profil' : 'Profil joueur'
+  } %}
 
   <main class="page">
     <section class="belowHero">
-
       <div class="layout">
-        
-  <aside class="sideNav">
-    <div class="sideNav__title">ESPACE JOUEUR</div>
-    <a class="" href="{{ path('front_dashboard') }}">Dashboard</a><a class="is-active" href="{{ path('front_profile') }}">Mon profil</a><a class="" href="{{ path('front_players') }}">Recherche joueurs</a><a class="" href="{{ path('front_friends') }}">Amis</a><a class="" href="{{ path('front_messages') }}">Messages</a><a class="" href="{{ path('front_feed') }}">Fil d’actualité</a><a class="" href="{{ path('front_my_teams') }}">Mes équipes</a><a class="" href="{{ path('front_my_requests') }}">Mes demandes</a><a class="" href="{{ path('front_orders') }}">Mes commandes</a><a class="" href="{{ path('front_notifications') }}">Notifications</a>
-  </aside>
+        {% include 'front/partials/_player_side_nav.html.twig' with { active: is_own_profile ? 'profile' : 'player_profile' } %}
 
-        <div>
-          
-        <div class="panel">
-          <div style="display:flex; gap:14px; align-items:center;">
-            <div class="avatarLg" data-avatar="https://picsum.photos/seed/pulse_a1/200/200"></div>
-            <div>
-              <h3 style="margin:0;">Zed (@ZED_99)</h3>
-              <div class="muted">Bio: FPS player • Pays: TN</div>
-              <div style="margin-top:8px;">
-                <a class="btn btn--primary" href="{{ path('front_profile_edit') }}">Modifier profil</a>
-                <a class="btn btn--ghost" href="{{ path('front_password_change') }}">Changer mot de passe</a>
+        <div class="socialStack">
+          {% for label, messages in app.flashes %}
+            {% for message in messages %}
+              <div class="listItem">
+                <span>{{ message }}</span>
+                <span class="badge {{ label == 'error' ? 'badge--danger' : (label == 'success' ? 'badge--success' : 'badge--info') }}">{{ label|upper }}</span>
+              </div>
+            {% endfor %}
+          {% endfor %}
+
+          <section class="panel profileIdentityPanel">
+            <div class="profileHeader">
+              <div class="avatarLg" data-avatar="{{ avatarUrl }}"></div>
+              <div>
+                <h3 style="margin:0;">{{ profile_user.displayName ?? profile_user.username }} (@{{ profile_user.username }})</h3>
+                <div class="muted">{{ profile_user.role }}{% if profile_user.country %} · {{ profile_user.country }}{% endif %}</div>
+                <div class="profileHeader__actions">
+                  {% if is_own_profile %}
+                    <a class="btn btn--primary" href="{{ path('front_profile_edit') }}">Modifier profil</a>
+                    <a class="btn btn--ghost" href="{{ path('front_password_change') }}">Changer mot de passe</a>
+                  {% else %}
+                    {% if viewer_user %}
+                      {% if friend_status == 'friends' %}
+                        <button class="btn btn--soft" type="button" disabled>Vous etes amis</button>
+                      {% elseif friend_status == 'request_sent' %}
+                        <button class="btn btn--ghost" type="button" disabled>Demande envoyee</button>
+                      {% elseif friend_status == 'request_received' %}
+                        <a class="btn btn--ghost" href="{{ path('front_friends') }}">Voir demande recue</a>
+                      {% else %}
+                        <form method="post" action="{{ path('front_profile_add_friend', {id: profileId}) }}">
+                          <input type="hidden" name="_token" value="{{ csrf_token('profile_add_friend_' ~ profileId) }}">
+                          <button class="btn btn--primary" type="submit">Ajouter ami</button>
+                        </form>
+                      {% endif %}
+                      <a class="btn btn--ghost" href="{{ path('front_messages', {'with': profileId}) }}">Message</a>
+                    {% else %}
+                      <a class="btn btn--primary" href="{{ path('front_login', {'_target_path': app.request.uri}) }}">Ajouter ami</a>
+                      <a class="btn btn--ghost" href="{{ path('front_login', {'_target_path': app.request.uri}) }}">Message</a>
+                    {% endif %}
+                  {% endif %}
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-        <div class="statsRow" style="margin-top:12px;">
-          <div class="statCard"><div class="statCard__value">8</div><div class="statCard__label">Amis</div></div>
-          <div class="statCard"><div class="statCard__value">3</div><div class="statCard__label">Équipes</div></div>
-          <div class="statCard"><div class="statCard__value">12</div><div class="statCard__label">Posts</div></div>
-        </div>
-        <div class="panel" style="margin-top:12px;">
-          <h3 class="panel__title">MES ÉQUIPES</h3>
-          <div class="cardsGrid">
 
-    <article class="card card--team">
-      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_team_1/1200/800">
-        <div class="card__chips">
-          <span class="chip chip--region">MENA</span>
-          <span class="chip">Membres: 12</span>
-        </div>
-      </div>
-      <div class="card__body">
-        <h4 class="card__title">Nebula Five</h4>
-        <p class="card__desc">Équipe e-sport • Tournois • Boutique</p>
-        <div class="avatarRow">
-          <div class="avatar" data-avatar="https://picsum.photos/seed/pulse_logo_1/200/200" aria-hidden="true"></div>
-          <div class="avatarText">
-            <div class="name">Nebula Five</div>
-            <div class="sub">MENA • 12 membres</div>
-          </div>
-        </div>
-        <div class="card__actions">
-          <a class="btn btn--ghost" href="{{ path('front_team_detail') }}">Détail équipe</a>
-        </div>
-      </div>
-    </article>
-
-
-    <article class="card card--team">
-      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_team_2/1200/800">
-        <div class="card__chips">
-          <span class="chip chip--region">EU</span>
-          <span class="chip">Membres: 9</span>
-        </div>
-      </div>
-      <div class="card__body">
-        <h4 class="card__title">North Hydra</h4>
-        <p class="card__desc">Équipe e-sport • Tournois • Boutique</p>
-        <div class="avatarRow">
-          <div class="avatar" data-avatar="https://picsum.photos/seed/pulse_logo_2/200/200" aria-hidden="true"></div>
-          <div class="avatarText">
-            <div class="name">North Hydra</div>
-            <div class="sub">EU • 9 membres</div>
-          </div>
-        </div>
-        <div class="card__actions">
-          <a class="btn btn--ghost" href="{{ path('front_team_detail') }}">Détail équipe</a>
-        </div>
-      </div>
-    </article>
-
-</div>
-        </div>
-        <div class="panel" style="margin-top:12px;">
-          <h3 class="panel__title">MES POSTS</h3>
-          
-      <div class="list">
-        
-          <div class="listItem">
-            <div>
-              <b>@ZED_99</b>
-              <div class="listItem__meta">Victoire 3-1 au Pulse Invitational !</div>
+            <div class="statsRow">
+              <div class="statCard">
+                <div class="statCard__value">{{ stats.posts }}</div>
+                <div class="statCard__label">Publications</div>
+              </div>
+              <div class="statCard">
+                <div class="statCard__value">{{ stats.friends }}</div>
+                <div class="statCard__label">Amis</div>
+              </div>
+              <div class="statCard">
+                <div class="statCard__value">{{ stats.teams }}</div>
+                <div class="statCard__label">Equipes</div>
+              </div>
             </div>
-            <div class="listItem__meta">42 likes • 9 commentaires</div>
-          </div>
-          <div class="listItem">
-            <div>
-              <b>@NovaAim</b>
-              <div class="listItem__meta">Nouveau produit disponible dans la boutique Aurora Squad.</div>
+          </section>
+
+          <section class="panel">
+            <div class="tabs profileTabs" data-tabs="profile-tabs">
+              <button class="tab {{ active_tab == 'posts' ? 'is-active' : '' }}" data-tab="posts">Mes publications</button>
+              <button class="tab {{ active_tab == 'about' ? 'is-active' : '' }}" data-tab="about">A propos</button>
+              <button class="tab {{ active_tab == 'friends' ? 'is-active' : '' }}" data-tab="friends">Mes amis</button>
+              <button class="tab {{ active_tab == 'teams' ? 'is-active' : '' }}" data-tab="teams">Mes equipes</button>
             </div>
-            <div class="listItem__meta">15 likes • 2 commentaires</div>
-          </div>
-          <div class="listItem">
-            <div>
-              <b>@FrostByte</b>
-              <div class="listItem__meta">Roster update + essais ouverts cette semaine.</div>
+
+            <div class="tabPanels" data-panels="profile-tabs">
+              <section class="tabPanel {{ active_tab == 'posts' ? 'is-active' : '' }}" data-panel="posts">
+                <form class="filtersRow" method="get" action="{{ is_own_profile ? path('front_profile') : path('front_player_profile', {id: profileId}) }}" style="margin-bottom:12px;">
+                  <input type="hidden" name="tab" value="posts">
+                  <input class="input" type="search" name="posts_q" value="{{ pf.posts_q|default('') }}" placeholder="Rechercher une publication..." />
+                  <div class="select">
+                    <select name="posts_visibility">
+                      <option value="" {{ (pf.posts_visibility|default('')) == '' ? 'selected' : '' }}>Toutes visibilites</option>
+                      <option value="PUBLIC" {{ (pf.posts_visibility|default('')) == 'PUBLIC' ? 'selected' : '' }}>PUBLIC</option>
+                      <option value="FRIENDS" {{ (pf.posts_visibility|default('')) == 'FRIENDS' ? 'selected' : '' }}>FRIENDS</option>
+                      <option value="TEAM_ONLY" {{ (pf.posts_visibility|default('')) == 'TEAM_ONLY' ? 'selected' : '' }}>TEAM_ONLY</option>
+                    </select>
+                  </div>
+                  <div class="select">
+                    <select name="posts_sort">
+                      <option value="latest" {{ (pf.posts_sort|default('latest')) == 'latest' ? 'selected' : '' }}>Plus recents</option>
+                      <option value="oldest" {{ (pf.posts_sort|default('latest')) == 'oldest' ? 'selected' : '' }}>Plus anciens</option>
+                      <option value="liked" {{ (pf.posts_sort|default('latest')) == 'liked' ? 'selected' : '' }}>Plus likes</option>
+                      <option value="commented" {{ (pf.posts_sort|default('latest')) == 'commented' ? 'selected' : '' }}>Plus commentes</option>
+                    </select>
+                  </div>
+                  <button class="btn btn--ghost" type="submit">Filtrer</button>
+                </form>
+
+                {% if is_own_profile and viewer_user %}
+                  {% include 'front/partials/_post_composer.html.twig' with {
+                    viewer_user: viewer_user,
+                    action_route: 'front_profile_post_create',
+                    csrf_token_id: 'profile_post_create',
+                    placeholder: 'Partagez une mise a jour...'
+                  } %}
+                {% endif %}
+
+                {% if posts is empty %}
+                  <div class="emptyState">Aucune publication pour le moment.</div>
+                {% else %}
+                  {% for postData in posts %}
+                    {% include 'front/partials/_post_card.html.twig' with {
+                      post_data: postData,
+                      viewer_user: viewer_user,
+                      like_route: 'front_profile_post_like',
+                      comment_route: 'front_profile_post_comment',
+                      report_route: 'front_profile_post_report',
+                      like_token_prefix: 'profile_post_like_',
+                      comment_token_prefix: 'profile_post_comment_',
+                      report_token_prefix: 'profile_post_report_',
+                      profile_id: profileId
+                    } %}
+                  {% endfor %}
+                {% endif %}
+              </section>
+
+              <section class="tabPanel {{ active_tab == 'about' ? 'is-active' : '' }}" data-panel="about">
+                <div class="list">
+                  <div class="listItem"><span>Nom affichage</span><span class="listItem__meta">{{ profile_user.displayName ?? '-' }}</span></div>
+                  <div class="listItem"><span>Username</span><span class="listItem__meta">{{ profile_user.username ?? '-' }}</span></div>
+                  <div class="listItem"><span>Role</span><span class="listItem__meta">{{ profile_user.role ?? '-' }}</span></div>
+                  <div class="listItem"><span>Email</span><span class="listItem__meta">{{ is_own_profile ? (profile_user.email ?? '-') : 'Prive' }}</span></div>
+                  <div class="listItem"><span>Pays</span><span class="listItem__meta">{{ profile_user.country ?? '-' }}</span></div>
+                  <div class="listItem"><span>Bio</span><span class="listItem__meta">{{ profile_user.bio ?? 'Aucune bio.' }}</span></div>
+                </div>
+              </section>
+
+              <section class="tabPanel {{ active_tab == 'friends' ? 'is-active' : '' }}" data-panel="friends">
+                <form class="filtersRow" method="get" action="{{ is_own_profile ? path('front_profile') : path('front_player_profile', {id: profileId}) }}" style="margin-bottom:12px;">
+                  <input type="hidden" name="tab" value="friends">
+                  <input class="input" type="search" name="friends_q" value="{{ pf.friends_q|default('') }}" placeholder="Rechercher un ami..." />
+                  <div class="select">
+                    <select name="friends_sort">
+                      <option value="recent" {{ (pf.friends_sort|default('recent')) == 'recent' ? 'selected' : '' }}>Plus recents</option>
+                      <option value="oldest" {{ (pf.friends_sort|default('recent')) == 'oldest' ? 'selected' : '' }}>Plus anciens</option>
+                      <option value="name" {{ (pf.friends_sort|default('recent')) == 'name' ? 'selected' : '' }}>Nom A-Z</option>
+                    </select>
+                  </div>
+                  <button class="btn btn--ghost" type="submit">Filtrer</button>
+                </form>
+
+                {% if friends is empty %}
+                  <div class="emptyState">Aucun ami affiche.</div>
+                {% else %}
+                  <div class="socialQuickList">
+                    {% for friend in friends %}
+                      {% if friend.userId is not null %}
+                        <a class="listItem" href="{{ friend.userId == viewerId ? path('front_profile') : path('front_player_profile', {id: friend.userId}) }}">
+                          <span>{{ friend.displayName ?? friend.username }} (@{{ friend.username }})</span>
+                          <span class="listItem__meta">{{ friend.role }}</span>
+                        </a>
+                      {% endif %}
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </section>
+
+              <section class="tabPanel {{ active_tab == 'teams' ? 'is-active' : '' }}" data-panel="teams">
+                <form class="filtersRow" method="get" action="{{ is_own_profile ? path('front_profile') : path('front_player_profile', {id: profileId}) }}" style="margin-bottom:12px;">
+                  <input type="hidden" name="tab" value="teams">
+                  <input class="input" type="search" name="teams_q" value="{{ pf.teams_q|default('') }}" placeholder="Rechercher une equipe..." />
+                  <input class="input" type="text" name="teams_region" value="{{ pf.teams_region|default('') }}" placeholder="Region" />
+                  <div class="select">
+                    <select name="teams_sort">
+                      <option value="latest" {{ (pf.teams_sort|default('latest')) == 'latest' ? 'selected' : '' }}>Plus recents</option>
+                      <option value="oldest" {{ (pf.teams_sort|default('latest')) == 'oldest' ? 'selected' : '' }}>Plus anciens</option>
+                      <option value="name" {{ (pf.teams_sort|default('latest')) == 'name' ? 'selected' : '' }}>Nom A-Z</option>
+                      <option value="region" {{ (pf.teams_sort|default('latest')) == 'region' ? 'selected' : '' }}>Region</option>
+                    </select>
+                  </div>
+                  <button class="btn btn--ghost" type="submit">Filtrer</button>
+                </form>
+
+                {% if teams is empty %}
+                  <div class="emptyState">Aucune equipe active.</div>
+                {% else %}
+                  <div class="socialQuickList">
+                    {% for team in teams %}
+                      <a class="listItem" href="{{ path('front_team_detail') }}">
+                        <span>{{ team.name }}</span>
+                        <span class="listItem__meta">
+                          {{ team.region ?? 'Region -' }} ·
+                          {{ team.captainUserId and team.captainUserId.userId == profileId ? 'Capitaine' : 'Membre' }}
+                        </span>
+                      </a>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </section>
             </div>
-            <div class="listItem__meta">28 likes • 7 commentaires</div>
-          </div>
-      </div>
-      <div class="panel__actions" style="margin-top:10px;">
-        <a class="btn btn--ghost" href="{{ path('front_post_detail') }}">Like / Commenter → Connexion</a>
-      </div>
-
-        </div>
-        
-      <div class="panel">
-        <div class="panel__head">
-          <div>
-            <h3 class="panel__title">TABLES UTILISÉES</h3>
-            <div class="panel__desc">Schéma réel + colonnes clés.</div>
-          </div>
-        </div>
-        <div class="list">
-          <div class="listItem"><span><b>users</b></span><span class="listItem__meta">user_id, display_name, bio, country</span></div><div class="listItem"><span><b>team_members</b></span><span class="listItem__meta">team_id, user_id, is_active</span></div><div class="listItem"><span><b>posts</b></span><span class="listItem__meta">post_id, author_user_id, created_at</span></div><div class="listItem"><span><b>post_images</b></span><span class="listItem__meta">post_id, image_id</span></div>
+          </section>
         </div>
       </div>
 
-      
-        </div>
-      </div>
-
-
-      <footer class="footer">
-        <div>© 2026 Pulse — Front-office</div>
-        <div class="footer__links">
-          <a href="{{ path('front_about') }}">À propos</a>
-          <a href="{{ path('front_contact') }}">Contact</a>
-          <a href="{{ path('front_faq') }}">FAQ</a>
-        </div>
-      </footer>
-
+      {% include 'front/partials/_footer.html.twig' %}
     </section>
   </main>
 
-  <div class="authModal" id="authModal" aria-hidden="true">
-    <div class="authModal__backdrop" data-close="true"></div>
-    <div class="authCard" role="dialog" aria-modal="true" aria-label="Connexion">
-      <div class="authCard__head">
-        <div>
-          <div class="authCard__title">Connexion</div>
-          <div class="authCard__sub">Email + mot de passe, puis “mot de passe oublié”.</div>
-        </div>
-        <button class="iconBtn" data-close="true" aria-label="Fermer">
-          <svg viewBox="0 0 24 24" class="ico">
-            <path d="M18.3 5.7L12 12l6.3 6.3-1.4 1.4L10.6 13.4 4.3 19.7 2.9 18.3 9.2 12 2.9 5.7 4.3 4.3l6.3 6.3 6.3-6.3 1.4 1.4z"/>
-          </svg>
-        </button>
-      </div>
-      <form class="authForm" id="loginForm">
-        <label class="field">
-          <span class="field__label">Email</span>
-          <input type="email" name="email" placeholder="ex: you@email.com" required />
-        </label>
-        <label class="field">
-          <span class="field__label">Mot de passe</span>
-          <input type="password" name="password" placeholder="••••••••" required minlength="6" />
-        </label>
-        <button class="btn btn--primary authForm__submit" type="submit">Se connecter</button>
-        <div class="authForm__bottom">
-          <a class="authLink" href="{{ path('front_forgot_password') }}" id="forgotLink">Mot de passe oublié ?</a>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  
-
+  {% include 'front/partials/_auth_modal.html.twig' %}
 {% endblock %}
-
-

@@ -7,9 +7,14 @@ namespace App\Entity;
 use Doctrine\DBAL\Types\Types;
 use App\Repository\MessageRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: MessageRepository::class)]
 #[ORM\Table(name: 'messages')]
+#[Assert\Expression(
+    "this.getSenderUserId() !== this.getReceiverUserId()",
+    message: "L'expediteur et le destinataire doivent etre differents.",
+)]
 class Message
 {
     
@@ -20,13 +25,17 @@ class Message
     
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(name: 'sender_user_id', referencedColumnName: 'user_id', nullable: false, onDelete: 'CASCADE')]
+    #[Assert\NotNull(message: "L'expediteur est obligatoire.")]
     private User $senderUserId;
     
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(name: 'receiver_user_id', referencedColumnName: 'user_id', nullable: false, onDelete: 'CASCADE')]
+    #[Assert\NotNull(message: 'Le destinataire est obligatoire.')]
     private User $receiverUserId;
     
     #[ORM\Column(name: 'body_text', type: Types::TEXT)]
+    #[Assert\NotBlank(message: 'Le message est obligatoire.')]
+    #[Assert\Length(max: 5000)]
     private string $bodyText;
     
     #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE)]

@@ -3,47 +3,69 @@
 {% block title %}PULSE - Detail match{% endblock %}
 
 {% block admin_content %}
-
-        
   <div class="pageHeader">
     <div>
-      <h2>Detail match</h2>
-      <div class="pageSub">Teams + scores + actions.</div>
+      <h2>Detail match #{{ match.matchId }}</h2>
+      <div class="pageSub">Lecture detaillee + lien vers edition.</div>
     </div>
-    
+    <div class="formActions">
+      <a class="btn btnPrimary" href="{{ path('admin_matches', {edit: match.matchId}) }}">Modifier</a>
+      <a class="btn btnGhost" href="{{ path('admin_matches') }}">Retour liste</a>
+    </div>
   </div>
-  
+
   <div class="tabs" data-tabs="match">
     <button class="tab isActive" data-tab="info">Infos</button>
-<button class="tab" data-tab="teams">Teams</button>
+    <button class="tab" data-tab="teams">Participants</button>
   </div>
+
   <div class="tabPanels" data-panels="match">
-    <div class="tabPanel isActive" data-panel="info"><section class="panel"><div class="list"><div class="listItem"><span>match_id</span><span class="listMeta">1</span></div><div class="listItem"><span>tournament_id</span><span class="listMeta">1</span></div><div class="listItem"><span>round_name</span><span class="listMeta">—</span></div><div class="listItem"><span>status</span><span class="listMeta"><span class="badge badge--warning">PENDING</span></span></div></div></section></div>
-<div class="tabPanel" data-panel="teams"><section class="panel">
-  <div class="dataTableWrap">
-    <table class="dataTable">
-      <thead><tr><th>team_id</th><th>score</th><th>is_winner</th></tr></thead>
-      <tbody>
-        <tr><td>Nebula Five</td><td>2</td><td>—</td></tr>
-        <tr><td>Nebula Five</td><td>2</td><td>—</td></tr>
-      </tbody>
-    </table>
-  </div></section></div>
+    <div class="tabPanel isActive" data-panel="info">
+      <section class="panel">
+        <div class="list">
+          <div class="listItem"><span>match_id</span><span class="listMeta">#{{ match.matchId }}</span></div>
+          <div class="listItem"><span>tournament</span><span class="listMeta">{{ match.tournamentId ? match.tournamentId.title : '-' }}</span></div>
+          <div class="listItem"><span>game</span><span class="listMeta">{{ match.tournamentId and match.tournamentId.gameId ? match.tournamentId.gameId.name : '-' }}</span></div>
+          <div class="listItem"><span>organizer</span><span class="listMeta">{{ match.tournamentId and match.tournamentId.organizerUserId ? match.tournamentId.organizerUserId.username : '-' }}</span></div>
+          <div class="listItem"><span>round_name</span><span class="listMeta">{{ match.roundName ?: '-' }}</span></div>
+          <div class="listItem"><span>best_of</span><span class="listMeta">{{ match.bestOf ?: '-' }}</span></div>
+          <div class="listItem"><span>scheduled_at</span><span class="listMeta">{{ match.scheduledAt ? match.scheduledAt|date('d/m/Y H:i') : '-' }}</span></div>
+          <div class="listItem"><span>status</span><span class="listMeta"><span class="badge">{{ match.status }}</span></span></div>
+          <div class="listItem"><span>created_at</span><span class="listMeta">{{ match.createdAt ? match.createdAt|date('d/m/Y H:i') : '-' }}</span></div>
+          <div class="listItem"><span>updated_at</span><span class="listMeta">{{ match.updatedAt ? match.updatedAt|date('d/m/Y H:i') : '-' }}</span></div>
+        </div>
+      </section>
+    </div>
+
+    <div class="tabPanel" data-panel="teams">
+      <section class="panel">
+        <div class="dataTableWrap">
+          <table class="dataTable">
+            <thead>
+              <tr>
+                <th>Team</th>
+                <th>Score</th>
+                <th>Winner</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for relation in matchTeams %}
+                {% set team = relation.teamId %}
+                <tr>
+                  <td>{{ team ? team.name : '-' }}</td>
+                  <td>{{ relation.score is not null ? relation.score : '-' }}</td>
+                  <td>{{ relation.isWinner is same as(true) ? 'Oui' : 'Non' }}</td>
+                </tr>
+              {% else %}
+                <tr>
+                  <td colspan="3" class="listMeta">Aucune equipe participante.</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
   </div>
-
-  
-  <section class="panel">
-    <div class="panelHeader">
-      <div>
-        <h3 class="panelTitle">SCHEMA UTILISE</h3>
-        <div class="panelDesc">Tables et colonnes principales.</div>
-      </div>
-    </div>
-    <div class="list">
-      <div class="listItem"><span><b>matches</b></span><span class="listMeta">match_id, tournament_id, round_name, status, team_id, score, is_winner</span></div>
-    </div>
-  </section>
-
-
-      
 {% endblock %}
+

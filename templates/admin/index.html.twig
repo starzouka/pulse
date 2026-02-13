@@ -3,98 +3,351 @@
 {% block title %}PULSE - Dashboard Admin{% endblock %}
 
 {% block admin_content %}
+  {% set kpi = dashboard.kpi|default({}) %}
+  {% set lists = dashboard.lists|default({}) %}
+  {% set charts = dashboard.charts|default({}) %}
+
+  {% for message in app.flashes('warning') %}
+    <section class="panel">
+      <div class="badge badge--warning">{{ message }}</div>
+    </section>
+  {% endfor %}
+
   <div class="pageHeader">
     <div>
       <h2>Dashboard Admin</h2>
-      <div class="pageSub">Vue globale, alertes et acces rapide.</div>
+      <div class="pageSub">Vue globale en temps reel basee sur la base de donnees.</div>
     </div>
     <div class="formActions">
-      <button class="btn btnGhost">Exporter CSV</button>
-      <button class="btn btnPrimary">Actualiser</button>
+      <a class="btn btnGhost" href="{{ path('admin_dashboard') }}">Reinitialiser</a>
+      <a class="btn btnPrimary" href="{{ path('admin_dashboard', app.request.query.all) }}">Actualiser</a>
     </div>
   </div>
 
-  <div class="filtersBar">
-    <div class="filterGroup"><label>Periode</label><select><option>Aujourd'hui</option><option>7 jours</option><option>30 jours</option><option>Personnalise</option></select></div>
-    <div class="filterGroup"><label>Statut commande</label><select><option>ALL</option><option>PENDING</option><option>PAID</option><option>SHIPPED</option></select></div>
-    <div class="filterGroup"><label>Reports</label><select><option>ALL</option><option>OPEN</option><option>IN_REVIEW</option><option>CLOSED</option></select></div>
-    <div class="filterGroup"><label>Demandes tournois</label><select><option>ALL</option><option>PENDING</option><option>ACCEPTED</option><option>REFUSED</option></select></div>
-  </div>
+  <form class="filtersBar" method="get" action="{{ path('admin_dashboard') }}">
+    <div class="filterGroup">
+      <label>Recherche</label>
+      <input type="search" name="q" value="{{ filters.q }}" placeholder="username, email, order, tournoi..." />
+    </div>
+    <div class="filterGroup">
+      <label>Periode</label>
+      <select name="period">
+        {% for value in filters.periodOptions %}
+          <option value="{{ value }}" {{ filters.period == value ? 'selected' : '' }}>{{ value }} jours</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="filterGroup">
+      <label>Commandes</label>
+      <select name="orderStatus">
+        {% for value in filters.orderStatusOptions %}
+          <option value="{{ value }}" {{ filters.orderStatus == value ? 'selected' : '' }}>{{ value }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="filterGroup">
+      <label>Signalements</label>
+      <select name="reportStatus">
+        {% for value in filters.reportStatusOptions %}
+          <option value="{{ value }}" {{ filters.reportStatus == value ? 'selected' : '' }}>{{ value }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="filterGroup">
+      <label>Demandes tournoi</label>
+      <select name="requestStatus">
+        {% for value in filters.requestStatusOptions %}
+          <option value="{{ value }}" {{ filters.requestStatus == value ? 'selected' : '' }}>{{ value }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="formActions">
+      <button class="btn btnPrimary" type="submit">Appliquer</button>
+    </div>
+  </form>
 
   <div class="kpiRow">
-    <div class="kpiCard"><div class="kpiLabel">Total utilisateurs</div><div class="kpiValue">12,402</div><div class="listMeta">+124 / 7 jours</div></div>
-    <div class="kpiCard"><div class="kpiLabel">Commandes</div><div class="kpiValue">2,140</div><div class="listMeta">PENDING 120</div></div>
-    <div class="kpiCard"><div class="kpiLabel">CA total</div><div class="kpiValue">128,900 DT</div><div class="listMeta">30 jours</div></div>
-    <div class="kpiCard"><div class="kpiLabel">Signalements ouverts</div><div class="kpiValue">14</div><div class="listMeta">OPEN / IN_REVIEW</div></div>
-    <div class="kpiCard"><div class="kpiLabel">Demandes tournois</div><div class="kpiValue">6</div><div class="listMeta">PENDING</div></div>
-    <div class="kpiCard"><div class="kpiLabel">Tournois en cours</div><div class="kpiValue">9</div><div class="listMeta">ONGOING</div></div>
+    <div class="kpiCard">
+      <div class="kpiLabel">Total utilisateurs</div>
+      <div class="kpiValue">{{ kpi.totalUsers|default(0) }}</div>
+      <div class="listMeta">+{{ kpi.newUsers|default(0) }} sur {{ filters.period }} jours</div>
+    </div>
+    <div class="kpiCard">
+      <div class="kpiLabel">Commandes</div>
+      <div class="kpiValue">{{ kpi.ordersCount|default(0) }}</div>
+      <div class="listMeta">En attente: {{ kpi.pendingOrders|default(0) }}</div>
+    </div>
+    <div class="kpiCard">
+      <div class="kpiLabel">Chiffre d affaires</div>
+      <div class="kpiValue">{{ kpi.revenue|default(0)|number_format(2, '.', ' ') }} DT</div>
+      <div class="listMeta">Paiements valides sur la periode</div>
+    </div>
+    <div class="kpiCard">
+      <div class="kpiLabel">Signalements ouverts</div>
+      <div class="kpiValue">{{ kpi.openReports|default(0) }}</div>
+      <div class="listMeta">OPEN + IN_REVIEW</div>
+    </div>
+    <div class="kpiCard">
+      <div class="kpiLabel">Demandes tournois en attente</div>
+      <div class="kpiValue">{{ kpi.pendingRequests|default(0) }}</div>
+      <div class="listMeta">Statut PENDING</div>
+    </div>
+    <div class="kpiCard">
+      <div class="kpiLabel">Tournois en cours</div>
+      <div class="kpiValue">{{ kpi.ongoingTournaments|default(0) }}</div>
+      <div class="listMeta">Statut ONGOING</div>
+    </div>
   </div>
 
   <div class="split">
-    <div>
+    <div class="chartGrid">
       <section class="panel">
-        <div class="panelHeader"><h3 class="panelTitle">GRAPHIQUES</h3><span class="listMeta">Commandes & inscriptions</span></div>
-        <div class="list">
-          <div class="listItem"><span>Commandes par jour/semaine</span><span class="badge badge--info">Chart</span></div>
-          <div class="listItem"><span>Repartition commandes par statut</span><span class="badge badge--info">Chart</span></div>
-          <div class="listItem"><span>Inscriptions tournois par tournoi</span><span class="badge badge--info">Chart</span></div>
+        <div class="panelHeader">
+          <h3 class="panelTitle">Commandes par jour</h3>
+          <span class="listMeta">{{ filters.period }} derniers jours</span>
+        </div>
+        <div class="chartWrap">
+          <canvas id="ordersByDayChart"></canvas>
         </div>
       </section>
       <section class="panel">
-        <div class="panelHeader"><h3 class="panelTitle">DERNIERS SIGNALEMENTS</h3><button class="btn btnTiny">Voir tout</button></div>
-        <div class="list">
-          <div class="listItem"><span>Report #1021 - POST</span><span class="badge badge--danger">OPEN</span></div>
-          <div class="listItem"><span>Report #1020 - COMMENT</span><span class="badge badge--warning">IN_REVIEW</span></div>
-          <div class="listItem"><span>Report #1018 - USER</span><span class="badge">CLOSED</span></div>
+        <div class="panelHeader">
+          <h3 class="panelTitle">Repartition des statuts</h3>
+          <span class="listMeta">Commandes</span>
+        </div>
+        <div class="chartWrap chartWrap--sm">
+          <canvas id="ordersStatusChart"></canvas>
+        </div>
+      </section>
+      <section class="panel">
+        <div class="panelHeader">
+          <h3 class="panelTitle">Inscriptions par tournoi</h3>
+          <span class="listMeta">Top tournois</span>
+        </div>
+        <div class="chartWrap">
+          <canvas id="registrationsChart"></canvas>
         </div>
       </section>
     </div>
+
     <div>
       <section class="panel">
-        <div class="panelHeader"><h3 class="panelTitle">DERNIERES COMMANDES</h3><button class="btn btnTiny">Voir tout</button></div>
-
+        <div class="panelHeader">
+          <h3 class="panelTitle">Dernieres commandes</h3>
+          <a class="btn btnTiny" href="{{ path('admin_orders') }}">Voir tout</a>
+        </div>
         <div class="dataTableWrap">
           <table class="dataTable">
-            <thead><tr><th>order_number</th><th>user</th><th>status</th><th>total_amount</th></tr></thead>
+            <thead>
+              <tr>
+                <th>Commande</th>
+                <th>User</th>
+                <th>Status</th>
+                <th>Total</th>
+              </tr>
+            </thead>
             <tbody>
-              <tr><td>ORD-2026-001</td><td>zed_99</td><td><span class="badge badge--warning">PENDING</span></td><td>120 DT</td></tr>
-              <tr><td>ORD-2026-001</td><td>zed_99</td><td><span class="badge badge--warning">PENDING</span></td><td>120 DT</td></tr>
+              {% for order in lists.recentOrders|default([]) %}
+                <tr>
+                  <td>{{ order.order_number }}</td>
+                  <td>{{ order.username }}</td>
+                  <td>
+                    {% set orderBadge = order.status == 'PAID' or order.status == 'DELIVERED' ? 'badge--success' : (order.status == 'PENDING' ? 'badge--warning' : (order.status == 'CANCELLED' ? 'badge--danger' : 'badge--info')) %}
+                    <span class="badge {{ orderBadge }}">{{ order.status }}</span>
+                  </td>
+                  <td>{{ order.total_amount|number_format(2, '.', ' ') }} DT</td>
+                </tr>
+              {% else %}
+                <tr>
+                  <td colspan="4" class="listMeta">Aucune commande sur cette periode.</td>
+                </tr>
+              {% endfor %}
             </tbody>
           </table>
         </div>
       </section>
+
       <section class="panel">
-        <div class="panelHeader"><h3 class="panelTitle">DEMANDES TOURNOIS</h3><button class="btn btnTiny">Voir tout</button></div>
+        <div class="panelHeader">
+          <h3 class="panelTitle">Demandes tournois</h3>
+          <a class="btn btnTiny" href="{{ path('admin_tournament_requests') }}">Voir tout</a>
+        </div>
         <div class="list">
-          <div class="listItem"><span>Pulse Winter Cup</span><span class="badge badge--warning">PENDING</span></div>
-          <div class="listItem"><span>Community Clash</span><span class="badge badge--success">ACCEPTED</span></div>
+          {% for request in lists.recentRequests|default([]) %}
+            {% set requestBadge = request.status == 'ACCEPTED' ? 'badge--success' : (request.status == 'REFUSED' ? 'badge--danger' : 'badge--warning') %}
+            <div class="listItem">
+              <span>
+                #{{ request.request_id }} - {{ request.title }} <span class="listMeta">({{ request.game_name }} - {{ request.organizer_name }})</span>
+              </span>
+              <div class="formActions">
+                <a class="btn btnTiny" href="{{ path('admin_tournament_request_detail', {id: request.request_id}) }}">Detail</a>
+                {% if request.status == 'PENDING' %}
+                  <form method="post" action="{{ path('admin_tournament_request_review', {id: request.request_id}) }}" style="display:inline-block;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('review_tournament_request_' ~ request.request_id) }}" />
+                    <input type="hidden" name="decision" value="ACCEPTED" />
+                    <button class="btn btnTiny" type="submit">Accepter</button>
+                  </form>
+                  <form method="post" action="{{ path('admin_tournament_request_review', {id: request.request_id}) }}" style="display:inline-block;" onsubmit="return confirm('Refuser cette demande ?');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('review_tournament_request_' ~ request.request_id) }}" />
+                    <input type="hidden" name="decision" value="REFUSED" />
+                    <button class="btn btnTiny" type="submit">Refuser</button>
+                  </form>
+                {% else %}
+                  <span class="badge {{ requestBadge }}">{{ request.status }}</span>
+                {% endif %}
+              </div>
+            </div>
+          {% else %}
+            <div class="listItem">
+              <span>Aucune demande recente</span>
+              <span class="listMeta">--</span>
+            </div>
+          {% endfor %}
         </div>
       </section>
+
       <section class="panel">
-        <div class="panelHeader"><h3 class="panelTitle">DERNIERS UTILISATEURS</h3><button class="btn btnTiny">Voir tout</button></div>
+        <div class="panelHeader">
+          <h3 class="panelTitle">Derniers utilisateurs</h3>
+          <a class="btn btnTiny" href="{{ path('admin_users') }}">Voir tout</a>
+        </div>
         <div class="list">
-          <div class="listItem"><span>@FrostByte</span><span class="listMeta">FR • PLAYER</span></div>
-          <div class="listItem"><span>@NovaAim</span><span class="listMeta">US • PLAYER</span></div>
-          <div class="listItem"><span>@ArenaOrg</span><span class="listMeta">ORGANIZER</span></div>
+          {% for user in lists.recentUsers|default([]) %}
+            <div class="listItem">
+              <span>@{{ user.username }}</span>
+              <span class="listMeta">{{ user.country ?: 'N/A' }} - {{ user.role }}</span>
+            </div>
+          {% else %}
+            <div class="listItem">
+              <span>Aucun utilisateur</span>
+              <span class="listMeta">--</span>
+            </div>
+          {% endfor %}
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panelHeader">
+          <h3 class="panelTitle">Derniers signalements</h3>
+          <a class="btn btnTiny" href="{{ path('admin_reports') }}">Voir tout</a>
+        </div>
+        <div class="list">
+          {% for report in lists.recentReports|default([]) %}
+            {% set reportBadge = report.status == 'OPEN' ? 'badge--danger' : (report.status == 'IN_REVIEW' ? 'badge--warning' : 'badge--success') %}
+            <div class="listItem">
+              <span>#{{ report.report_id }} - {{ report.target_type }} - {{ report.username }}</span>
+              <span class="badge {{ reportBadge }}">{{ report.status }}</span>
+            </div>
+          {% else %}
+            <div class="listItem">
+              <span>Aucun signalement recent</span>
+              <span class="listMeta">--</span>
+            </div>
+          {% endfor %}
         </div>
       </section>
     </div>
   </div>
-
-  <section class="panel">
-    <div class="panelHeader">
-      <div>
-        <h3 class="panelTitle">SCHEMA UTILISE</h3>
-        <div class="panelDesc">Tables et colonnes principales.</div>
-      </div>
-    </div>
-    <div class="list">
-      <div class="listItem"><span><b>users</b></span><span class="listMeta">user_id, username, email, role, created_at</span></div>
-      <div class="listItem"><span><b>orders</b></span><span class="listMeta">order_id, status, total_amount, created_at</span></div>
-      <div class="listItem"><span><b>reports</b></span><span class="listMeta">report_id, target_type, status</span></div>
-      <div class="listItem"><span><b>tournament_requests</b></span><span class="listMeta">request_id, status, created_at</span></div>
-      <div class="listItem"><span><b>tournaments</b></span><span class="listMeta">tournament_id, status, start_date</span></div>
-    </div>
-  </section>
 {% endblock %}
 
+{% block javascripts %}
+  {{ parent() }}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script>
+    (() => {
+      if (typeof Chart === 'undefined') {
+        return;
+      }
+
+      const charts = {{ dashboard.charts|default({})|json_encode|raw }};
+      const textColor = 'rgba(255,255,255,.78)';
+      const gridColor = 'rgba(255,255,255,.10)';
+
+      const ordersByDayCtx = document.getElementById('ordersByDayChart');
+      if (ordersByDayCtx && charts.ordersByDay) {
+        new Chart(ordersByDayCtx, {
+          type: 'line',
+          data: {
+            labels: charts.ordersByDay.labels || [],
+            datasets: [{
+              label: 'Commandes',
+              data: charts.ordersByDay.data || [],
+              borderColor: '#ff9d2e',
+              backgroundColor: 'rgba(255,157,46,.22)',
+              tension: 0.35,
+              fill: true,
+              pointRadius: 3,
+              pointHoverRadius: 5,
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { labels: { color: textColor } }
+            },
+            scales: {
+              x: { ticks: { color: textColor }, grid: { color: gridColor } },
+              y: { ticks: { color: textColor, precision: 0 }, grid: { color: gridColor } }
+            }
+          }
+        });
+      }
+
+      const ordersStatusCtx = document.getElementById('ordersStatusChart');
+      if (ordersStatusCtx && charts.orderStatuses) {
+        new Chart(ordersStatusCtx, {
+          type: 'doughnut',
+          data: {
+            labels: charts.orderStatuses.labels || [],
+            datasets: [{
+              data: charts.orderStatuses.data || [],
+              backgroundColor: ['#ff9d2e', '#20d4a8', '#ff6b6b', '#4da3ff', '#9d87ff', '#ffd166'],
+              borderColor: 'rgba(16,14,24,.95)',
+              borderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: { color: textColor, boxWidth: 10, boxHeight: 10 }
+              }
+            }
+          }
+        });
+      }
+
+      const registrationsCtx = document.getElementById('registrationsChart');
+      if (registrationsCtx && charts.registrationsByTournament) {
+        new Chart(registrationsCtx, {
+          type: 'bar',
+          data: {
+            labels: charts.registrationsByTournament.labels || [],
+            datasets: [{
+              label: 'Inscriptions',
+              data: charts.registrationsByTournament.data || [],
+              backgroundColor: 'rgba(255,157,46,.45)',
+              borderColor: '#ff9d2e',
+              borderWidth: 1.5,
+              borderRadius: 8
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { labels: { color: textColor } }
+            },
+            scales: {
+              x: { ticks: { color: textColor }, grid: { color: gridColor } },
+              y: { ticks: { color: textColor, precision: 0 }, grid: { color: gridColor } }
+            }
+          }
+        });
+      }
+    })();
+  </script>
+{% endblock %}

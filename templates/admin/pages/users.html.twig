@@ -1,53 +1,145 @@
-{% extends 'admin/base_admin.html.twig' %}
+﻿{% extends 'admin/base_admin.html.twig' %}
+
+{% macro sort_link(route_name, filters, field, label) %}
+  {% set current_sort = filters.sort|default('created_at') %}
+  {% set current_direction = filters.direction|default('desc') %}
+  {% set is_current = current_sort == field %}
+  {% set next_direction = is_current and current_direction == 'asc' ? 'desc' : 'asc' %}
+  {% set marker = is_current ? (current_direction == 'asc' ? ' (ASC)' : ' (DESC)') : '' %}
+  <a href="{{ path(route_name, filters|merge({sort: field, direction: next_direction})) }}" style="color:inherit;text-decoration:none;">
+    {{ label }}{{ marker }}
+  </a>
+{% endmacro %}
+
+{% import _self as sorter %}
 
 {% block title %}PULSE - Gestion utilisateurs{% endblock %}
 
 {% block admin_content %}
-
-        
   <div class="pageHeader">
     <div>
       <h2>Gestion utilisateurs</h2>
-      <div class="pageSub">users + images + actions batch.</div>
+      <div class="pageSub">Recherche/filtre DB + CRUD + exports.</div>
     </div>
-    <div class="formActions"><a class="btn btnPrimary" href="{{ path('admin_user_create') }}">+ Creer utilisateur</a></div>
+    <div class="formActions">
+      <a class="btn btnPrimary" href="{{ path('admin_user_create') }}">+ Creer utilisateur</a>
+      <a class="btn btnGhost" href="{{ path('admin_users_export', filters|merge({format: 'pdf'})) }}">Exporter PDF</a>
+      <a class="btn btnGhost" href="{{ path('admin_users_export', filters|merge({format: 'excel'})) }}">Exporter Excel</a>
+    </div>
   </div>
-  
-  <div class="filtersBar">
-    <div class="filterGroup"><label>Recherche</label><input type="text" placeholder="username/email" /></div>
-<div class="filterGroup"><label>Role</label><select><option>ALL</option><option>PLAYER</option><option>ORGANIZER</option><option>ADMIN</option></select></div>
-<div class="filterGroup"><label>Actif</label><select><option>ALL</option><option>Actif</option><option>Suspendu</option></select></div>
-<div class="filterGroup"><label>Email verified</label><select><option>ALL</option><option>Oui</option><option>Non</option></select></div>
-  </div>
-  <section class="panel">
-    <div class="panelHeader"><h3 class="panelTitle">LISTE</h3></div>
-    
-  <div class="dataTableWrap">
-    <table class="dataTable">
-      <thead><tr><th>Photo</th><th>username</th><th>email</th><th>role</th><th>is_active</th><th>email_verified</th><th>country</th><th>created_at</th><th>last_login_at</th><th>Actions</th></tr></thead>
-      <tbody>
-        <tr><td><span class="avatarSmall">A</span></td><td>zed_99</td><td>user@email.com</td><td>PLAYER</td><td>—</td><td>user@email.com</td><td>TN</td><td>2026-02-05</td><td>—</td><td><a class="btn btnTiny" href="{{ path('admin_user_detail') }}">Voir</a></td></tr>
-        <tr><td><span class="avatarSmall">A</span></td><td>zed_99</td><td>user@email.com</td><td>PLAYER</td><td>—</td><td>user@email.com</td><td>TN</td><td>2026-02-05</td><td>—</td><td><a class="btn btnTiny" href="{{ path('admin_user_detail') }}">Voir</a></td></tr>
-      </tbody>
-    </table>
-  </div>
-    
-  </section>
-  
+
+  {% for label, messages in app.flashes %}
+    {% for message in messages %}
+      <div class="listItem">
+        <span>{{ message }}</span>
+        <span class="badge {{ label == 'error' ? 'badge--danger' : 'badge--success' }}">{{ label|upper }}</span>
+      </div>
+    {% endfor %}
+  {% endfor %}
+
+  <form class="filtersBar" method="get" action="{{ path('admin_users') }}">
+    <input type="hidden" name="sort" value="{{ filters.sort|default('created_at') }}" />
+    <input type="hidden" name="direction" value="{{ filters.direction|default('desc') }}" />
+    <div class="filterGroup">
+      <label>Recherche</label>
+      <input type="search" name="q" value="{{ filters.q }}" placeholder="username, email, display name" />
+    </div>
+
+    <div class="filterGroup">
+      <label>Role</label>
+      <select name="role">
+        <option value="">ALL</option>
+        {% for role in roleOptions %}
+          <option value="{{ role }}" {{ filters.role == role ? 'selected' : '' }}>{{ role }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="filterGroup">
+      <label>Actif</label>
+      <select name="active">
+        <option value="" {{ filters.active == '' ? 'selected' : '' }}>ALL</option>
+        <option value="1" {{ filters.active == '1' ? 'selected' : '' }}>Oui</option>
+        <option value="0" {{ filters.active == '0' ? 'selected' : '' }}>Non</option>
+      </select>
+    </div>
+
+    <div class="filterGroup">
+      <label>Email verifie</label>
+      <select name="verified">
+        <option value="" {{ filters.verified == '' ? 'selected' : '' }}>ALL</option>
+        <option value="1" {{ filters.verified == '1' ? 'selected' : '' }}>Oui</option>
+        <option value="0" {{ filters.verified == '0' ? 'selected' : '' }}>Non</option>
+      </select>
+    </div>
+
+    <div class="formActions">
+      <button class="btn btnPrimary" type="submit">Filtrer</button>
+      <a class="btn btnGhost" href="{{ path('admin_users') }}">Reset</a>
+    </div>
+  </form>
+
   <section class="panel">
     <div class="panelHeader">
-      <div>
-        <h3 class="panelTitle">SCHEMA UTILISE</h3>
-        <div class="panelDesc">Tables et colonnes principales.</div>
-      </div>
+      <h3 class="panelTitle">LISTE</h3>
+      <span class="listMeta">{{ users|length }} resultat(s)</span>
     </div>
-    <div class="list">
-      <div class="listItem"><span><b>users</b></span><span class="listMeta">user_id, username, email, role, is_active, email_verified</span></div>
-<div class="listItem"><span><b>images</b></span><span class="listMeta">image_id, file_url</span></div>
+
+    <div class="dataTableWrap">
+      <table class="dataTable">
+        <thead>
+          <tr>
+            <th>Photo</th>
+            <th>{{ sorter.sort_link('admin_users', filters, 'id', 'ID') }}</th>
+            <th>{{ sorter.sort_link('admin_users', filters, 'username', 'Username') }}</th>
+            <th>{{ sorter.sort_link('admin_users', filters, 'email', 'Email') }}</th>
+            <th>{{ sorter.sort_link('admin_users', filters, 'role', 'Role') }}</th>
+            <th>{{ sorter.sort_link('admin_users', filters, 'active', 'Actif') }}</th>
+            <th>{{ sorter.sort_link('admin_users', filters, 'verified', 'Email verifie') }}</th>
+            <th>{{ sorter.sort_link('admin_users', filters, 'country', 'Country') }}</th>
+            <th>{{ sorter.sort_link('admin_users', filters, 'created_at', 'Created') }}</th>
+            <th>{{ sorter.sort_link('admin_users', filters, 'last_login_at', 'Last login') }}</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for user in users %}
+            {% set userId = user.userId ?? 0 %}
+            <tr>
+              <td>
+                {% if user.profileImageId %}
+                  <img src="{{ user.profileImageId.fileUrl starts with 'http' ? user.profileImageId.fileUrl : asset(user.profileImageId.fileUrl) }}" alt="avatar" style="width:28px;height:28px;border-radius:999px;object-fit:cover;" />
+                {% else %}
+                  <span class="avatarSmall">{{ user.username|slice(0, 1)|upper }}</span>
+                {% endif %}
+              </td>
+              <td>#{{ userId }}</td>
+              <td>{{ user.username }}</td>
+              <td>{{ user.email }}</td>
+              <td><span class="badge badge--info">{{ user.role }}</span></td>
+              <td>{{ user.isActive ? 'Oui' : 'Non' }}</td>
+              <td>{{ user.emailVerified ? 'Oui' : 'Non' }}</td>
+              <td>{{ user.country ?: '-' }}</td>
+              <td>{{ user.createdAt ? user.createdAt|date('d/m/Y H:i') : '-' }}</td>
+              <td>{{ user.lastLoginAt ? user.lastLoginAt|date('d/m/Y H:i') : '-' }}</td>
+              <td>
+                <div class="formActions">
+                  <a class="btn btnTiny" href="{{ path('admin_user_detail', {id: userId}) }}">Voir</a>
+                  <a class="btn btnTiny" href="{{ path('admin_user_edit', {id: userId}) }}">Update</a>
+                  <form method="post" action="{{ path('admin_user_delete', {id: userId}) }}" onsubmit="return confirm('Supprimer cet utilisateur ?');" style="display:inline-block;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete_user_' ~ userId) }}" />
+                    <button class="btn btnTiny" type="submit">Delete</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="11" class="listMeta">Aucun utilisateur trouve.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
   </section>
-
-
-      
 {% endblock %}
-

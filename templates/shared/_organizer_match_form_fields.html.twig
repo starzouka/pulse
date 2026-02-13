@@ -1,0 +1,150 @@
+<div class="formGrid">
+  <div class="field">
+    {{ form_label(form.tournamentId, 'tournoi*') }}
+    {{ form_widget(form.tournamentId, {
+      attr: {
+        class: 'input',
+        'data-participant-endpoint': path('lookup_tournament_participants')
+      }
+    }) }}
+    {{ form_errors(form.tournamentId) }}
+  </div>
+
+  <div class="field">
+    {{ form_label(form.roundName, 'round_name') }}
+    {{ form_widget(form.roundName, {attr: {class: 'input', placeholder: 'Quarterfinal / Group A...'}}) }}
+    {{ form_errors(form.roundName) }}
+  </div>
+
+  <div class="field">
+    {{ form_label(form.scheduledAt, 'scheduled_at') }}
+    {{ form_widget(form.scheduledAt, {attr: {class: 'input'}}) }}
+    {{ form_errors(form.scheduledAt) }}
+  </div>
+
+  <div class="field">
+    {{ form_label(form.bestOf, 'best_of') }}
+    {{ form_widget(form.bestOf, {attr: {class: 'input'}}) }}
+    {{ form_errors(form.bestOf) }}
+  </div>
+
+  <div class="field">
+    {{ form_label(form.status, 'status*') }}
+    {{ form_widget(form.status, {attr: {class: 'input'}}) }}
+    {{ form_errors(form.status) }}
+  </div>
+
+  <div class="field">
+    {{ form_label(form.participantTeams, 'equipes_participantes*') }}
+    {{ form_widget(form.participantTeams, {
+      attr: {
+        class: 'input',
+        size: 8,
+        'data-auto-refresh-participants': '1'
+      }
+    }) }}
+    {{ form_errors(form.participantTeams) }}
+    <div class="panelDesc">Utilisez Ctrl/Cmd + clic pour selection multiple.</div>
+    <div
+      class="panelDesc"
+      data-participant-count-for="{{ form.participantTeams.vars.id }}"
+      style="margin-top:6px;"
+    >
+      Equipes disponibles pour le tournoi selectionne: {{ form.participantTeams.vars.choices|length }}
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const tournamentSelect = document.getElementById('{{ form.tournamentId.vars.id }}');
+    const participantSelect = document.getElementById('{{ form.participantTeams.vars.id }}');
+    if (!tournamentSelect || !participantSelect) {
+      return;
+    }
+
+    if (participantSelect.dataset.participantRefreshBound === '1') {
+      return;
+    }
+    participantSelect.dataset.participantRefreshBound = '1';
+
+    if (tournamentSelect.disabled) {
+      return;
+    }
+
+    const endpoint = tournamentSelect.dataset.participantEndpoint || '';
+    if (!endpoint) {
+      return;
+    }
+
+    const countTargets = document.querySelectorAll('[data-participant-count-for="{{ form.participantTeams.vars.id }}"]');
+
+    const setCount = (count) => {
+      countTargets.forEach((target) => {
+        target.textContent = 'Equipes disponibles pour le tournoi selectionne: ' + String(count);
+      });
+    };
+
+    const renderTeams = (teams, keepSelectedValues) => {
+      participantSelect.innerHTML = '';
+      const selectedSet = new Set(keepSelectedValues);
+
+      if (!Array.isArray(teams) || teams.length === 0) {
+        setCount(0);
+        return;
+      }
+
+      teams.forEach((team) => {
+        if (!team || typeof team.id === 'undefined') {
+          return;
+        }
+
+        const value = String(team.id);
+        const option = new Option(String(team.name || ('Equipe #' + value)), value);
+        option.selected = selectedSet.has(value);
+        participantSelect.add(option);
+      });
+
+      setCount(participantSelect.options.length);
+    };
+
+    const fetchTeams = async () => {
+      const tournamentId = parseInt(tournamentSelect.value || '0', 10);
+      if (!Number.isFinite(tournamentId) || tournamentId <= 0) {
+        renderTeams([], []);
+        return;
+      }
+
+      const selectedValues = Array.from(participantSelect.selectedOptions).map((option) => option.value);
+      participantSelect.disabled = true;
+
+      try {
+        const url = new URL(endpoint, window.location.origin);
+        url.searchParams.set('tournamentId', String(tournamentId));
+
+        const response = await fetch(url.toString(), {
+          method: 'GET',
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Participant teams lookup failed with status ' + response.status);
+        }
+
+        const payload = await response.json();
+        const teams = Array.isArray(payload.teams) ? payload.teams : [];
+        renderTeams(teams, selectedValues);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        participantSelect.disabled = false;
+      }
+    };
+
+    tournamentSelect.addEventListener('change', fetchTeams);
+    fetchTeams();
+  })();
+</script>

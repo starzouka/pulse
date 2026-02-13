@@ -7,6 +7,7 @@ namespace App\Entity;
 use Doctrine\DBAL\Types\Types;
 use App\Repository\TournamentMatchRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: TournamentMatchRepository::class)]
 #[ORM\Table(name: 'matches')]
@@ -20,18 +21,22 @@ class TournamentMatch
     
     #[ORM\ManyToOne(targetEntity: Tournament::class)]
     #[ORM\JoinColumn(name: 'tournament_id', referencedColumnName: 'tournament_id', nullable: false, onDelete: 'CASCADE')]
+    #[Assert\NotNull(message: 'Le tournoi est obligatoire.')]
     private Tournament $tournamentId;
     
     #[ORM\Column(name: 'scheduled_at', type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $scheduledAt = null;
     
     #[ORM\Column(name: 'round_name', type: Types::STRING, length: 80, nullable: true)]
+    #[Assert\Length(max: 80)]
     private ?string $roundName = null;
     
     #[ORM\Column(name: 'best_of', type: Types::SMALLINT, nullable: true, options: ['unsigned' => true])]
+    #[Assert\Choice(choices: [1, 3, 5], message: 'Le format BO est invalide.')]
     private ?int $bestOf = null;
     
     #[ORM\Column(name: 'status', type: Types::STRING, length: 9, options: ['default' => 'SCHEDULED'])]
+    #[Assert\Choice(choices: ['SCHEDULED', 'ONGOING', 'FINISHED', 'CANCELLED'], message: 'Statut invalide.')]
     private string $status = 'SCHEDULED';
     
     #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE)]

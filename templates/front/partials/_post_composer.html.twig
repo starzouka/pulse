@@ -1,0 +1,44 @@
+{% if viewer_user %}
+  {% set viewerAvatarPath = viewer_user.profileImageId ? viewer_user.profileImageId.fileUrl : '' %}
+  {% set viewerAvatarUrl = viewerAvatarPath ? (viewerAvatarPath starts with 'http' ? viewerAvatarPath : asset(viewerAvatarPath)) : 'https://picsum.photos/seed/pulse_post_viewer_' ~ (viewer_user.userId ?? 0) ~ '/200/200' %}
+
+  <form
+    class="{{ form_class|default('panel gadget gadget--composer') }}"
+    method="post"
+    action="{{ path(action_route) }}"
+    enctype="multipart/form-data"
+  >
+    <input type="hidden" name="_token" value="{{ csrf_token(csrf_token_id) }}">
+    <input type="hidden" name="_redirect" value="{{ app.request.uri }}">
+
+    <div class="socialComposer socialComposer--stack">
+      <div class="avatarMd" data-avatar="{{ viewerAvatarUrl }}"></div>
+      <div class="socialComposer__fields">
+        <textarea
+          class="textarea"
+          name="content_text"
+          rows="{{ textarea_rows|default(3) }}"
+          placeholder="{{ placeholder|default('Que voulez-vous partager aujourd hui ?') }}"
+        ></textarea>
+      </div>
+    </div>
+
+    <div class="postComposer__footer">
+      <label class="field" style="min-width:220px; margin:0;">
+        <span class="field__label">Visibilite</span>
+        <select class="input" name="visibility">
+          <option value="PUBLIC">Public</option>
+          <option value="FRIENDS">Amis</option>
+          <option value="TEAM_ONLY">Equipe</option>
+        </select>
+      </label>
+
+      <label class="filePicker">
+        <span>Photos</span>
+        <input type="file" name="images[]" accept="image/jpeg,image/png,image/webp,image/gif" multiple>
+      </label>
+
+      <button class="btn btn--primary" type="submit">{{ button_label|default('Publier') }}</button>
+    </div>
+  </form>
+{% endif %}

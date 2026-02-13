@@ -1,0 +1,40 @@
+<div class="authModal" id="authModal" aria-hidden="true">
+  <div class="authModal__backdrop" data-close="true"></div>
+  <div class="authCard" role="dialog" aria-modal="true" aria-label="Connexion">
+    <div class="authCard__head">
+      <div>
+        <div class="authCard__title">Connexion</div>
+        <div class="authCard__sub">Email + mot de passe.</div>
+      </div>
+      <button class="iconBtn" data-close="true" aria-label="Fermer">
+        <svg viewBox="0 0 24 24" class="ico">
+          <path d="M18.3 5.7L12 12l6.3 6.3-1.4 1.4L10.6 13.4 4.3 19.7 2.9 18.3 9.2 12 2.9 5.7 4.3 4.3l6.3 6.3 6.3-6.3 1.4 1.4z"/>
+        </svg>
+      </button>
+    </div>
+
+    {% if app.user %}
+      <div class="listItem">
+        <span>Connecte en tant que {{ app.user.userIdentifier }}</span>
+        <a class="btn btn--ghost" href="{{ path('app_logout') }}">Se deconnecter</a>
+      </div>
+    {% else %}
+      <form class="authForm" id="loginForm" method="post" action="{{ path('front_login') }}">
+        <label class="field">
+          <span class="field__label">Email</span>
+          <input type="email" name="_username" placeholder="ex: you@email.com" required autocomplete="email" />
+        </label>
+        <label class="field">
+          <span class="field__label">Mot de passe</span>
+          <input type="password" name="_password" placeholder="********" required autocomplete="current-password" />
+        </label>
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+        <input type="hidden" name="_target_path" value="{{ app.request.uri }}">
+        <button class="btn btn--primary authForm__submit" type="submit">Se connecter</button>
+        <div class="authForm__bottom">
+          <a class="authLink" href="{{ path('front_forgot_password') }}">Mot de passe oublie ?</a>
+        </div>
+      </form>
+    {% endif %}
+  </div>
+</div>

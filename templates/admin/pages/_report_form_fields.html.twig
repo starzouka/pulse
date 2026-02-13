@@ -1,0 +1,45 @@
+﻿<div class="formGrid">
+  <div class="field">
+    {{ form_label(form.reporterUserId, 'reporter_user_id*') }}
+    {{ form_widget(form.reporterUserId, {attr: {class: 'input'}}) }}
+    {{ form_errors(form.reporterUserId) }}
+  </div>
+
+  <div class="field">
+    {{ form_label(form.targetType, 'target_type*') }}
+    {{ form_widget(form.targetType, {attr: {class: 'input'}}) }}
+    {{ form_errors(form.targetType) }}
+  </div>
+
+  <div class="field">
+    {{ form_label(form.targetId, 'target_id*') }}
+    {{ form_widget(form.targetId, {attr: {class: 'input', min: 1}}) }}
+    {{ form_errors(form.targetId) }}
+  </div>
+
+  <div class="field">
+    {{ form_label(form.status, 'status*') }}
+    {{ form_widget(form.status, {attr: {class: 'input'}}) }}
+    {{ form_errors(form.status) }}
+  </div>
+
+  {% if form.handledByAdminId is defined %}
+    <div class="field">
+      {{ form_label(form.handledByAdminId, 'handled_by_admin_id') }}
+      {{ form_widget(form.handledByAdminId, {attr: {class: 'input'}}) }}
+      {{ form_errors(form.handledByAdminId) }}
+    </div>
+  {% endif %}
+
+  <div class="field">
+    {{ form_label(form.reason, 'reason*') }}
+    {{ form_widget(form.reason, {attr: {class: 'textarea', rows: 4}}) }}
+    {{ form_errors(form.reason) }}
+  </div>
+
+  <div class="field">
+    {{ form_label(form.adminNote, 'admin_note') }}
+    {{ form_widget(form.adminNote, {attr: {class: 'textarea', rows: 3}}) }}
+    {{ form_errors(form.adminNote) }}
+  </div>
+</div>

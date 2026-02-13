@@ -25,6 +25,18 @@ const FALLBACK_SVG = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`
 // Helpers DOM
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
+const ROUTES = window.PULSE_ROUTES || {};
+
+const CARD_DETAIL_BY_TYPE = {
+  tournament: ROUTES.tournamentDetail,
+  champion: ROUTES.teamDetail,
+  game: ROUTES.gameDetail,
+  match: ROUTES.matchDetail,
+  team: ROUTES.teamDetail,
+  member: ROUTES.playerDetail,
+  player: ROUTES.playerDetail,
+  product: ROUTES.productDetail
+};
 
 // Safe BG loader
 function setBgSafe(el, url) {
@@ -61,6 +73,10 @@ function wireReveal(){
   });
 
   if (reduceMotion) return;
+  if (!("IntersectionObserver" in window)) {
+    pending.forEach((el) => el.classList.add("is-visible"));
+    return;
+  }
 
   const io = new IntersectionObserver(
     (entries) => {
@@ -75,6 +91,15 @@ function wireReveal(){
   );
 
   pending.forEach((el) => io.observe(el));
+
+  // Safety net: avoid keeping content hidden if observer callbacks are delayed.
+  window.setTimeout(() => {
+    pending.forEach((el) => {
+      if (!el.classList.contains("is-visible")) {
+        el.classList.add("is-visible");
+      }
+    });
+  }, 1400);
 }
 
 function wireTabs(){
@@ -98,9 +123,236 @@ function wireTabs(){
   });
 }
 
+function wirePostCards(scope = document){
+  const carousels = scope.querySelectorAll("[data-post-carousel]");
+  carousels.forEach((carousel) => {
+    if (carousel.dataset.postCarouselBound === "1") return;
+    carousel.dataset.postCarouselBound = "1";
+
+    const slides = carousel.querySelectorAll(".postMedia__slide");
+    if (!slides.length) return;
+
+    const currentOutput = carousel.querySelector("[data-carousel-current]");
+
+    const setSlide = (index) => {
+      let nextIndex = index;
+      if (nextIndex < 0) nextIndex = slides.length - 1;
+      if (nextIndex >= slides.length) nextIndex = 0;
+
+      carousel.dataset.index = String(nextIndex);
+      slides.forEach((slide, i) => {
+        slide.classList.toggle("is-active", i === nextIndex);
+      });
+
+      if (currentOutput) currentOutput.textContent = String(nextIndex + 1);
+    };
+
+    setSlide(0);
+
+    const prev = carousel.querySelector("[data-carousel-prev]");
+    const next = carousel.querySelector("[data-carousel-next]");
+
+    prev?.addEventListener("click", () => {
+      const current = Number.parseInt(carousel.dataset.index || "0", 10) || 0;
+      setSlide(current - 1);
+    });
+
+    next?.addEventListener("click", () => {
+      const current = Number.parseInt(carousel.dataset.index || "0", 10) || 0;
+      setSlide(current + 1);
+    });
+  });
+
+  if (document.body.dataset.postCardsUiBound === "1") {
+    return;
+  }
+  document.body.dataset.postCardsUiBound = "1";
+
+  const closeAllPostMenus = () => {
+    document.querySelectorAll("[data-post-menu-wrap]").forEach((wrap) => {
+      const menu = wrap.querySelector("[data-post-menu]");
+      const toggle = wrap.querySelector("[data-post-menu-toggle]");
+      if (!menu || !toggle) return;
+      menu.hidden = true;
+      toggle.setAttribute("aria-expanded", "false");
+    });
+  };
+
+  document.addEventListener("click", (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+
+    const toggleBtn = target.closest("[data-post-menu-toggle]");
+    if (toggleBtn) {
+      const wrap = toggleBtn.closest("[data-post-menu-wrap]");
+      const menu = wrap?.querySelector("[data-post-menu]");
+      if (!menu) return;
+
+      const shouldOpen = menu.hidden;
+      closeAllPostMenus();
+      menu.hidden = !shouldOpen;
+      toggleBtn.setAttribute("aria-expanded", shouldOpen ? "true" : "false");
+      return;
+    }
+
+    const reportOpenBtn = target.closest("[data-post-report-open]");
+    if (reportOpenBtn) {
+      const card = reportOpenBtn.closest("[data-post-card]");
+      const reportForm = card?.querySelector("[data-post-report-form]");
+      if (reportForm) {
+        reportForm.hidden = false;
+        const firstInput = reportForm.querySelector("input[name='reason']");
+        if (firstInput instanceof HTMLElement) firstInput.focus();
+      }
+      closeAllPostMenus();
+      return;
+    }
+
+    const reportCancelBtn = target.closest("[data-post-report-cancel]");
+    if (reportCancelBtn) {
+      const reportForm = reportCancelBtn.closest("[data-post-report-form]");
+      if (reportForm) reportForm.hidden = true;
+      return;
+    }
+
+    if (!target.closest("[data-post-menu-wrap]")) {
+      closeAllPostMenus();
+    }
+  });
+}
+
+function wireInfiniteFeed(){
+  const feedContainers = document.querySelectorAll("[data-infinite-feed]");
+  feedContainers.forEach((container) => {
+    if (container.dataset.feedBound === "1") return;
+    container.dataset.feedBound = "1";
+
+    const endpoint = container.dataset.feedEndpoint || "";
+    if (!endpoint) return;
+
+    const limit = Math.max(1, Number.parseInt(container.dataset.feedLimit || "8", 10) || 8);
+    let offset = Math.max(0, Number.parseInt(container.dataset.feedOffset || "0", 10) || 0);
+    let hasMore = container.dataset.feedHasMore === "1";
+    let isLoading = false;
+
+    const parent = container.parentElement || document;
+    const emptyState = parent.querySelector("[data-feed-empty]");
+    const loader = parent.querySelector("[data-feed-loader]");
+    const endState = parent.querySelector("[data-feed-end]");
+    const sentinel = parent.querySelector("[data-feed-sentinel]");
+
+    const setEndVisibility = () => {
+      if (!endState) return;
+      endState.hidden = hasMore;
+    };
+
+    setEndVisibility();
+    if (emptyState && container.querySelector("[data-post-card]")) {
+      emptyState.remove();
+    }
+
+    const loadMore = async () => {
+      if (!hasMore || isLoading) return;
+      isLoading = true;
+      if (loader) loader.hidden = false;
+
+      try {
+        const url = new URL(endpoint, window.location.origin);
+        url.searchParams.set("offset", String(offset));
+        url.searchParams.set("limit", String(limit));
+        url.searchParams.set("redirect", window.location.href);
+        const extraQuery = container.dataset.feedQuery || "";
+        if (extraQuery) {
+          const extraParams = new URLSearchParams(extraQuery);
+          extraParams.forEach((value, key) => {
+            if (value !== "") {
+              url.searchParams.set(key, value);
+            }
+          });
+        }
+
+        const response = await fetch(url.toString(), {
+          method: "GET",
+          headers: {
+            "X-Requested-With": "XMLHttpRequest",
+            "Accept": "application/json"
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`Feed chunk failed: ${response.status}`);
+        }
+
+        const payload = await response.json();
+        const html = typeof payload.html === "string" ? payload.html : "";
+        const nextOffset = Number.parseInt(String(payload.next_offset ?? offset), 10);
+        const chunkCount = Number.parseInt(String(payload.count ?? 0), 10);
+
+        if (html !== "") {
+          container.insertAdjacentHTML("beforeend", html);
+          wirePostCards(container);
+          applyDatasetBackgrounds();
+        }
+
+        if (emptyState && container.querySelector("[data-post-card]")) {
+          emptyState.remove();
+        }
+
+        offset = Number.isNaN(nextOffset) ? (offset + Math.max(0, chunkCount)) : Math.max(offset, nextOffset);
+        hasMore = payload.has_more === true;
+        setEndVisibility();
+      } catch (error) {
+        console.error(error);
+        hasMore = false;
+        setEndVisibility();
+      } finally {
+        isLoading = false;
+        if (loader) loader.hidden = true;
+      }
+    };
+
+    if (!sentinel) {
+      if (!container.querySelector("[data-post-card]") && hasMore) {
+        loadMore();
+      }
+      return;
+    }
+
+    if (!("IntersectionObserver" in window)) {
+      const onScroll = () => {
+        if (!hasMore || isLoading) return;
+        const rect = sentinel.getBoundingClientRect();
+        if (rect.top <= (window.innerHeight + 220)) {
+          loadMore();
+        }
+      };
+
+      window.addEventListener("scroll", onScroll, { passive: true });
+      window.addEventListener("resize", onScroll);
+      onScroll();
+      return;
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          loadMore();
+        }
+      });
+    }, { rootMargin: "0px 0px 220px 0px" });
+
+    observer.observe(sentinel);
+
+    if (!container.querySelector("[data-post-card]") && hasMore) {
+      loadMore();
+    }
+  });
+}
+
 function wireSideNav(){
   const sideNav = document.querySelector(".sideNav");
-  const toggleBtn = document.querySelector(".menuBtn");
+  const toggleBtn = document.querySelector(".sideNavToggle")
+    || (!document.querySelector(".heroTop .topbar") ? document.querySelector(".menuBtn") : null);
   if (!sideNav || !toggleBtn) return;
 
   const media = window.matchMedia("(min-width: 981px)");
@@ -154,7 +406,108 @@ function wireSideNav(){
 }
 
 // =====================
-// Modal login (inchangé)
+// Navigation + cards
+// =====================
+function wireAccountSidebar(){
+  const sidebar = document.querySelector(".accountSidebar");
+  const backdrop = document.querySelector(".accountSidebarBackdrop");
+  const toggleBtn = document.querySelector(".menuBtn");
+  if (!sidebar || !backdrop || !toggleBtn) return;
+
+  if (!sidebar.id) sidebar.id = "accountSidebar";
+  toggleBtn.setAttribute("aria-controls", sidebar.id);
+  toggleBtn.setAttribute("aria-expanded", "false");
+
+  const setOpen = (open) => {
+    document.body.classList.toggle("accountSidebar-open", open);
+    sidebar.setAttribute("aria-hidden", open ? "false" : "true");
+    toggleBtn.setAttribute("aria-expanded", open ? "true" : "false");
+  };
+
+  toggleBtn.addEventListener("click", () => {
+    setOpen(!document.body.classList.contains("accountSidebar-open"));
+  });
+
+  backdrop.addEventListener("click", () => setOpen(false));
+  sidebar.addEventListener("click", (e) => {
+    if (e.target.closest('[data-account-close="true"]')) setOpen(false);
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") setOpen(false);
+  });
+
+  sidebar.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", () => setOpen(false));
+  });
+}
+
+function getCardHrefByType(type){
+  return CARD_DETAIL_BY_TYPE[type] || "";
+}
+
+function decorateCardLinks(scope = document){
+  scope.querySelectorAll(".card[data-type]").forEach((card) => {
+    const href = card.dataset.href || getCardHrefByType(card.dataset.type);
+    if (!href) return;
+    card.dataset.href = href;
+    card.classList.add("is-clickable");
+    card.setAttribute("role", "link");
+    if (!card.hasAttribute("tabindex")) card.setAttribute("tabindex", "0");
+  });
+}
+
+function wireCardLinks(){
+  const navigateFromCard = (card) => {
+    const href = card?.dataset?.href;
+    if (!href) return;
+    window.location.href = href;
+  };
+
+  document.addEventListener("click", (e) => {
+    const card = e.target.closest(".card[data-href]");
+    if (!card) return;
+    if (e.target.closest("a,button,input,select,textarea,label")) return;
+    navigateFromCard(card);
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    const card = e.target.closest(".card[data-href]");
+    if (!card) return;
+    e.preventDefault();
+    navigateFromCard(card);
+  });
+}
+
+function wireHorizontalSectionScroll(){
+  const pairs = [
+    ["weekTournamentsGrid", "weekTournamentsPrev", "weekTournamentsNext"],
+    ["championsGrid", "championsPrev", "championsNext"],
+    ["bestSellersGrid", "bestSellersPrev", "bestSellersNext"],
+    ["popularGamesGrid", "popularGamesPrev", "popularGamesNext"],
+    ["topTeamsGrid", "topTeamsPrev", "topTeamsNext"],
+    ["newPlayersGrid", "newPlayersPrev", "newPlayersNext"]
+  ];
+
+  const scrollByCardBatch = (container, direction) => {
+    const delta = Math.max(260, container.clientWidth * 0.82) * direction;
+    container.scrollBy({ left: delta, behavior: "smooth" });
+  };
+
+  pairs.forEach(([gridId, prevId, nextId]) => {
+    const grid = document.getElementById(gridId);
+    const prev = document.getElementById(prevId);
+    const next = document.getElementById(nextId);
+    if (!grid || !prev || !next) return;
+
+    prev.addEventListener("click", () => scrollByCardBatch(grid, -1));
+    next.addEventListener("click", () => scrollByCardBatch(grid, 1));
+  });
+}
+
+// =====================
+// Modal login
 // =====================
 function openAuth(){ $("#authModal").setAttribute("aria-hidden","false"); }
 function closeAuth(){ $("#authModal").setAttribute("aria-hidden","true"); }
@@ -163,33 +516,23 @@ function wireAuth(){
   const openBtn = $("#btnOpenAuth");
   const modal = $("#authModal");
   const form = $("#loginForm");
-  const forgot = $("#forgotLink");
 
-  if (!openBtn || !modal || !form) return;
+  if (!openBtn || !modal) return;
 
   openBtn.addEventListener("click", openAuth);
 
   modal.addEventListener("click", (e) => {
-    if (e.target?.dataset?.close === "true") closeAuth();
+    if (e.target.closest('[data-close="true"]')) closeAuth();
   });
 
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeAuth();
   });
 
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const data = new FormData(e.currentTarget);
-    alert(`Template login: ${data.get("email")} (à connecter au backend)`);
+  if (!form) return;
+  form.addEventListener("submit", () => {
     closeAuth();
   });
-
-  if (forgot){
-    forgot.addEventListener("click", (e) => {
-      e.preventDefault();
-      alert("Template: redirection Mot de passe oublié.");
-    });
-  }
 }
 
 // =========================
@@ -408,6 +751,10 @@ const matches = [
 function renderWeekTournaments(){
   const grid = $("#weekTournamentsGrid");
   if (!grid) return;
+  if (grid.dataset.serverRendered === "1" || grid.children.length > 0) {
+    $$("#weekTournamentsGrid .card__media").forEach(el => setBgSafe(el, el.dataset.bg));
+    return;
+  }
   grid.innerHTML = weekTournaments.map(t => `
     <article class="card card--tournament" data-type="tournament" data-id="${t.id}">
       <div class="card__media" data-bg="${t.img}">
@@ -481,6 +828,10 @@ function renderWeekChampions(){
 function renderBestSellers(){
   const grid = $("#bestSellersGrid");
   if (!grid) return;
+  if (grid.dataset.serverRendered === "1" || grid.children.length > 0) {
+    $$("#bestSellersGrid .card__media").forEach(el => setBgSafe(el, el.dataset.bg));
+    return;
+  }
   grid.innerHTML = bestSellers.map(p => `
     <article class="card card--product" data-type="product" data-id="${p.id}">
       <div class="card__media" data-bg="${p.img}">
@@ -519,6 +870,10 @@ function renderBestSellers(){
 function renderPopularGames(){
   const grid = $("#popularGamesGrid");
   if (!grid) return;
+  if (grid.dataset.serverRendered === "1" || grid.children.length > 0) {
+    $$("#popularGamesGrid .card__media").forEach(el => setBgSafe(el, el.dataset.bg));
+    return;
+  }
   grid.innerHTML = popularGames.map(g => `
     <article class="card card--game" data-type="game" data-id="${g.id}">
       <div class="card__media" data-bg="${g.img}">
@@ -557,6 +912,11 @@ function renderPopularGames(){
 function renderTopTeams(){
   const grid = $("#topTeamsGrid");
   if (!grid) return;
+  if (grid.dataset.serverRendered === "1" || grid.children.length > 0) {
+    $$("#topTeamsGrid .card__media").forEach(el => setBgSafe(el, el.dataset.bg));
+    $$("#topTeamsGrid .avatar").forEach(el => setBgSafe(el, el.dataset.avatar));
+    return;
+  }
   grid.innerHTML = teams.map(t => `
     <article class="card card--team" data-type="team" data-id="${t.id}">
       <div class="card__media" data-bg="${t.img}">
@@ -691,6 +1051,8 @@ function renderSearchResults(query){
     if (el.dataset.avatar) setBgSafe(el, el.dataset.avatar);
   });
 
+  decorateCardLinks(wrap);
+
   // afficher la section
   $("#searchResultsSection").hidden = false;
 
@@ -705,7 +1067,7 @@ function renderSearchCardByType(typeKey, item){
   // Tout est “template” : tu connecteras plus tard aux vraies tables.
   if (typeKey === "tournaments"){
     return `
-      <article class="card card--tournament">
+      <article class="card card--tournament" data-type="tournament" data-id="${item.id}">
         <div class="card__media" data-bg="${item.img}">
           <div class="card__chips">
             <span class="chip chip--status">${item.status}</span>
@@ -724,7 +1086,7 @@ function renderSearchCardByType(typeKey, item){
 
   if (typeKey === "champions"){
     return `
-      <article class="card card--champion">
+      <article class="card card--champion" data-type="champion" data-id="${item.id}">
         <div class="card__media" data-bg="${item.img}">
           <div class="card__chips">
             <span class="chip chip--trophy">CHAMPION</span>
@@ -749,7 +1111,7 @@ function renderSearchCardByType(typeKey, item){
 
   if (typeKey === "products"){
     return `
-      <article class="card card--product">
+      <article class="card card--product" data-type="product" data-id="${item.id}">
         <div class="card__media" data-bg="${item.img}">
           <div class="card__chips">
             <span class="chip chip--price">${item.price}</span>
@@ -767,7 +1129,7 @@ function renderSearchCardByType(typeKey, item){
 
   if (typeKey === "games"){
     return `
-      <article class="card card--game">
+      <article class="card card--game" data-type="game" data-id="${item.id}">
         <div class="card__media" data-bg="${item.img}">
           <div class="card__chips">
             <span class="chip chip--category">${item.category}</span>
@@ -784,7 +1146,7 @@ function renderSearchCardByType(typeKey, item){
 
   if (typeKey === "teams"){
     return `
-      <article class="card card--team">
+      <article class="card card--team" data-type="team" data-id="${item.id}">
         <div class="card__media" data-bg="${item.img}">
           <div class="card__chips">
             <span class="chip chip--region">${item.region}</span>
@@ -808,7 +1170,7 @@ function renderSearchCardByType(typeKey, item){
 
   if (typeKey === "players"){
     return `
-      <article class="card card--member">
+      <article class="card card--member" data-type="member" data-id="${item.id}">
         <div class="card__media" data-bg="${item.img}">
           <div class="card__chips">
             <span class="chip chip--role">${item.role}</span>
@@ -833,7 +1195,7 @@ function renderSearchCardByType(typeKey, item){
 
   // matches
   return `
-    <article class="card card--tournament">
+    <article class="card card--tournament" data-type="match" data-id="${item.id}">
       <div class="card__media" data-bg="${item.img}">
         <div class="card__chips">
           <span class="chip">${item.status}</span>
@@ -847,6 +1209,87 @@ function renderSearchCardByType(typeKey, item){
       </div>
     </article>
   `;
+}
+
+function wireAutoSubmitForms(){
+  const forms = Array.from(document.querySelectorAll('form[method="get"]')).filter((form) => {
+    if (!(form instanceof HTMLFormElement)) return false;
+    if (form.id === "globalSearchForm" || form.classList.contains("globalSearch")) return false;
+    if (form.dataset.autoSubmit === "0") return false;
+
+    if (form.dataset.autoSubmit === "1") return true;
+    if (form.classList.contains("filtersRow") || form.classList.contains("filtersBar")) return true;
+    if (form.querySelector(".filtersRow, .filtersBar")) return true;
+
+    return form.querySelector("input[type='search'], input[type='text'], input[type='date'], input[type='number'], select, textarea") !== null;
+  });
+
+  forms.forEach((form) => {
+    if (form.dataset.autoSubmitBound === "1") return;
+    form.dataset.autoSubmitBound = "1";
+
+    let timerId = null;
+    const resetPagingToFirstPage = () => {
+      form.querySelectorAll('input[name="page"], input[name$="_page"]').forEach((field) => {
+        if (!(field instanceof HTMLInputElement)) return;
+        field.value = "1";
+      });
+    };
+
+    const submitForm = (delay = 0, resetPage = true) => {
+      if (resetPage) {
+        resetPagingToFirstPage();
+      }
+
+      window.clearTimeout(timerId);
+      timerId = window.setTimeout(() => {
+        if (typeof form.requestSubmit === "function") {
+          form.requestSubmit();
+          return;
+        }
+        form.submit();
+      }, Math.max(0, delay));
+    };
+
+    form.querySelectorAll("input, select, textarea").forEach((field) => {
+      const tagName = field.tagName.toLowerCase();
+      const fieldType = String(field.getAttribute("type") || "").toLowerCase();
+      const fieldName = String(field.getAttribute("name") || "");
+      const isPageField = fieldName === "page" || fieldName.endsWith("_page");
+
+      if (tagName === "select") {
+        field.addEventListener("change", () => submitForm(0, !isPageField));
+        return;
+      }
+
+      if (tagName === "textarea") {
+        field.addEventListener("input", () => submitForm(380, !isPageField));
+        field.addEventListener("change", () => submitForm(0, !isPageField));
+        return;
+      }
+
+      if (tagName !== "input") {
+        field.addEventListener("change", () => submitForm(0, !isPageField));
+        return;
+      }
+
+      if (fieldType === "checkbox" || fieldType === "radio" || fieldType === "date") {
+        field.addEventListener("change", () => submitForm(0, !isPageField));
+        return;
+      }
+
+      if (fieldType === "hidden" || fieldType === "submit" || fieldType === "button") {
+        return;
+      }
+
+      field.addEventListener("input", () => submitForm(380, !isPageField));
+      field.addEventListener("change", () => submitForm(0, !isPageField));
+    });
+
+    form.addEventListener("submit", () => {
+      window.clearTimeout(timerId);
+    });
+  });
 }
 
 function wireGlobalSearch(){
@@ -932,9 +1375,15 @@ function init(){
 
   // Wire auth + search
   wireAuth();
+  wireAccountSidebar();
   wireGlobalSearch();
+  wireCardLinks();
+  wireHorizontalSectionScroll();
   wireSideNav();
   wireTabs();
+  wireAutoSubmitForms();
+  wirePostCards();
+  wireInfiniteFeed();
   applyDatasetBackgrounds();
 
   // Render homepage sections
@@ -944,6 +1393,7 @@ function init(){
   renderPopularGames();
   renderTopTeams();
   renderNewPlayers();
+  decorateCardLinks(document);
 
   // Keep old call (no-op now unless #tournamentsGrid existe)
   renderCards();

@@ -7,6 +7,7 @@ namespace App\Entity;
 use Doctrine\DBAL\Types\Types;
 use App\Repository\CartRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CartRepository::class)]
 #[ORM\Table(name: 'carts')]
@@ -20,9 +21,11 @@ class Cart
     
     #[ORM\OneToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'user_id', nullable: false, onDelete: 'CASCADE', unique: true)]
+    #[Assert\NotNull(message: "L'utilisateur du panier est obligatoire.")]
     private User $userId;
     
     #[ORM\Column(name: 'status', type: Types::STRING, length: 7, options: ['default' => 'OPEN'])]
+    #[Assert\Choice(choices: ['OPEN', 'LOCKED', 'ORDERED'], message: 'Statut de panier invalide.')]
     private string $status = 'OPEN';
     
     #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE)]
