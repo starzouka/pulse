@@ -1,0 +1,115 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}PULSE - Editer match{% endblock %}
+
+{% block body %}
+  {% include 'front/partials/_hero_mini.html.twig' with {
+    hero_kicker: 'ORGANISATEUR',
+    hero_title: 'Editer match',
+    hero_sub: 'Modifier les informations, participants et resultats.',
+    breadcrumb_current: 'Editer match'
+  } %}
+
+  <main class="page">
+    <section class="belowHero">
+      <div class="layout">
+        {% include 'front/partials/_organizer_side_nav.html.twig' with {active: 'match_edit'} %}
+
+        <div>
+          {% for label, messages in app.flashes %}
+            {% for message in messages %}
+              <div class="listItem">
+                <span>{{ message }}</span>
+                <span class="badge {{ label == 'error' ? 'badge--danger' : 'badge--success' }}">{{ label|upper }}</span>
+              </div>
+            {% endfor %}
+          {% endfor %}
+
+          <section class="panel">
+            <div class="panel__head">
+              <div>
+                <h3 class="panel__title">Match #{{ tournamentMatch.matchId }}</h3>
+                <div class="panel__desc">Tournoi: {{ tournamentMatch.tournamentId ? tournamentMatch.tournamentId.title : '-' }}</div>
+              </div>
+            </div>
+
+            {{ form_start(matchForm, {attr: {novalidate: 'novalidate'}}) }}
+              {{ form_errors(matchForm) }}
+              {% include 'shared/_organizer_match_form_fields.html.twig' with {form: matchForm} %}
+
+              <div class="panelDesc" style="margin-top:10px;">
+                Resultats par equipe participante.
+              </div>
+
+              <div class="tableWrap">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Equipe</th>
+                      <th>Score</th>
+                      <th>Vainqueur</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for row in participantRows %}
+                      <tr>
+                        <td>{{ row.team.name }}</td>
+                        <td>
+                          <input
+                            class="input"
+                            type="number"
+                            min="0"
+                            name="team_scores[{{ row.team.teamId }}]"
+                            value="{{ row.score is not null ? row.score : '' }}"
+                          />
+                        </td>
+                        <td>
+                          <label class="field">
+                            <input type="checkbox" name="team_winners[]" value="{{ row.team.teamId }}" {{ row.isWinner ? 'checked' : '' }} />
+                            <span class="field__label">Oui</span>
+                          </label>
+                        </td>
+                      </tr>
+                    {% else %}
+                      <tr>
+                        <td colspan="3" class="muted">Selectionnez les equipes participantes pour saisir les resultats.</td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="formActions" style="margin-top:12px;">
+                <button class="btn btn--primary" type="submit">Enregistrer</button>
+                <a class="btn btn--ghost" href="{{ path('front_organizer_matches', tournamentMatch.tournamentId ? {tournament: tournamentMatch.tournamentId.tournamentId} : {}) }}">Retour</a>
+              </div>
+            {{ form_end(matchForm) }}
+          </section>
+
+          <div class="panel">
+            <div class="panel__head">
+              <div>
+                <h3 class="panel__title">TABLES UTILISEES</h3>
+                <div class="panel__desc">Donnees extraites depuis le schema reel.</div>
+              </div>
+            </div>
+            <div class="list">
+              <div class="listItem">
+                <span><b>matches</b></span>
+                <span class="listItem__meta">round_name, scheduled_at, best_of, status, result_submitted_by_user_id</span>
+              </div>
+              <div class="listItem">
+                <span><b>match_teams</b></span>
+                <span class="listItem__meta">match_id, team_id, score, is_winner</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {% include 'front/partials/_footer.html.twig' %}
+    </section>
+  </main>
+
+  {% include 'front/partials/_auth_modal.html.twig' %}
+{% endblock %}

@@ -1,0 +1,26 @@
+﻿<div class="formGrid">
+  <div class="field">
+    {{ form_label(form.authorUserId, 'author_user_id*') }}
+    {{ form_widget(form.authorUserId, {attr: {class: 'input'}}) }}
+    {{ form_errors(form.authorUserId) }}
+  </div>
+
+  <div class="field">
+    {{ form_label(form.visibility, 'visibility*') }}
+    {{ form_widget(form.visibility, {attr: {class: 'input'}}) }}
+    {{ form_errors(form.visibility) }}
+  </div>
+
+  <div class="field">
+    {{ form_label(form.contentText, 'content_text') }}
+    {{ form_widget(form.contentText, {attr: {class: 'textarea', rows: 4}}) }}
+    {{ form_errors(form.contentText) }}
+  </div>
+
+  {% if form.isDeleted is defined %}
+    <div class="field">
+      <label>{{ form_widget(form.isDeleted) }} is_deleted</label>
+      {{ form_errors(form.isDeleted) }}
+    </div>
+  {% endif %}
+</div>

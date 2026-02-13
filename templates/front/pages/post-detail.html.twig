@@ -1,0 +1,66 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}PULSE - Détail post{% endblock %}
+
+{% block body %}
+
+
+  {% include 'front/partials/_hero_mini.html.twig' with {
+  hero_kicker: 'JOUEUR',
+  hero_title: 'Détail post',
+  hero_sub: 'Post + commentaires.',
+  breadcrumb_current: 'Détail post'
+} %}
+
+
+  <main class="page">
+    <section class="belowHero">
+
+      <div class="layout">
+        
+  <aside class="sideNav">
+    <div class="sideNav__title">ESPACE JOUEUR</div>
+    <a class="" href="{{ path('front_dashboard') }}">Dashboard</a><a class="" href="{{ path('front_profile') }}">Mon profil</a><a class="" href="{{ path('front_players') }}">Recherche joueurs</a><a class="" href="{{ path('front_friends') }}">Amis</a><a class="" href="{{ path('front_messages') }}">Messages</a><a class="is-active" href="{{ path('front_feed') }}">Fil d’actualité</a><a class="" href="{{ path('front_my_teams') }}">Mes équipes</a><a class="" href="{{ path('front_my_requests') }}">Mes demandes</a><a class="" href="{{ path('front_orders') }}">Mes commandes</a><a class="" href="{{ path('front_notifications') }}">Notifications</a>
+  </aside>
+
+        <div>
+          
+        <div class="panel">
+          <h3 class="panel__title">Post de @ZED_99</h3>
+          <p class="muted">Victoire 3-1 au Pulse Invitational !</p>
+          <div class="list" style="margin-top:10px;">
+            <div class="listItem"><span>@NovaAim: GG !</span><span class="listItem__meta">1h</span></div>
+            <div class="listItem"><span>@Kairo: Nice</span><span class="listItem__meta">2h</span></div>
+          </div>
+          <div style="margin-top:10px;">
+            <input class="input" type="text" placeholder="Ajouter un commentaire..." />
+          </div>
+        </div>
+        
+      <div class="panel">
+        <div class="panel__head">
+          <div>
+            <h3 class="panel__title">TABLES UTILISÉES</h3>
+            <div class="panel__desc">Schéma réel + colonnes clés.</div>
+          </div>
+        </div>
+        <div class="list">
+          <div class="listItem"><span><b>posts</b></span><span class="listItem__meta">post_id, author_user_id, content_text</span></div><div class="listItem"><span><b>comments</b></span><span class="listItem__meta">comment_id, post_id, author_user_id, content_text</span></div><div class="listItem"><span><b>post_likes</b></span><span class="listItem__meta">post_id, user_id</span></div><div class="listItem"><span><b>reports</b></span><span class="listItem__meta">report_id, target_type, target_id</span></div>
+        </div>
+      </div>
+
+      
+        </div>
+      </div>
+
+
+      {% include 'front/partials/_footer.html.twig' %}
+
+    </section>
+  </main>
+
+  {% include 'front/partials/_auth_modal.html.twig' %}
+
+{% endblock %}
+
+

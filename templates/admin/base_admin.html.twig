@@ -1,0 +1,93 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}PULSE - Dashboard Admin{% endblock %}
+
+{% block stylesheets %}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ asset('assets/template_bo/css/styles.css') }}" />
+  <link rel="stylesheet" href="{{ asset('assets/template_bo/css/tailwind.css') }}" />
+{% endblock %}
+
+{% block body %}
+  <svg width="0" height="0" style="position:absolute; left:-9999px; top:-9999px">
+    <symbol id="i-logo" viewBox="0 0 24 24">
+      <path d="M5 5h14v14H5z" fill="none" stroke="currentColor" stroke-width="2" opacity="0.35"/>
+      <path d="M8 8h8v8H8z" fill="none" stroke="currentColor" stroke-width="2"/>
+      <path d="M8 12h8" fill="none" stroke="currentColor" stroke-width="2" opacity="0.8"/>
+    </symbol>
+
+    <symbol id="i-home" viewBox="0 0 24 24">
+      <path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1z"
+        fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="i-game" viewBox="0 0 24 24">
+      <path d="M7 9h10a4 4 0 0 1 4 4v3a3 3 0 0 1-3 3h-1l-2-2H9l-2 2H6a3 3 0 0 1-3-3v-3a4 4 0 0 1 4-4z"
+        fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M8.5 13h3M10 11.5v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <path d="M16.5 12.5h.01M18 14h.01" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="i-trophy" viewBox="0 0 24 24">
+      <path d="M8 4h8v3a4 4 0 0 1-8 0z" fill="none" stroke="currentColor" stroke-width="2"/>
+      <path d="M6 7H4a2 2 0 0 0 2 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <path d="M18 7h2a2 2 0 0 1-2 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <path d="M12 11v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <path d="M9 21h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <path d="M10 14h4v3h-4z" fill="none" stroke="currentColor" stroke-width="2"/>
+    </symbol>
+    <symbol id="i-users" viewBox="0 0 24 24">
+      <path d="M16 11a3 3 0 1 0-6 0" fill="none" stroke="currentColor" stroke-width="2"/>
+      <path d="M5 20a7 7 0 0 1 14 0" fill="none" stroke="currentColor" stroke-width="2"/>
+      <path d="M17.5 10.5a2.5 2.5 0 1 0-3.5-3" fill="none" stroke="currentColor" stroke-width="2" opacity="0.8"/>
+    </symbol>
+    <symbol id="i-flag" viewBox="0 0 24 24">
+      <path d="M6 3v18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <path d="M6 4h11l-2 4 2 4H6" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="i-cart" viewBox="0 0 24 24">
+      <path d="M6 6h15l-2 8H7z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M6 6 5 3H2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <path d="M9 20a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm9 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"
+        fill="none" stroke="currentColor" stroke-width="2"/>
+    </symbol>
+    <symbol id="i-gear" viewBox="0 0 24 24">
+      <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z" fill="none" stroke="currentColor" stroke-width="2"/>
+      <path d="M19.4 15a8 8 0 0 0 .1-2l2-1.2-2-3.5-2.3.6a7.7 7.7 0 0 0-1.7-1l-.3-2.4H10l-.3 2.4a7.7 7.7 0 0 0-1.7 1l-2.3-.6-2 3.5 2 1.2a8 8 0 0 0 .1 2l-2 1.2 2 3.5 2.3-.6a7.7 7.7 0 0 0 1.7 1l.3 2.4h5.2l.3-2.4a7.7 7.7 0 0 0 1.7-1l2.3.6 2-3.5z"
+        fill="none" stroke="currentColor" stroke-width="1.6" opacity="0.9"/>
+    </symbol>
+    <symbol id="i-search" viewBox="0 0 24 24">
+      <path d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15z" fill="none" stroke="currentColor" stroke-width="2"/>
+      <path d="M16.5 16.5 21 21" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24">
+      <path d="M18 8a6 6 0 1 0-12 0c0 7-3 7-3 7h18s-3 0-3-7z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M10 20a2 2 0 0 0 4 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24">
+      <path d="M9 18 15 12 9 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="i-dots" viewBox="0 0 24 24">
+      <path d="M6 12h.01M12 12h.01M18 12h.01" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+    </symbol>
+  </svg>
+
+  <div class="app">
+    {% include 'admin/Partials/sidebar.html.twig' %}
+
+    <div class="main">
+      {% include 'admin/Partials/navbar.html.twig' %}
+
+      <main class="content">
+        {% block admin_content %}{% endblock %}
+      </main>
+
+      {% include 'admin/Partials/footer.html.twig' %}
+    </div>
+  </div>
+{% endblock %}
+
+{% block javascripts %}
+  <script src="{{ asset('assets/template_bo/js/app.js') }}"></script>
+{% endblock %}
+

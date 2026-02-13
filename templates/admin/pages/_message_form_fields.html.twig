@@ -1,0 +1,40 @@
+﻿<div class="formGrid">
+  <div class="field">
+    {{ form_label(form.senderUserId, 'sender_user_id*') }}
+    {{ form_widget(form.senderUserId, {attr: {class: 'input'}}) }}
+    {{ form_errors(form.senderUserId) }}
+  </div>
+
+  <div class="field">
+    {{ form_label(form.receiverUserId, 'receiver_user_id*') }}
+    {{ form_widget(form.receiverUserId, {attr: {class: 'input'}}) }}
+    {{ form_errors(form.receiverUserId) }}
+  </div>
+
+  <div class="field">
+    {{ form_label(form.bodyText, 'body_text*') }}
+    {{ form_widget(form.bodyText, {attr: {class: 'textarea', rows: 4}}) }}
+    {{ form_errors(form.bodyText) }}
+  </div>
+
+  {% if form.isRead is defined %}
+    <div class="field">
+      <label>{{ form_widget(form.isRead) }} is_read</label>
+      {{ form_errors(form.isRead) }}
+    </div>
+  {% endif %}
+
+  {% if form.isDeletedBySender is defined %}
+    <div class="field">
+      <label>{{ form_widget(form.isDeletedBySender) }} is_deleted_by_sender</label>
+      {{ form_errors(form.isDeletedBySender) }}
+    </div>
+  {% endif %}
+
+  {% if form.isDeletedByReceiver is defined %}
+    <div class="field">
+      <label>{{ form_widget(form.isDeletedByReceiver) }} is_deleted_by_receiver</label>
+      {{ form_errors(form.isDeletedByReceiver) }}
+    </div>
+  {% endif %}
+</div>

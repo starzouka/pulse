@@ -1,0 +1,170 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}PULSE - Detail jeu{% endblock %}
+
+{% block body %}
+  {% include 'front/partials/_hero_mini.html.twig' with {
+    hero_kicker: 'JEU',
+    hero_title: game.name,
+    hero_sub: 'Fiche complete du jeu et tournois relies.',
+    breadcrumb_current: 'Detail jeu'
+  } %}
+
+  {% set gameId = game.gameId ?? 0 %}
+  {% set imagePath = game.coverImageId ? game.coverImageId.fileUrl : '' %}
+  {% set imageUrl = imagePath ? (imagePath starts with 'http' ? imagePath : asset(imagePath)) : 'https://picsum.photos/seed/pulse_game_detail_' ~ gameId ~ '/400/400' %}
+
+  <main class="page">
+    <section class="belowHero">
+      <div class="layout">
+        <section class="panel">
+          <div style="display:flex; gap:14px; align-items:center; flex-wrap:wrap;">
+            <div class="avatarLg" data-avatar="{{ imageUrl }}"></div>
+            <div>
+              <h3 style="margin:0;">{{ game.name }}</h3>
+              <div class="muted">
+                Categorie: {{ game.categoryId ? game.categoryId.name : '-' }}
+                {% if game.publisher %} · Publisher: {{ game.publisher }}{% endif %}
+              </div>
+              <div class="badge badge--info" style="margin-top:8px;">{{ stats.active_tournaments|default(0) }} tournoi(s) actif(s)</div>
+            </div>
+          </div>
+
+          <p class="muted" style="margin-top:12px;">{{ game.description ?? 'Aucune description disponible.' }}</p>
+
+          <div class="statsRow" style="margin-top:12px;">
+            <div class="statCard"><div class="statCard__value">{{ stats.total_tournaments|default(0) }}</div><div class="statCard__label">Tournois total</div></div>
+            <div class="statCard"><div class="statCard__value">{{ stats.active_tournaments|default(0) }}</div><div class="statCard__label">Tournois actifs</div></div>
+            <div class="statCard"><div class="statCard__value">{{ stats.participants|default(0) }}</div><div class="statCard__label">Participants</div></div>
+          </div>
+        </section>
+
+        <aside class="panel">
+          <h3 class="panel__title">FILTRES TOURNOIS</h3>
+          <form class="filtersRow" method="get" action="{{ path('front_game_detail', {id: gameId}) }}" data-auto-submit="1">
+            <input type="hidden" name="tab" value="{{ active_tab|default('open') }}">
+            <input class="input" type="search" name="tq" value="{{ filters.tq|default('') }}" placeholder="Titre tournoi..." />
+
+            <div class="select">
+              <select name="status">
+                <option value="" {{ (filters.status|default('')) == '' ? 'selected' : '' }}>Tous statuts</option>
+                <option value="OPEN" {{ (filters.status|default('')) == 'OPEN' ? 'selected' : '' }}>OPEN</option>
+                <option value="ONGOING" {{ (filters.status|default('')) == 'ONGOING' ? 'selected' : '' }}>ONGOING</option>
+                <option value="FINISHED" {{ (filters.status|default('')) == 'FINISHED' ? 'selected' : '' }}>FINISHED</option>
+                <option value="CANCELLED" {{ (filters.status|default('')) == 'CANCELLED' ? 'selected' : '' }}>CANCELLED</option>
+                <option value="DRAFT" {{ (filters.status|default('')) == 'DRAFT' ? 'selected' : '' }}>DRAFT</option>
+              </select>
+            </div>
+
+            <div class="select">
+              <select name="format">
+                <option value="" {{ (filters.format|default('')) == '' ? 'selected' : '' }}>Tous formats</option>
+                <option value="BO1" {{ (filters.format|default('')) == 'BO1' ? 'selected' : '' }}>BO1</option>
+                <option value="BO3" {{ (filters.format|default('')) == 'BO3' ? 'selected' : '' }}>BO3</option>
+                <option value="BO5" {{ (filters.format|default('')) == 'BO5' ? 'selected' : '' }}>BO5</option>
+              </select>
+            </div>
+
+            <div class="select">
+              <select name="sort">
+                <option value="latest" {{ (filters.sort|default('latest')) == 'latest' ? 'selected' : '' }}>Plus recents</option>
+                <option value="oldest" {{ (filters.sort|default('latest')) == 'oldest' ? 'selected' : '' }}>Plus anciens</option>
+                <option value="prize" {{ (filters.sort|default('latest')) == 'prize' ? 'selected' : '' }}>Prize pool</option>
+                <option value="progress" {{ (filters.sort|default('latest')) == 'progress' ? 'selected' : '' }}>Progression</option>
+              </select>
+            </div>
+
+            <button class="btn btn--ghost" type="submit">Filtrer</button>
+            <a class="btn btn--ghost" href="{{ path('front_game_detail', {id: gameId}) }}">Reset</a>
+          </form>
+        </aside>
+      </div>
+
+      <section class="panel">
+        <div class="tabs">
+          <a
+            class="tab {{ (active_tab|default('open')) == 'open' ? 'is-active' : '' }}"
+            href="{{ path('front_game_detail', {
+              id: gameId,
+              tab: 'open',
+              tq: filters.tq|default(''),
+              status: filters.status|default(''),
+              format: filters.format|default(''),
+              sort: filters.sort|default('latest')
+            }) }}"
+          >Ouverts</a>
+          <a
+            class="tab {{ (active_tab|default('open')) == 'ongoing' ? 'is-active' : '' }}"
+            href="{{ path('front_game_detail', {
+              id: gameId,
+              tab: 'ongoing',
+              tq: filters.tq|default(''),
+              status: filters.status|default(''),
+              format: filters.format|default(''),
+              sort: filters.sort|default('latest')
+            }) }}"
+          >En cours</a>
+          <a
+            class="tab {{ (active_tab|default('open')) == 'finished' ? 'is-active' : '' }}"
+            href="{{ path('front_game_detail', {
+              id: gameId,
+              tab: 'finished',
+              tq: filters.tq|default(''),
+              status: filters.status|default(''),
+              format: filters.format|default(''),
+              sort: filters.sort|default('latest')
+            }) }}"
+          >Termines</a>
+        </div>
+
+        <div class="tabPanels">
+          {% for statusKey, rows in tournaments_by_status %}
+            <section class="tabPanel {{ (active_tab|default('open')) == statusKey ? 'is-active' : '' }}" data-panel="{{ statusKey }}">
+              {% if rows is empty %}
+                <div class="emptyState">Aucun tournoi pour cet onglet.</div>
+              {% else %}
+                <div class="cardsGrid">
+                  {% for row in rows %}
+                    {% set tournament = row.tournament %}
+                    {% set tournamentId = tournament.tournamentId ?? 0 %}
+                    {% set tournamentImagePath = tournament.photoPath ?? '' %}
+                    {% set tournamentImageUrl = tournamentImagePath ? (tournamentImagePath starts with 'http' ? tournamentImagePath : asset(tournamentImagePath)) : 'https://picsum.photos/seed/pulse_game_tournament_' ~ tournamentId ~ '/1200/800' %}
+                    <article class="card card--tournament">
+                      <div class="card__media" data-bg="{{ tournamentImageUrl }}">
+                        <div class="card__chips">
+                          <span class="chip chip--status">{{ tournament.status }}</span>
+                          <span class="chip chip--format">{{ tournament.format }}</span>
+                          <span class="chip">{{ tournament.registrationMode }}</span>
+                        </div>
+                      </div>
+                      <div class="card__body">
+                        <h4 class="card__title">{{ tournament.title }}</h4>
+                        <p class="card__desc">
+                          Dates: <b>{{ tournament.startDate ? tournament.startDate|date('d/m/Y') : '-' }}</b>
+                          -
+                          <b>{{ tournament.endDate ? tournament.endDate|date('d/m/Y') : '-' }}</b>
+                        </p>
+                        <div class="card__metaRow">
+                          <span class="metaPill">Participants: <b>{{ row.participants_count }}</b></span>
+                          <span class="metaPill">Matchs: <b>{{ row.finished_matches }}/{{ row.total_matches }}</b></span>
+                        </div>
+                        <div class="progress"><div class="progress__bar" style="width: {{ row.progress_percent }}%"></div></div>
+                        <div class="card__actions">
+                          <a class="btn btn--ghost" href="{{ path('front_tournament_detail', {id: tournamentId}) }}">Voir detail</a>
+                        </div>
+                      </div>
+                    </article>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </section>
+          {% endfor %}
+        </div>
+      </section>
+
+      {% include 'front/partials/_footer.html.twig' %}
+    </section>
+  </main>
+
+  {% include 'front/partials/_auth_modal.html.twig' %}
+{% endblock %}

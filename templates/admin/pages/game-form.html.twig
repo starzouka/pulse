@@ -1,0 +1,42 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}PULSE - Form jeu{% endblock %}
+
+{% block admin_content %}
+
+        
+  <div class="pageHeader">
+    <div>
+      <h2>Form jeu</h2>
+      <div class="pageSub"></div>
+    </div>
+  </div>
+  <section class="panel">
+    <div class="formGrid">
+      <div class="field"><label>name*</label><input type="text" placeholder="" /></div>
+<div class="field"><label>category_id*</label><select><option>FPS</option><option>MOBA</option></select></div>
+<div class="field"><label>publisher</label><input type="text" placeholder="" /></div>
+<div class="field"><label>description</label><textarea placeholder=""></textarea></div>
+<div class="field"><label>cover_image</label><input type="file" placeholder="" /></div>
+    </div>
+    <div class="formActions" style="margin-top:12px;">
+      <button class="btn btnPrimary">Enregistrer</button>
+      <button class="btn btnGhost">Annuler</button>
+    </div>
+  </section>
+  
+  <section class="panel">
+    <div class="panelHeader">
+      <div>
+        <h3 class="panelTitle">SCHEMA UTILISE</h3>
+        <div class="panelDesc">Tables et colonnes principales.</div>
+      </div>
+    </div>
+    <div class="list">
+      <div class="listItem"><span><b>games</b></span><span class="listMeta">Voir colonnes definies dans le schema</span></div>
+    </div>
+  </section>
+
+
+      
+{% endblock %}

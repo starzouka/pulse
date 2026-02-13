@@ -1,0 +1,49 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}PULSE - Detail commande{% endblock %}
+
+{% block admin_content %}
+
+        
+  <div class="pageHeader">
+    <div>
+      <h2>Detail commande</h2>
+      <div class="pageSub">Infos + items + actions.</div>
+    </div>
+    
+  </div>
+  
+  <div class="tabs" data-tabs="order">
+    <button class="tab isActive" data-tab="info">Infos</button>
+<button class="tab" data-tab="items">Items</button>
+  </div>
+  <div class="tabPanels" data-panels="order">
+    <div class="tabPanel isActive" data-panel="info"><section class="panel"><div class="list"><div class="listItem"><span>order_number</span><span class="listMeta">ORD-2026-001</span></div><div class="listItem"><span>status</span><span class="listMeta"><span class="badge badge--warning">PENDING</span></span></div><div class="listItem"><span>payment_status</span><span class="listMeta"><span class="badge badge--warning">PENDING</span></span></div><div class="listItem"><span>total_amount</span><span class="listMeta">120 DT</span></div></div></section></div>
+<div class="tabPanel" data-panel="items"><section class="panel">
+  <div class="dataTableWrap">
+    <table class="dataTable">
+      <thead><tr><th>product</th><th>team</th><th>unit_price</th><th>quantity</th><th>subtotal</th></tr></thead>
+      <tbody>
+        <tr><td>—</td><td>Nebula Five</td><td>120 DT</td><td>—</td><td>120 DT</td></tr>
+        <tr><td>—</td><td>Nebula Five</td><td>120 DT</td><td>—</td><td>120 DT</td></tr>
+      </tbody>
+    </table>
+  </div></section></div>
+  </div>
+
+  
+  <section class="panel">
+    <div class="panelHeader">
+      <div>
+        <h3 class="panelTitle">SCHEMA UTILISE</h3>
+        <div class="panelDesc">Tables et colonnes principales.</div>
+      </div>
+    </div>
+    <div class="list">
+      <div class="listItem"><span><b>orders</b></span><span class="listMeta">order_number, status, payment_status, total_amount, product, team, unit_price, quantity, subtotal</span></div>
+    </div>
+  </section>
+
+
+      
+{% endblock %}

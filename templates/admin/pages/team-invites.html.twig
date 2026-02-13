@@ -1,0 +1,45 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}PULSE - Invitations equipe{% endblock %}
+
+{% block admin_content %}
+
+        
+  <div class="pageHeader">
+    <div>
+      <h2>Invitations equipe</h2>
+      <div class="pageSub">Suivi des invites.</div>
+    </div>
+    
+  </div>
+  
+  <section class="panel">
+    <div class="panelHeader"><h3 class="panelTitle">LISTE</h3></div>
+    
+  <div class="dataTableWrap">
+    <table class="dataTable">
+      <thead><tr><th>invite_id</th><th>team</th><th>invited_user</th><th>status</th><th>created_at</th><th>Actions</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Nebula Five</td><td>zed_99</td><td><span class="badge badge--warning">PENDING</span></td><td>2026-02-05</td><td><button class="btn btnTiny">Action</button></td></tr>
+        <tr><td>1</td><td>Nebula Five</td><td>zed_99</td><td><span class="badge badge--warning">PENDING</span></td><td>2026-02-05</td><td><button class="btn btnTiny">Action</button></td></tr>
+      </tbody>
+    </table>
+  </div>
+    
+  </section>
+  
+  <section class="panel">
+    <div class="panelHeader">
+      <div>
+        <h3 class="panelTitle">SCHEMA UTILISE</h3>
+        <div class="panelDesc">Tables et colonnes principales.</div>
+      </div>
+    </div>
+    <div class="list">
+      <div class="listItem"><span><b>team_invites</b></span><span class="listMeta">invite_id, team, invited_user, status, created_at</span></div>
+    </div>
+  </section>
+
+
+      
+{% endblock %}

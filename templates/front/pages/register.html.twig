@@ -1,0 +1,109 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}PULSE - Inscription{% endblock %}
+
+{% block body %}
+  {% include 'front/partials/_hero_mini.html.twig' with {
+    hero_kicker: 'AUTH',
+    hero_title: 'Inscription',
+    hero_sub: 'Creer votre compte (joueur, capitaine ou organisateur) et verifier votre email.',
+    breadcrumb_current: 'Inscription'
+  } %}
+
+  <main class="page">
+    <section class="belowHero">
+      {{ form_start(registrationForm, {attr: {class: 'panel', novalidate: 'novalidate'}}) }}
+        {% for label, messages in app.flashes %}
+          {% for message in messages %}
+            <div class="listItem">
+              <span>{{ message }}</span>
+              <span class="badge {{ label == 'error' ? 'badge--danger' : 'badge--success' }}">{{ label|upper }}</span>
+            </div>
+          {% endfor %}
+        {% endfor %}
+
+        {% if form_errors(registrationForm) %}
+          <div class="listItem">
+            <span>{{ form_errors(registrationForm) }}</span>
+            <span class="badge badge--danger">ERROR</span>
+          </div>
+        {% endif %}
+
+        <div class="formGrid">
+          <label class="field">
+            <span class="field__label">Username</span>
+            {{ form_widget(registrationForm.username, {attr: {class: 'input'}}) }}
+            {{ form_errors(registrationForm.username) }}
+          </label>
+
+          <label class="field">
+            <span class="field__label">Email</span>
+            {{ form_widget(registrationForm.email, {attr: {class: 'input'}}) }}
+            {{ form_errors(registrationForm.email) }}
+          </label>
+
+          <label class="field">
+            <span class="field__label">Role</span>
+            {{ form_widget(registrationForm.role, {attr: {class: 'input'}}) }}
+            {{ form_errors(registrationForm.role) }}
+          </label>
+
+          <label class="field">
+            <span class="field__label">Display name</span>
+            {{ form_widget(registrationForm.displayName, {attr: {class: 'input'}}) }}
+            {{ form_errors(registrationForm.displayName) }}
+          </label>
+
+          <label class="field">
+            <span class="field__label">Pays</span>
+            {{ form_widget(registrationForm.country, {attr: {class: 'input'}}) }}
+            {{ form_errors(registrationForm.country) }}
+          </label>
+
+          <label class="field">
+            <span class="field__label">Telephone</span>
+            {{ form_widget(registrationForm.phone, {attr: {class: 'input'}}) }}
+            {{ form_errors(registrationForm.phone) }}
+          </label>
+
+          <label class="field">
+            <span class="field__label">Date de naissance</span>
+            {{ form_widget(registrationForm.birthDate, {attr: {class: 'input'}}) }}
+            {{ form_errors(registrationForm.birthDate) }}
+          </label>
+
+          <label class="field">
+            <span class="field__label">Genre</span>
+            {{ form_widget(registrationForm.gender, {attr: {class: 'input'}}) }}
+            {{ form_errors(registrationForm.gender) }}
+          </label>
+
+          <label class="field">
+            <span class="field__label">Mot de passe</span>
+            {{ form_widget(registrationForm.plainPassword.first, {attr: {class: 'input'}}) }}
+            {{ form_errors(registrationForm.plainPassword.first) }}
+          </label>
+
+          <label class="field">
+            <span class="field__label">Confirmation</span>
+            {{ form_widget(registrationForm.plainPassword.second, {attr: {class: 'input'}}) }}
+            {{ form_errors(registrationForm.plainPassword.second) }}
+          </label>
+        </div>
+
+        <label class="field" style="margin-top:12px;">
+          <span class="field__label">Conditions</span>
+          <div>{{ form_widget(registrationForm.agreeTerms) }} J'accepte les CGU</div>
+          {{ form_errors(registrationForm.agreeTerms) }}
+        </label>
+
+        <div class="formActions" style="margin-top:12px;">
+          <button class="btn btn--primary" type="submit">Creer le compte</button>
+          <a class="btn btn--ghost" href="{{ path('front_login') }}">J'ai deja un compte</a>
+        </div>
+      {{ form_end(registrationForm) }}
+
+      {% include 'front/partials/_footer.html.twig' %}
+    </section>
+  </main>
+{% endblock %}

@@ -1,0 +1,33 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Form;
+
+use App\Entity\TeamJoinRequest;
+use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
+
+class TeamJoinRequestType extends AbstractType
+{
+    public function buildForm(FormBuilderInterface $builder, array $options): void
+    {
+        $builder
+            ->add('teamId')
+            ->add('userId')
+            ->add('status')
+            ->add('note')
+            ->add('createdAt')
+            ->add('respondedAt')
+            ->add('respondedByCaptainId')
+        ;
+    }
+
+    public function configureOptions(OptionsResolver $resolver): void
+    {
+        $resolver->setDefaults([
+            'data_class' => TeamJoinRequest::class,
+        ]);
+    }
+}

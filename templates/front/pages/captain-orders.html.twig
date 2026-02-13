@@ -1,0 +1,97 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}PULSE - Commandes equipe{% endblock %}
+
+{% block body %}
+  {% include 'front/partials/_hero_mini.html.twig' with {
+    hero_kicker: 'CAPITAINE',
+    hero_title: 'Commandes',
+    hero_sub: "Commandes contenant des produits de l'equipe active.",
+    breadcrumb_current: 'Commandes'
+  } %}
+
+  <main class="page">
+    <section class="belowHero">
+      <div class="layout">
+        {% include 'front/partials/_captain_side_nav.html.twig' with {
+          active: 'orders',
+          active_team: active_team
+        } %}
+
+        <div>
+          {% include 'front/partials/_captain_team_selector.html.twig' with {
+            captain_teams: captain_teams,
+            active_team: active_team,
+            selector_route: 'front_captain_orders'
+          } %}
+
+          <form class="panel" method="get" action="{{ path('front_captain_orders') }}">
+            <div class="filtersRow">
+              <input type="hidden" name="team" value="{{ active_team.teamId }}">
+              <div class="select">
+                <select name="status">
+                  <option value="">Tous statuts</option>
+                  {% for status in status_options %}
+                    <option value="{{ status }}" {{ status_filter == status ? 'selected' : '' }}>{{ status }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <button class="btn btn--ghost" type="submit">Filtrer</button>
+            </div>
+          </form>
+
+          <section class="panel">
+            <div class="panel__head">
+              <div>
+                <h3 class="panel__title">COMMANDES LIEES</h3>
+                <div class="panel__desc">{{ orders_data|length }} commande(s) - Chiffre equipe: {{ team_revenue|number_format(2, '.', ' ') }} DT</div>
+              </div>
+            </div>
+
+            <div class="tableWrap" style="margin-top:10px;">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Commande</th>
+                    <th>Client</th>
+                    <th>Date</th>
+                    <th>Articles equipe</th>
+                    <th>Montant equipe</th>
+                    <th>Statut</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for row in orders_data %}
+                    {% set order = row.order %}
+                    <tr>
+                      <td>{{ order.orderNumber }}</td>
+                      <td>{{ order.userId ? (order.userId.displayName ?: order.userId.username) : '-' }}</td>
+                      <td>{{ order.createdAt ? order.createdAt|date('d/m/Y H:i') : '-' }}</td>
+                      <td>{{ row.team_quantity }}</td>
+                      <td>{{ row.team_amount|number_format(2, '.', ' ') }} DT</td>
+                      <td>
+                        {% set status = order.status ?: 'PENDING' %}
+                        <span class="badge {{ status in ['PAID', 'DELIVERED'] ? 'badge--success' : (status == 'CANCELLED' ? 'badge--danger' : (status in ['SHIPPED'] ? 'badge--info' : '')) }}">
+                          {{ status }}
+                        </span>
+                      </td>
+                    </tr>
+                  {% else %}
+                    <tr>
+                      <td colspan="6">Aucune commande trouvee pour cette equipe.</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      {% include 'front/partials/_footer.html.twig' %}
+    </section>
+  </main>
+
+  {% include 'front/partials/_auth_modal.html.twig' %}
+{% endblock %}
+

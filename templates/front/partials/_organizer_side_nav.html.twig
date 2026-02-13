@@ -1,0 +1,10 @@
+{% set active = active|default('') %}
+
+<aside class="sideNav">
+  <div class="sideNav__title">ESPACE ORGANISATEUR</div>
+  <a class="{{ active == 'request_create' ? 'is-active' : '' }}" href="{{ path('front_organizer_request_create') }}">Demande tournoi</a>
+  <a class="{{ active in ['requests', 'request_detail'] ? 'is-active' : '' }}" href="{{ path('front_organizer_requests') }}">Mes demandes</a>
+  <a class="{{ active in ['tournaments', 'tournament_detail'] ? 'is-active' : '' }}" href="{{ path('front_organizer_tournaments') }}">Mes tournois</a>
+  <a class="{{ active == 'registrations' ? 'is-active' : '' }}" href="{{ path('front_organizer_registrations') }}">Inscriptions</a>
+  <a class="{{ active in ['matches', 'match_create', 'match_edit'] ? 'is-active' : '' }}" href="{{ path('front_organizer_matches') }}">Matchs</a>
+</aside>

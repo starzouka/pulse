@@ -1,0 +1,131 @@
+﻿{% extends 'base.html.twig' %}
+
+{% block title %}PULSE - Recherche joueurs{% endblock %}
+
+{% block body %}
+  {% include 'front/partials/_hero_mini.html.twig' with {
+    hero_kicker: 'JOUEUR',
+    hero_title: 'Recherche joueurs',
+    hero_sub: 'Trouver des profils et lancer une interaction.',
+    breadcrumb_current: 'Recherche joueurs'
+  } %}
+
+  <main class="page">
+    <section class="belowHero">
+      <div class="layout">
+        {% include 'front/partials/_player_side_nav.html.twig' with { active: 'players' } %}
+
+        <div class="socialShell">
+          <div class="socialStack">
+            <form class="panel gadget" method="get" action="{{ path('front_players') }}" data-auto-submit="1">
+              <div class="filtersRow">
+                <input class="input" type="search" name="q" value="{{ filters.q }}" placeholder="Rechercher par pseudo ou display name..." />
+                <div class="select">
+                  <select name="role">
+                    <option value="" {{ filters.role == '' ? 'selected' : '' }}>Tous les roles</option>
+                    <option value="PLAYER" {{ filters.role == 'PLAYER' ? 'selected' : '' }}>PLAYER</option>
+                    <option value="CAPTAIN" {{ filters.role == 'CAPTAIN' ? 'selected' : '' }}>CAPTAIN</option>
+                    <option value="ORGANIZER" {{ filters.role == 'ORGANIZER' ? 'selected' : '' }}>ORGANIZER</option>
+                    <option value="ADMIN" {{ filters.role == 'ADMIN' ? 'selected' : '' }}>ADMIN</option>
+                  </select>
+                </div>
+                <input class="input" type="text" name="country" value="{{ filters.country }}" placeholder="Pays (ex: TN)" maxlength="80" />
+                <div class="select">
+                  <select name="sort">
+                    <option value="updated_at" {{ filters.sort == 'updated_at' ? 'selected' : '' }}>Derniere activite</option>
+                    <option value="created_at" {{ filters.sort == 'created_at' ? 'selected' : '' }}>Nouveaux comptes</option>
+                    <option value="display_name" {{ filters.sort == 'display_name' ? 'selected' : '' }}>Nom affichage</option>
+                    <option value="username" {{ filters.sort == 'username' ? 'selected' : '' }}>Username</option>
+                    <option value="country" {{ filters.sort == 'country' ? 'selected' : '' }}>Pays</option>
+                    <option value="role" {{ filters.sort == 'role' ? 'selected' : '' }}>Role</option>
+                  </select>
+                </div>
+                <div class="select">
+                  <select name="dir">
+                    <option value="desc" {{ filters.dir == 'desc' ? 'selected' : '' }}>DESC</option>
+                    <option value="asc" {{ filters.dir == 'asc' ? 'selected' : '' }}>ASC</option>
+                  </select>
+                </div>
+                <button class="btn btn--ghost" type="submit">Rechercher</button>
+                <a class="btn btn--ghost" href="{{ path('front_players') }}">Reset</a>
+              </div>
+            </form>
+
+            <section class="panel gadget">
+              <div class="panel__head">
+                <h3 class="panel__title">RESULTATS</h3>
+                <span class="panel__desc">{{ pagination.total_items|default(player_cards|length) }} profil(s)</span>
+              </div>
+
+              {% if player_cards is empty %}
+                <div class="emptyState">Aucun joueur trouve avec ces filtres.</div>
+              {% else %}
+                {% for card in player_cards %}
+                  {% set user = card.user %}
+                  {% set userId = user.userId ?? 0 %}
+                  {% set avatarPath = user.profileImageId ? user.profileImageId.fileUrl : '' %}
+                  {% set avatarUrl = avatarPath ? (avatarPath starts with 'http' ? avatarPath : asset(avatarPath)) : 'https://picsum.photos/seed/pulse_player_' ~ userId ~ '/200/200' %}
+                  <article class="panel profilePost">
+                    <div class="postCard__head">
+                      <div class="postCard__author">
+                        <div class="avatarMd" data-avatar="{{ avatarUrl }}"></div>
+                        <div>
+                          <div class="name">{{ user.displayName ?? user.username }}</div>
+                          <div class="sub">{{ user.role }}{% if user.country %} · {{ user.country }}{% endif %} · @{{ user.username }}</div>
+                        </div>
+                      </div>
+                      <span class="badge">{{ card.friend_status|upper }}</span>
+                    </div>
+
+                    <div class="postCard__body">{{ user.bio ?? 'Profil joueur sur PULSE.' }}</div>
+
+                    <div class="postCard__actions">
+                      <a class="btn btn--ghost" href="{{ path('front_player_profile', {id: userId}) }}">Voir profil</a>
+                      {% if viewer_user %}
+                        {% if card.friend_status == 'friends' %}
+                          <button class="btn btn--soft" type="button" disabled>Vous etes amis</button>
+                        {% elseif card.friend_status == 'request_sent' %}
+                          <button class="btn btn--ghost" type="button" disabled>Demande envoyee</button>
+                        {% elseif card.friend_status == 'request_received' %}
+                          <a class="btn btn--ghost" href="{{ path('front_friends') }}">Voir demande</a>
+                        {% else %}
+                          <form method="post" action="{{ path('front_profile_add_friend', {id: userId}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('profile_add_friend_' ~ userId) }}">
+                            <button class="btn btn--primary" type="submit">Ajouter ami</button>
+                          </form>
+                        {% endif %}
+                        <a class="btn btn--ghost" href="{{ path('front_messages', {'with': userId}) }}">Message</a>
+                      {% else %}
+                        <a class="btn btn--primary" href="{{ path('front_login', {'_target_path': app.request.uri}) }}">Connexion requise</a>
+                      {% endif %}
+                    </div>
+                  </article>
+                {% endfor %}
+              {% endif %}
+            </section>
+
+            {% include 'front/partials/_pagination.html.twig' with {
+              pagination: pagination,
+              route_name: 'front_players'
+            } %}
+          </div>
+
+          <aside class="socialStack">
+            <section class="panel gadget">
+              <h3 class="panel__title">SUGGESTIONS</h3>
+              <div class="socialQuickList">
+                <a class="listItem" href="{{ path('front_players', {role: 'CAPTAIN'}) }}"><span>Capitaines actifs</span><span class="listItem__meta">Filtrer</span></a>
+                <a class="listItem" href="{{ path('front_players', {country: 'TN'}) }}"><span>Joueurs TN</span><span class="listItem__meta">Local</span></a>
+                <a class="listItem" href="{{ path('front_teams_explore') }}"><span>Equipes en recrutement</span><span class="listItem__meta">Explorer</span></a>
+              </div>
+            </section>
+          </aside>
+        </div>
+      </div>
+
+      {% include 'front/partials/_footer.html.twig' %}
+    </section>
+  </main>
+
+  {% include 'front/partials/_auth_modal.html.twig' %}
+{% endblock %}

@@ -1,0 +1,35 @@
+﻿{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}PULSE - Modifier utilisateur{% endblock %}
+
+{% block admin_content %}
+  <div class="pageHeader">
+    <div>
+      <h2>Modifier utilisateur #{{ user.userId }}</h2>
+      <div class="pageSub">Mise a jour des informations du compte.</div>
+    </div>
+    <div class="formActions">
+      <a class="btn btnGhost" href="{{ path('admin_user_detail', {id: user.userId}) }}">Retour detail</a>
+    </div>
+  </div>
+
+  {% for label, messages in app.flashes %}
+    {% for message in messages %}
+      <div class="listItem">
+        <span>{{ message }}</span>
+        <span class="badge {{ label == 'error' ? 'badge--danger' : 'badge--success' }}">{{ label|upper }}</span>
+      </div>
+    {% endfor %}
+  {% endfor %}
+
+  <section class="panel">
+    {{ form_start(userForm, {attr: {novalidate: 'novalidate'}}) }}
+      {{ form_errors(userForm) }}
+      {% include 'admin/pages/_user_form_fields.html.twig' with {form: userForm} %}
+      <div class="formActions" style="margin-top:12px;">
+        <button class="btn btnPrimary" type="submit">Mettre a jour</button>
+        <a class="btn btnGhost" href="{{ path('admin_users') }}">Annuler</a>
+      </div>
+    {{ form_end(userForm) }}
+  </section>
+{% endblock %}

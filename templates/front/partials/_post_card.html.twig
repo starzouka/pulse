@@ -1,0 +1,139 @@
+{% set post = post_data.post %}
+{% set postId = post.postId ?? 0 %}
+{% set author = post.authorUserId %}
+{% set authorId = author ? (author.userId ?? 0) : 0 %}
+{% set comments = post_data.comments|default(post_data.latest_comments|default([])) %}
+{% set postImages = post_data.images|default([]) %}
+{% set avatarPath = author and author.profileImageId ? author.profileImageId.fileUrl : '' %}
+{% set avatarUrl = avatarPath ? (avatarPath starts with 'http' ? avatarPath : asset(avatarPath)) : 'https://picsum.photos/seed/pulse_post_author_' ~ authorId ~ '/200/200' %}
+{% set canDelete = viewer_user and (authorId == (viewer_user.userId ?? 0) or is_granted('ROLE_ADMIN')) %}
+{% set deleteRoute = delete_route|default('front_post_delete') %}
+{% set deleteTokenPrefix = delete_token_prefix|default('post_delete_') %}
+{% set redirectUri = redirect_uri|default(app.request.uri) %}
+
+<article class="panel profilePost postCardSquare" data-post-card data-post-id="{{ postId }}">
+  <div class="postCard__head">
+    <div class="postCard__author">
+      <div class="avatarMd" data-avatar="{{ avatarUrl }}"></div>
+      <div>
+        <div class="name">{{ author ? (author.displayName ?? author.username) : 'Utilisateur' }}</div>
+        <div class="sub">{{ post.createdAt ? post.createdAt|date('d/m/Y H:i') : '-' }} · {{ post.visibility }}</div>
+      </div>
+    </div>
+
+    <div class="postCard__headActions">
+      {% if authorId > 0 %}
+        {% if viewer_user and authorId == (viewer_user.userId ?? 0) %}
+          <a class="btn btn--ghost" href="{{ path('front_profile') }}">Profil</a>
+        {% else %}
+          <a class="btn btn--ghost" href="{{ path('front_player_profile', {id: authorId}) }}">Profil</a>
+        {% endif %}
+      {% endif %}
+
+      {% if viewer_user %}
+        <div class="postMenu" data-post-menu-wrap>
+          <button class="postMenuBtn" type="button" data-post-menu-toggle aria-expanded="false" aria-label="Options post">
+            <span aria-hidden="true">...</span>
+          </button>
+          <div class="postMenuDropdown" data-post-menu hidden>
+            <button class="postMenuDropdown__item" type="button" data-post-report-open>Signaler</button>
+            {% if canDelete %}
+              <form method="post" action="{{ path(deleteRoute, {id: postId}) }}">
+                <input type="hidden" name="_token" value="{{ csrf_token(deleteTokenPrefix ~ postId) }}">
+                <input type="hidden" name="_redirect" value="{{ redirectUri }}">
+                <button class="postMenuDropdown__item postMenuDropdown__item--danger" type="submit">Supprimer</button>
+              </form>
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if post.contentText %}
+    <div class="postCard__body">{{ post.contentText }}</div>
+  {% endif %}
+
+  {% if postImages is not empty %}
+    <div class="postMedia" data-post-carousel>
+      <div class="postMedia__viewport">
+        {% for image in postImages %}
+          {% set imagePath = image.fileUrl ?? '' %}
+          {% set imageUrl = imagePath ? (imagePath starts with 'http' ? imagePath : asset(imagePath)) : 'https://picsum.photos/seed/pulse_post_image_' ~ postId ~ '_' ~ loop.index0 ~ '/1000/1000' %}
+          <figure class="postMedia__slide {{ loop.first ? 'is-active' : '' }}">
+            <img src="{{ imageUrl }}" alt="{{ image.altText ?? ('Image du post ' ~ postId) }}" loading="lazy">
+          </figure>
+        {% endfor %}
+      </div>
+
+      {% if postImages|length > 1 %}
+        <button class="postMedia__nav is-prev" type="button" data-carousel-prev aria-label="Image precedente">&lsaquo;</button>
+        <button class="postMedia__nav is-next" type="button" data-carousel-next aria-label="Image suivante">&rsaquo;</button>
+        <div class="postMedia__count"><span data-carousel-current>1</span>/<span>{{ postImages|length }}</span></div>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  <div class="postReactionsSummary">
+    <span>{{ post_data.likes_count }} J'aime</span>
+    <span>{{ post_data.comments_count }} commentaires</span>
+  </div>
+
+  <div class="postReactionsBar">
+    {% if viewer_user %}
+      <form method="post" action="{{ path(like_route, {id: postId}) }}">
+        <input type="hidden" name="_token" value="{{ csrf_token(like_token_prefix ~ postId) }}">
+        <input type="hidden" name="_redirect" value="{{ redirectUri }}">
+        {% if profile_id is defined %}
+          <input type="hidden" name="profile_id" value="{{ profile_id }}">
+        {% endif %}
+        <button class="reactionBtn reactionBtn--heart {{ post_data.is_liked_by_viewer ? 'is-active' : '' }}" type="submit">
+          <span class="reactionIcon">♥</span>
+          <span>J'aime</span>
+        </button>
+      </form>
+
+      <form method="post" action="{{ path(comment_route, {id: postId}) }}" class="commentInlineForm">
+        <input type="hidden" name="_token" value="{{ csrf_token(comment_token_prefix ~ postId) }}">
+        <input type="hidden" name="_redirect" value="{{ redirectUri }}">
+        {% if profile_id is defined %}
+          <input type="hidden" name="profile_id" value="{{ profile_id }}">
+        {% endif %}
+        <input class="input" type="text" name="content_text" placeholder="Ecrire un commentaire..." required>
+        <button class="reactionBtn" type="submit">Commenter</button>
+      </form>
+    {% else %}
+      <a class="btn btn--ghost" href="{{ path('front_login', {'_target_path': redirectUri}) }}">Connectez-vous pour interagir</a>
+    {% endif %}
+  </div>
+
+  {% if viewer_user %}
+    <form method="post" action="{{ path(report_route, {id: postId}) }}" class="postReportBox" data-post-report-form hidden>
+      <input type="hidden" name="_token" value="{{ csrf_token(report_token_prefix ~ postId) }}">
+      <input type="hidden" name="_redirect" value="{{ redirectUri }}">
+      {% if profile_id is defined %}
+        <input type="hidden" name="profile_id" value="{{ profile_id }}">
+      {% endif %}
+      <input class="input" type="text" name="reason" placeholder="Raison du signalement" maxlength="255" required>
+      <div class="postReportBox__actions">
+        <button class="reactionBtn reactionBtn--danger" type="submit">Envoyer report</button>
+        <button class="reactionBtn" type="button" data-post-report-cancel>Annuler</button>
+      </div>
+    </form>
+  {% endif %}
+
+  {% if comments is not empty %}
+    <div class="postCommentsList">
+      {% for comment in comments %}
+        {% set commentAuthor = comment.authorUserId %}
+        <div class="listItem">
+          <span>
+            <b>{{ commentAuthor ? (commentAuthor.displayName ?? commentAuthor.username) : 'Utilisateur' }}</b>
+            {{ comment.contentText }}
+          </span>
+          <span class="listItem__meta">{{ comment.createdAt ? comment.createdAt|date('d/m H:i') : '' }}</span>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+</article>

@@ -1,0 +1,26 @@
+{% if pagination is defined and pagination.total_pages|default(1) > 1 %}
+  {% set routeName = route_name|default(app.request.attributes.get('_route')) %}
+  {% set routeParams = route_params|default({}) %}
+  {% set queryParams = query_params|default(app.request.query.all) %}
+  {% set pageParam = page_param|default('page') %}
+
+  <div class="panel paginationBar">
+    <div class="paginationBar__meta">
+      Page {{ pagination.current_page }} / {{ pagination.total_pages }} · {{ pagination.total_items }} resultat(s)
+    </div>
+
+    <div class="paginationBar__actions">
+      {% if pagination.has_previous %}
+        <a class="btn btn--ghost" href="{{ path(routeName, routeParams|merge(queryParams|merge({(pageParam): pagination.previous_page}))) }}">Precedent</a>
+      {% else %}
+        <span class="btn btn--ghost is-disabled" aria-disabled="true">Precedent</span>
+      {% endif %}
+
+      {% if pagination.has_next %}
+        <a class="btn btn--ghost" href="{{ path(routeName, routeParams|merge(queryParams|merge({(pageParam): pagination.next_page}))) }}">Suivant</a>
+      {% else %}
+        <span class="btn btn--ghost is-disabled" aria-disabled="true">Suivant</span>
+      {% endif %}
+    </div>
+  </div>
+{% endif %}

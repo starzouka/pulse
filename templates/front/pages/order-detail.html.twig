@@ -1,0 +1,107 @@
+﻿{% extends 'base.html.twig' %}
+
+{% block title %}PULSE - Detail commande{% endblock %}
+
+{% block body %}
+  {% include 'front/partials/_hero_mini.html.twig' with {
+    hero_kicker: 'JOUEUR',
+    hero_title: 'Detail commande',
+    hero_sub: 'Vue complete de la commande et de ses lignes.',
+    breadcrumb_current: 'Detail commande'
+  } %}
+
+  <main class="page">
+    <section class="belowHero">
+      <div class="layout">
+        {% include 'front/partials/_player_side_nav.html.twig' with { active: 'order_detail' } %}
+
+        <div class="socialShell">
+          <div class="socialStack">
+            <section class="panel">
+              <div class="panel__head">
+                <div>
+                  <h3 class="panel__title">{{ order.orderNumber }}</h3>
+                  <div class="panel__desc">
+                    Creee le {{ order.createdAt ? order.createdAt|date('d/m/Y H:i') : '-' }}
+                    {% if order.paymentMethod %} · Paiement {{ order.paymentMethod }}{% endif %}
+                  </div>
+                </div>
+                {% set status = order.status|default('PENDING') %}
+                {% set statusClass = status == 'PAID' or status == 'DELIVERED' ? 'badge--success' : (status == 'SHIPPED' ? 'badge--warning' : (status == 'CANCELLED' ? 'badge--danger' : '')) %}
+                <span class="badge {{ statusClass }}">{{ status }}</span>
+              </div>
+
+              {% if line_items is empty %}
+                <div class="emptyState">Aucune ligne de commande disponible.</div>
+              {% else %}
+                <div class="tableWrap">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th>Produit</th>
+                        <th>Quantite</th>
+                        <th>Prix unitaire</th>
+                        <th>Sous-total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for lineItem in line_items %}
+                        <tr>
+                          <td>{{ lineItem.product_name }}</td>
+                          <td>{{ lineItem.quantity }}</td>
+                          <td>{{ lineItem.unit_price|number_format(2, '.', ' ') }} DT</td>
+                          <td>{{ lineItem.line_total|number_format(2, '.', ' ') }} DT</td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              {% endif %}
+            </section>
+
+            <section class="panel">
+              <h3 class="panel__title">SUIVI</h3>
+              <div class="socialQuickList">
+                <div class="listItem"><span>Commande creee</span><span class="badge badge--success">OK</span></div>
+                <div class="listItem"><span>Paiement</span><span class="badge {{ order.paymentStatus == 'PAID' ? 'badge--success' : '' }}">{{ order.paymentStatus ?? 'UNPAID' }}</span></div>
+                <div class="listItem"><span>Expedition</span><span class="badge {{ order.shippedAt ? 'badge--success' : '' }}">{{ order.shippedAt ? order.shippedAt|date('d/m/Y') : 'En attente' }}</span></div>
+                <div class="listItem"><span>Livraison</span><span class="badge {{ order.deliveredAt ? 'badge--success' : '' }}">{{ order.deliveredAt ? order.deliveredAt|date('d/m/Y') : 'En attente' }}</span></div>
+              </div>
+            </section>
+          </div>
+
+          <aside class="socialStack">
+            <section class="panel">
+              <h3 class="panel__title">RESUME</h3>
+              <div class="list">
+                <div class="listItem"><span>Sous-total</span><span class="listItem__meta">{{ items_subtotal|number_format(2, '.', ' ') }} DT</span></div>
+                <div class="listItem"><span>Livraison</span><span class="listItem__meta">{{ shipping_amount|number_format(2, '.', ' ') }} DT</span></div>
+                <div class="listItem"><span>Total</span><span class="listItem__meta">{{ order_total|number_format(2, '.', ' ') }} DT</span></div>
+              </div>
+            </section>
+
+            <section class="panel">
+              <h3 class="panel__title">LIVRAISON</h3>
+              <div class="list">
+                <div class="listItem"><span>Adresse</span><span class="listItem__meta">{{ order.shippingAddress ?? 'Non renseignee' }}</span></div>
+                <div class="listItem"><span>Telephone</span><span class="listItem__meta">{{ order.phoneForDelivery ?? 'Non renseigne' }}</span></div>
+              </div>
+            </section>
+
+            <section class="panel">
+              <h3 class="panel__title">ACTIONS</h3>
+              <div class="postCard__actions">
+                <a class="btn btn--ghost" href="{{ path('front_orders') }}">Retour commandes</a>
+                <a class="btn btn--ghost" href="{{ path('front_notifications') }}">Voir notifications</a>
+              </div>
+            </section>
+          </aside>
+        </div>
+      </div>
+
+      {% include 'front/partials/_footer.html.twig' %}
+    </section>
+  </main>
+
+  {% include 'front/partials/_auth_modal.html.twig' %}
+{% endblock %}

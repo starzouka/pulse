@@ -1,0 +1,120 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}PULSE - Membres equipe{% endblock %}
+
+{% block body %}
+  {% include 'front/partials/_hero_mini.html.twig' with {
+    hero_kicker: 'CAPITAINE',
+    hero_title: 'Membres',
+    hero_sub: "Gestion des membres de l'equipe active.",
+    breadcrumb_current: 'Membres'
+  } %}
+
+  <main class="page">
+    <section class="belowHero">
+      <div class="layout">
+        {% include 'front/partials/_captain_side_nav.html.twig' with {
+          active: 'members',
+          active_team: active_team
+        } %}
+
+        <div>
+          {% include 'front/partials/_captain_team_selector.html.twig' with {
+            captain_teams: captain_teams,
+            active_team: active_team,
+            selector_route: 'front_captain_members'
+          } %}
+
+          <section class="panel">
+            <div class="panel__head">
+              <div>
+                <h3 class="panel__title">MEMBRES ACTIFS</h3>
+                <div class="panel__desc">
+                  {{ active_team.name }} - {{ active_members|length }} membre(s) actif(s)
+                </div>
+              </div>
+            </div>
+
+            <div class="tableWrap" style="margin-top:10px;">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Joueur</th>
+                    <th>Role</th>
+                    <th>Date adhesion</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for membership in active_members %}
+                    {% set member = membership.userId %}
+                    <tr>
+                      <td>
+                        {{ member.displayName ?: member.username }}
+                        <div class="muted">@{{ member.username }}</div>
+                      </td>
+                      <td>
+                        {% if active_team.captainUserId and member.userId == active_team.captainUserId.userId %}
+                          <span class="badge badge--info">CAPITAINE</span>
+                        {% else %}
+                          <span class="badge">MEMBRE</span>
+                        {% endif %}
+                      </td>
+                      <td>{{ membership.joinedAt ? membership.joinedAt|date('d/m/Y H:i') : '-' }}</td>
+                      <td>
+                        {% if active_team.captainUserId and member.userId == active_team.captainUserId.userId %}
+                          -
+                        {% else %}
+                          <form method="post" action="{{ path('front_captain_members_remove', {teamId: active_team.teamId, userId: member.userId}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('captain_member_remove_' ~ active_team.teamId ~ '_' ~ member.userId) }}">
+                            <button class="btn btn--ghost" type="submit">Retirer</button>
+                          </form>
+                        {% endif %}
+                      </td>
+                    </tr>
+                  {% else %}
+                    <tr>
+                      <td colspan="4">Aucun membre actif.</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="panel">
+            <h3 class="panel__title">ANCIENS MEMBRES</h3>
+            <div class="tableWrap" style="margin-top:10px;">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Joueur</th>
+                    <th>Date sortie</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for membership in inactive_members %}
+                    {% set member = membership.userId %}
+                    <tr>
+                      <td>{{ member.displayName ?: member.username }}</td>
+                      <td>{{ membership.leftAt ? membership.leftAt|date('d/m/Y H:i') : '-' }}</td>
+                    </tr>
+                  {% else %}
+                    <tr>
+                      <td colspan="2">Aucun historique de sortie.</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      {% include 'front/partials/_footer.html.twig' %}
+    </section>
+  </main>
+
+  {% include 'front/partials/_auth_modal.html.twig' %}
+{% endblock %}
+

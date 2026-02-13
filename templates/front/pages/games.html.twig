@@ -1,0 +1,122 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}PULSE - Catalogue des jeux{% endblock %}
+
+{% block body %}
+  {% include 'front/partials/_hero_mini.html.twig' with {
+    hero_kicker: 'JEUX',
+    hero_title: 'Catalogue des jeux',
+    hero_sub: 'Recherche, filtres et tri alimentes depuis la base de donnees.',
+    breadcrumb_current: 'Catalogue des jeux'
+  } %}
+
+  <main class="page">
+    <section class="belowHero">
+      <div class="pageHeader">
+        <div>
+          <h1>Catalogue des jeux</h1>
+          <p>{{ pagination.total_items|default(games|length) }} jeu(x) trouve(s) avec les filtres en cours.</p>
+        </div>
+        <div class="pageHeader__actions">
+          <a class="btn btn--ghost" href="{{ path('front_tournaments') }}">Voir les tournois</a>
+          <a class="btn btn--ghost" href="{{ path('front_games') }}">Reinitialiser</a>
+        </div>
+      </div>
+
+      <section class="panel">
+        <form class="filtersRow" method="get" action="{{ path('front_games') }}" data-auto-submit="1">
+          <input class="input" type="search" name="q" value="{{ filters.q|default('') }}" placeholder="Rechercher un jeu..." />
+
+          <div class="select">
+            <select name="category">
+              <option value="">Toutes categories</option>
+              {% for category in categories %}
+                <option value="{{ category.categoryId }}" {{ (filters.category|default(null)) == category.categoryId ? 'selected' : '' }}>
+                  {{ category.name }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="select">
+            <select name="publisher">
+              <option value="">Tous publishers</option>
+              {% for publisher in publishers %}
+                <option value="{{ publisher }}" {{ (filters.publisher|default('')) == publisher ? 'selected' : '' }}>
+                  {{ publisher }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="select">
+            <select name="sort">
+              <option value="name" {{ (filters.sort|default('name')) == 'name' ? 'selected' : '' }}>Nom A-Z</option>
+              <option value="popular" {{ (filters.sort|default('name')) == 'popular' ? 'selected' : '' }}>Popularite</option>
+              <option value="latest" {{ (filters.sort|default('name')) == 'latest' ? 'selected' : '' }}>Plus recents</option>
+              <option value="publisher" {{ (filters.sort|default('name')) == 'publisher' ? 'selected' : '' }}>Publisher</option>
+              <option value="category" {{ (filters.sort|default('name')) == 'category' ? 'selected' : '' }}>Categorie</option>
+            </select>
+          </div>
+
+          <label class="btn btn--ghost" style="display:flex; align-items:center; gap:8px;">
+            <input type="checkbox" name="active" value="1" {{ filters.active|default(false) ? 'checked' : '' }}>
+            Tournois actifs
+          </label>
+
+          <button class="btn btn--primary" type="submit">Filtrer</button>
+          <a class="btn btn--ghost" href="{{ path('front_games') }}">Reset</a>
+        </form>
+      </section>
+
+      <section class="cardsGrid">
+        {% if games is empty %}
+          <div class="panel emptyState" style="grid-column: 1 / -1;">
+            Aucun jeu ne correspond aux filtres.
+          </div>
+        {% else %}
+          {% for game in games %}
+            {% set gameId = game.gameId ?? 0 %}
+            {% set imagePath = game.coverImageId ? game.coverImageId.fileUrl : '' %}
+            {% set imageUrl = imagePath ? (imagePath starts with 'http' ? imagePath : asset(imagePath)) : 'https://picsum.photos/seed/pulse_game_' ~ gameId ~ '/1200/800' %}
+            {% set activeCount = active_tournaments_count_by_game_id[gameId]|default(0) %}
+            {% set totalCount = tournaments_count_by_game_id[gameId]|default(0) %}
+
+            <article class="card card--game">
+              <div class="card__media" data-bg="{{ imageUrl }}">
+                <div class="card__chips">
+                  <span class="chip chip--category">{{ game.categoryId ? game.categoryId.name : 'Categorie' }}</span>
+                  <span class="chip">{{ game.publisher ?: 'Publisher -' }}</span>
+                  <span class="chip">Tournois actifs: {{ activeCount }}</span>
+                </div>
+              </div>
+              <div class="card__body">
+                <h4 class="card__title">{{ game.name }}</h4>
+                <p class="card__desc">
+                  {{ game.description ? game.description|slice(0, 95) ~ (game.description|length > 95 ? '...' : '') : 'Description non disponible.' }}
+                </p>
+                <div class="card__metaRow">
+                  <span class="metaPill">Total tournois: <b>{{ totalCount }}</b></span>
+                  <span class="metaPill">Actifs: <b>{{ activeCount }}</b></span>
+                </div>
+                <div class="card__actions">
+                  <a class="btn btn--ghost" href="{{ path('front_game_detail', {id: gameId}) }}">Detail</a>
+                  <a class="btn btn--primary" href="{{ gameId > 0 ? path('front_tournaments', {game: gameId}) : path('front_tournaments') }}">Tournois</a>
+                </div>
+              </div>
+            </article>
+          {% endfor %}
+        {% endif %}
+      </section>
+
+      {% include 'front/partials/_pagination.html.twig' with {
+        pagination: pagination,
+        route_name: 'front_games'
+      } %}
+
+      {% include 'front/partials/_footer.html.twig' %}
+    </section>
+  </main>
+
+  {% include 'front/partials/_auth_modal.html.twig' %}
+{% endblock %}

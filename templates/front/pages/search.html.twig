@@ -1,0 +1,505 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}PULSE - Recherche globale{% endblock %}
+
+{% block body %}
+
+
+  {% include 'front/partials/_hero_mini.html.twig' with {
+  hero_kicker: 'RECHERCHE',
+  hero_title: 'Recherche globale',
+  hero_sub: 'Résultats multi-types par onglets.',
+  breadcrumb_current: 'Recherche globale'
+} %}
+
+
+  <main class="page">
+    <section class="belowHero">
+
+      <section class="globalSearchWrap" aria-label="Recherche globale">
+        <form class="globalSearch" role="search" autocomplete="off">
+          <span class="globalSearch__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" class="ico">
+              <path d="M10 2a8 8 0 105.3 14l4.7 4.7 1.4-1.4-4.7-4.7A8 8 0 0010 2zm0 2a6 6 0 110 12 6 6 0 010-12z"/>
+            </svg>
+          </span>
+          <input class="globalSearch__input" type="search" placeholder="Rechercher joueurs, équipes, tournois..." />
+          <button class="globalSearch__btn" type="submit">Rechercher</button>
+        </form>
+      </section>
+
+      <div class="panel">
+        <div class="tabs" data-tabs="search-tabs">
+          <button class="tab is-active" data-tab="players">Joueurs</button>
+          <button class="tab" data-tab="teams">Équipes</button>
+          <button class="tab" data-tab="tournaments">Tournois</button>
+          <button class="tab" data-tab="games">Jeux</button>
+          <button class="tab" data-tab="products">Produits</button>
+          <button class="tab" data-tab="posts">Posts</button>
+        </div>
+        <div class="tabPanels" data-panels="search-tabs">
+          <section class="tabPanel is-active" data-panel="players"><div class="cardsGrid">
+
+    <article class="card card--member">
+      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_u1/1200/800">
+        <div class="card__chips">
+          <span class="chip chip--role">PLAYER</span>
+          <span class="chip">TN</span>
+          <span class="chip">@ZED_99</span>
+        </div>
+      </div>
+      <div class="card__body">
+        <h4 class="card__title">Zed</h4>
+        <p class="card__desc">Profil public • Message • Invitation équipe</p>
+        <div class="avatarRow">
+          <div class="avatar" data-avatar="https://picsum.photos/seed/pulse_a1/200/200" aria-hidden="true"></div>
+          <div class="avatarText">
+            <div class="name">Zed</div>
+            <div class="sub">PLAYER • TN</div>
+          </div>
+        </div>
+        <div class="card__actions">
+          <a class="btn btn--ghost" href="{{ path('front_player_profile') }}">Voir profil</a>
+          <a class="btn btn--primary" href="{{ path('front_login') }}">Ajouter ami</a>
+        </div>
+      </div>
+    </article>
+
+
+    <article class="card card--member">
+      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_u2/1200/800">
+        <div class="card__chips">
+          <span class="chip chip--role">CAPTAIN</span>
+          <span class="chip">FR</span>
+          <span class="chip">@FrostByte</span>
+        </div>
+      </div>
+      <div class="card__body">
+        <h4 class="card__title">Frost</h4>
+        <p class="card__desc">Profil public • Message • Invitation équipe</p>
+        <div class="avatarRow">
+          <div class="avatar" data-avatar="https://picsum.photos/seed/pulse_a2/200/200" aria-hidden="true"></div>
+          <div class="avatarText">
+            <div class="name">Frost</div>
+            <div class="sub">CAPTAIN • FR</div>
+          </div>
+        </div>
+        <div class="card__actions">
+          <a class="btn btn--ghost" href="{{ path('front_player_profile') }}">Voir profil</a>
+          <a class="btn btn--primary" href="{{ path('front_login') }}">Ajouter ami</a>
+        </div>
+      </div>
+    </article>
+
+
+    <article class="card card--member">
+      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_u3/1200/800">
+        <div class="card__chips">
+          <span class="chip chip--role">PLAYER</span>
+          <span class="chip">TN</span>
+          <span class="chip">@Kairo</span>
+        </div>
+      </div>
+      <div class="card__body">
+        <h4 class="card__title">Kairo</h4>
+        <p class="card__desc">Profil public • Message • Invitation équipe</p>
+        <div class="avatarRow">
+          <div class="avatar" data-avatar="https://picsum.photos/seed/pulse_a3/200/200" aria-hidden="true"></div>
+          <div class="avatarText">
+            <div class="name">Kairo</div>
+            <div class="sub">PLAYER • TN</div>
+          </div>
+        </div>
+        <div class="card__actions">
+          <a class="btn btn--ghost" href="{{ path('front_player_profile') }}">Voir profil</a>
+          <a class="btn btn--primary" href="{{ path('front_login') }}">Ajouter ami</a>
+        </div>
+      </div>
+    </article>
+
+
+    <article class="card card--member">
+      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_u4/1200/800">
+        <div class="card__chips">
+          <span class="chip chip--role">PLAYER</span>
+          <span class="chip">US</span>
+          <span class="chip">@NovaAim</span>
+        </div>
+      </div>
+      <div class="card__body">
+        <h4 class="card__title">Nova</h4>
+        <p class="card__desc">Profil public • Message • Invitation équipe</p>
+        <div class="avatarRow">
+          <div class="avatar" data-avatar="https://picsum.photos/seed/pulse_a4/200/200" aria-hidden="true"></div>
+          <div class="avatarText">
+            <div class="name">Nova</div>
+            <div class="sub">PLAYER • US</div>
+          </div>
+        </div>
+        <div class="card__actions">
+          <a class="btn btn--ghost" href="{{ path('front_player_profile') }}">Voir profil</a>
+          <a class="btn btn--primary" href="{{ path('front_login') }}">Ajouter ami</a>
+        </div>
+      </div>
+    </article>
+
+</div></section>
+          <section class="tabPanel" data-panel="teams"><div class="cardsGrid">
+
+    <article class="card card--team">
+      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_team_1/1200/800">
+        <div class="card__chips">
+          <span class="chip chip--region">MENA</span>
+          <span class="chip">Membres: 12</span>
+        </div>
+      </div>
+      <div class="card__body">
+        <h4 class="card__title">Nebula Five</h4>
+        <p class="card__desc">Équipe e-sport • Tournois • Boutique</p>
+        <div class="avatarRow">
+          <div class="avatar" data-avatar="https://picsum.photos/seed/pulse_logo_1/200/200" aria-hidden="true"></div>
+          <div class="avatarText">
+            <div class="name">Nebula Five</div>
+            <div class="sub">MENA • 12 membres</div>
+          </div>
+        </div>
+        <div class="card__actions">
+          <a class="btn btn--ghost" href="{{ path('front_team_detail') }}">Détail équipe</a>
+        </div>
+      </div>
+    </article>
+
+
+    <article class="card card--team">
+      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_team_2/1200/800">
+        <div class="card__chips">
+          <span class="chip chip--region">EU</span>
+          <span class="chip">Membres: 9</span>
+        </div>
+      </div>
+      <div class="card__body">
+        <h4 class="card__title">North Hydra</h4>
+        <p class="card__desc">Équipe e-sport • Tournois • Boutique</p>
+        <div class="avatarRow">
+          <div class="avatar" data-avatar="https://picsum.photos/seed/pulse_logo_2/200/200" aria-hidden="true"></div>
+          <div class="avatarText">
+            <div class="name">North Hydra</div>
+            <div class="sub">EU • 9 membres</div>
+          </div>
+        </div>
+        <div class="card__actions">
+          <a class="btn btn--ghost" href="{{ path('front_team_detail') }}">Détail équipe</a>
+        </div>
+      </div>
+    </article>
+
+
+    <article class="card card--team">
+      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_team_3/1200/800">
+        <div class="card__chips">
+          <span class="chip chip--region">MENA</span>
+          <span class="chip">Membres: 15</span>
+        </div>
+      </div>
+      <div class="card__body">
+        <h4 class="card__title">Sandstorm</h4>
+        <p class="card__desc">Équipe e-sport • Tournois • Boutique</p>
+        <div class="avatarRow">
+          <div class="avatar" data-avatar="https://picsum.photos/seed/pulse_logo_3/200/200" aria-hidden="true"></div>
+          <div class="avatarText">
+            <div class="name">Sandstorm</div>
+            <div class="sub">MENA • 15 membres</div>
+          </div>
+        </div>
+        <div class="card__actions">
+          <a class="btn btn--ghost" href="{{ path('front_team_detail') }}">Détail équipe</a>
+        </div>
+      </div>
+    </article>
+
+
+    <article class="card card--team">
+      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_team_4/1200/800">
+        <div class="card__chips">
+          <span class="chip chip--region">NA</span>
+          <span class="chip">Membres: 10</span>
+        </div>
+      </div>
+      <div class="card__body">
+        <h4 class="card__title">Aurora Squad</h4>
+        <p class="card__desc">Équipe e-sport • Tournois • Boutique</p>
+        <div class="avatarRow">
+          <div class="avatar" data-avatar="https://picsum.photos/seed/pulse_logo_4/200/200" aria-hidden="true"></div>
+          <div class="avatarText">
+            <div class="name">Aurora Squad</div>
+            <div class="sub">NA • 10 membres</div>
+          </div>
+        </div>
+        <div class="card__actions">
+          <a class="btn btn--ghost" href="{{ path('front_team_detail') }}">Détail équipe</a>
+        </div>
+      </div>
+    </article>
+
+</div></section>
+          <section class="tabPanel" data-panel="tournaments"><div class="cardsGrid">
+
+    <article class="card card--tournament">
+      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_t1/1200/800">
+        <div class="card__chips">
+          <span class="chip chip--status">OPEN</span>
+          <span class="chip chip--format">BO3</span>
+          <span class="chip">Valorant</span>
+        </div>
+      </div>
+      <div class="card__body">
+        <h4 class="card__title">Pulse Invitational — Valorant</h4>
+        <p class="card__desc">Dates: <b>18–22 Fév</b> • Prize pool: <b>1200 DT</b></p>
+        <div class="card__metaRow">
+          <span class="metaPill">Matchs: <b>7/20</b></span>
+          <span class="metaPill">Statut: <b>OPEN</b></span>
+        </div>
+        <div class="progress"><div class="progress__bar" style="width:35%"></div></div>
+        <div class="card__actions">
+          <a class="btn btn--ghost" href="{{ path('front_tournament_detail') }}">Voir détail</a>
+        </div>
+      </div>
+    </article>
+
+
+    <article class="card card--tournament">
+      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_t2/1200/800">
+        <div class="card__chips">
+          <span class="chip chip--status">ONGOING</span>
+          <span class="chip chip--format">BO1</span>
+          <span class="chip">CS2</span>
+        </div>
+      </div>
+      <div class="card__body">
+        <h4 class="card__title">CS2 Arena Cup — Winter Split</h4>
+        <p class="card__desc">Dates: <b>20–23 Fév</b> • Prize pool: <b>900 DT</b></p>
+        <div class="card__metaRow">
+          <span class="metaPill">Matchs: <b>12/20</b></span>
+          <span class="metaPill">Statut: <b>ONGOING</b></span>
+        </div>
+        <div class="progress"><div class="progress__bar" style="width:60%"></div></div>
+        <div class="card__actions">
+          <a class="btn btn--ghost" href="{{ path('front_tournament_detail') }}">Voir détail</a>
+        </div>
+      </div>
+    </article>
+
+
+    <article class="card card--tournament">
+      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_t3/1200/800">
+        <div class="card__chips">
+          <span class="chip chip--status">OPEN</span>
+          <span class="chip chip--format">BO5</span>
+          <span class="chip">League of Legends</span>
+        </div>
+      </div>
+      <div class="card__body">
+        <h4 class="card__title">League Clash — Weekend Major</h4>
+        <p class="card__desc">Dates: <b>23–25 Fév</b> • Prize pool: <b>2500 DT</b></p>
+        <div class="card__metaRow">
+          <span class="metaPill">Matchs: <b>0/16</b></span>
+          <span class="metaPill">Statut: <b>OPEN</b></span>
+        </div>
+        <div class="progress"><div class="progress__bar" style="width:0%"></div></div>
+        <div class="card__actions">
+          <a class="btn btn--ghost" href="{{ path('front_tournament_detail') }}">Voir détail</a>
+        </div>
+      </div>
+    </article>
+
+
+    <article class="card card--tournament">
+      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_t4/1200/800">
+        <div class="card__chips">
+          <span class="chip chip--status">OPEN</span>
+          <span class="chip chip--format">BO1</span>
+          <span class="chip">Fortnite</span>
+        </div>
+      </div>
+      <div class="card__body">
+        <h4 class="card__title">Fortnite Zero Build Cup</h4>
+        <p class="card__desc">Dates: <b>25 Fév</b> • Prize pool: <b>700 DT</b></p>
+        <div class="card__metaRow">
+          <span class="metaPill">Matchs: <b>0/24</b></span>
+          <span class="metaPill">Statut: <b>OPEN</b></span>
+        </div>
+        <div class="progress"><div class="progress__bar" style="width:0%"></div></div>
+        <div class="card__actions">
+          <a class="btn btn--ghost" href="{{ path('front_tournament_detail') }}">Voir détail</a>
+        </div>
+      </div>
+    </article>
+
+</div></section>
+          <section class="tabPanel" data-panel="games"><div class="cardsGrid">
+
+    <article class="card card--game">
+      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_g1/1200/800">
+        <div class="card__chips">
+          <span class="chip chip--category">FPS</span>
+          <span class="chip">Publisher: Riot</span>
+          <span class="chip">Tournois: 6</span>
+        </div>
+      </div>
+      <div class="card__body">
+        <h4 class="card__title">Valorant</h4>
+        <p class="card__desc">Jeu populaire basé sur l’activité des tournois.</p>
+        <div class="card__actions">
+          <a class="btn btn--ghost" href="{{ path('front_game_detail') }}">Détail</a>
+        </div>
+      </div>
+    </article>
+
+
+    <article class="card card--game">
+      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_g2/1200/800">
+        <div class="card__chips">
+          <span class="chip chip--category">FPS</span>
+          <span class="chip">Publisher: Valve</span>
+          <span class="chip">Tournois: 4</span>
+        </div>
+      </div>
+      <div class="card__body">
+        <h4 class="card__title">Counter-Strike 2</h4>
+        <p class="card__desc">Jeu populaire basé sur l’activité des tournois.</p>
+        <div class="card__actions">
+          <a class="btn btn--ghost" href="{{ path('front_game_detail') }}">Détail</a>
+        </div>
+      </div>
+    </article>
+
+
+    <article class="card card--game">
+      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_g3/1200/800">
+        <div class="card__chips">
+          <span class="chip chip--category">MOBA</span>
+          <span class="chip">Publisher: Riot</span>
+          <span class="chip">Tournois: 5</span>
+        </div>
+      </div>
+      <div class="card__body">
+        <h4 class="card__title">League of Legends</h4>
+        <p class="card__desc">Jeu populaire basé sur l’activité des tournois.</p>
+        <div class="card__actions">
+          <a class="btn btn--ghost" href="{{ path('front_game_detail') }}">Détail</a>
+        </div>
+      </div>
+    </article>
+
+
+    <article class="card card--game">
+      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_g4/1200/800">
+        <div class="card__chips">
+          <span class="chip chip--category">BR</span>
+          <span class="chip">Publisher: Epic</span>
+          <span class="chip">Tournois: 3</span>
+        </div>
+      </div>
+      <div class="card__body">
+        <h4 class="card__title">Fortnite</h4>
+        <p class="card__desc">Jeu populaire basé sur l’activité des tournois.</p>
+        <div class="card__actions">
+          <a class="btn btn--ghost" href="{{ path('front_game_detail') }}">Détail</a>
+        </div>
+      </div>
+    </article>
+
+</div></section>
+          <section class="tabPanel" data-panel="products"><div class="cardsGrid">
+
+    <article class="card card--product">
+      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_p1/1200/800">
+        <div class="card__chips">
+          <span class="chip chip--price">89 DT</span>
+          <span class="chip">Stock: 14</span>
+          <span class="chip">Nebula Five</span>
+        </div>
+      </div>
+      <div class="card__body">
+        <h4 class="card__title">Pulse Hoodie — Neon</h4>
+        <p class="card__desc">Vendeur: <b>Nebula Five</b></p>
+        <div class="card__actions">
+          <a class="btn btn--ghost" href="{{ path('front_product_detail') }}">Détail</a>
+          <a class="btn btn--primary" href="0">Ajouter au panier</a>
+        </div>
+      </div>
+    </article>
+
+
+    <article class="card card--product">
+      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_p2/1200/800">
+        <div class="card__chips">
+          <span class="chip chip--price">69 DT</span>
+          <span class="chip">Stock: 7</span>
+          <span class="chip">North Hydra</span>
+        </div>
+      </div>
+      <div class="card__body">
+        <h4 class="card__title">Team Jersey — Pro Edition</h4>
+        <p class="card__desc">Vendeur: <b>North Hydra</b></p>
+        <div class="card__actions">
+          <a class="btn btn--ghost" href="{{ path('front_product_detail') }}">Détail</a>
+          <a class="btn btn--primary" href="1">Ajouter au panier</a>
+        </div>
+      </div>
+    </article>
+
+
+    <article class="card card--product">
+      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_p3/1200/800">
+        <div class="card__chips">
+          <span class="chip chip--price">39 DT</span>
+          <span class="chip">Stock: 33</span>
+          <span class="chip">Aurora Squad</span>
+        </div>
+      </div>
+      <div class="card__body">
+        <h4 class="card__title">Mousepad XL — Arena</h4>
+        <p class="card__desc">Vendeur: <b>Aurora Squad</b></p>
+        <div class="card__actions">
+          <a class="btn btn--ghost" href="{{ path('front_product_detail') }}">Détail</a>
+          <a class="btn btn--primary" href="2">Ajouter au panier</a>
+        </div>
+      </div>
+    </article>
+
+
+    <article class="card card--product">
+      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_p4/1200/800">
+        <div class="card__chips">
+          <span class="chip chip--price">29 DT</span>
+          <span class="chip">Stock: 5</span>
+          <span class="chip">Sandstorm</span>
+        </div>
+      </div>
+      <div class="card__body">
+        <h4 class="card__title">Cap — Limited Drop</h4>
+        <p class="card__desc">Vendeur: <b>Sandstorm</b></p>
+        <div class="card__actions">
+          <a class="btn btn--ghost" href="{{ path('front_product_detail') }}">Détail</a>
+          <a class="btn btn--primary" href="3">Ajouter au panier</a>
+        </div>
+      </div>
+    </article>
+
+</div></section>
+          <section class="tabPanel" data-panel="posts"><div class="emptyState">Top 5 posts (template).</div></section>
+        </div>
+      </div>
+    
+
+      {% include 'front/partials/_footer.html.twig' %}
+
+    </section>
+  </main>
+
+  {% include 'front/partials/_auth_modal.html.twig' %}
+
+{% endblock %}
+
+
