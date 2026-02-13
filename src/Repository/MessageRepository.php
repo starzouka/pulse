@@ -72,7 +72,7 @@ class MessageRepository extends ServiceEntityRepository
             ->setParameter('isReadFalse', false)
             ->setParameter('notDeletedBySender', false)
             ->setParameter('notDeletedByReceiver', false)
-            ->groupBy('CASE WHEN IDENTITY(message.senderUserId) = :viewerId THEN IDENTITY(message.receiverUserId) ELSE IDENTITY(message.senderUserId) END')
+            ->groupBy('partnerId')
             ->setMaxResults($limit);
 
         $searchValue = trim((string) $search);
