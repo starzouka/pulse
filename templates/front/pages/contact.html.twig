@@ -1,0 +1,63 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}PULSE - Contact & Support{% endblock %}
+
+{% block body %}
+
+
+  {% include 'front/partials/_hero_mini.html.twig' with {
+  hero_kicker: 'SUPPORT',
+  hero_title: 'Contact & Support',
+  hero_sub: 'Formulaire de support visiteur.',
+  breadcrumb_current: 'Contact & Support'
+} %}
+
+
+  <main class="page">
+    <section class="belowHero">
+
+      <div class="pageHeader">
+        <div>
+          <h1>Contact & Support</h1>
+          <p>Réponse sous 24–48h.</p>
+        </div>
+      </div>
+      <form class="panel">
+        <div class="formGrid">
+          <label class="field"><span class="field__label">Nom complet</span><input class="input" type="text" /></label>
+          <label class="field"><span class="field__label">Email</span><input class="input" type="email" /></label>
+          <label class="field"><span class="field__label">Sujet</span><input class="input" type="text" /></label>
+          <label class="field"><span class="field__label">Type</span><select class="input"><option>Bug</option><option>Partenariat</option><option>Support</option></select></label>
+          <label class="field"><span class="field__label">Message</span><textarea class="textarea"></textarea></label>
+          <label class="field"><span class="field__label">Pièce jointe</span><input class="input" type="file" /></label>
+        </div>
+        <div class="formActions" style="margin-top:12px;">
+          <button class="btn btn--primary" type="submit">Envoyer</button>
+          <button class="btn btn--ghost" type="button">Annuler</button>
+        </div>
+      </form>
+      
+      <div class="panel">
+        <div class="panel__head">
+          <div>
+            <h3 class="panel__title">TABLES UTILISÉES</h3>
+            <div class="panel__desc">Schéma réel + colonnes clés.</div>
+          </div>
+        </div>
+        <div class="list">
+          <div class="listItem"><span><b>Option A</b></span><span class="listItem__meta">Envoi email backend (sans DB)</span></div><div class="listItem"><span><b>Option B</b></span><span class="listItem__meta">support_tickets (recommandé)</span></div>
+        </div>
+      </div>
+
+    
+
+      {% include 'front/partials/_footer.html.twig' %}
+
+    </section>
+  </main>
+
+  {% include 'front/partials/_auth_modal.html.twig' %}
+
+{% endblock %}
+
+

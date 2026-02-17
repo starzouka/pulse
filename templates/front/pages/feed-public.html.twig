@@ -1,0 +1,89 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}PULSE - Fil public{% endblock %}
+
+{% block body %}
+
+
+  {% include 'front/partials/_hero_mini.html.twig' with {
+  hero_kicker: 'COMMUNAUTÉ',
+  hero_title: 'Fil public',
+  hero_sub: 'Posts publics uniquement.',
+  breadcrumb_current: 'Fil public'
+} %}
+
+
+  <main class="page">
+    <section class="belowHero">
+
+      <div class="pageHeader">
+        <div>
+          <h1>Fil public</h1>
+          <p>Posts PUBLIC visibles par les visiteurs.</p>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="filtersRow">
+          <div class="select"><select><option>Tout</option><option>Par auteur</option></select></div>
+          <input class="input" type="search" placeholder="Auteur" />
+          <button class="btn btn--ghost">Avec images</button>
+          <button class="btn btn--ghost">Plus récents</button>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel__head"><h3 class="panel__title">POSTS</h3></div>
+        
+      <div class="list">
+        
+          <div class="listItem">
+            <div>
+              <b>@ZED_99</b>
+              <div class="listItem__meta">Victoire 3-1 au Pulse Invitational !</div>
+            </div>
+            <div class="listItem__meta">42 likes • 9 commentaires</div>
+          </div>
+          <div class="listItem">
+            <div>
+              <b>@NovaAim</b>
+              <div class="listItem__meta">Nouveau produit disponible dans la boutique Aurora Squad.</div>
+            </div>
+            <div class="listItem__meta">15 likes • 2 commentaires</div>
+          </div>
+          <div class="listItem">
+            <div>
+              <b>@FrostByte</b>
+              <div class="listItem__meta">Roster update + essais ouverts cette semaine.</div>
+            </div>
+            <div class="listItem__meta">28 likes • 7 commentaires</div>
+          </div>
+      </div>
+      <div class="panel__actions" style="margin-top:10px;">
+        <a class="btn btn--ghost" href="{{ path('front_login') }}">Like / Commenter → Connexion</a>
+      </div>
+
+      </div>
+      
+      <div class="panel">
+        <div class="panel__head">
+          <div>
+            <h3 class="panel__title">TABLES UTILISÉES</h3>
+            <div class="panel__desc">Schéma réel + colonnes clés.</div>
+          </div>
+        </div>
+        <div class="list">
+          <div class="listItem"><span><b>posts</b></span><span class="listItem__meta">post_id, author_user_id, content_text, visibility, created_at</span></div><div class="listItem"><span><b>post_images</b></span><span class="listItem__meta">post_id, image_id, position</span></div><div class="listItem"><span><b>users</b></span><span class="listItem__meta">user_id, display_name</span></div><div class="listItem"><span><b>comments</b></span><span class="listItem__meta">comment_id, post_id, author_user_id</span></div><div class="listItem"><span><b>post_likes</b></span><span class="listItem__meta">post_id, user_id</span></div>
+        </div>
+      </div>
+
+    
+
+      {% include 'front/partials/_footer.html.twig' %}
+
+    </section>
+  </main>
+
+  {% include 'front/partials/_auth_modal.html.twig' %}
+
+{% endblock %}
+
+

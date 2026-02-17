@@ -1,0 +1,100 @@
+{% set currentRoute = app.request.attributes.get('_route')|default('') %}
+
+<aside class="sidebar">
+  <div class="brand">
+    <span class="brandMark">
+      <svg class="icon"><use href="#i-logo"></use></svg>
+    </span>
+    <span class="brandText">PULSE</span>
+  </div>
+
+  <nav class="sideNav" aria-label="Navigation principale">
+    <div class="sideGroupTitle">Tableau de bord</div>
+    <a class="navItem {{ currentRoute in ['admin_dashboard', 'admin_dashboard_page'] ? 'active' : '' }}" href="{{ path('admin_dashboard') }}">
+      <svg class="icon"><use href="#i-home"></use></svg>
+      <span>Dashboard</span>
+    </a>
+
+    <div class="sideGroupTitle">Utilisateurs</div>
+    <a class="navItem {{ currentRoute == 'admin_users' ? 'active' : '' }}" href="{{ path('admin_users') }}">
+      <svg class="icon"><use href="#i-users"></use></svg>
+      <span>Utilisateurs</span>
+    </a>
+    <a class="navItem {{ currentRoute in ['admin_user_create', 'admin_add_user'] ? 'active' : '' }}" href="{{ path('admin_user_create') }}">
+      <svg class="icon"><use href="#i-users"></use></svg>
+      <span>Ajouter utilisateur</span>
+    </a>
+
+    <div class="sideGroupTitle">Social</div>
+    <a class="navItem {{ currentRoute in ['admin_posts', 'admin_post_detail'] ? 'active' : '' }}" href="{{ path('admin_posts') }}">
+      <svg class="icon"><use href="#i-flag"></use></svg>
+      <span>Posts</span>
+    </a>
+    <a class="navItem {{ currentRoute in ['admin_comments'] ? 'active' : '' }}" href="{{ path('admin_comments') }}">
+      <svg class="icon"><use href="#i-flag"></use></svg>
+      <span>Commentaires</span>
+    </a>
+    <a class="navItem {{ currentRoute in ['admin_reports', 'admin_report_detail'] ? 'active' : '' }}" href="{{ path('admin_reports') }}">
+      <svg class="icon"><use href="#i-flag"></use></svg>
+      <span>Signalements</span>
+    </a>
+    <a class="navItem {{ currentRoute == 'admin_messages' ? 'active' : '' }}" href="{{ path('admin_messages') }}">
+      <svg class="icon"><use href="#i-flag"></use></svg>
+      <span>Messages</span>
+    </a>
+
+    <div class="sideGroupTitle">Catalogue</div>
+    <a class="navItem {{ currentRoute in ['admin_categories', 'admin_category_form'] ? 'active' : '' }}" href="{{ path('admin_categories') }}">
+      <svg class="icon"><use href="#i-game"></use></svg>
+      <span>Categories</span>
+    </a>
+    <a class="navItem {{ currentRoute in ['admin_games', 'admin_game_detail', 'admin_game_form'] ? 'active' : '' }}" href="{{ path('admin_games') }}">
+      <svg class="icon"><use href="#i-game"></use></svg>
+      <span>Jeux</span>
+    </a>
+    <a class="navItem {{ currentRoute in ['admin_products', 'admin_product_detail', 'admin_product_form'] ? 'active' : '' }}" href="{{ path('admin_products') }}">
+      <svg class="icon"><use href="#i-cart"></use></svg>
+      <span>Produits</span>
+    </a>
+
+    <div class="sideGroupTitle">Commerce</div>
+    <a class="navItem {{ currentRoute in ['admin_orders', 'admin_order_detail'] ? 'active' : '' }}" href="{{ path('admin_orders') }}">
+      <svg class="icon"><use href="#i-cart"></use></svg>
+      <span>Commandes</span>
+    </a>
+    <a class="navItem {{ currentRoute == 'admin_carts' ? 'active' : '' }}" href="{{ path('admin_carts') }}">
+      <svg class="icon"><use href="#i-cart"></use></svg>
+      <span>Paniers</span>
+    </a>
+
+    <div class="sideGroupTitle">Teams & tournois</div>
+    <a class="navItem {{ currentRoute in ['admin_teams', 'admin_team_detail'] ? 'active' : '' }}" href="{{ path('admin_teams') }}">
+      <svg class="icon"><use href="#i-users"></use></svg>
+      <span>Equipes</span>
+    </a>
+    <a class="navItem {{ currentRoute in ['admin_tournament_requests', 'admin_tournament_request_detail'] ? 'active' : '' }}" href="{{ path('admin_tournament_requests') }}">
+      <svg class="icon"><use href="#i-trophy"></use></svg>
+      <span>Demandes tournois</span>
+    </a>
+    <a class="navItem {{ currentRoute in ['admin_tournaments', 'admin_tournament_detail', 'admin_tournament_form', 'admin_tournament_create', 'admin_tournament_edit'] ? 'active' : '' }}" href="{{ path('admin_tournaments') }}">
+      <svg class="icon"><use href="#i-trophy"></use></svg>
+      <span>Tournois</span>
+    </a>
+    <a class="navItem {{ currentRoute in ['admin_matches', 'admin_match_detail', 'admin_match_teams'] ? 'active' : '' }}" href="{{ path('admin_matches') }}">
+      <svg class="icon"><use href="#i-trophy"></use></svg>
+      <span>Matchs</span>
+    </a>
+
+    <div class="sideGroupTitle">Systeme</div>
+    <a class="navItem {{ currentRoute == 'admin_notifications' ? 'active' : '' }}" href="{{ path('admin_notifications') }}">
+      <svg class="icon"><use href="#i-gear"></use></svg>
+      <span>Notifications</span>
+    </a>
+    <a class="navItem {{ currentRoute == 'admin_images' ? 'active' : '' }}" href="{{ path('admin_images') }}">
+      <svg class="icon"><use href="#i-gear"></use></svg>
+      <span>Images</span>
+    </a>
+  </nav>
+
+</aside>
+

@@ -1,0 +1,154 @@
+﻿{% extends 'admin/base_admin.html.twig' %}
+
+{% macro scoped_sort_link(route_name, route_id, query, sort_key, direction_key, field, label, current_sort, current_direction) %}
+  {% set is_current = current_sort == field %}
+  {% set next_direction = is_current and current_direction == 'asc' ? 'desc' : 'asc' %}
+  {% set marker = is_current ? (current_direction == 'asc' ? ' (ASC)' : ' (DESC)') : '' %}
+  <a href="{{ path(route_name, query|merge({id: route_id, (sort_key): field, (direction_key): next_direction})) }}" style="color:inherit;text-decoration:none;">
+    {{ label }}{{ marker }}
+  </a>
+{% endmacro %}
+
+{% import _self as sorter %}
+
+{% block title %}PULSE - Detail post{% endblock %}
+
+{% block admin_content %}
+  <div class="pageHeader">
+    <div>
+      <h2>Detail post #{{ post.postId }}</h2>
+      <div class="pageSub">Edition, commentaires, signalements.</div>
+    </div>
+    <div class="formActions">
+      <a class="btn btnGhost" href="{{ path('admin_posts') }}">Retour liste</a>
+    </div>
+  </div>
+
+  {% for label, messages in app.flashes %}
+    {% for message in messages %}
+      <div class="listItem">
+        <span>{{ message }}</span>
+        <span class="badge {{ label == 'error' ? 'badge--danger' : 'badge--success' }}">{{ label|upper }}</span>
+      </div>
+    {% endfor %}
+  {% endfor %}
+
+  <section class="panel">
+    <div class="panelHeader">
+      <h3 class="panelTitle">EDITER LE POST</h3>
+    </div>
+
+    {{ form_start(postForm, {attr: {novalidate: 'novalidate'}}) }}
+      {{ form_errors(postForm) }}
+      {% include 'admin/pages/_post_form_fields.html.twig' with {form: postForm} %}
+      <div class="formActions" style="margin-top:12px;">
+        <button class="btn btnPrimary" type="submit">Mettre a jour</button>
+      </div>
+    {{ form_end(postForm) }}
+  </section>
+
+  <div class="tabs" data-tabs="post-detail">
+    <button class="tab isActive" data-tab="images">Images</button>
+    <button class="tab" data-tab="comments">Commentaires</button>
+    <button class="tab" data-tab="reports">Signalements</button>
+  </div>
+
+  <div class="tabPanels" data-panels="post-detail">
+    <div class="tabPanel isActive" data-panel="images">
+      <section class="panel">
+        <div class="dataTableWrap">
+          <table class="dataTable">
+            <thead>
+              <tr>
+                <th>{{ sorter.scoped_sort_link('admin_post_detail', post.postId, app.request.query.all, 'images_sort', 'images_direction', 'image_id', 'Image ID', sorts.images.sort, sorts.images.direction) }}</th>
+                <th>URL</th>
+                <th>{{ sorter.scoped_sort_link('admin_post_detail', post.postId, app.request.query.all, 'images_sort', 'images_direction', 'position', 'Position', sorts.images.sort, sorts.images.direction) }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for postImage in postImages %}
+                <tr>
+                  <td>#{{ postImage.imageId ? postImage.imageId.imageId : '-' }}</td>
+                  <td>
+                    {% if postImage.imageId %}
+                      <a href="{{ postImage.imageId.fileUrl starts with 'http' ? postImage.imageId.fileUrl : asset(postImage.imageId.fileUrl) }}" target="_blank" rel="noopener">Voir</a>
+                    {% else %}
+                      -
+                    {% endif %}
+                  </td>
+                  <td>{{ postImage.position }}</td>
+                </tr>
+              {% else %}
+                <tr><td colspan="3" class="listMeta">Aucune image liee.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <div class="tabPanel" data-panel="comments">
+      <section class="panel">
+        <div class="dataTableWrap">
+          <table class="dataTable">
+            <thead>
+              <tr>
+                <th>{{ sorter.scoped_sort_link('admin_post_detail', post.postId, app.request.query.all, 'comments_sort', 'comments_direction', 'id', 'ID', sorts.comments.sort, sorts.comments.direction) }}</th>
+                <th>{{ sorter.scoped_sort_link('admin_post_detail', post.postId, app.request.query.all, 'comments_sort', 'comments_direction', 'author', 'Auteur', sorts.comments.sort, sorts.comments.direction) }}</th>
+                <th>{{ sorter.scoped_sort_link('admin_post_detail', post.postId, app.request.query.all, 'comments_sort', 'comments_direction', 'content', 'Contenu', sorts.comments.sort, sorts.comments.direction) }}</th>
+                <th>{{ sorter.scoped_sort_link('admin_post_detail', post.postId, app.request.query.all, 'comments_sort', 'comments_direction', 'created_at', 'Date', sorts.comments.sort, sorts.comments.direction) }}</th>
+                <th>{{ sorter.scoped_sort_link('admin_post_detail', post.postId, app.request.query.all, 'comments_sort', 'comments_direction', 'deleted', 'Deleted', sorts.comments.sort, sorts.comments.direction) }}</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for comment in comments %}
+                <tr>
+                  <td>#{{ comment.commentId }}</td>
+                  <td>{{ comment.authorUserId ? comment.authorUserId.username : '-' }}</td>
+                  <td>{{ comment.contentText ? comment.contentText|slice(0, 100) : '-' }}</td>
+                  <td>{{ comment.createdAt ? comment.createdAt|date('d/m/Y H:i') : '-' }}</td>
+                  <td>{{ comment.isDeleted ? 'Oui' : 'Non' }}</td>
+                  <td><a class="btn btnTiny" href="{{ path('admin_comments', {edit: comment.commentId}) }}">Edit</a></td>
+                </tr>
+              {% else %}
+                <tr><td colspan="6" class="listMeta">Aucun commentaire.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <div class="tabPanel" data-panel="reports">
+      <section class="panel">
+        <div class="dataTableWrap">
+          <table class="dataTable">
+            <thead>
+              <tr>
+                <th>{{ sorter.scoped_sort_link('admin_post_detail', post.postId, app.request.query.all, 'reports_sort', 'reports_direction', 'id', 'ID', sorts.reports.sort, sorts.reports.direction) }}</th>
+                <th>{{ sorter.scoped_sort_link('admin_post_detail', post.postId, app.request.query.all, 'reports_sort', 'reports_direction', 'reporter', 'Reporter', sorts.reports.sort, sorts.reports.direction) }}</th>
+                <th>{{ sorter.scoped_sort_link('admin_post_detail', post.postId, app.request.query.all, 'reports_sort', 'reports_direction', 'status', 'Status', sorts.reports.sort, sorts.reports.direction) }}</th>
+                <th>{{ sorter.scoped_sort_link('admin_post_detail', post.postId, app.request.query.all, 'reports_sort', 'reports_direction', 'created_at', 'Date', sorts.reports.sort, sorts.reports.direction) }}</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for report in reports %}
+                <tr>
+                  <td>#{{ report.reportId }}</td>
+                  <td>{{ report.reporterUserId ? report.reporterUserId.username : '-' }}</td>
+                  <td><span class="badge {{ report.status == 'CLOSED' ? 'badge--success' : 'badge--warning' }}">{{ report.status }}</span></td>
+                  <td>{{ report.createdAt ? report.createdAt|date('d/m/Y H:i') : '-' }}</td>
+                  <td><a class="btn btnTiny" href="{{ path('admin_report_detail', {id: report.reportId}) }}">Voir</a></td>
+                </tr>
+              {% else %}
+                <tr><td colspan="5" class="listMeta">Aucun signalement.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </div>
+{% endblock %}

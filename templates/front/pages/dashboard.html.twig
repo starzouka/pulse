@@ -1,0 +1,159 @@
+﻿{% extends 'base.html.twig' %}
+
+{% set avatarPath = viewer_user.profileImageId ? viewer_user.profileImageId.fileUrl : '' %}
+{% set avatarUrl = avatarPath ? (avatarPath starts with 'http' ? avatarPath : asset(avatarPath)) : 'https://picsum.photos/seed/pulse_dashboard_' ~ (viewer_user.userId ?? 0) ~ '/200/200' %}
+
+{% block title %}PULSE - Dashboard joueur{% endblock %}
+
+{% block body %}
+  {% include 'front/partials/_hero_mini.html.twig' with {
+    hero_kicker: 'JOUEUR',
+    hero_title: 'Dashboard joueur',
+    hero_sub: 'Vue sociale de votre activite du jour.',
+    breadcrumb_current: 'Dashboard joueur'
+  } %}
+
+  <main class="page">
+    <section class="belowHero">
+      <div class="layout">
+        {% include 'front/partials/_player_side_nav.html.twig' with { active: 'dashboard' } %}
+
+        <div>
+          <div class="socialShell">
+            <div class="socialStack">
+              {% include 'front/partials/_post_composer.html.twig' with {
+                viewer_user: viewer_user,
+                action_route: 'front_feed_post_create',
+                csrf_token_id: 'feed_post_create',
+                placeholder: 'Partager une nouvelle, un score ou une annonce...',
+                form_class: 'panel gadget gadget--composer'
+              } %}
+
+              <section class="panel gadget">
+                <div class="panel__head">
+                  <h3 class="panel__title">FIL RAPIDE</h3>
+                  <a class="btn btn--ghost" href="{{ path('front_feed') }}">Voir tout</a>
+                </div>
+
+                <form class="filtersRow" method="get" action="{{ path('front_dashboard') }}" style="margin-bottom:12px;">
+                  <input class="input" type="search" name="feed_q" value="{{ dashboard_feed_filters.q|default('') }}" placeholder="Rechercher dans les publications..." />
+                  <div class="select">
+                    <select name="feed_visibility">
+                      <option value="" {{ (dashboard_feed_filters.visibility|default('')) == '' ? 'selected' : '' }}>Toutes visibilites</option>
+                      <option value="PUBLIC" {{ (dashboard_feed_filters.visibility|default('')) == 'PUBLIC' ? 'selected' : '' }}>PUBLIC</option>
+                      <option value="FRIENDS" {{ (dashboard_feed_filters.visibility|default('')) == 'FRIENDS' ? 'selected' : '' }}>FRIENDS</option>
+                      <option value="TEAM_ONLY" {{ (dashboard_feed_filters.visibility|default('')) == 'TEAM_ONLY' ? 'selected' : '' }}>TEAM_ONLY</option>
+                    </select>
+                  </div>
+                  <div class="select">
+                    <select name="feed_sort">
+                      <option value="latest" {{ (dashboard_feed_filters.sort|default('latest')) == 'latest' ? 'selected' : '' }}>Plus recents</option>
+                      <option value="oldest" {{ (dashboard_feed_filters.sort|default('latest')) == 'oldest' ? 'selected' : '' }}>Plus anciens</option>
+                      <option value="liked" {{ (dashboard_feed_filters.sort|default('latest')) == 'liked' ? 'selected' : '' }}>Plus likes</option>
+                      <option value="commented" {{ (dashboard_feed_filters.sort|default('latest')) == 'commented' ? 'selected' : '' }}>Plus commentes</option>
+                    </select>
+                  </div>
+                  <button class="btn btn--ghost" type="submit">Filtrer</button>
+                  <a class="btn btn--ghost" href="{{ path('front_dashboard') }}">Reset</a>
+                </form>
+
+                <div
+                  id="dashboardFeedContainer"
+                  data-infinite-feed
+                  data-feed-endpoint="{{ path('front_feed_chunk') }}"
+                  data-feed-query="{{ dashboard_feed_query_string|default('') }}"
+                  data-feed-limit="{{ dashboard_feed_limit|default(8) }}"
+                  data-feed-offset="{{ dashboard_feed_posts|length }}"
+                  data-feed-has-more="{{ dashboard_feed_has_more|default(false) ? '1' : '0' }}"
+                >
+                  {% for postData in dashboard_feed_posts %}
+                    {% include 'front/partials/_post_card.html.twig' with {
+                      post_data: postData,
+                      viewer_user: viewer_user,
+                      like_route: 'front_feed_post_like',
+                      comment_route: 'front_feed_post_comment',
+                      report_route: 'front_feed_post_report',
+                      like_token_prefix: 'feed_post_like_',
+                      comment_token_prefix: 'feed_post_comment_',
+                      report_token_prefix: 'feed_post_report_',
+                      redirect_uri: app.request.uri
+                    } %}
+                  {% endfor %}
+                </div>
+
+                {% if dashboard_feed_posts is empty %}
+                  <div class="emptyState" data-feed-empty>Aucune publication recente.</div>
+                {% endif %}
+
+                <div class="emptyState" data-feed-loader hidden>Chargement...</div>
+                <div class="emptyState" data-feed-end {{ dashboard_feed_has_more|default(false) ? 'hidden' : '' }}>Fin du fil.</div>
+                <div data-feed-sentinel></div>
+              </section>
+            </div>
+
+            <aside class="socialStack">
+              <section class="panel gadget gadget--profile">
+                <div class="profileHeader">
+                  <div class="avatarLg" data-avatar="{{ avatarUrl }}"></div>
+                  <div>
+                    <h3 style="margin:0;">{{ viewer_user.displayName ?? viewer_user.username }} (@{{ viewer_user.username }})</h3>
+                    <div class="muted">{{ viewer_user.role }}{% if viewer_user.country %} · {{ viewer_user.country }}{% endif %}</div>
+                    <div class="profileHeader__actions">
+                      <a class="btn btn--ghost" href="{{ path('front_profile') }}">Mon profil</a>
+                      <a class="btn btn--ghost" href="{{ path('front_profile_edit') }}">Modifier</a>
+                    </div>
+                  </div>
+                </div>
+                <div class="statsRow">
+                  <div class="statCard"><div class="statCard__value">{{ profile_data.stats.friends }}</div><div class="statCard__label">Amis</div></div>
+                  <div class="statCard"><div class="statCard__value">{{ profile_data.stats.teams }}</div><div class="statCard__label">Equipes</div></div>
+                  <div class="statCard"><div class="statCard__value">{{ profile_data.stats.posts }}</div><div class="statCard__label">Posts</div></div>
+                </div>
+              </section>
+
+              <section class="panel gadget">
+                <h3 class="panel__title">RACCOURCIS</h3>
+                <div class="socialQuickList">
+                  <a class="listItem" href="{{ path('front_players') }}"><span>Recherche joueurs</span><span class="listItem__meta">Trouver</span></a>
+                  <a class="listItem" href="{{ path('front_messages') }}"><span>Messages</span><span class="listItem__meta">{{ unread_messages_count }} non lus</span></a>
+                  <a class="listItem" href="{{ path('front_my_teams') }}"><span>Mes equipes</span><span class="listItem__meta">{{ profile_data.stats.teams }} actives</span></a>
+                  <a class="listItem" href="{{ path('front_orders') }}"><span>Mes commandes</span><span class="listItem__meta">Voir</span></a>
+                </div>
+              </section>
+
+              <section class="panel gadget gadget--alert">
+                <h3 class="panel__title">NOTIFICATIONS</h3>
+                <div class="list">
+                  {% for notification in recent_notifications %}
+                    <a class="listItem" href="{{ path('front_notifications') }}">
+                      <span>{{ notification.content }}</span>
+                      <span class="badge {{ notification.isRead ? '' : 'badge--info' }}">{{ notification.isRead ? 'Lu' : 'Nouveau' }}</span>
+                    </a>
+                  {% else %}
+                    <div class="emptyState">Aucune notification.</div>
+                  {% endfor %}
+                </div>
+                <div class="postCard__actions" style="margin-top:10px;">
+                  <a class="btn btn--ghost" href="{{ path('front_notifications') }}">Voir toutes ({{ unread_notifications_count }} non lues)</a>
+                </div>
+              </section>
+
+              <section class="panel gadget">
+                <h3 class="panel__title">EN ATTENTE</h3>
+                <div class="list">
+                  <a class="listItem" href="{{ path('front_friends') }}"><span>Demandes d'ami</span><span class="badge">{{ pending_friend_requests_count }}</span></a>
+                  <a class="listItem" href="{{ path('front_my_teams') }}"><span>Invitations equipe</span><span class="badge">{{ pending_team_invites_count }}</span></a>
+                  <a class="listItem" href="{{ path('front_my_requests') }}"><span>Demandes adhesion</span><span class="badge">{{ pending_team_join_requests_count }}</span></a>
+                </div>
+              </section>
+            </aside>
+          </div>
+        </div>
+      </div>
+
+      {% include 'front/partials/_footer.html.twig' %}
+    </section>
+  </main>
+
+  {% include 'front/partials/_auth_modal.html.twig' %}
+{% endblock %}

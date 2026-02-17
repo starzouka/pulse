@@ -1,0 +1,119 @@
+﻿{% extends 'base.html.twig' %}
+
+{% set avatarPath = viewer_user.profileImageId ? viewer_user.profileImageId.fileUrl : '' %}
+{% set avatarUrl = avatarPath ? (avatarPath starts with 'http' ? avatarPath : asset(avatarPath)) : 'https://picsum.photos/seed/pulse_profile_edit_' ~ (viewer_user.userId ?? 0) ~ '/200/200' %}
+
+{% block title %}PULSE - Modifier profil{% endblock %}
+
+{% block body %}
+  {% include 'front/partials/_hero_mini.html.twig' with {
+    hero_kicker: 'JOUEUR',
+    hero_title: 'Modifier profil',
+    hero_sub: 'Mettez a jour vos informations personnelles.',
+    breadcrumb_current: 'Modifier profil'
+  } %}
+
+  <main class="page">
+    <section class="belowHero">
+      <div class="layout">
+        {% include 'front/partials/_player_side_nav.html.twig' with { active: 'profile_edit' } %}
+
+        <div class="socialShell">
+          <div class="socialStack">
+            {% for label, messages in app.flashes %}
+              {% for message in messages %}
+                <div class="listItem">
+                  <span>{{ message }}</span>
+                  <span class="badge {{ label == 'error' ? 'badge--danger' : 'badge--success' }}">{{ label|upper }}</span>
+                </div>
+              {% endfor %}
+            {% endfor %}
+
+            <div class="panel gadget gadget--profile">
+              <div class="profileHeader">
+                <div class="avatarLg" data-avatar="{{ avatarUrl }}"></div>
+                <div>
+                  <h3 style="margin:0;">{{ viewer_user.displayName ?? viewer_user.username }}</h3>
+                  <div class="muted">@{{ viewer_user.username }}{% if viewer_user.country %} · {{ viewer_user.country }}{% endif %}</div>
+                </div>
+              </div>
+            </div>
+
+            {{ form_start(profileEditForm, {attr: {class: 'panel gadget', novalidate: 'novalidate'}, enctype: 'multipart/form-data'}) }}
+              <h3 class="panel__title">INFORMATIONS PROFIL</h3>
+              <div class="formGrid">
+                <label class="field">
+                  <span class="field__label">Photo profil</span>
+                  {{ form_widget(profileEditForm.profilePhoto, {attr: {class: 'input'}}) }}
+                  {{ form_errors(profileEditForm.profilePhoto) }}
+                </label>
+
+                <label class="field">
+                  <span class="field__label">Display name</span>
+                  {{ form_widget(profileEditForm.displayName, {attr: {class: 'input'}}) }}
+                  {{ form_errors(profileEditForm.displayName) }}
+                </label>
+
+                <label class="field">
+                  <span class="field__label">Bio</span>
+                  {{ form_widget(profileEditForm.bio, {attr: {class: 'textarea'}}) }}
+                  {{ form_errors(profileEditForm.bio) }}
+                </label>
+
+                <label class="field">
+                  <span class="field__label">Pays</span>
+                  {{ form_widget(profileEditForm.country, {attr: {class: 'input'}}) }}
+                  {{ form_errors(profileEditForm.country) }}
+                </label>
+
+                <label class="field">
+                  <span class="field__label">Telephone</span>
+                  {{ form_widget(profileEditForm.phone, {attr: {class: 'input'}}) }}
+                  {{ form_errors(profileEditForm.phone) }}
+                </label>
+
+                <label class="field">
+                  <span class="field__label">Date de naissance</span>
+                  {{ form_widget(profileEditForm.birthDate, {attr: {class: 'input'}}) }}
+                  {{ form_errors(profileEditForm.birthDate) }}
+                </label>
+
+                <label class="field">
+                  <span class="field__label">Genre</span>
+                  {{ form_widget(profileEditForm.gender, {attr: {class: 'input'}}) }}
+                  {{ form_errors(profileEditForm.gender) }}
+                </label>
+
+                <label class="field" style="display:flex; justify-content:space-between; align-items:center;">
+                  <span class="field__label">Compte actif</span>
+                  {{ form_widget(profileEditForm.isActive) }}
+                  {{ form_errors(profileEditForm.isActive) }}
+                </label>
+              </div>
+
+              <div class="formActions" style="margin-top:12px;">
+                <button class="btn btn--primary" type="submit">Sauvegarder</button>
+                <a class="btn btn--ghost" href="{{ path('front_profile') }}">Annuler</a>
+              </div>
+            {{ form_end(profileEditForm) }}
+          </div>
+
+          <aside class="socialStack">
+            <section class="panel gadget">
+              <h3 class="panel__title">CONSEILS</h3>
+              <div class="list">
+                <div class="listItem"><span>Ajoutez une bio claire</span><span class="listItem__meta">+ visibilite</span></div>
+                <div class="listItem"><span>Photo recente</span><span class="listItem__meta">+ confiance</span></div>
+                <div class="listItem"><span>Pays renseigne</span><span class="listItem__meta">+ matching</span></div>
+              </div>
+            </section>
+          </aside>
+        </div>
+      </div>
+
+      {% include 'front/partials/_footer.html.twig' %}
+    </section>
+  </main>
+
+  {% include 'front/partials/_auth_modal.html.twig' %}
+{% endblock %}

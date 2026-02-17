@@ -1,0 +1,32 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}PULSE - Formulaire tournoi{% endblock %}
+
+{% block admin_content %}
+  <div class="pageHeader">
+    <div>
+      <h2>{{ isEdit ? 'Modifier tournoi' : 'Nouveau tournoi' }}</h2>
+      <div class="pageSub">Les changements seront visibles sur le Back Office et le Front Office.</div>
+    </div>
+  </div>
+
+  {% for label, messages in app.flashes %}
+    {% for message in messages %}
+      <div class="listItem">
+        <span>{{ message }}</span>
+        <span class="badge {{ label == 'error' ? 'badge--danger' : (label == 'warning' ? 'badge--warning' : 'badge--success') }}">{{ label|upper }}</span>
+      </div>
+    {% endfor %}
+  {% endfor %}
+
+  <section class="panel">
+    {{ form_start(tournamentForm, {attr: {novalidate: 'novalidate'}}) }}
+      {{ form_errors(tournamentForm) }}
+      {% include 'shared/_tournament_form_fields.html.twig' with {form: tournamentForm} %}
+      <div class="formActions" style="margin-top:12px;">
+        <button class="btn btnPrimary" type="submit">{{ isEdit ? 'Mettre a jour' : 'Creer tournoi' }}</button>
+        <a class="btn btnGhost" href="{{ path('admin_tournaments') }}">Annuler</a>
+      </div>
+    {{ form_end(tournamentForm) }}
+  </section>
+{% endblock %}

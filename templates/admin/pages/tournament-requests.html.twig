@@ -1,0 +1,146 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}PULSE - Demandes tournois{% endblock %}
+
+{% block admin_content %}
+  <div class="pageHeader">
+    <div>
+      <h2>Demandes tournois</h2>
+      <div class="pageSub">Workflow organisateur: accepter/refuser une demande.</div>
+    </div>
+    <div class="formActions">
+      <a class="btn btnGhost" href="{{ path('admin_tournament_requests_export', {
+        format: 'pdf',
+        q: filters.q|default(''),
+        status: filters.status|default(''),
+        game: filters.game|default(''),
+        sort: filters.sort|default('latest')
+      }) }}">Exporter PDF</a>
+      <a class="btn btnGhost" href="{{ path('admin_tournament_requests_export', {
+        format: 'excel',
+        q: filters.q|default(''),
+        status: filters.status|default(''),
+        game: filters.game|default(''),
+        sort: filters.sort|default('latest')
+      }) }}">Exporter Excel</a>
+    </div>
+  </div>
+
+  {% for label, messages in app.flashes %}
+    {% for message in messages %}
+      <div class="listItem">
+        <span>{{ message }}</span>
+        <span class="badge {{ label == 'error' ? 'badge--danger' : (label == 'warning' ? 'badge--warning' : 'badge--success') }}">{{ label|upper }}</span>
+      </div>
+    {% endfor %}
+  {% endfor %}
+
+  <form class="filtersBar js-live-filters" method="get" action="{{ path('admin_tournament_requests') }}">
+    <div class="filterGroup">
+      <label>Recherche</label>
+      <input type="search" name="q" value="{{ filters.q|default('') }}" placeholder="Titre, jeu, organisateur..." />
+    </div>
+
+    <div class="filterGroup">
+      <label>Status</label>
+      <select name="status">
+        <option value="">ALL</option>
+        {% for statusValue in statusOptions %}
+          <option value="{{ statusValue }}" {{ filters.status == statusValue ? 'selected' : '' }}>{{ statusValue }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="filterGroup">
+      <label>Game</label>
+      <select name="game">
+        <option value="">ALL</option>
+        {% for game in availableGames %}
+          <option value="{{ game.gameId }}" {{ filters.game is not null and filters.game == game.gameId ? 'selected' : '' }}>{{ game.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="filterGroup">
+      <label>Tri</label>
+      <select name="sort">
+        {% for sortValue in sortOptions %}
+          <option value="{{ sortValue }}" {{ filters.sort == sortValue ? 'selected' : '' }}>{{ sortValue|upper }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="formActions">
+      <button class="btn btnPrimary" type="submit">Filtrer</button>
+      <a class="btn btnGhost" href="{{ path('admin_tournament_requests') }}">Reset</a>
+    </div>
+  </form>
+
+  <section class="panel">
+    <div class="panelHeader">
+      <h3 class="panelTitle">LISTE DES DEMANDES</h3>
+      <span class="listMeta">{{ counter|default(requests|length) }} resultat(s)</span>
+    </div>
+
+    <div class="dataTableWrap">
+      <table class="dataTable">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Titre</th>
+            <th>Organisateur</th>
+            <th>Jeu</th>
+            <th>Dates</th>
+            <th>Prize pool</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for requestItem in requests %}
+            {% set requestId = requestItem.requestId ?? 0 %}
+            {% set status = requestItem.status|default('PENDING') %}
+            {% set statusBadge = status == 'ACCEPTED' ? 'badge--success' : (status == 'REFUSED' ? 'badge--danger' : 'badge--warning') %}
+            <tr>
+              <td>#{{ requestId }}</td>
+              <td>
+                <strong>{{ requestItem.title }}</strong>
+                {% if requestItem.photoPath %}
+                  <div class="listMeta"><a href="{{ requestItem.photoPath starts with 'http' ? requestItem.photoPath : asset(requestItem.photoPath) }}" target="_blank" rel="noopener">Photo</a></div>
+                {% endif %}
+              </td>
+              <td>{{ requestItem.organizerUserId ? requestItem.organizerUserId.username : '-' }}</td>
+              <td>{{ requestItem.gameId ? requestItem.gameId.name : '-' }}</td>
+              <td>{{ requestItem.startDate ? requestItem.startDate|date('d/m/Y') : '-' }} -> {{ requestItem.endDate ? requestItem.endDate|date('d/m/Y') : '-' }}</td>
+              <td>{{ requestItem.prizePool|number_format(2, '.', ' ') }} DT</td>
+              <td><span class="badge {{ statusBadge }}">{{ status }}</span></td>
+              <td>
+                <div class="formActions">
+                  <a class="btn btnTiny" href="{{ path('admin_tournament_request_detail', {id: requestId}) }}">Voir detail</a>
+
+                  {% if status == 'PENDING' %}
+                    <form method="post" action="{{ path('admin_tournament_request_review', {id: requestId}) }}" style="display:inline-block;">
+                      <input type="hidden" name="_token" value="{{ csrf_token('review_tournament_request_' ~ requestId) }}" />
+                      <input type="hidden" name="decision" value="ACCEPTED" />
+                      <button class="btn btnTiny" type="submit">Accepter</button>
+                    </form>
+
+                    <form method="post" action="{{ path('admin_tournament_request_review', {id: requestId}) }}" style="display:inline-block;" onsubmit="return confirm('Refuser cette demande ?');">
+                      <input type="hidden" name="_token" value="{{ csrf_token('review_tournament_request_' ~ requestId) }}" />
+                      <input type="hidden" name="decision" value="REFUSED" />
+                      <button class="btn btnTiny" type="submit">Refuser</button>
+                    </form>
+                  {% endif %}
+                </div>
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="8" class="listMeta">Aucune demande trouvee.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+{% endblock %}

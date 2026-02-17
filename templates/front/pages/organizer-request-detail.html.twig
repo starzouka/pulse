@@ -1,0 +1,148 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}PULSE - Detail demande{% endblock %}
+
+{% block body %}
+  {% include 'front/partials/_hero_mini.html.twig' with {
+    hero_kicker: 'ORGANISATEUR',
+    hero_title: 'Detail demande',
+    hero_sub: 'Toutes les informations de la demande de tournoi.',
+    breadcrumb_current: 'Detail demande'
+  } %}
+
+  <main class="page">
+    <section class="belowHero">
+      <div class="layout">
+        {% include 'front/partials/_organizer_side_nav.html.twig' with {active: 'request_detail'} %}
+
+        <div>
+          <div class="panel">
+            <div class="panel__head">
+              <div>
+                <h3 class="panel__title">{{ tournamentRequest.title }}</h3>
+                <div class="panel__desc">
+                  Demande #{{ tournamentRequest.requestId }} |
+                  Creee le {{ tournamentRequest.createdAt ? tournamentRequest.createdAt|date('Y-m-d H:i') : '-' }}
+                </div>
+              </div>
+              {% set statusClass = tournamentRequest.status == 'ACCEPTED'
+                ? 'badge--success'
+                : (tournamentRequest.status == 'REFUSED' ? 'badge--danger' : (tournamentRequest.status == 'CANCELLED' ? 'badge--muted' : ''))
+              %}
+              <span class="badge {{ statusClass }}">{{ tournamentRequest.status }}</span>
+            </div>
+
+            <div class="list">
+              <div class="listItem">
+                <span>Jeu</span>
+                <span class="listItem__meta">{{ tournamentRequest.gameId ? tournamentRequest.gameId.name : '-' }}</span>
+              </div>
+              <div class="listItem">
+                <span>Periode</span>
+                <span class="listItem__meta">
+                  {{ tournamentRequest.startDate ? tournamentRequest.startDate|date('Y-m-d') : '-' }}
+                  -
+                  {{ tournamentRequest.endDate ? tournamentRequest.endDate|date('Y-m-d') : '-' }}
+                </span>
+              </div>
+              <div class="listItem">
+                <span>Date limite inscription</span>
+                <span class="listItem__meta">{{ tournamentRequest.registrationDeadline ? tournamentRequest.registrationDeadline|date('Y-m-d') : '-' }}</span>
+              </div>
+              <div class="listItem">
+                <span>Max equipes</span>
+                <span class="listItem__meta">{{ tournamentRequest.maxTeams }}</span>
+              </div>
+              <div class="listItem">
+                <span>Format</span>
+                <span class="listItem__meta">{{ tournamentRequest.format }}</span>
+              </div>
+              <div class="listItem">
+                <span>Mode inscription</span>
+                <span class="listItem__meta">{{ tournamentRequest.registrationMode }}</span>
+              </div>
+              <div class="listItem">
+                <span>Prize pool</span>
+                <span class="listItem__meta">{{ tournamentRequest.prizePool }} DT</span>
+              </div>
+              <div class="listItem">
+                <span>Description prix</span>
+                <span class="listItem__meta">{{ tournamentRequest.prizeDescription ?: '-' }}</span>
+              </div>
+              <div class="listItem">
+                <span>Revu par admin</span>
+                <span class="listItem__meta">
+                  {% if tournamentRequest.reviewedByAdminId %}
+                    {{ tournamentRequest.reviewedByAdminId.email }} ({{ tournamentRequest.reviewedAt ? tournamentRequest.reviewedAt|date('Y-m-d H:i') : '-' }})
+                  {% else %}
+                    -
+                  {% endif %}
+                </span>
+              </div>
+            </div>
+
+            {% if tournamentRequest.description %}
+              <div class="panelDesc" style="margin-top:12px;">
+                <b>Description:</b> {{ tournamentRequest.description }}
+              </div>
+            {% endif %}
+
+            {% if tournamentRequest.rules %}
+              <div class="panelDesc" style="margin-top:8px;">
+                <b>Regles:</b> {{ tournamentRequest.rules }}
+              </div>
+            {% endif %}
+
+            {% if tournamentRequest.adminResponseNote %}
+              <div class="panelDesc" style="margin-top:8px;">
+                <b>Note admin:</b> {{ tournamentRequest.adminResponseNote }}
+              </div>
+            {% endif %}
+
+            {% if tournamentRequest.photoPath %}
+              <div style="margin-top:12px;">
+                <img
+                  src="{{ asset(tournamentRequest.photoPath) }}"
+                  alt="Photo tournoi"
+                  style="max-width: 320px; border-radius: 12px;"
+                />
+              </div>
+            {% endif %}
+
+            <div class="formActions" style="margin-top:12px;">
+              <a class="btn btn--ghost" href="{{ path('front_organizer_requests') }}">Retour</a>
+              <a class="btn btn--primary" href="{{ path('front_organizer_request_create') }}">Nouvelle demande</a>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel__head">
+              <div>
+                <h3 class="panel__title">TABLES UTILISEES</h3>
+                <div class="panel__desc">Donnees extraites depuis le schema reel.</div>
+              </div>
+            </div>
+            <div class="list">
+              <div class="listItem">
+                <span><b>tournament_requests</b></span>
+                <span class="listItem__meta">title, rules, photo_path, status, reviewed_by_admin_id, admin_response_note</span>
+              </div>
+              <div class="listItem">
+                <span><b>games</b></span>
+                <span class="listItem__meta">game_id, name</span>
+              </div>
+              <div class="listItem">
+                <span><b>users</b></span>
+                <span class="listItem__meta">organizer_user_id, reviewed_by_admin_id</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {% include 'front/partials/_footer.html.twig' %}
+    </section>
+  </main>
+
+  {% include 'front/partials/_auth_modal.html.twig' %}
+{% endblock %}

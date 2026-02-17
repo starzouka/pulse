@@ -1,0 +1,55 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}PULSE - À propos{% endblock %}
+
+{% block body %}
+
+
+  {% include 'front/partials/_hero_mini.html.twig' with {
+  hero_kicker: 'PULSE',
+  hero_title: 'À propos',
+  hero_sub: 'Plateforme e-sport pour créer des équipes et organiser des tournois.',
+  breadcrumb_current: 'À propos'
+} %}
+
+
+  <main class="page">
+    <section class="belowHero">
+
+      <div class="panel">
+        <h3 class="panel__title">NOTRE MISSION</h3>
+        <p class="muted">Connecter joueurs, capitaines et organisateurs autour d’une expérience e-sport complète.</p>
+      </div>
+      <div class="panel">
+        <h3 class="panel__title">VALEURS</h3>
+        <div class="list">
+          <div class="listItem"><span>Compétition saine</span><span class="listItem__meta">Transparence & fair-play</span></div>
+          <div class="listItem"><span>Communauté</span><span class="listItem__meta">Social + teams</span></div>
+          <div class="listItem"><span>Performance</span><span class="listItem__meta">Stats & suivi</span></div>
+        </div>
+      </div>
+      
+      <div class="panel">
+        <div class="panel__head">
+          <div>
+            <h3 class="panel__title">TABLES UTILISÉES</h3>
+            <div class="panel__desc">Schéma réel + colonnes clés.</div>
+          </div>
+        </div>
+        <div class="list">
+          <div class="listItem"><span><b>Aucune table</b></span><span class="listItem__meta">Page statique (option CMS si besoin)</span></div>
+        </div>
+      </div>
+
+    
+
+      {% include 'front/partials/_footer.html.twig' %}
+
+    </section>
+  </main>
+
+  {% include 'front/partials/_auth_modal.html.twig' %}
+
+{% endblock %}
+
+

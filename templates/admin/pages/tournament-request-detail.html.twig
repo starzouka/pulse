@@ -1,0 +1,87 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}PULSE - Detail demande tournoi{% endblock %}
+
+{% block admin_content %}
+  {% set requestId = request.requestId ?? 0 %}
+  {% set status = request.status|default('PENDING') %}
+  {% set statusBadge = status == 'ACCEPTED' ? 'badge--success' : (status == 'REFUSED' ? 'badge--danger' : 'badge--warning') %}
+
+  <div class="pageHeader">
+    <div>
+      <h2>Detail demande #{{ requestId }}</h2>
+      <div class="pageSub">Validation admin de la demande organisateur.</div>
+    </div>
+    <div class="formActions">
+      <a class="btn btnGhost" href="{{ path('admin_tournament_requests') }}">Retour liste</a>
+    </div>
+  </div>
+
+  {% for label, messages in app.flashes %}
+    {% for message in messages %}
+      <div class="listItem">
+        <span>{{ message }}</span>
+        <span class="badge {{ label == 'error' ? 'badge--danger' : (label == 'warning' ? 'badge--warning' : 'badge--success') }}">{{ label|upper }}</span>
+      </div>
+    {% endfor %}
+  {% endfor %}
+
+  <section class="panel">
+    <div class="panelHeader">
+      <h3 class="panelTitle">Informations demande</h3>
+      <span class="badge {{ statusBadge }}">{{ status }}</span>
+    </div>
+
+    <div class="list">
+      <div class="listItem"><span>Titre</span><span class="listMeta">{{ request.title }}</span></div>
+      <div class="listItem"><span>Organisateur</span><span class="listMeta">{{ request.organizerUserId ? request.organizerUserId.username : '-' }} ({{ request.organizerUserId ? request.organizerUserId.email : '-' }})</span></div>
+      <div class="listItem"><span>Jeu</span><span class="listMeta">{{ request.gameId ? request.gameId.name : '-' }}</span></div>
+      <div class="listItem"><span>Format</span><span class="listMeta">{{ request.format }}</span></div>
+      <div class="listItem"><span>Mode inscription</span><span class="listMeta">{{ request.registrationMode }}</span></div>
+      <div class="listItem"><span>Dates</span><span class="listMeta">{{ request.startDate ? request.startDate|date('d/m/Y') : '-' }} -> {{ request.endDate ? request.endDate|date('d/m/Y') : '-' }}</span></div>
+      <div class="listItem"><span>Deadline</span><span class="listMeta">{{ request.registrationDeadline ? request.registrationDeadline|date('d/m/Y') : '-' }}</span></div>
+      <div class="listItem"><span>Max teams</span><span class="listMeta">{{ request.maxTeams }}</span></div>
+      <div class="listItem"><span>Prize pool</span><span class="listMeta">{{ request.prizePool|number_format(2, '.', ' ') }} DT</span></div>
+      <div class="listItem"><span>Prize description</span><span class="listMeta">{{ request.prizeDescription ?: '-' }}</span></div>
+      <div class="listItem"><span>Description</span><span class="listMeta">{{ request.description ?: '-' }}</span></div>
+      <div class="listItem"><span>Rules</span><span class="listMeta">{{ request.rules ?: '-' }}</span></div>
+      <div class="listItem"><span>Admin note</span><span class="listMeta">{{ request.adminResponseNote ?: '-' }}</span></div>
+      <div class="listItem"><span>Reviewed at</span><span class="listMeta">{{ request.reviewedAt ? request.reviewedAt|date('d/m/Y H:i') : '-' }}</span></div>
+      {% if request.photoPath %}
+        <div class="listItem"><span>Photo</span><span class="listMeta"><a href="{{ request.photoPath starts with 'http' ? request.photoPath : asset(request.photoPath) }}" target="_blank" rel="noopener">Voir image</a></span></div>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panelHeader">
+      <h3 class="panelTitle">Decision admin</h3>
+      <span class="listMeta">Email automatique a l'organisateur</span>
+    </div>
+
+    {% if status == 'PENDING' %}
+      <div class="formGrid">
+        <form method="post" action="{{ path('admin_tournament_request_review', {id: requestId}) }}" class="field">
+          <input type="hidden" name="_token" value="{{ csrf_token('review_tournament_request_' ~ requestId) }}" />
+          <input type="hidden" name="decision" value="ACCEPTED" />
+          <label>Note admin (optionnel)</label>
+          <textarea name="admin_note" placeholder="Note de validation..."></textarea>
+          <button class="btn btnPrimary" type="submit">Accepter</button>
+        </form>
+
+        <form method="post" action="{{ path('admin_tournament_request_review', {id: requestId}) }}" class="field" onsubmit="return confirm('Refuser cette demande ?');">
+          <input type="hidden" name="_token" value="{{ csrf_token('review_tournament_request_' ~ requestId) }}" />
+          <input type="hidden" name="decision" value="REFUSED" />
+          <label>Motif du refus (optionnel)</label>
+          <textarea name="admin_note" placeholder="Motif du refus..."></textarea>
+          <button class="btn btnGhost" type="submit">Refuser</button>
+        </form>
+      </div>
+    {% else %}
+      <div class="listItem">
+        <span>Cette demande a deja ete traitee.</span>
+        <span class="badge {{ statusBadge }}">{{ status }}</span>
+      </div>
+    {% endif %}
+  </section>
+{% endblock %}

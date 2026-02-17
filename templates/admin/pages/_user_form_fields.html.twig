@@ -1,0 +1,77 @@
+﻿<div class="formGrid">
+  <div class="field">
+    {{ form_label(form.username, 'username*') }}
+    {{ form_widget(form.username, {attr: {class: 'input'}}) }}
+    {{ form_errors(form.username) }}
+  </div>
+
+  <div class="field">
+    {{ form_label(form.email, 'email*') }}
+    {{ form_widget(form.email, {attr: {class: 'input'}}) }}
+    {{ form_errors(form.email) }}
+  </div>
+
+  <div class="field">
+    {{ form_label(form.plainPassword, 'password*') }}
+    {{ form_widget(form.plainPassword, {attr: {class: 'input', autocomplete: 'new-password'}}) }}
+    {{ form_errors(form.plainPassword) }}
+  </div>
+
+  <div class="field">
+    {{ form_label(form.role, 'role*') }}
+    {{ form_widget(form.role, {attr: {class: 'input'}}) }}
+    {{ form_errors(form.role) }}
+  </div>
+
+  <div class="field">
+    {{ form_label(form.displayName, 'display_name*') }}
+    {{ form_widget(form.displayName, {attr: {class: 'input'}}) }}
+    {{ form_errors(form.displayName) }}
+  </div>
+
+  <div class="field">
+    {{ form_label(form.phone, 'phone') }}
+    {{ form_widget(form.phone, {attr: {class: 'input'}}) }}
+    {{ form_errors(form.phone) }}
+  </div>
+
+  <div class="field">
+    {{ form_label(form.country, 'country') }}
+    {{ form_widget(form.country, {attr: {class: 'input'}}) }}
+    {{ form_errors(form.country) }}
+  </div>
+
+  <div class="field">
+    {{ form_label(form.birthDate, 'birth_date') }}
+    {{ form_widget(form.birthDate, {attr: {class: 'input'}}) }}
+    {{ form_errors(form.birthDate) }}
+  </div>
+
+  <div class="field">
+    {{ form_label(form.gender, 'gender') }}
+    {{ form_widget(form.gender, {attr: {class: 'input'}}) }}
+    {{ form_errors(form.gender) }}
+  </div>
+
+  <div class="field">
+    {{ form_label(form.profileImageId, 'profile_image') }}
+    {{ form_widget(form.profileImageId, {attr: {class: 'input'}}) }}
+    {{ form_errors(form.profileImageId) }}
+  </div>
+
+  <div class="field">
+    {{ form_label(form.bio, 'bio') }}
+    {{ form_widget(form.bio, {attr: {class: 'textarea'}}) }}
+    {{ form_errors(form.bio) }}
+  </div>
+
+  <div class="field">
+    <label>Flags</label>
+    <div class="formActions" style="justify-content:flex-start;">
+      <label>{{ form_widget(form.emailVerified) }} Email verifie</label>
+      <label>{{ form_widget(form.isActive) }} Actif</label>
+    </div>
+    {{ form_errors(form.emailVerified) }}
+    {{ form_errors(form.isActive) }}
+  </div>
+</div>

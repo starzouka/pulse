@@ -1,0 +1,58 @@
+﻿{% extends 'base.html.twig' %}
+
+{% block title %}PULSE - Demande tournoi{% endblock %}
+
+{% block body %}
+  {% include 'front/partials/_hero_mini.html.twig' with {
+    hero_kicker: 'ORGANISATEUR',
+    hero_title: 'Demande tournoi',
+    hero_sub: 'Soumettre une demande complete a l admin.',
+    breadcrumb_current: 'Demande tournoi'
+  } %}
+
+  <main class="page">
+    <section class="belowHero">
+      <div class="layout">
+        {% include 'front/partials/_organizer_side_nav.html.twig' with {active: 'request_create'} %}
+
+        <div>
+          {% for label, messages in app.flashes %}
+            {% for message in messages %}
+              <div class="listItem">
+                <span>{{ message }}</span>
+                <span class="badge {{ label == 'error' ? 'badge--danger' : 'badge--success' }}">{{ label|upper }}</span>
+              </div>
+            {% endfor %}
+          {% endfor %}
+
+          <section class="panel">
+            {{ form_start(tournamentRequestForm, {attr: {novalidate: 'novalidate'}}) }}
+              {{ form_errors(tournamentRequestForm) }}
+              {% include 'shared/_tournament_form_fields.html.twig' with {form: tournamentRequestForm} %}
+              <div class="formActions" style="margin-top:12px;">
+                <button class="btn btn--primary" type="submit">Envoyer</button>
+                <a class="btn btn--ghost" href="{{ path('front_organizer_requests') }}">Annuler</a>
+              </div>
+            {{ form_end(tournamentRequestForm) }}
+          </section>
+
+          <div class="panel">
+            <div class="panel__head">
+              <div>
+                <h3 class="panel__title">TABLES UTILISEES</h3>
+                <div class="panel__desc">Schema reel + colonnes cles.</div>
+              </div>
+            </div>
+            <div class="list">
+              <div class="listItem"><span><b>tournament_requests</b></span><span class="listItem__meta">request_id, organizer_user_id, game_id, title, rules, start_date, end_date, max_teams, format, registration_mode, prize_pool, photo_path</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {% include 'front/partials/_footer.html.twig' %}
+    </section>
+  </main>
+
+  {% include 'front/partials/_auth_modal.html.twig' %}
+{% endblock %}

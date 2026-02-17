@@ -1,0 +1,129 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}PULSE - Gestion matchs{% endblock %}
+
+{% block body %}
+  {% include 'front/partials/_hero_mini.html.twig' with {
+    hero_kicker: 'ORGANISATEUR',
+    hero_title: 'Gestion matchs',
+    hero_sub: 'Creation et suivi des matchs avec plusieurs equipes.',
+    breadcrumb_current: 'Gestion matchs'
+  } %}
+
+  <main class="page">
+    <section class="belowHero">
+      <div class="layout">
+        {% include 'front/partials/_organizer_side_nav.html.twig' with {active: 'matches'} %}
+
+        <div>
+          {% for label, messages in app.flashes %}
+            {% for message in messages %}
+              <div class="listItem">
+                <span>{{ message }}</span>
+                <span class="badge {{ label == 'error' ? 'badge--danger' : 'badge--success' }}">{{ label|upper }}</span>
+              </div>
+            {% endfor %}
+          {% endfor %}
+
+          <div class="panel">
+            <div class="panel__head">
+              <form method="get" action="{{ path('front_organizer_matches') }}" class="filtersBar">
+                <div class="filterGroup">
+                  <label for="tournament">Tournoi</label>
+                  <select id="tournament" name="tournament" class="input" onchange="this.form.submit()">
+                    {% for tournament in tournaments %}
+                      <option value="{{ tournament.tournamentId }}" {{ selectedTournament and selectedTournament.tournamentId == tournament.tournamentId ? 'selected' : '' }}>
+                        #{{ tournament.tournamentId }} - {{ tournament.title }}
+                      </option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <noscript><button class="btn btn--ghost" type="submit">Filtrer</button></noscript>
+              </form>
+              <div class="panel__actions">
+                <a class="btn btn--primary" href="{{ selectedTournament ? path('front_organizer_match_create', {tournament: selectedTournament.tournamentId}) : path('front_organizer_match_create') }}">Creer match</a>
+              </div>
+            </div>
+
+            <div class="tableWrap">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Round</th>
+                    <th>Tournoi</th>
+                    <th>Participants</th>
+                    <th>Date</th>
+                    <th>Statut</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for match in matches %}
+                    {% set participants = matchTeamsByMatchId[match.matchId] ?? [] %}
+                    {% set statusClass = match.status == 'ONGOING'
+                      ? 'badge--info'
+                      : (match.status == 'FINISHED' ? 'badge--success' : (match.status == 'CANCELLED' ? 'badge--danger' : ''))
+                    %}
+                    <tr>
+                      <td>#{{ match.matchId }}</td>
+                      <td>{{ match.roundName ?: '-' }}</td>
+                      <td>{{ match.tournamentId ? match.tournamentId.title : '-' }}</td>
+                      <td>
+                        {% if participants is empty %}
+                          -
+                        {% else %}
+                          {% for participant in participants %}
+                            {{ participant.teamId ? participant.teamId.name : '-' }}{% if participant.score is not null %} ({{ participant.score }}){% endif %}{% if not loop.last %}, {% endif %}
+                          {% endfor %}
+                        {% endif %}
+                      </td>
+                      <td>{{ match.scheduledAt ? match.scheduledAt|date('Y-m-d H:i') : '-' }}</td>
+                      <td><span class="badge {{ statusClass }}">{{ match.status }}</span></td>
+                      <td>
+                        <a class="btn btn--ghost" href="{{ path('front_organizer_match_edit', {id: match.matchId}) }}">Editer</a>
+                      </td>
+                    </tr>
+                  {% else %}
+                    <tr>
+                      <td colspan="7" class="muted">
+                        {% if selectedTournament %}
+                          Aucun match pour ce tournoi.
+                        {% else %}
+                          Aucun tournoi disponible.
+                        {% endif %}
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel__head">
+              <div>
+                <h3 class="panel__title">TABLES UTILISEES</h3>
+                <div class="panel__desc">Donnees extraites depuis le schema reel.</div>
+              </div>
+            </div>
+            <div class="list">
+              <div class="listItem">
+                <span><b>matches</b></span>
+                <span class="listItem__meta">match_id, tournament_id, round_name, best_of, status, scheduled_at</span>
+              </div>
+              <div class="listItem">
+                <span><b>match_teams</b></span>
+                <span class="listItem__meta">match_id, team_id, score, is_winner</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {% include 'front/partials/_footer.html.twig' %}
+    </section>
+  </main>
+
+  {% include 'front/partials/_auth_modal.html.twig' %}
+{% endblock %}

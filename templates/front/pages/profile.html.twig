@@ -1,0 +1,229 @@
+﻿{% extends 'base.html.twig' %}
+
+{% set profileId = profile_user.userId ?? 0 %}
+{% set viewerId = viewer_user ? viewer_user.userId : 0 %}
+{% set avatarPath = profile_user.profileImageId ? profile_user.profileImageId.fileUrl : '' %}
+{% set avatarUrl = avatarPath ? (avatarPath starts with 'http' ? avatarPath : asset(avatarPath)) : 'https://picsum.photos/seed/pulse_profile_' ~ profileId ~ '/200/200' %}
+{% set pf = applied_filters|default({}) %}
+
+{% block title %}
+  PULSE - {{ is_own_profile ? 'Mon profil' : ('Profil de ' ~ (profile_user.displayName ?? profile_user.username)) }}
+{% endblock %}
+
+{% block body %}
+  {% include 'front/partials/_hero_mini.html.twig' with {
+    hero_kicker: 'JOUEUR',
+    hero_title: is_own_profile ? 'Mon profil' : ('Profil de ' ~ (profile_user.displayName ?? profile_user.username)),
+    hero_sub: 'Publications, details, amis et equipes.',
+    breadcrumb_current: is_own_profile ? 'Mon profil' : 'Profil joueur'
+  } %}
+
+  <main class="page">
+    <section class="belowHero">
+      <div class="layout">
+        {% include 'front/partials/_player_side_nav.html.twig' with { active: is_own_profile ? 'profile' : 'player_profile' } %}
+
+        <div class="socialStack">
+          {% for label, messages in app.flashes %}
+            {% for message in messages %}
+              <div class="listItem">
+                <span>{{ message }}</span>
+                <span class="badge {{ label == 'error' ? 'badge--danger' : (label == 'success' ? 'badge--success' : 'badge--info') }}">{{ label|upper }}</span>
+              </div>
+            {% endfor %}
+          {% endfor %}
+
+          <section class="panel profileIdentityPanel">
+            <div class="profileHeader">
+              <div class="avatarLg" data-avatar="{{ avatarUrl }}"></div>
+              <div>
+                <h3 style="margin:0;">{{ profile_user.displayName ?? profile_user.username }} (@{{ profile_user.username }})</h3>
+                <div class="muted">{{ profile_user.role }}{% if profile_user.country %} · {{ profile_user.country }}{% endif %}</div>
+                <div class="profileHeader__actions">
+                  {% if is_own_profile %}
+                    <a class="btn btn--primary" href="{{ path('front_profile_edit') }}">Modifier profil</a>
+                    <a class="btn btn--ghost" href="{{ path('front_password_change') }}">Changer mot de passe</a>
+                  {% else %}
+                    {% if viewer_user %}
+                      {% if friend_status == 'friends' %}
+                        <button class="btn btn--soft" type="button" disabled>Vous etes amis</button>
+                      {% elseif friend_status == 'request_sent' %}
+                        <button class="btn btn--ghost" type="button" disabled>Demande envoyee</button>
+                      {% elseif friend_status == 'request_received' %}
+                        <a class="btn btn--ghost" href="{{ path('front_friends') }}">Voir demande recue</a>
+                      {% else %}
+                        <form method="post" action="{{ path('front_profile_add_friend', {id: profileId}) }}">
+                          <input type="hidden" name="_token" value="{{ csrf_token('profile_add_friend_' ~ profileId) }}">
+                          <button class="btn btn--primary" type="submit">Ajouter ami</button>
+                        </form>
+                      {% endif %}
+                      <a class="btn btn--ghost" href="{{ path('front_messages', {'with': profileId}) }}">Message</a>
+                    {% else %}
+                      <a class="btn btn--primary" href="{{ path('front_login', {'_target_path': app.request.uri}) }}">Ajouter ami</a>
+                      <a class="btn btn--ghost" href="{{ path('front_login', {'_target_path': app.request.uri}) }}">Message</a>
+                    {% endif %}
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <div class="statsRow">
+              <div class="statCard">
+                <div class="statCard__value">{{ stats.posts }}</div>
+                <div class="statCard__label">Publications</div>
+              </div>
+              <div class="statCard">
+                <div class="statCard__value">{{ stats.friends }}</div>
+                <div class="statCard__label">Amis</div>
+              </div>
+              <div class="statCard">
+                <div class="statCard__value">{{ stats.teams }}</div>
+                <div class="statCard__label">Equipes</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="tabs profileTabs" data-tabs="profile-tabs">
+              <button class="tab {{ active_tab == 'posts' ? 'is-active' : '' }}" data-tab="posts">Mes publications</button>
+              <button class="tab {{ active_tab == 'about' ? 'is-active' : '' }}" data-tab="about">A propos</button>
+              <button class="tab {{ active_tab == 'friends' ? 'is-active' : '' }}" data-tab="friends">Mes amis</button>
+              <button class="tab {{ active_tab == 'teams' ? 'is-active' : '' }}" data-tab="teams">Mes equipes</button>
+            </div>
+
+            <div class="tabPanels" data-panels="profile-tabs">
+              <section class="tabPanel {{ active_tab == 'posts' ? 'is-active' : '' }}" data-panel="posts">
+                <form class="filtersRow" method="get" action="{{ is_own_profile ? path('front_profile') : path('front_player_profile', {id: profileId}) }}" style="margin-bottom:12px;">
+                  <input type="hidden" name="tab" value="posts">
+                  <input class="input" type="search" name="posts_q" value="{{ pf.posts_q|default('') }}" placeholder="Rechercher une publication..." />
+                  <div class="select">
+                    <select name="posts_visibility">
+                      <option value="" {{ (pf.posts_visibility|default('')) == '' ? 'selected' : '' }}>Toutes visibilites</option>
+                      <option value="PUBLIC" {{ (pf.posts_visibility|default('')) == 'PUBLIC' ? 'selected' : '' }}>PUBLIC</option>
+                      <option value="FRIENDS" {{ (pf.posts_visibility|default('')) == 'FRIENDS' ? 'selected' : '' }}>FRIENDS</option>
+                      <option value="TEAM_ONLY" {{ (pf.posts_visibility|default('')) == 'TEAM_ONLY' ? 'selected' : '' }}>TEAM_ONLY</option>
+                    </select>
+                  </div>
+                  <div class="select">
+                    <select name="posts_sort">
+                      <option value="latest" {{ (pf.posts_sort|default('latest')) == 'latest' ? 'selected' : '' }}>Plus recents</option>
+                      <option value="oldest" {{ (pf.posts_sort|default('latest')) == 'oldest' ? 'selected' : '' }}>Plus anciens</option>
+                      <option value="liked" {{ (pf.posts_sort|default('latest')) == 'liked' ? 'selected' : '' }}>Plus likes</option>
+                      <option value="commented" {{ (pf.posts_sort|default('latest')) == 'commented' ? 'selected' : '' }}>Plus commentes</option>
+                    </select>
+                  </div>
+                  <button class="btn btn--ghost" type="submit">Filtrer</button>
+                </form>
+
+                {% if is_own_profile and viewer_user %}
+                  {% include 'front/partials/_post_composer.html.twig' with {
+                    viewer_user: viewer_user,
+                    action_route: 'front_profile_post_create',
+                    csrf_token_id: 'profile_post_create',
+                    placeholder: 'Partagez une mise a jour...'
+                  } %}
+                {% endif %}
+
+                {% if posts is empty %}
+                  <div class="emptyState">Aucune publication pour le moment.</div>
+                {% else %}
+                  {% for postData in posts %}
+                    {% include 'front/partials/_post_card.html.twig' with {
+                      post_data: postData,
+                      viewer_user: viewer_user,
+                      like_route: 'front_profile_post_like',
+                      comment_route: 'front_profile_post_comment',
+                      report_route: 'front_profile_post_report',
+                      like_token_prefix: 'profile_post_like_',
+                      comment_token_prefix: 'profile_post_comment_',
+                      report_token_prefix: 'profile_post_report_',
+                      profile_id: profileId
+                    } %}
+                  {% endfor %}
+                {% endif %}
+              </section>
+
+              <section class="tabPanel {{ active_tab == 'about' ? 'is-active' : '' }}" data-panel="about">
+                <div class="list">
+                  <div class="listItem"><span>Nom affichage</span><span class="listItem__meta">{{ profile_user.displayName ?? '-' }}</span></div>
+                  <div class="listItem"><span>Username</span><span class="listItem__meta">{{ profile_user.username ?? '-' }}</span></div>
+                  <div class="listItem"><span>Role</span><span class="listItem__meta">{{ profile_user.role ?? '-' }}</span></div>
+                  <div class="listItem"><span>Email</span><span class="listItem__meta">{{ is_own_profile ? (profile_user.email ?? '-') : 'Prive' }}</span></div>
+                  <div class="listItem"><span>Pays</span><span class="listItem__meta">{{ profile_user.country ?? '-' }}</span></div>
+                  <div class="listItem"><span>Bio</span><span class="listItem__meta">{{ profile_user.bio ?? 'Aucune bio.' }}</span></div>
+                </div>
+              </section>
+
+              <section class="tabPanel {{ active_tab == 'friends' ? 'is-active' : '' }}" data-panel="friends">
+                <form class="filtersRow" method="get" action="{{ is_own_profile ? path('front_profile') : path('front_player_profile', {id: profileId}) }}" style="margin-bottom:12px;">
+                  <input type="hidden" name="tab" value="friends">
+                  <input class="input" type="search" name="friends_q" value="{{ pf.friends_q|default('') }}" placeholder="Rechercher un ami..." />
+                  <div class="select">
+                    <select name="friends_sort">
+                      <option value="recent" {{ (pf.friends_sort|default('recent')) == 'recent' ? 'selected' : '' }}>Plus recents</option>
+                      <option value="oldest" {{ (pf.friends_sort|default('recent')) == 'oldest' ? 'selected' : '' }}>Plus anciens</option>
+                      <option value="name" {{ (pf.friends_sort|default('recent')) == 'name' ? 'selected' : '' }}>Nom A-Z</option>
+                    </select>
+                  </div>
+                  <button class="btn btn--ghost" type="submit">Filtrer</button>
+                </form>
+
+                {% if friends is empty %}
+                  <div class="emptyState">Aucun ami affiche.</div>
+                {% else %}
+                  <div class="socialQuickList">
+                    {% for friend in friends %}
+                      {% if friend.userId is not null %}
+                        <a class="listItem" href="{{ friend.userId == viewerId ? path('front_profile') : path('front_player_profile', {id: friend.userId}) }}">
+                          <span>{{ friend.displayName ?? friend.username }} (@{{ friend.username }})</span>
+                          <span class="listItem__meta">{{ friend.role }}</span>
+                        </a>
+                      {% endif %}
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </section>
+
+              <section class="tabPanel {{ active_tab == 'teams' ? 'is-active' : '' }}" data-panel="teams">
+                <form class="filtersRow" method="get" action="{{ is_own_profile ? path('front_profile') : path('front_player_profile', {id: profileId}) }}" style="margin-bottom:12px;">
+                  <input type="hidden" name="tab" value="teams">
+                  <input class="input" type="search" name="teams_q" value="{{ pf.teams_q|default('') }}" placeholder="Rechercher une equipe..." />
+                  <input class="input" type="text" name="teams_region" value="{{ pf.teams_region|default('') }}" placeholder="Region" />
+                  <div class="select">
+                    <select name="teams_sort">
+                      <option value="latest" {{ (pf.teams_sort|default('latest')) == 'latest' ? 'selected' : '' }}>Plus recents</option>
+                      <option value="oldest" {{ (pf.teams_sort|default('latest')) == 'oldest' ? 'selected' : '' }}>Plus anciens</option>
+                      <option value="name" {{ (pf.teams_sort|default('latest')) == 'name' ? 'selected' : '' }}>Nom A-Z</option>
+                      <option value="region" {{ (pf.teams_sort|default('latest')) == 'region' ? 'selected' : '' }}>Region</option>
+                    </select>
+                  </div>
+                  <button class="btn btn--ghost" type="submit">Filtrer</button>
+                </form>
+
+                {% if teams is empty %}
+                  <div class="emptyState">Aucune equipe active.</div>
+                {% else %}
+                  <div class="socialQuickList">
+                    {% for team in teams %}
+                      <a class="listItem" href="{{ path('front_team_detail') }}">
+                        <span>{{ team.name }}</span>
+                        <span class="listItem__meta">
+                          {{ team.region ?? 'Region -' }} ·
+                          {{ team.captainUserId and team.captainUserId.userId == profileId ? 'Capitaine' : 'Membre' }}
+                        </span>
+                      </a>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </section>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      {% include 'front/partials/_footer.html.twig' %}
+    </section>
+  </main>
+
+  {% include 'front/partials/_auth_modal.html.twig' %}
+{% endblock %}
