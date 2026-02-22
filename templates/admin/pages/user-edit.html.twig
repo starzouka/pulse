@@ -1,46 +1,35 @@
-{% extends 'admin/base_admin.html.twig' %}
+﻿{% extends 'admin/base_admin.html.twig' %}
 
 {% block title %}PULSE - Modifier utilisateur{% endblock %}
 
 {% block admin_content %}
-
-        
   <div class="pageHeader">
     <div>
-      <h2>Modifier utilisateur</h2>
-      <div class="pageSub"></div>
+      <h2>Modifier utilisateur #{{ user.userId }}</h2>
+      <div class="pageSub">Mise a jour des informations du compte.</div>
+    </div>
+    <div class="formActions">
+      <a class="btn btnGhost" href="{{ path('admin_user_detail', {id: user.userId}) }}">Retour detail</a>
     </div>
   </div>
-  <section class="panel">
-    <div class="formGrid">
-      <div class="field"><label>username</label><input type="text" placeholder="" /></div>
-<div class="field"><label>email</label><input type="email" placeholder="" /></div>
-<div class="field"><label>role</label><select><option>PLAYER</option><option>ORGANIZER</option><option>ADMIN</option></select></div>
-<div class="field"><label>display_name</label><input type="text" placeholder="" /></div>
-<div class="field"><label>new_password</label><input type="password" placeholder="" /></div>
-<div class="field"><label>confirm_password</label><input type="password" placeholder="" /></div>
-<div class="field"><label>email_verified</label><select><option>true</option><option>false</option></select></div>
-<div class="field"><label>is_active</label><select><option>true</option><option>false</option></select></div>
-<div class="field"><label>reset photo</label><select><option>non</option><option>oui</option></select></div>
-    </div>
-    <div class="formActions" style="margin-top:12px;">
-      <button class="btn btnPrimary">Enregistrer</button>
-      <button class="btn btnGhost">Annuler</button>
-    </div>
-  </section>
-  
-  <section class="panel">
-    <div class="panelHeader">
-      <div>
-        <h3 class="panelTitle">SCHEMA UTILISE</h3>
-        <div class="panelDesc">Tables et colonnes principales.</div>
+
+  {% for label, messages in app.flashes %}
+    {% for message in messages %}
+      <div class="listItem">
+        <span>{{ message }}</span>
+        <span class="badge {{ label == 'error' ? 'badge--danger' : 'badge--success' }}">{{ label|upper }}</span>
       </div>
-    </div>
-    <div class="list">
-      <div class="listItem"><span><b>users</b></span><span class="listMeta">Voir colonnes definies dans le schema</span></div>
-    </div>
+    {% endfor %}
+  {% endfor %}
+
+  <section class="panel">
+    {{ form_start(userForm, {attr: {novalidate: 'novalidate'}}) }}
+      {{ form_errors(userForm) }}
+      {% include 'admin/pages/_user_form_fields.html.twig' with {form: userForm} %}
+      <div class="formActions" style="margin-top:12px;">
+        <button class="btn btnPrimary" type="submit">Mettre a jour</button>
+        <a class="btn btnGhost" href="{{ path('admin_users') }}">Annuler</a>
+      </div>
+    {{ form_end(userForm) }}
   </section>
-
-
-      
 {% endblock %}

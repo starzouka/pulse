@@ -7,9 +7,12 @@ namespace App\Entity;
 use Doctrine\DBAL\Types\Types;
 use App\Repository\GameRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: GameRepository::class)]
 #[ORM\Table(name: 'games')]
+#[UniqueEntity(fields: ['name'], message: 'Ce jeu existe deja.')]
 class Game
 {
     
@@ -20,15 +23,20 @@ class Game
     
     #[ORM\ManyToOne(targetEntity: Category::class)]
     #[ORM\JoinColumn(name: 'category_id', referencedColumnName: 'category_id', nullable: false, onDelete: 'RESTRICT')]
+    #[Assert\NotNull(message: 'La categorie est obligatoire.')]
     private Category $categoryId;
     
     #[ORM\Column(name: 'name', type: Types::STRING, length: 120)]
+    #[Assert\NotBlank(message: 'Le nom du jeu est obligatoire.')]
+    #[Assert\Length(min: 2, max: 120)]
     private string $name;
     
     #[ORM\Column(name: 'description', type: Types::TEXT, nullable: true)]
+    #[Assert\Length(max: 5000)]
     private ?string $description = null;
     
     #[ORM\Column(name: 'publisher', type: Types::STRING, length: 120, nullable: true)]
+    #[Assert\Length(max: 120)]
     private ?string $publisher = null;
     
     #[ORM\ManyToOne(targetEntity: Image::class)]

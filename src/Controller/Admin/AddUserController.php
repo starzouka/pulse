@@ -8,9 +8,9 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class AddUserController extends AbstractController
 {
-    #[Route('/admin/add-user', name: 'admin_add_user', methods: ['GET'])]
+    #[Route('/admin/add-user-legacy', name: 'admin_add_user_legacy', methods: ['GET'])]
     public function index(): Response
     {
-        return $this->render('admin/add-user.html.twig');
+        return $this->redirectToRoute('admin_user_create');
     }
 }

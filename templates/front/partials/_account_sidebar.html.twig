@@ -1,0 +1,143 @@
+{% set route_name = app.request.attributes.get('_route')|default('') %}
+{% set current_user = app.user %}
+{% set preview_role = app.request.query.get('as')|default('')|upper %}
+{% set known_roles = ['PLAYER', 'CAPTAIN', 'ORGANIZER', 'ADMIN'] %}
+{% set detected_role = front_role(current_user) %}
+{% set current_role = preview_role in known_roles ? preview_role : (detected_role in known_roles ? detected_role : 'GUEST') %}
+{% set display_name = current_user ? (current_user.displayName|default(current_user.username|default(current_user.userIdentifier|default('Utilisateur')))) : 'Invite' %}
+{% set role_label = {
+  'PLAYER': 'Joueur',
+  'CAPTAIN': 'Capitaine',
+  'ORGANIZER': 'Organisateur',
+  'ADMIN': 'Admin',
+  'GUEST': 'Invite'
+}[current_role] %}
+
+<div class="accountSidebarBackdrop" data-account-close="true"></div>
+
+<aside class="accountSidebar" id="accountSidebar" aria-hidden="true">
+  <div class="accountSidebar__head">
+    <div class="accountSidebar__identity">
+      <div class="accountSidebar__avatar">{{ display_name|first|upper }}</div>
+      <div>
+        <div class="accountSidebar__name">{{ display_name }}</div>
+        <div class="accountSidebar__role role--{{ current_role|lower }}">{{ role_label }}</div>
+      </div>
+    </div>
+
+    <button class="iconBtn accountSidebar__close" type="button" data-account-close="true" aria-label="Fermer le menu">
+      <svg viewBox="0 0 24 24" class="ico">
+        <path d="M18.3 5.7L12 12l6.3 6.3-1.4 1.4L10.6 13.4 4.3 19.7 2.9 18.3 9.2 12 2.9 5.7 4.3 4.3l6.3 6.3 6.3-6.3 1.4 1.4z"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="accountSidebar__content">
+    <section class="accountSidebar__section">
+      <h3 class="accountSidebar__title">Navigation principale</h3>
+      <div class="accountSidebar__links">
+        <a class="accountSidebar__link{{ route_name in ['front_root', 'front_home'] ? ' is-active' : '' }}" href="{{ path('front_home') }}">Accueil</a>
+        <a class="accountSidebar__link{{ route_name == 'front_dashboard' ? ' is-active' : '' }}" href="{{ path('front_dashboard') }}">Dashboard</a>
+        <a class="accountSidebar__link{{ route_name in ['front_profile', 'front_profile_edit'] ? ' is-active' : '' }}" href="{{ path('front_profile') }}">Mon profil</a>
+        <a class="accountSidebar__link{{ route_name in ['front_messages', 'front_conversation'] ? ' is-active' : '' }}" href="{{ path('front_messages') }}">Messagerie</a>
+        <a class="accountSidebar__link{{ route_name == 'front_notifications' ? ' is-active' : '' }}" href="{{ path('front_notifications') }}">Notifications</a>
+      </div>
+    </section>
+
+    <section class="accountSidebar__section">
+      <h3 class="accountSidebar__title">Competition</h3>
+      <div class="accountSidebar__links">
+        <a class="accountSidebar__link{{ route_name in ['front_tournaments', 'front_tournament_detail'] ? ' is-active' : '' }}" href="{{ path('front_tournaments') }}">Tournois</a>
+        <a class="accountSidebar__link{{ route_name in ['front_matches', 'front_match_detail'] ? ' is-active' : '' }}" href="{{ path('front_matches') }}">Matchs</a>
+        <a class="accountSidebar__link{{ route_name in ['front_games', 'front_game_detail'] ? ' is-active' : '' }}" href="{{ path('front_games') }}">Jeux</a>
+        <a class="accountSidebar__link{{ route_name in ['front_teams', 'front_teams_explore', 'front_team_detail'] ? ' is-active' : '' }}" href="{{ path('front_teams') }}">Equipes</a>
+      </div>
+    </section>
+
+    <section class="accountSidebar__section">
+      <h3 class="accountSidebar__title">Boutique</h3>
+      <div class="accountSidebar__links">
+        <a class="accountSidebar__link{{ route_name in ['front_shop', 'front_product_detail'] ? ' is-active' : '' }}" href="{{ path('front_shop') }}">Catalogue</a>
+        <a class="accountSidebar__link{{ route_name == 'front_cart' ? ' is-active' : '' }}" href="{{ path('front_cart') }}">Panier</a>
+        <a class="accountSidebar__link{{ route_name in ['front_orders', 'front_order_detail'] ? ' is-active' : '' }}" href="{{ path('front_orders') }}">Mes commandes</a>
+      </div>
+    </section>
+
+    {% if current_role in ['PLAYER', 'CAPTAIN', 'ORGANIZER', 'ADMIN'] %}
+      <section class="accountSidebar__section">
+        <h3 class="accountSidebar__title">Joueur</h3>
+        <div class="accountSidebar__links">
+          <a class="accountSidebar__link{{ route_name in ['front_feed', 'front_feed_public'] ? ' is-active' : '' }}" href="{{ path('front_feed') }}">Fil d'actualite</a>
+          <a class="accountSidebar__link{{ route_name in ['front_friends', 'front_players', 'front_player_profile'] ? ' is-active' : '' }}" href="{{ path('front_players') }}">Joueurs et amis</a>
+          <a class="accountSidebar__link{{ route_name == 'front_my_teams' ? ' is-active' : '' }}" href="{{ path('front_my_teams') }}">Mes equipes</a>
+          <a class="accountSidebar__link{{ route_name == 'front_my_requests' ? ' is-active' : '' }}" href="{{ path('front_my_requests') }}">Mes demandes</a>
+        </div>
+      </section>
+    {% endif %}
+
+    {% if current_role in ['CAPTAIN', 'ADMIN'] %}
+      <section class="accountSidebar__section">
+        <h3 class="accountSidebar__title">Capitaine</h3>
+        <div class="accountSidebar__links">
+          <a class="accountSidebar__link{{ route_name in ['front_captain_team_create', 'front_captain_team_manage'] ? ' is-active' : '' }}" href="{{ path('front_captain_team_manage') }}">Equipe (creer / gerer)</a>
+          <a class="accountSidebar__link{{ route_name in ['front_captain_members', 'front_captain_invite', 'front_captain_requests'] ? ' is-active' : '' }}" href="{{ path('front_captain_members') }}">Membres et invitations</a>
+          <a class="accountSidebar__link{{ route_name in ['front_captain_tournaments', 'front_captain_team_tournaments'] ? ' is-active' : '' }}" href="{{ path('front_captain_tournaments') }}">Tournois equipe</a>
+          <a class="accountSidebar__link{{ route_name in ['front_captain_products', 'front_captain_product_create', 'front_captain_product_edit', 'front_captain_orders'] ? ' is-active' : '' }}" href="{{ path('front_captain_products') }}">Boutique equipe</a>
+        </div>
+      </section>
+    {% endif %}
+
+    {% if current_role in ['ORGANIZER', 'ADMIN'] %}
+      <section class="accountSidebar__section">
+        <h3 class="accountSidebar__title">Organisateur</h3>
+        <div class="accountSidebar__links">
+          <a class="accountSidebar__link{{ route_name in ['front_organizer_request_create', 'front_organizer_requests', 'front_organizer_request_detail'] ? ' is-active' : '' }}" href="{{ path('front_organizer_requests') }}">Demandes tournoi</a>
+          <a class="accountSidebar__link{{ route_name in ['front_organizer_tournaments', 'front_organizer_tournament_detail', 'front_organizer_tournament_edit'] ? ' is-active' : '' }}" href="{{ path('front_organizer_tournaments') }}">Mes tournois</a>
+          <a class="accountSidebar__link{{ route_name in ['front_organizer_matches', 'front_organizer_match_create', 'front_organizer_match_edit'] ? ' is-active' : '' }}" href="{{ path('front_organizer_matches') }}">Gestion matchs</a>
+          <a class="accountSidebar__link{{ route_name == 'front_organizer_registrations' ? ' is-active' : '' }}" href="{{ path('front_organizer_registrations') }}">Inscriptions equipes</a>
+        </div>
+      </section>
+    {% endif %}
+
+    {% if current_role == 'ADMIN' %}
+      <section class="accountSidebar__section">
+        <h3 class="accountSidebar__title">Administration</h3>
+        <div class="accountSidebar__links">
+          <a class="accountSidebar__link" href="{{ path('admin_dashboard') }}">Dashboard admin</a>
+          <a class="accountSidebar__link" href="{{ path('admin_users') }}">Utilisateurs</a>
+          <a class="accountSidebar__link" href="{{ path('admin_tournaments') }}">Tournois</a>
+          <a class="accountSidebar__link" href="{{ path('admin_orders') }}">Commandes</a>
+        </div>
+      </section>
+    {% endif %}
+
+    {% if current_role == 'GUEST' %}
+      <section class="accountSidebar__section">
+        <h3 class="accountSidebar__title">Connexion</h3>
+        <div class="accountSidebar__links">
+          <a class="accountSidebar__link{{ route_name == 'front_login' ? ' is-active' : '' }}" href="{{ path('front_login') }}">Se connecter</a>
+          <a class="accountSidebar__link{{ route_name == 'front_register' ? ' is-active' : '' }}" href="{{ path('front_register') }}">S'inscrire</a>
+          <a class="accountSidebar__link{{ route_name in ['front_forgot_password', 'front_reset_password'] ? ' is-active' : '' }}" href="{{ path('front_forgot_password') }}">Mot de passe oublie</a>
+        </div>
+      </section>
+    {% endif %}
+
+    {% if current_user %}
+      <section class="accountSidebar__section">
+        <h3 class="accountSidebar__title">Compte</h3>
+        <div class="accountSidebar__links">
+          <a class="accountSidebar__link" href="{{ path('app_logout') }}">Se deconnecter</a>
+        </div>
+      </section>
+    {% endif %}
+
+    <section class="accountSidebar__section">
+      <h3 class="accountSidebar__title">Support</h3>
+      <div class="accountSidebar__links">
+        <a class="accountSidebar__link{{ route_name == 'front_about' ? ' is-active' : '' }}" href="{{ path('front_about') }}">A propos</a>
+        <a class="accountSidebar__link{{ route_name == 'front_contact' ? ' is-active' : '' }}" href="{{ path('front_contact') }}">Contact</a>
+        <a class="accountSidebar__link{{ route_name == 'front_faq' ? ' is-active' : '' }}" href="{{ path('front_faq') }}">FAQ</a>
+      </div>
+    </section>
+  </div>
+</aside>

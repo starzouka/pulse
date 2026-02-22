@@ -7,9 +7,12 @@ namespace App\Entity;
 use Doctrine\DBAL\Types\Types;
 use App\Repository\CategoryRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CategoryRepository::class)]
 #[ORM\Table(name: 'categories')]
+#[UniqueEntity(fields: ['name'], message: 'Cette categorie existe deja.')]
 class Category
 {
     
@@ -19,9 +22,12 @@ class Category
     private ?int $categoryId = null;
     
     #[ORM\Column(name: 'name', type: Types::STRING, length: 80)]
+    #[Assert\NotBlank(message: 'Le nom de categorie est obligatoire.')]
+    #[Assert\Length(min: 2, max: 80)]
     private string $name;
     
     #[ORM\Column(name: 'description', type: Types::TEXT, nullable: true)]
+    #[Assert\Length(max: 2000)]
     private ?string $description = null;
     
     #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE)]

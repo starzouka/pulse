@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Front\Page;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -11,6 +13,9 @@ final class CaptainTeamCreateController extends AbstractController
     #[Route('/pages/captain-team-create', name: 'front_captain_team_create', methods: ['GET'])]
     public function index(): Response
     {
-        return $this->render('front/pages/captain-team-create.html.twig');
+        return $this->redirectToRoute('front_captain_team_manage', [
+            'mode' => 'create',
+        ]);
     }
 }
+

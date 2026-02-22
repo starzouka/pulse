@@ -1,85 +1,182 @@
-{% extends 'admin/base_admin.html.twig' %}
+﻿{% extends 'admin/base_admin.html.twig' %}
+
+{% macro scoped_sort_link(route_name, route_id, query, sort_key, direction_key, field, label, current_sort, current_direction) %}
+  {% set is_current = current_sort == field %}
+  {% set next_direction = is_current and current_direction == 'asc' ? 'desc' : 'asc' %}
+  {% set marker = is_current ? (current_direction == 'asc' ? ' (ASC)' : ' (DESC)') : '' %}
+  <a href="{{ path(route_name, query|merge({id: route_id, (sort_key): field, (direction_key): next_direction})) }}" style="color:inherit;text-decoration:none;">
+    {{ label }}{{ marker }}
+  </a>
+{% endmacro %}
+
+{% import _self as sorter %}
 
 {% block title %}PULSE - Detail utilisateur{% endblock %}
 
 {% block admin_content %}
-
-        
   <div class="pageHeader">
     <div>
-      <h2>Detail utilisateur</h2>
+      <h2>Detail utilisateur #{{ user.userId }}</h2>
       <div class="pageSub">Profil, equipes, activite, commerce, moderation.</div>
     </div>
-    
+    <div class="formActions">
+      <a class="btn btnPrimary" href="{{ path('admin_user_edit', {id: user.userId}) }}">Modifier</a>
+      <a class="btn btnGhost" href="{{ path('admin_users') }}">Retour liste</a>
+    </div>
   </div>
-  
+
+  {% for label, messages in app.flashes %}
+    {% for message in messages %}
+      <div class="listItem">
+        <span>{{ message }}</span>
+        <span class="badge {{ label == 'error' ? 'badge--danger' : 'badge--success' }}">{{ label|upper }}</span>
+      </div>
+    {% endfor %}
+  {% endfor %}
+
   <div class="tabs" data-tabs="user">
     <button class="tab isActive" data-tab="profil">Profil</button>
-<button class="tab" data-tab="equipes">Equipes</button>
-<button class="tab" data-tab="activite">Activite</button>
-<button class="tab" data-tab="commerce">E-commerce</button>
-<button class="tab" data-tab="moderation">Moderation</button>
+    <button class="tab" data-tab="equipes">Equipes</button>
+    <button class="tab" data-tab="activite">Posts</button>
+    <button class="tab" data-tab="commerce">Commandes</button>
+    <button class="tab" data-tab="moderation">Signalements</button>
   </div>
+
   <div class="tabPanels" data-panels="user">
-    <div class="tabPanel isActive" data-panel="profil"><section class="panel"><div class="list"><div class="listItem"><span>user_id</span><span class="listMeta">zed_99</span></div><div class="listItem"><span>username</span><span class="listMeta">zed_99</span></div><div class="listItem"><span>email</span><span class="listMeta">user@email.com</span></div><div class="listItem"><span>role</span><span class="listMeta">PLAYER</span></div></div></section></div>
-<div class="tabPanel" data-panel="equipes"><section class="panel">
-  <div class="dataTableWrap">
-    <table class="dataTable">
-      <thead><tr><th>team</th><th>joined_at</th><th>is_active</th></tr></thead>
-      <tbody>
-        <tr><td>Nebula Five</td><td>—</td><td>—</td></tr>
-        <tr><td>Nebula Five</td><td>—</td><td>—</td></tr>
-      </tbody>
-    </table>
-  </div></section></div>
-<div class="tabPanel" data-panel="activite"><section class="panel">
-  <div class="dataTableWrap">
-    <table class="dataTable">
-      <thead><tr><th>post_id</th><th>created_at</th><th>visibility</th></tr></thead>
-      <tbody>
-        <tr><td>1</td><td>2026-02-05</td><td>—</td></tr>
-        <tr><td>1</td><td>2026-02-05</td><td>—</td></tr>
-      </tbody>
-    </table>
-  </div></section></div>
-<div class="tabPanel" data-panel="commerce"><section class="panel">
-  <div class="dataTableWrap">
-    <table class="dataTable">
-      <thead><tr><th>order_number</th><th>status</th><th>total_amount</th></tr></thead>
-      <tbody>
-        <tr><td>ORD-2026-001</td><td><span class="badge badge--warning">PENDING</span></td><td>120 DT</td></tr>
-        <tr><td>ORD-2026-001</td><td><span class="badge badge--warning">PENDING</span></td><td>120 DT</td></tr>
-      </tbody>
-    </table>
-  </div></section></div>
-<div class="tabPanel" data-panel="moderation"><section class="panel">
-  <div class="dataTableWrap">
-    <table class="dataTable">
-      <thead><tr><th>report_id</th><th>target_type</th><th>status</th></tr></thead>
-      <tbody>
-        <tr><td>1</td><td>—</td><td><span class="badge badge--warning">PENDING</span></td></tr>
-        <tr><td>1</td><td>—</td><td><span class="badge badge--warning">PENDING</span></td></tr>
-      </tbody>
-    </table>
-  </div></section></div>
+    <div class="tabPanel isActive" data-panel="profil">
+      <section class="panel">
+        <div class="list">
+          <div class="listItem"><span>user_id</span><span class="listMeta">{{ user.userId }}</span></div>
+          <div class="listItem"><span>username</span><span class="listMeta">{{ user.username }}</span></div>
+          <div class="listItem"><span>email</span><span class="listMeta">{{ user.email }}</span></div>
+          <div class="listItem"><span>display_name</span><span class="listMeta">{{ user.displayName }}</span></div>
+          <div class="listItem"><span>role</span><span class="listMeta"><span class="badge badge--info">{{ user.role }}</span></span></div>
+          <div class="listItem"><span>country</span><span class="listMeta">{{ user.country ?: '-' }}</span></div>
+          <div class="listItem"><span>birth_date</span><span class="listMeta">{{ user.birthDate ? user.birthDate|date('d/m/Y') : '-' }}</span></div>
+          <div class="listItem"><span>email_verified</span><span class="listMeta">{{ user.emailVerified ? 'Oui' : 'Non' }}</span></div>
+          <div class="listItem"><span>is_active</span><span class="listMeta">{{ user.isActive ? 'Oui' : 'Non' }}</span></div>
+          <div class="listItem"><span>created_at</span><span class="listMeta">{{ user.createdAt ? user.createdAt|date('d/m/Y H:i') : '-' }}</span></div>
+          <div class="listItem"><span>updated_at</span><span class="listMeta">{{ user.updatedAt ? user.updatedAt|date('d/m/Y H:i') : '-' }}</span></div>
+        </div>
+      </section>
+    </div>
+
+    <div class="tabPanel" data-panel="equipes">
+      <section class="panel">
+        <div class="dataTableWrap">
+          <table class="dataTable">
+            <thead>
+              <tr>
+                <th>{{ sorter.scoped_sort_link('admin_user_detail', user.userId, app.request.query.all, 'teams_sort', 'teams_direction', 'team_id', 'Equipe', sorts.teams.sort, sorts.teams.direction) }}</th>
+                <th>{{ sorter.scoped_sort_link('admin_user_detail', user.userId, app.request.query.all, 'teams_sort', 'teams_direction', 'joined_at', 'Joined at', sorts.teams.sort, sorts.teams.direction) }}</th>
+                <th>{{ sorter.scoped_sort_link('admin_user_detail', user.userId, app.request.query.all, 'teams_sort', 'teams_direction', 'is_active', 'Actif', sorts.teams.sort, sorts.teams.direction) }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for teamMember in teamMembers %}
+                <tr>
+                  <td>{{ teamMember.teamId ? teamMember.teamId.name : '-' }}</td>
+                  <td>{{ teamMember.joinedAt ? teamMember.joinedAt|date('d/m/Y H:i') : '-' }}</td>
+                  <td>{{ teamMember.isActive ? 'Oui' : 'Non' }}</td>
+                </tr>
+              {% else %}
+                <tr><td colspan="3" class="listMeta">Aucune equipe.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <div class="tabPanel" data-panel="activite">
+      <section class="panel">
+        <div class="dataTableWrap">
+          <table class="dataTable">
+            <thead>
+              <tr>
+                <th>{{ sorter.scoped_sort_link('admin_user_detail', user.userId, app.request.query.all, 'posts_sort', 'posts_direction', 'content', 'Post', sorts.posts.sort, sorts.posts.direction) }}</th>
+                <th>{{ sorter.scoped_sort_link('admin_user_detail', user.userId, app.request.query.all, 'posts_sort', 'posts_direction', 'visibility', 'Visibility', sorts.posts.sort, sorts.posts.direction) }}</th>
+                <th>{{ sorter.scoped_sort_link('admin_user_detail', user.userId, app.request.query.all, 'posts_sort', 'posts_direction', 'deleted', 'Deleted', sorts.posts.sort, sorts.posts.direction) }}</th>
+                <th>{{ sorter.scoped_sort_link('admin_user_detail', user.userId, app.request.query.all, 'posts_sort', 'posts_direction', 'created_at', 'Date', sorts.posts.sort, sorts.posts.direction) }}</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for post in posts %}
+                <tr>
+                  <td>{{ post.contentText ? post.contentText|slice(0, 60) : '-' }}</td>
+                  <td>{{ post.visibility }}</td>
+                  <td>{{ post.isDeleted ? 'Oui' : 'Non' }}</td>
+                  <td>{{ post.createdAt ? post.createdAt|date('d/m/Y H:i') : '-' }}</td>
+                  <td><a class="btn btnTiny" href="{{ path('admin_post_detail', {id: post.postId}) }}">Voir</a></td>
+                </tr>
+              {% else %}
+                <tr><td colspan="5" class="listMeta">Aucun post.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <div class="tabPanel" data-panel="commerce">
+      <section class="panel">
+        <div class="dataTableWrap">
+          <table class="dataTable">
+            <thead>
+              <tr>
+                <th>{{ sorter.scoped_sort_link('admin_user_detail', user.userId, app.request.query.all, 'orders_sort', 'orders_direction', 'order_number', 'Order', sorts.orders.sort, sorts.orders.direction) }}</th>
+                <th>{{ sorter.scoped_sort_link('admin_user_detail', user.userId, app.request.query.all, 'orders_sort', 'orders_direction', 'status', 'Status', sorts.orders.sort, sorts.orders.direction) }}</th>
+                <th>{{ sorter.scoped_sort_link('admin_user_detail', user.userId, app.request.query.all, 'orders_sort', 'orders_direction', 'total_amount', 'Total', sorts.orders.sort, sorts.orders.direction) }}</th>
+                <th>{{ sorter.scoped_sort_link('admin_user_detail', user.userId, app.request.query.all, 'orders_sort', 'orders_direction', 'created_at', 'Date', sorts.orders.sort, sorts.orders.direction) }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for order in orders %}
+                <tr>
+                  <td>{{ order.orderNumber }}</td>
+                  <td><span class="badge {{ order.status == 'CANCELLED' ? 'badge--danger' : (order.status == 'DELIVERED' ? 'badge--success' : 'badge--warning') }}">{{ order.status }}</span></td>
+                  <td>{{ order.totalAmount }} DT</td>
+                  <td>{{ order.createdAt ? order.createdAt|date('d/m/Y H:i') : '-' }}</td>
+                </tr>
+              {% else %}
+                <tr><td colspan="4" class="listMeta">Aucune commande.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <div class="tabPanel" data-panel="moderation">
+      <section class="panel">
+        <div class="dataTableWrap">
+          <table class="dataTable">
+            <thead>
+              <tr>
+                <th>{{ sorter.scoped_sort_link('admin_user_detail', user.userId, app.request.query.all, 'reports_sort', 'reports_direction', 'id', 'ID', sorts.reports.sort, sorts.reports.direction) }}</th>
+                <th>{{ sorter.scoped_sort_link('admin_user_detail', user.userId, app.request.query.all, 'reports_sort', 'reports_direction', 'target', 'Target', sorts.reports.sort, sorts.reports.direction) }}</th>
+                <th>{{ sorter.scoped_sort_link('admin_user_detail', user.userId, app.request.query.all, 'reports_sort', 'reports_direction', 'status', 'Status', sorts.reports.sort, sorts.reports.direction) }}</th>
+                <th>{{ sorter.scoped_sort_link('admin_user_detail', user.userId, app.request.query.all, 'reports_sort', 'reports_direction', 'created_at', 'Date', sorts.reports.sort, sorts.reports.direction) }}</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for report in reports %}
+                <tr>
+                  <td>#{{ report.reportId }}</td>
+                  <td>{{ report.targetType }} / {{ report.targetId }}</td>
+                  <td><span class="badge {{ report.status == 'CLOSED' ? 'badge--success' : 'badge--warning' }}">{{ report.status }}</span></td>
+                  <td>{{ report.createdAt ? report.createdAt|date('d/m/Y H:i') : '-' }}</td>
+                  <td><a class="btn btnTiny" href="{{ path('admin_report_detail', {id: report.reportId}) }}">Voir</a></td>
+                </tr>
+              {% else %}
+                <tr><td colspan="5" class="listMeta">Aucun signalement.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
   </div>
-
-  
-  <section class="panel">
-    <div class="panelHeader">
-      <div>
-        <h3 class="panelTitle">SCHEMA UTILISE</h3>
-        <div class="panelDesc">Tables et colonnes principales.</div>
-      </div>
-    </div>
-    <div class="list">
-      <div class="listItem"><span><b>users</b></span><span class="listMeta">user_id, username, email, role, profile_image_id</span></div>
-<div class="listItem"><span><b>team_members</b></span><span class="listMeta">team_id, user_id, joined_at</span></div>
-<div class="listItem"><span><b>orders</b></span><span class="listMeta">order_id, user_id, status</span></div>
-<div class="listItem"><span><b>reports</b></span><span class="listMeta">report_id, reporter_user_id, target_type</span></div>
-    </div>
-  </section>
-
-
-      
 {% endblock %}

@@ -7,6 +7,7 @@ namespace App\Entity;
 use Doctrine\DBAL\Types\Types;
 use App\Repository\TeamMemberRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: TeamMemberRepository::class)]
 #[ORM\Table(name: 'team_members')]
@@ -16,11 +17,13 @@ class TeamMember
     #[ORM\Id]
     #[ORM\ManyToOne(targetEntity: Team::class)]
     #[ORM\JoinColumn(name: 'team_id', referencedColumnName: 'team_id', nullable: false, onDelete: 'CASCADE')]
+    #[Assert\NotNull(message: "L'equipe est obligatoire.")]
     private Team $teamId;
     
     #[ORM\Id]
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'user_id', nullable: false, onDelete: 'CASCADE')]
+    #[Assert\NotNull(message: "L'utilisateur est obligatoire.")]
     private User $userId;
     
     #[ORM\Column(name: 'joined_at', type: Types::DATETIME_MUTABLE)]

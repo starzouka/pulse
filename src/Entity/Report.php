@@ -7,6 +7,7 @@ namespace App\Entity;
 use Doctrine\DBAL\Types\Types;
 use App\Repository\ReportRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ReportRepository::class)]
 #[ORM\Table(name: 'reports')]
@@ -20,18 +21,25 @@ class Report
     
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(name: 'reporter_user_id', referencedColumnName: 'user_id', nullable: false, onDelete: 'CASCADE')]
+    #[Assert\NotNull(message: 'Le reporter est obligatoire.')]
     private User $reporterUserId;
     
     #[ORM\Column(name: 'target_type', type: Types::STRING, length: 7)]
+    #[Assert\Choice(choices: ['POST', 'COMMENT', 'USER', 'TEAM'], message: 'Type cible invalide.')]
     private string $targetType;
     
     #[ORM\Column(name: 'target_id', type: Types::BIGINT, options: ['unsigned' => true])]
+    #[Assert\NotBlank(message: "L'identifiant cible est obligatoire.")]
+    #[Assert\Regex(pattern: '/^[1-9][0-9]*$/', message: "L'identifiant cible doit etre positif.")]
     private string $targetId;
     
     #[ORM\Column(name: 'reason', type: Types::TEXT)]
+    #[Assert\NotBlank(message: 'Le motif est obligatoire.')]
+    #[Assert\Length(max: 5000)]
     private string $reason;
     
     #[ORM\Column(name: 'status', type: Types::STRING, length: 9, options: ['default' => 'OPEN'])]
+    #[Assert\Choice(choices: ['OPEN', 'IN_REVIEW', 'CLOSED'], message: 'Statut invalide.')]
     private string $status = 'OPEN';
     
     #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE)]
@@ -45,6 +53,7 @@ class Report
     private ?\DateTimeInterface $handledAt = null;
     
     #[ORM\Column(name: 'admin_note', type: Types::TEXT, nullable: true)]
+    #[Assert\Length(max: 5000)]
     private ?string $adminNote = null;
 
     public function getReportId(): ?int

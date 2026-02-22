@@ -3,12 +3,20 @@ const profileBtn = document.getElementById("profileBtn");
 const profileMenu = document.getElementById("profileMenu");
 
 function closeProfileMenu() {
+  if (!profileBtn || !profileMenu) {
+    return;
+  }
+
   profileMenu.style.display = "none";
   profileMenu.setAttribute("aria-hidden", "true");
   profileBtn.setAttribute("aria-expanded", "false");
 }
 
 function openProfileMenu() {
+  if (!profileBtn || !profileMenu) {
+    return;
+  }
+
   profileMenu.style.display = "block";
   profileMenu.setAttribute("aria-hidden", "false");
   profileBtn.setAttribute("aria-expanded", "true");
@@ -23,6 +31,7 @@ profileBtn?.addEventListener("click", (e) => {
 
 wireTabs();
 wireSidebar();
+wireLiveFilters();
 
 document.addEventListener("click", () => closeProfileMenu());
 document.addEventListener("keydown", (e) => {
@@ -130,15 +139,37 @@ function wireReveal() {
   pending.forEach((el) => io.observe(el));
 }
 
-// Fake search (demo)
-const globalSearch = document.getElementById("globalSearch");
-globalSearch?.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") {
-    const q = globalSearch.value.trim();
-    if (!q) return;
-    // À remplacer par votre logique backend
-    alert(`Search: ${q}`);
-  }
-});
-
 wireReveal();
+
+function wireLiveFilters() {
+  const forms = Array.from(document.querySelectorAll("form.js-live-filters[method='get']"));
+  if (!forms.length) return;
+
+  forms.forEach((form) => {
+    let timer = null;
+    const submit = () => {
+      if (typeof form.requestSubmit === "function") {
+        form.requestSubmit();
+      } else {
+        form.submit();
+      }
+    };
+
+    form
+      .querySelectorAll("select, input:not([type='hidden']):not([type='submit']):not([type='button']):not([type='reset'])")
+      .forEach((field) => {
+        const tagName = field.tagName.toLowerCase();
+        const fieldType = String(field.getAttribute("type") || "").toLowerCase();
+
+        if (tagName === "input" && (fieldType === "search" || fieldType === "text")) {
+          field.addEventListener("input", () => {
+            if (timer) window.clearTimeout(timer);
+            timer = window.setTimeout(submit, 300);
+          });
+          return;
+        }
+
+        field.addEventListener("change", submit);
+      });
+  });
+}

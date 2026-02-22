@@ -7,6 +7,7 @@ namespace App\Entity;
 use Doctrine\DBAL\Types\Types;
 use App\Repository\PostRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: PostRepository::class)]
 #[ORM\Table(name: 'posts')]
@@ -20,12 +21,15 @@ class Post
     
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(name: 'author_user_id', referencedColumnName: 'user_id', nullable: false, onDelete: 'CASCADE')]
+    #[Assert\NotNull(message: "L'auteur est obligatoire.")]
     private User $authorUserId;
     
     #[ORM\Column(name: 'content_text', type: Types::TEXT, nullable: true)]
+    #[Assert\Length(max: 5000)]
     private ?string $contentText = null;
     
     #[ORM\Column(name: 'visibility', type: Types::STRING, length: 9, options: ['default' => 'PUBLIC'])]
+    #[Assert\Choice(choices: ['PUBLIC', 'FRIENDS', 'TEAM_ONLY'], message: 'Visibilite invalide.')]
     private string $visibility = 'PUBLIC';
     
     #[ORM\Column(name: 'is_deleted', type: Types::BOOLEAN, options: ['default' => false])]

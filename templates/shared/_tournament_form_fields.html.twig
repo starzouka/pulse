@@ -1,0 +1,101 @@
+<div class="formGrid">
+  <div class="field">
+    {{ form_label(form.organizerUserId, 'organizer_user_id*') }}
+    {{ form_widget(form.organizerUserId, {attr: {class: 'input'}}) }}
+    {{ form_errors(form.organizerUserId) }}
+  </div>
+
+  <div class="field">
+    {{ form_label(form.gameId, 'game_id*') }}
+    {{ form_widget(form.gameId, {attr: {class: 'input'}}) }}
+    {{ form_errors(form.gameId) }}
+  </div>
+
+  <div class="field">
+    {{ form_label(form.title, 'title*') }}
+    {{ form_widget(form.title, {attr: {class: 'input'}}) }}
+    {{ form_errors(form.title) }}
+  </div>
+
+  <div class="field">
+    {{ form_label(form.startDate, 'start_date*') }}
+    {{ form_widget(form.startDate, {attr: {class: 'input'}}) }}
+    {{ form_errors(form.startDate) }}
+  </div>
+
+  <div class="field">
+    {{ form_label(form.endDate, 'end_date*') }}
+    {{ form_widget(form.endDate, {attr: {class: 'input'}}) }}
+    {{ form_errors(form.endDate) }}
+  </div>
+
+  <div class="field">
+    {{ form_label(form.registrationDeadline, 'registration_deadline') }}
+    {{ form_widget(form.registrationDeadline, {attr: {class: 'input'}}) }}
+    {{ form_errors(form.registrationDeadline) }}
+  </div>
+
+  <div class="field">
+    {{ form_label(form.maxTeams, 'max_teams*') }}
+    {{ form_widget(form.maxTeams, {attr: {class: 'input'}}) }}
+    {{ form_errors(form.maxTeams) }}
+  </div>
+
+  <div class="field">
+    {{ form_label(form.format, 'format*') }}
+    {{ form_widget(form.format, {attr: {class: 'input'}}) }}
+    {{ form_errors(form.format) }}
+  </div>
+
+  <div class="field">
+    {{ form_label(form.registrationMode, 'registration_mode*') }}
+    {{ form_widget(form.registrationMode, {attr: {class: 'input'}}) }}
+    {{ form_errors(form.registrationMode) }}
+  </div>
+
+  <div class="field">
+    {{ form_label(form.prizePool, 'prize_pool*') }}
+    {{ form_widget(form.prizePool, {attr: {class: 'input', min: '0', step: '0.01', inputmode: 'decimal'}}) }}
+    {{ form_errors(form.prizePool) }}
+  </div>
+
+  <div class="field">
+    {{ form_label(form.prizeDescription, 'prize_description') }}
+    {{ form_widget(form.prizeDescription, {attr: {class: 'textarea'}}) }}
+    {{ form_errors(form.prizeDescription) }}
+  </div>
+
+  <div class="field">
+    {{ form_label(form.description, 'description') }}
+    {{ form_widget(form.description, {attr: {class: 'textarea'}}) }}
+    {{ form_errors(form.description) }}
+  </div>
+
+  <div class="field">
+    {{ form_label(form.rules, 'rules') }}
+    {{ form_widget(form.rules, {attr: {class: 'textarea'}}) }}
+    {{ form_errors(form.rules) }}
+  </div>
+
+  <div class="field">
+    {{ form_label(form.photoFile, 'photo_tournoi') }}
+    {{ form_widget(form.photoFile, {attr: {class: 'input', accept: 'image/*'}}) }}
+    {{ form_errors(form.photoFile) }}
+    {% if form.vars.data and form.vars.data.photoPath %}
+      <div class="panelDesc">
+        Photo actuelle:
+        <a href="{{ asset(form.vars.data.photoPath) }}" target="_blank" rel="noopener">
+          voir l'image
+        </a>
+      </div>
+    {% endif %}
+  </div>
+
+  {% if form.status is defined %}
+    <div class="field">
+      {{ form_label(form.status, 'status*') }}
+      {{ form_widget(form.status, {attr: {class: 'input'}}) }}
+      {{ form_errors(form.status) }}
+    </div>
+  {% endif %}
+</div>

@@ -7,9 +7,18 @@ namespace App\Entity;
 use Doctrine\DBAL\Types\Types;
 use App\Repository\TournamentRequestRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: TournamentRequestRepository::class)]
 #[ORM\Table(name: 'tournament_requests')]
+#[Assert\Expression(
+    "this.getEndDate() >= this.getStartDate()",
+    message: 'La date de fin doit etre superieure ou egale a la date de debut.',
+)]
+#[Assert\Expression(
+    "this.getRegistrationDeadline() === null or this.getRegistrationDeadline() <= this.getStartDate()",
+    message: "La date limite d'inscription doit etre inferieure ou egale a la date de debut.",
+)]
 class TournamentRequest
 {
     
@@ -20,49 +29,69 @@ class TournamentRequest
     
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(name: 'organizer_user_id', referencedColumnName: 'user_id', nullable: false, onDelete: 'RESTRICT')]
+    #[Assert\NotNull(message: "L'organisateur est obligatoire.")]
     private User $organizerUserId;
     
     #[ORM\ManyToOne(targetEntity: Game::class)]
     #[ORM\JoinColumn(name: 'game_id', referencedColumnName: 'game_id', nullable: false, onDelete: 'RESTRICT')]
+    #[Assert\NotNull(message: 'Le jeu est obligatoire.')]
     private Game $gameId;
     
     #[ORM\Column(name: 'title', type: Types::STRING, length: 180)]
+    #[Assert\NotBlank(message: 'Le titre est obligatoire.')]
+    #[Assert\Length(min: 3, max: 180)]
     private string $title;
     
     #[ORM\Column(name: 'description', type: Types::TEXT, nullable: true)]
+    #[Assert\Length(max: 5000)]
     private ?string $description = null;
     
     #[ORM\Column(name: 'rules', type: Types::TEXT, nullable: true)]
+    #[Assert\Length(max: 5000)]
     private ?string $rules = null;
     
     #[ORM\Column(name: 'start_date', type: Types::DATE_MUTABLE)]
+    #[Assert\NotNull(message: 'La date de debut est obligatoire.')]
     private \DateTimeInterface $startDate;
     
     #[ORM\Column(name: 'end_date', type: Types::DATE_MUTABLE)]
+    #[Assert\NotNull(message: 'La date de fin est obligatoire.')]
     private \DateTimeInterface $endDate;
     
     #[ORM\Column(name: 'registration_deadline', type: Types::DATE_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $registrationDeadline = null;
     
     #[ORM\Column(name: 'max_teams', type: Types::INTEGER, options: ['unsigned' => true])]
+    #[Assert\Positive(message: "Le nombre maximum d'equipes doit etre superieur a 0.")]
     private int $maxTeams;
     
     #[ORM\Column(name: 'format', type: Types::STRING, length: 3, options: ['default' => 'BO1'])]
+    #[Assert\Choice(choices: ['BO1', 'BO3', 'BO5'], message: 'Format invalide.')]
     private string $format = 'BO1';
     
     #[ORM\Column(name: 'registration_mode', type: Types::STRING, length: 8, options: ['default' => 'OPEN'])]
+    #[Assert\Choice(choices: ['OPEN', 'APPROVAL'], message: "Mode d'inscription invalide.")]
     private string $registrationMode = 'OPEN';
     
     #[ORM\Column(name: 'prize_pool', type: Types::DECIMAL, precision: 12, scale: 2, options: ['default' => '0.00'])]
+    #[Assert\Type(type: 'numeric', message: 'Le prize pool doit contenir uniquement des nombres.')]
+    #[Assert\PositiveOrZero(message: 'Le prize pool doit etre superieur ou egal a 0.')]
     private string $prizePool = '0.00';
     
     #[ORM\Column(name: 'prize_description', type: Types::STRING, length: 255, nullable: true)]
+    #[Assert\Length(max: 255)]
     private ?string $prizeDescription = null;
     
     #[ORM\Column(name: 'status', type: Types::STRING, length: 8, options: ['default' => 'PENDING'])]
+    #[Assert\Choice(choices: ['PENDING', 'ACCEPTED', 'REFUSED'], message: 'Statut invalide.')]
     private string $status = 'PENDING';
+
+    #[ORM\Column(name: 'photo_path', type: Types::STRING, length: 255, nullable: true)]
+    #[Assert\Length(max: 255)]
+    private ?string $photoPath = null;
     
     #[ORM\Column(name: 'admin_response_note', type: Types::TEXT, nullable: true)]
+    #[Assert\Length(max: 5000)]
     private ?string $adminResponseNote = null;
     
     #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE)]
@@ -251,6 +280,18 @@ class TournamentRequest
     public function setStatus(string $status): static
     {
         $this->status = $status;
+
+        return $this;
+    }
+
+    public function getPhotoPath(): ?string
+    {
+        return $this->photoPath;
+    }
+
+    public function setPhotoPath(?string $photoPath): static
+    {
+        $this->photoPath = $photoPath;
 
         return $this;
     }
