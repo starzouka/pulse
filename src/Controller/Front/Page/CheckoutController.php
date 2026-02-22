@@ -9,11 +9,13 @@ use App\Entity\User;
 use App\Repository\CartRepository;
 use App\Repository\OrderRepository;
 use App\Service\Shop\CartManager;
+use App\Service\Payment\StripeService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 final class CheckoutController extends AbstractController
 {
@@ -24,6 +26,7 @@ final class CheckoutController extends AbstractController
         OrderRepository $orderRepository,
         CartManager $cartManager,
         EntityManagerInterface $entityManager,
+        StripeService $stripeService,
     ): Response
     {
         $viewer = $this->getUser();
@@ -72,6 +75,75 @@ final class CheckoutController extends AbstractController
             }
 
             $now = new \DateTime();
+
+            // If using card, create an Order in PENDING state and redirect to Stripe Checkout
+            if ($paymentMethod === 'CARD') {
+                $order = (new Order())
+                    ->setOrderNumber($this->generateOrderNumber())
+                    ->setCartId($cart)
+                    ->setUserId($viewer)
+                    ->setStatus('PENDING')
+                    ->setPaymentMethod('CARD')
+                    ->setPaymentStatus('UNPAID')
+                    ->setTotalAmount((string) number_format((float) $summary['subtotal'], 2, '.', ''))
+                    ->setShippingAddress($shippingAddress !== '' ? $shippingAddress : null)
+                    ->setPhoneForDelivery($phoneForDelivery !== '' ? $phoneForDelivery : null)
+                    ->setCreatedAt($now)
+                    ->setPaidAt(null)
+                    ->setShippedAt(null)
+                    ->setDeliveredAt(null);
+
+                $cart
+                    ->setStatus('ORDERED')
+                    ->setLockedAt($now)
+                    ->setUpdatedAt($now);
+
+                $entityManager->persist($order);
+                $entityManager->flush();
+
+                // build Stripe line items from cart summary (amounts in cents)
+                $lineItems = [];
+                foreach ($summary['items'] as $item) {
+                    $product = $item['product'] ?? null;
+                    if ($product === null) {
+                        continue;
+                    }
+                    $unitAmountCents = (int) round(((float) ($item['unit_price'] ?? 0)) * 100);
+                    $lineItems[] = [
+                        'price_data' => [
+                            'currency' => ($_ENV['STRIPE_CURRENCY'] ?? 'eur'),
+                            'product_data' => ['name' => (string) $product->getName()],
+                            'unit_amount' => $unitAmountCents,
+                        ],
+                        'quantity' => (int) ($item['quantity'] ?? 1),
+                    ];
+                }
+
+                $successUrl = $this->generateUrl('front_order_detail', ['id' => $order->getOrderId()], UrlGeneratorInterface::ABSOLUTE_URL);
+                $cancelUrl = $this->generateUrl('front_checkout', [], UrlGeneratorInterface::ABSOLUTE_URL);
+
+                try {
+                    $session = $stripeService->createCheckoutSession(
+                        $lineItems,
+                        $successUrl,
+                        $cancelUrl,
+                        ['order_id' => (string) ($order->getOrderId() ?? 0)],
+                        $viewer->getEmail() ?? null,
+                    );
+
+                    if (isset($session->url) && is_string($session->url) && $session->url !== '') {
+                        return $this->redirect($session->url);
+                    }
+
+                    $this->addFlash('error', 'Impossible de lancer le paiement Stripe.');
+                    return $this->redirectToRoute('front_checkout');
+                } catch (\Throwable $e) {
+                    $this->addFlash('error', 'Erreur paiement: ' . $e->getMessage());
+                    return $this->redirectToRoute('front_checkout');
+                }
+            }
+
+            // Fallback / non-card payment handling (CASH or OTHER)
             $order = (new Order())
                 ->setOrderNumber($this->generateOrderNumber())
                 ->setCartId($cart)

@@ -366,6 +366,9 @@
       <tag name="controller.service_arguments"/>
       <tag name="routing.route_loader"/>
     </service>
+    <service id="stripe.client" class="Stripe\StripeClient">
+      <argument>%env(STRIPE_SECRET_KEY)%</argument>
+    </service>
     <service id="App\Entity" class="App\Entity" abstract="true">
       <tag name="container.excluded" source="in &quot;config/services.yaml&quot;"/>
     </service>
@@ -1070,6 +1073,13 @@
         <argument type="service" id=".service_locator.O2p6Lk7.App\Controller\Front\Page\TournamentsController"/>
       </call>
     </service>
+    <service id="App\Controller\Front\StripeWebhookController" class="App\Controller\Front\StripeWebhookController" public="true" autowire="true" autoconfigure="true">
+      <tag name="controller.service_arguments"/>
+      <tag name="container.service_subscriber"/>
+      <call method="setContainer">
+        <argument type="service" id=".service_locator.O2p6Lk7.App\Controller\Front\StripeWebhookController"/>
+      </call>
+    </service>
     <service id="App\Controller\Security\LoginController" class="App\Controller\Security\LoginController" public="true" autowire="true" autoconfigure="true">
       <tag name="controller.service_arguments"/>
       <tag name="container.service_subscriber"/>
@@ -1321,6 +1331,7 @@
     <service id="App\Service\Media\ImageUploader" class="App\Service\Media\ImageUploader" autowire="true" autoconfigure="true">
       <argument type="service" id="kernel"/>
     </service>
+    <service id="App\Service\Payment\StripeService" class="App\Service\Payment\StripeService" autowire="true" autoconfigure="true"/>
     <service id="App\Service\Post\FeedPostAssembler" class="App\Service\Post\FeedPostAssembler" autowire="true" autoconfigure="true">
       <argument type="service" id="App\Repository\PostRepository"/>
       <argument type="service" id="App\Repository\PostImageRepository"/>
@@ -1375,7 +1386,7 @@
     </service>
     <service id="argument_resolver.service" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\ServiceValueResolver">
       <tag priority="-50" name="Symfony\Component\HttpKernel\Controller\ArgumentResolver\ServiceValueResolver">controller.argument_value_resolver</tag>
-      <argument type="service" id=".service_locator.REBdtIF"/>
+      <argument type="service" id=".service_locator.KSgEQiN"/>
     </service>
     <service id="argument_resolver.default" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\DefaultValueResolver">
       <tag priority="-100" name="Symfony\Component\HttpKernel\Controller\ArgumentResolver\DefaultValueResolver">controller.argument_value_resolver</tag>
@@ -4359,7 +4370,7 @@
     </service>
     <service id="argument_resolver.not_tagged_controller" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\NotTaggedControllerValueResolver">
       <tag name="controller.argument_value_resolver" priority="-200"/>
-      <argument type="service" id=".service_locator.REBdtIF"/>
+      <argument type="service" id=".service_locator.KSgEQiN"/>
     </service>
     <service id="debug.log_processor" class="Symfony\Bridge\Monolog\Processor\DebugProcessor">
       <tag name="kernel.reset" method="reset"/>
@@ -8672,6 +8683,9 @@
     <service id=".instanceof.Symfony\Contracts\Service\ServiceSubscriberInterface.0.App\Controller\Front\Page\TournamentsController" class="App\Controller\Front\Page\TournamentsController" autowire="true" abstract="true"/>
     <service id=".instanceof.Symfony\Bundle\FrameworkBundle\Controller\AbstractController.0.App\Controller\Front\Page\TournamentsController" class="App\Controller\Front\Page\TournamentsController" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\Controller\Front\Page\TournamentsController" class="App\Controller\Front\Page\TournamentsController" autowire="true" autoconfigure="true" abstract="true"/>
+    <service id=".instanceof.Symfony\Contracts\Service\ServiceSubscriberInterface.0.App\Controller\Front\StripeWebhookController" class="App\Controller\Front\StripeWebhookController" autowire="true" abstract="true"/>
+    <service id=".instanceof.Symfony\Bundle\FrameworkBundle\Controller\AbstractController.0.App\Controller\Front\StripeWebhookController" class="App\Controller\Front\StripeWebhookController" autowire="true" abstract="true"/>
+    <service id=".abstract.instanceof.App\Controller\Front\StripeWebhookController" class="App\Controller\Front\StripeWebhookController" autowire="true" autoconfigure="true" abstract="true"/>
     <service id=".instanceof.Symfony\Contracts\Service\ServiceSubscriberInterface.0.App\Controller\Security\LoginController" class="App\Controller\Security\LoginController" autowire="true" abstract="true"/>
     <service id=".instanceof.Symfony\Bundle\FrameworkBundle\Controller\AbstractController.0.App\Controller\Security\LoginController" class="App\Controller\Security\LoginController" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\Controller\Security\LoginController" class="App\Controller\Security\LoginController" autowire="true" autoconfigure="true" abstract="true"/>
@@ -9784,13 +9798,14 @@
         <argument key="productRepository" type="service_closure" id="App\Repository\ProductRepository"/>
       </argument>
     </service>
-    <service id=".service_locator.HNlp7dQ" class="Symfony\Component\DependencyInjection\ServiceLocator">
+    <service id=".service_locator.Ks2Ka_I" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
         <argument key="cartManager" type="service_closure" id="App\Service\Shop\CartManager"/>
         <argument key="cartRepository" type="service_closure" id="App\Repository\CartRepository"/>
         <argument key="entityManager" type="service_closure" id="doctrine.orm.default_entity_manager"/>
         <argument key="orderRepository" type="service_closure" id="App\Repository\OrderRepository"/>
+        <argument key="stripeService" type="service_closure" id="App\Service\Payment\StripeService"/>
       </argument>
     </service>
     <service id=".service_locator.ddChUWt" class="Symfony\Component\DependencyInjection\ServiceLocator">
@@ -10160,6 +10175,14 @@
         <argument key="tournamentRepository" type="service_closure" id="App\Repository\TournamentRepository"/>
       </argument>
     </service>
+    <service id=".service_locator.kaWZVDw" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator"/>
+      <argument type="collection">
+        <argument key="entityManager" type="service_closure" id="doctrine.orm.default_entity_manager"/>
+        <argument key="orderRepository" type="service_closure" id="App\Repository\OrderRepository"/>
+        <argument key="stripeService" type="service_closure" id="App\Service\Payment\StripeService"/>
+      </argument>
+    </service>
     <service id=".service_locator.66ORwCM" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
@@ -10168,7 +10191,7 @@
         <argument key="userRepository" type="service_closure" id="App\Repository\UserRepository"/>
       </argument>
     </service>
-    <service id=".service_locator.REBdtIF" class="Symfony\Component\DependencyInjection\ServiceLocator">
+    <service id=".service_locator.KSgEQiN" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
         <argument key="App\Controller\Admin\Page\CartsController::delete" type="service_closure" id=".service_locator.LapGI0r"/>
@@ -10245,7 +10268,7 @@
         <argument key="App\Controller\Front\Page\CartController::index" type="service_closure" id=".service_locator.LCHqYhx"/>
         <argument key="App\Controller\Front\Page\CartController::remove" type="service_closure" id=".service_locator.MtHSHN0"/>
         <argument key="App\Controller\Front\Page\CartController::updateQuantity" type="service_closure" id=".service_locator.MtHSHN0"/>
-        <argument key="App\Controller\Front\Page\CheckoutController::index" type="service_closure" id=".service_locator.HNlp7dQ"/>
+        <argument key="App\Controller\Front\Page\CheckoutController::index" type="service_closure" id=".service_locator.Ks2Ka_I"/>
         <argument key="App\Controller\Front\Page\ConversationController::index" type="service_closure" id=".service_locator.ddChUWt"/>
         <argument key="App\Controller\Front\Page\DashboardController::index" type="service_closure" id=".service_locator.qOtwL4a"/>
         <argument key="App\Controller\Front\Page\FeedController::addComment" type="service_closure" id=".service_locator.9fKbSLg"/>
@@ -10307,6 +10330,7 @@
         <argument key="App\Controller\Front\Page\TournamentDetailController::participate" type="service_closure" id=".service_locator.b7EK_.O"/>
         <argument key="App\Controller\Front\Page\TournamentsController::export" type="service_closure" id=".service_locator.VBibqjr"/>
         <argument key="App\Controller\Front\Page\TournamentsController::index" type="service_closure" id=".service_locator.edjg.f6"/>
+        <argument key="App\Controller\Front\StripeWebhookController::index" type="service_closure" id=".service_locator.kaWZVDw"/>
         <argument key="App\Controller\Security\VerifyEmailController::verifyUserEmail" type="service_closure" id=".service_locator.66ORwCM"/>
         <argument key="App\Controller\Shared\TournamentParticipantTeamsLookupController::__invoke" type="service_closure" id=".service_locator..1e.4DY"/>
         <argument key="App\Kernel::loadRoutes" type="service_closure" id=".service_locator.y4_Zrx."/>
@@ -10387,7 +10411,7 @@
         <argument key="App\Controller\Front\Page\CartController:index" type="service_closure" id=".service_locator.LCHqYhx"/>
         <argument key="App\Controller\Front\Page\CartController:remove" type="service_closure" id=".service_locator.MtHSHN0"/>
         <argument key="App\Controller\Front\Page\CartController:updateQuantity" type="service_closure" id=".service_locator.MtHSHN0"/>
-        <argument key="App\Controller\Front\Page\CheckoutController:index" type="service_closure" id=".service_locator.HNlp7dQ"/>
+        <argument key="App\Controller\Front\Page\CheckoutController:index" type="service_closure" id=".service_locator.Ks2Ka_I"/>
         <argument key="App\Controller\Front\Page\ConversationController:index" type="service_closure" id=".service_locator.ddChUWt"/>
         <argument key="App\Controller\Front\Page\DashboardController:index" type="service_closure" id=".service_locator.qOtwL4a"/>
         <argument key="App\Controller\Front\Page\FeedController:addComment" type="service_closure" id=".service_locator.9fKbSLg"/>
@@ -10449,6 +10473,7 @@
         <argument key="App\Controller\Front\Page\TournamentDetailController:participate" type="service_closure" id=".service_locator.b7EK_.O"/>
         <argument key="App\Controller\Front\Page\TournamentsController:export" type="service_closure" id=".service_locator.VBibqjr"/>
         <argument key="App\Controller\Front\Page\TournamentsController:index" type="service_closure" id=".service_locator.edjg.f6"/>
+        <argument key="App\Controller\Front\StripeWebhookController:index" type="service_closure" id=".service_locator.kaWZVDw"/>
         <argument key="App\Controller\Security\VerifyEmailController:verifyUserEmail" type="service_closure" id=".service_locator.66ORwCM"/>
         <argument key="App\Controller\Shared\TournamentParticipantTeamsLookupController:__invoke" type="service_closure" id=".service_locator..1e.4DY"/>
         <argument key="App\Controller\Shared\TournamentParticipantTeamsLookupController" type="service_closure" id=".service_locator..1e.4DY"/>
@@ -11804,6 +11829,12 @@
       <argument type="service" id="service_container"/>
       <factory service=".service_locator.O2p6Lk7" method="withContext"/>
     </service>
+    <service id=".service_locator.O2p6Lk7.App\Controller\Front\StripeWebhookController" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator_context" id="App\Controller\Front\StripeWebhookController"/>
+      <argument>App\Controller\Front\StripeWebhookController</argument>
+      <argument type="service" id="service_container"/>
+      <factory service=".service_locator.O2p6Lk7" method="withContext"/>
+    </service>
     <service id=".service_locator.O2p6Lk7.App\Controller\Security\LoginController" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator_context" id="App\Controller\Security\LoginController"/>
       <argument>App\Controller\Security\LoginController</argument>
@@ -12102,6 +12133,7 @@
           <argument>App\Controller\Front\Page\TeamsExploreController</argument>
           <argument>App\Controller\Front\Page\TournamentDetailController</argument>
           <argument>App\Controller\Front\Page\TournamentsController</argument>
+          <argument>App\Controller\Front\StripeWebhookController</argument>
           <argument>App\Controller\Security\LoginController</argument>
           <argument>App\Controller\Security\VerifyEmailController</argument>
           <argument>App\Controller\Shared\TournamentParticipantTeamsLookupController</argument>
@@ -13336,6 +13368,7 @@
         <argument key="Symfony\UX\Turbo\Twig\TurboRuntime" type="service_closure" id="turbo.twig.runtime"/>
       </argument>
     </service>
+    <service id="Stripe\StripeClient" alias="stripe.client"/>
     <service id="App\Kernel" alias="kernel" public="true"/>
     <service id="Symfony\Component\DependencyInjection\ParameterBag\ContainerBagInterface" alias="parameter_bag"/>
     <service id="Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface" alias="parameter_bag"/>
@@ -13506,7 +13539,7 @@
     <service id="SymfonyCasts\Bundle\VerifyEmail\VerifyEmailHelperInterface" alias="symfonycasts.verify_email.helper"/>
     <service id="container.env_var_processors_locator" alias=".service_locator.w7.f4fT" public="true"/>
     <service id="twig.loader.filesystem" alias="twig.loader.native_filesystem"/>
-    <service id="argument_resolver.controller_locator" alias=".service_locator.REBdtIF"/>
+    <service id="argument_resolver.controller_locator" alias=".service_locator.KSgEQiN"/>
     <service id="doctrine.id_generator_locator" alias=".service_locator.KLVvNIq"/>
     <service id="twig.loader" alias="twig.loader.native_filesystem"/>
     <service id=".Psr\Log\LoggerInterface $request.logger" alias="monolog.logger.request"/>
@@ -13597,7 +13630,7 @@
     <service id=".service_locator.LG.zotW" alias=".service_locator.LCHqYhx"/>
     <service id=".service_locator..rxRVtX" alias=".service_locator..LU7saX"/>
     <service id=".service_locator.ikKumM9" alias=".service_locator.MtHSHN0"/>
-    <service id=".service_locator.9BLSCj4" alias=".service_locator.HNlp7dQ"/>
+    <service id=".service_locator.U8RHglF" alias=".service_locator.Ks2Ka_I"/>
     <service id=".service_locator.orhBUuF" alias=".service_locator.ddChUWt"/>
     <service id=".service_locator.YzEgsR3" alias=".service_locator.qOtwL4a"/>
     <service id=".service_locator.RwFmCCk" alias=".service_locator.6pXVFnQ"/>
@@ -13633,8 +13666,9 @@
     <service id=".service_locator.Cy8t1CD" alias=".service_locator.EYKRSYZ"/>
     <service id=".service_locator.eaZs.9e" alias=".service_locator.edjg.f6"/>
     <service id=".service_locator.AVfjW7W" alias=".service_locator.VBibqjr"/>
+    <service id=".service_locator.3bnxwQV" alias=".service_locator.kaWZVDw"/>
     <service id=".service_locator.NIZDy73" alias=".service_locator.66ORwCM"/>
-    <service id=".service_locator.wI5mxJ5" alias=".service_locator.REBdtIF"/>
+    <service id=".service_locator.1wmC2pa" alias=".service_locator.KSgEQiN"/>
     <service id=".service_locator.BFrsqsn" alias=".service_locator.F9PKc.7"/>
     <service id=".service_locator.9M81fJ0" alias=".service_locator.YBKZsNJ"/>
     <service id=".service_locator.XtmiKbi" alias=".service_locator.MfxSDRP"/>
@@ -13727,7 +13761,7 @@
     <service id=".service_locator.XZkQUyn" alias=".service_locator.LCHqYhx"/>
     <service id=".service_locator.nXWIgoc" alias=".service_locator..LU7saX"/>
     <service id=".service_locator.oyRYO0F" alias=".service_locator.MtHSHN0"/>
-    <service id=".service_locator.A3fUHgL" alias=".service_locator.HNlp7dQ"/>
+    <service id=".service_locator.CYzSDBu" alias=".service_locator.Ks2Ka_I"/>
     <service id=".service_locator.06pqFXj" alias=".service_locator.ddChUWt"/>
     <service id=".service_locator.VLG_lw0" alias=".service_locator.qOtwL4a"/>
     <service id=".service_locator.VCVM3zz" alias=".service_locator.yg7fP14"/>
@@ -13772,6 +13806,7 @@
     <service id=".service_locator.wEtQsC6" alias=".service_locator.EYKRSYZ"/>
     <service id=".service_locator.EgKRIm1" alias=".service_locator.edjg.f6"/>
     <service id=".service_locator.TNO3ka0" alias=".service_locator.VBibqjr"/>
+    <service id=".service_locator.yJPMyAM" alias=".service_locator.kaWZVDw"/>
     <service id=".service_locator.5bJRiae" alias=".service_locator.66ORwCM"/>
     <service id=".service_locator.Q1z.f9O" alias=".service_locator.O2p6Lk7"/>
     <service id=".service_locator.dGUCsbe" alias=".service_locator.oR77BOj"/>
