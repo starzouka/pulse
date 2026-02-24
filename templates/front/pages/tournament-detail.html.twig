@@ -1,0 +1,255 @@
+﻿{% extends 'base.html.twig' %}
+
+{% set tournamentId = tournament.tournamentId ?? 0 %}
+{% set game = tournament.gameId %}
+{% set organizer = tournament.organizerUserId %}
+{% set photoPath = tournament.photoPath ?? '' %}
+{% set photoUrl = photoPath ? (photoPath starts with 'http' ? photoPath : asset(photoPath)) : 'https://picsum.photos/seed/pulse_tournament_detail_' ~ tournamentId ~ '/1200/800' %}
+
+{% block title %}PULSE - Detail tournoi{% endblock %}
+
+{% block body %}
+  {% include 'front/partials/_hero_mini.html.twig' with {
+    hero_kicker: 'TOURNOI',
+    hero_title: tournament.title,
+    hero_sub: 'Progression, classement, matchs et equipes.',
+    breadcrumb_current: 'Detail tournoi'
+  } %}
+
+  <main class="page">
+    <section class="belowHero">
+      {% for label, messages in app.flashes %}
+        {% for message in messages %}
+          <div class="listItem">
+            <span>{{ message }}</span>
+            <span class="badge {{ label == 'error' ? 'badge--danger' : (label == 'info' ? 'badge--info' : 'badge--success') }}">{{ label|upper }}</span>
+          </div>
+        {% endfor %}
+      {% endfor %}
+
+      <div class="layout">
+        <section class="panel">
+          <div class="coverBlock" data-bg="{{ photoUrl }}"></div>
+          <h3 style="margin:12px 0 0;">{{ tournament.title }}</h3>
+          <p class="muted">
+            Organisateur: {{ organizer ? (organizer.displayName ?? organizer.username) : '-' }}
+            · Jeu: {{ game ? game.name : '-' }}
+            · Format: {{ tournament.format }}
+            · Prize pool: {{ tournament.prizePool|number_format(2, '.', ' ') }} DT
+          </p>
+          <div class="list" style="margin-top:10px;">
+            <div class="listItem"><span>Dates</span><span class="listItem__meta">{{ tournament.startDate ? tournament.startDate|date('d/m/Y') : '-' }} - {{ tournament.endDate ? tournament.endDate|date('d/m/Y') : '-' }}</span></div>
+            <div class="listItem"><span>Deadline</span><span class="listItem__meta">{{ tournament.registrationDeadline ? tournament.registrationDeadline|date('d/m/Y') : 'Aucune' }}</span></div>
+            <div class="listItem"><span>Max equipes</span><span class="listItem__meta">{{ tournament.maxTeams }}</span></div>
+            <div class="listItem"><span>Statut</span><span class="badge {{ tournament.status == 'OPEN' ? 'badge--success' : (tournament.status == 'ONGOING' ? 'badge--warning' : '') }}">{{ tournament.status }}</span></div>
+            <div class="listItem"><span>Mode inscription</span><span class="listItem__meta">{{ tournament.registrationMode }}</span></div>
+          </div>
+          <div class="progress" style="margin-top:10px;"><div class="progress__bar" style="width:{{ progress_percent }}%"></div></div>
+          <div class="muted" style="margin-top:6px;">{{ matches_finished_count }} match(s) termine(s) / {{ matches_total }}</div>
+        </section>
+
+        <aside class="panel">
+          <h3 class="panel__title">INSCRIPTIONS</h3>
+          <div class="list">
+            <div class="listItem"><span>Equipes acceptees</span><span class="listItem__meta">{{ accepted_count }} / {{ tournament.maxTeams }}</span></div>
+            <div class="listItem"><span>Total inscriptions</span><span class="listItem__meta">{{ registered_count }}</span></div>
+            <div class="listItem"><span>Mode</span><span class="listItem__meta">{{ tournament.registrationMode }}</span></div>
+          </div>
+
+          {% if not viewer_user %}
+            <a class="btn btn--primary" style="margin-top:10px;" href="{{ path('front_login', {'_target_path': app.request.uri}) }}">Se connecter pour participer</a>
+          {% elseif captain_teams is empty %}
+            <div class="emptyState" style="margin-top:10px;">Seul un capitaine peut participer. Ce compte ne dirige aucune equipe.</div>
+          {% elseif not registration_open %}
+            <div class="emptyState" style="margin-top:10px;">Les inscriptions sont fermees pour ce tournoi.</div>
+          {% else %}
+            <form method="post" action="{{ path('front_tournament_participate', {id: tournamentId}) }}" style="margin-top:10px;">
+              <input type="hidden" name="_token" value="{{ csrf_token('tournament_participate_' ~ tournamentId) }}">
+
+              {% if captain_teams|length > 1 %}
+                <label class="field">
+                  <span class="field__label">Choisir l'equipe capitaine</span>
+                  <select class="input" name="team_id" required>
+                    <option value="">Selectionner...</option>
+                    {% for team in captain_teams %}
+                      {% set teamId = team.teamId ?? 0 %}
+                      {% set participationStatus = captain_participations_by_team_id[teamId] ?? null %}
+                      <option value="{{ teamId }}">
+                        {{ team.name }}{% if participationStatus %} ({{ participationStatus }}){% endif %}
+                      </option>
+                    {% endfor %}
+                  </select>
+                </label>
+              {% else %}
+                {% set uniqueTeam = captain_teams[0] %}
+                <input type="hidden" name="team_id" value="{{ uniqueTeam.teamId }}">
+                <div class="listItem" style="margin-top:8px;">
+                  <span>Equipe selectionnee</span>
+                  <span class="listItem__meta">
+                    {{ uniqueTeam.name }}
+                    {% set singleStatus = captain_participations_by_team_id[uniqueTeam.teamId ?? 0] ?? null %}
+                    {% if singleStatus %} ({{ singleStatus }}){% endif %}
+                  </span>
+                </div>
+              {% endif %}
+
+              <button class="btn btn--primary" type="submit" style="margin-top:10px;">Participer</button>
+            </form>
+          {% endif %}
+        </aside>
+      </div>
+
+      <section class="panel">
+        <div class="tabs" data-tabs="tourn-tabs">
+          <button class="tab is-active" data-tab="overview">Apercu</button>
+          <button class="tab" data-tab="scores">Classement</button>
+          <button class="tab" data-tab="matches">Matchs</button>
+          <button class="tab" data-tab="teams">Equipes</button>
+        </div>
+
+        <div class="tabPanels" data-panels="tourn-tabs">
+          <section class="tabPanel is-active" data-panel="overview">
+            <div class="list">
+              <div class="listItem"><span>Description</span><span class="listItem__meta">{{ tournament.description ?: 'Aucune description.' }}</span></div>
+              <div class="listItem"><span>Regles</span><span class="listItem__meta">{{ tournament.rules ?: 'Aucune regle specifiee.' }}</span></div>
+              <div class="listItem"><span>Recompense</span><span class="listItem__meta">{{ tournament.prizeDescription ?: 'Prize pool uniquement' }}</span></div>
+            </div>
+          </section>
+
+          <section class="tabPanel" data-panel="scores">
+            {% if scoreboard_rows is empty %}
+              <div class="emptyState">Aucun score disponible pour le moment.</div>
+            {% else %}
+              <div class="tableWrap">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Equipe</th>
+                      <th>MJ</th>
+                      <th>V</th>
+                      <th>D</th>
+                      <th>Points</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for row in scoreboard_rows %}
+                      <tr>
+                        <td>{{ row.team_name }}</td>
+                        <td>{{ row.played }}</td>
+                        <td>{{ row.wins }}</td>
+                        <td>{{ row.losses }}</td>
+                        <td>{{ row.points }}</td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            {% endif %}
+          </section>
+
+          <section class="tabPanel" data-panel="matches">
+            <h4 style="margin:0 0 8px;">Matchs termines</h4>
+            {% if matches_finished is empty %}
+              <div class="emptyState">Aucun match termine.</div>
+            {% else %}
+              <div class="cardsGrid">
+                {% for match in matches_finished %}
+                  <article class="card card--tournament">
+                    <div class="card__body">
+                      <h4 class="card__title">{{ match.roundName ?: 'Round' }}</h4>
+                      <p class="card__desc">Statut: {{ match.status }}{% if match.bestOf %} · BO{{ match.bestOf }}{% endif %}</p>
+                      <div class="card__metaRow">
+                        <span class="metaPill">Planifie: <b>{{ match.scheduledAt ? match.scheduledAt|date('d/m/Y H:i') : '-' }}</b></span>
+                      </div>
+                      <div class="card__actions">
+                        <a class="btn btn--ghost" href="{{ path('front_match_detail', {id: match.matchId}) }}">Detail match</a>
+                      </div>
+                    </div>
+                  </article>
+                {% endfor %}
+              </div>
+            {% endif %}
+
+            <h4 style="margin:14px 0 8px;">Matchs en cours</h4>
+            {% if matches_ongoing is empty %}
+              <div class="emptyState">Aucun match en cours.</div>
+            {% else %}
+              <div class="cardsGrid">
+                {% for match in matches_ongoing %}
+                  <article class="card card--tournament">
+                    <div class="card__body">
+                      <h4 class="card__title">{{ match.roundName ?: 'Round' }}</h4>
+                      <p class="card__desc">Statut: {{ match.status }}{% if match.bestOf %} · BO{{ match.bestOf }}{% endif %}</p>
+                      <div class="card__metaRow">
+                        <span class="metaPill">Planifie: <b>{{ match.scheduledAt ? match.scheduledAt|date('d/m/Y H:i') : '-' }}</b></span>
+                      </div>
+                      <div class="card__actions">
+                        <a class="btn btn--ghost" href="{{ path('front_match_detail', {id: match.matchId}) }}">Detail match</a>
+                      </div>
+                    </div>
+                  </article>
+                {% endfor %}
+              </div>
+            {% endif %}
+
+            <h4 style="margin:14px 0 8px;">Matchs a venir</h4>
+            {% if matches_upcoming is empty %}
+              <div class="emptyState">Aucun match a venir.</div>
+            {% else %}
+              <div class="cardsGrid">
+                {% for match in matches_upcoming %}
+                  <article class="card card--tournament">
+                    <div class="card__body">
+                      <h4 class="card__title">{{ match.roundName ?: 'Round' }}</h4>
+                      <p class="card__desc">Statut: {{ match.status }}{% if match.bestOf %} · BO{{ match.bestOf }}{% endif %}</p>
+                      <div class="card__metaRow">
+                        <span class="metaPill">Planifie: <b>{{ match.scheduledAt ? match.scheduledAt|date('d/m/Y H:i') : '-' }}</b></span>
+                      </div>
+                      <div class="card__actions">
+                        <a class="btn btn--ghost" href="{{ path('front_match_detail', {id: match.matchId}) }}">Detail match</a>
+                      </div>
+                    </div>
+                  </article>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </section>
+
+          <section class="tabPanel" data-panel="teams">
+            {% if participants is empty %}
+              <div class="emptyState">Aucune equipe inscrite pour le moment.</div>
+            {% else %}
+              <div class="cardsGrid">
+                {% for participant in participants %}
+                  {% set team = participant.teamId %}
+                  {% set teamId = team ? (team.teamId ?? 0) : 0 %}
+                  {% set logoPath = team and team.logoImageId ? team.logoImageId.fileUrl : '' %}
+                  {% set logoUrl = logoPath ? (logoPath starts with 'http' ? logoPath : asset(logoPath)) : 'https://picsum.photos/seed/pulse_team_detail_' ~ teamId ~ '/800/600' %}
+                  <article class="card card--team">
+                    <div class="card__media" data-bg="{{ logoUrl }}">
+                      <div class="card__chips">
+                        <span class="chip">{{ participant.status }}</span>
+                        <span class="chip">Inscrit le {{ participant.registeredAt ? participant.registeredAt|date('d/m/Y') : '-' }}</span>
+                      </div>
+                    </div>
+                    <div class="card__body">
+                      <h4 class="card__title">{{ team ? team.name : 'Equipe' }}</h4>
+                      <p class="card__desc">{{ team and team.region ? team.region : 'Region non renseignee' }}</p>
+                      <div class="card__actions">
+                        <a class="btn btn--ghost" href="{{ path('front_team_detail') }}">Detail equipe</a>
+                      </div>
+                    </div>
+                  </article>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </section>
+        </div>
+      </section>
+
+      {% include 'front/partials/_footer.html.twig' %}
+    </section>
+  </main>
+
+  {% include 'front/partials/_auth_modal.html.twig' %}
+{% endblock %}

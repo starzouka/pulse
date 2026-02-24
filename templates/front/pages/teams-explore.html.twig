@@ -1,0 +1,161 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}PULSE - Explorer équipes{% endblock %}
+
+{% block body %}
+
+
+  {% include 'front/partials/_hero_mini.html.twig' with {
+  hero_kicker: 'JOUEUR',
+  hero_title: 'Explorer équipes',
+  hero_sub: 'Rejoindre une équipe.',
+  breadcrumb_current: 'Explorer équipes'
+} %}
+
+
+  <main class="page">
+    <section class="belowHero">
+
+      <div class="layout">
+        
+  <aside class="sideNav">
+    <div class="sideNav__title">ESPACE JOUEUR</div>
+    <a class="" href="{{ path('front_dashboard') }}">Dashboard</a><a class="" href="{{ path('front_profile') }}">Mon profil</a><a class="" href="{{ path('front_players') }}">Recherche joueurs</a><a class="" href="{{ path('front_friends') }}">Amis</a><a class="" href="{{ path('front_messages') }}">Messages</a><a class="" href="{{ path('front_feed') }}">Fil d’actualité</a><a class="is-active" href="{{ path('front_my_teams') }}">Mes équipes</a><a class="" href="{{ path('front_my_requests') }}">Mes demandes</a><a class="" href="{{ path('front_orders') }}">Mes commandes</a><a class="" href="{{ path('front_notifications') }}">Notifications</a>
+  </aside>
+
+        <div>
+          
+        <div class="panel">
+          <div class="filtersRow">
+            <input class="input" type="search" placeholder="Rechercher une équipe..." />
+            <div class="select"><select><option>Région</option><option>MENA</option><option>EU</option></select></div>
+            <button class="btn btn--ghost">Avec produits</button>
+            <button class="btn btn--ghost">Actif en tournois</button>
+          </div>
+        </div>
+        <div class="cardsGrid">
+
+    <article class="card card--team">
+      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_team_1/1200/800">
+        <div class="card__chips">
+          <span class="chip chip--region">MENA</span>
+          <span class="chip">Membres: 12</span>
+        </div>
+      </div>
+      <div class="card__body">
+        <h4 class="card__title">Nebula Five</h4>
+        <p class="card__desc">Équipe e-sport • Tournois • Boutique</p>
+        <div class="avatarRow">
+          <div class="avatar" data-avatar="https://picsum.photos/seed/pulse_logo_1/200/200" aria-hidden="true"></div>
+          <div class="avatarText">
+            <div class="name">Nebula Five</div>
+            <div class="sub">MENA • 12 membres</div>
+          </div>
+        </div>
+        <div class="card__actions">
+          <a class="btn btn--ghost" href="{{ path('front_team_detail') }}">Détail équipe</a>
+        </div>
+      </div>
+    </article>
+
+
+    <article class="card card--team">
+      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_team_2/1200/800">
+        <div class="card__chips">
+          <span class="chip chip--region">EU</span>
+          <span class="chip">Membres: 9</span>
+        </div>
+      </div>
+      <div class="card__body">
+        <h4 class="card__title">North Hydra</h4>
+        <p class="card__desc">Équipe e-sport • Tournois • Boutique</p>
+        <div class="avatarRow">
+          <div class="avatar" data-avatar="https://picsum.photos/seed/pulse_logo_2/200/200" aria-hidden="true"></div>
+          <div class="avatarText">
+            <div class="name">North Hydra</div>
+            <div class="sub">EU • 9 membres</div>
+          </div>
+        </div>
+        <div class="card__actions">
+          <a class="btn btn--ghost" href="{{ path('front_team_detail') }}">Détail équipe</a>
+        </div>
+      </div>
+    </article>
+
+
+    <article class="card card--team">
+      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_team_3/1200/800">
+        <div class="card__chips">
+          <span class="chip chip--region">MENA</span>
+          <span class="chip">Membres: 15</span>
+        </div>
+      </div>
+      <div class="card__body">
+        <h4 class="card__title">Sandstorm</h4>
+        <p class="card__desc">Équipe e-sport • Tournois • Boutique</p>
+        <div class="avatarRow">
+          <div class="avatar" data-avatar="https://picsum.photos/seed/pulse_logo_3/200/200" aria-hidden="true"></div>
+          <div class="avatarText">
+            <div class="name">Sandstorm</div>
+            <div class="sub">MENA • 15 membres</div>
+          </div>
+        </div>
+        <div class="card__actions">
+          <a class="btn btn--ghost" href="{{ path('front_team_detail') }}">Détail équipe</a>
+        </div>
+      </div>
+    </article>
+
+
+    <article class="card card--team">
+      <div class="card__media" data-bg="https://picsum.photos/seed/pulse_team_4/1200/800">
+        <div class="card__chips">
+          <span class="chip chip--region">NA</span>
+          <span class="chip">Membres: 10</span>
+        </div>
+      </div>
+      <div class="card__body">
+        <h4 class="card__title">Aurora Squad</h4>
+        <p class="card__desc">Équipe e-sport • Tournois • Boutique</p>
+        <div class="avatarRow">
+          <div class="avatar" data-avatar="https://picsum.photos/seed/pulse_logo_4/200/200" aria-hidden="true"></div>
+          <div class="avatarText">
+            <div class="name">Aurora Squad</div>
+            <div class="sub">NA • 10 membres</div>
+          </div>
+        </div>
+        <div class="card__actions">
+          <a class="btn btn--ghost" href="{{ path('front_team_detail') }}">Détail équipe</a>
+        </div>
+      </div>
+    </article>
+
+</div>
+        
+      <div class="panel">
+        <div class="panel__head">
+          <div>
+            <h3 class="panel__title">TABLES UTILISÉES</h3>
+            <div class="panel__desc">Schéma réel + colonnes clés.</div>
+          </div>
+        </div>
+        <div class="list">
+          <div class="listItem"><span><b>teams</b></span><span class="listItem__meta">team_id, name, region</span></div><div class="listItem"><span><b>team_members</b></span><span class="listItem__meta">team_id, user_id, is_active</span></div><div class="listItem"><span><b>team_join_requests</b></span><span class="listItem__meta">team_id, user_id, status</span></div><div class="listItem"><span><b>products</b></span><span class="listItem__meta">product_id, team_id</span></div>
+        </div>
+      </div>
+
+      
+        </div>
+      </div>
+
+
+      {% include 'front/partials/_footer.html.twig' %}
+
+    </section>
+  </main>
+
+  {% include 'front/partials/_auth_modal.html.twig' %}
+
+{% endblock %}
+
+

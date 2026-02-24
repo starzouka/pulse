@@ -1,0 +1,19 @@
+<header class="heroMini">
+  <div class="heroFull__bg heroMini__bg" data-bg="{{ hero_bg|default(asset('assets/template_fo/img/ll.png')) }}"></div>
+  <div class="heroFull__overlay"></div>
+
+  {% include 'front/partials/_top_nav.html.twig' %}
+
+  <div class="heroMini__center">
+    <div class="heroKicker">{{ hero_kicker|default('PULSE') }}</div>
+    <h1 class="heroMini__title">{{ hero_title|default('Page') }}</h1>
+    <div class="heroMini__sub">{{ hero_sub|default('Section front office.') }}</div>
+    <div class="breadcrumbs">
+      <a href="{{ path('front_home') }}">Accueil</a>
+      <span>&bull;</span>
+      <span>{{ breadcrumb_current|default(hero_title|default('Page')) }}</span>
+    </div>
+  </div>
+
+  <div class="heroSlash" aria-hidden="true"></div>
+</header>

@@ -1,0 +1,169 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}PULSE - Tournois equipe{% endblock %}
+
+{% block body %}
+  {% include 'front/partials/_hero_mini.html.twig' with {
+    hero_kicker: 'CAPITAINE',
+    hero_title: 'Tournois',
+    hero_sub: "Inscription et suivi des tournois pour l'equipe active.",
+    breadcrumb_current: 'Tournois'
+  } %}
+
+  <main class="page">
+    <section class="belowHero">
+      <div class="layout">
+        {% include 'front/partials/_captain_side_nav.html.twig' with {
+          active: 'tournaments',
+          active_team: active_team
+        } %}
+
+        <div>
+          {% include 'front/partials/_captain_team_selector.html.twig' with {
+            captain_teams: captain_teams,
+            active_team: active_team,
+            selector_route: 'front_captain_tournaments'
+          } %}
+
+          <section class="panel">
+            <div class="panel__head">
+              <div>
+                <h3 class="panel__title">INSCRIPTIONS DE L'EQUIPE</h3>
+                <div class="panel__desc">{{ team_participations|length }} participation(s)</div>
+              </div>
+            </div>
+
+            <div class="tableWrap" style="margin-top:10px;">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Tournoi</th>
+                    <th>Statut inscription</th>
+                    <th>Check-in</th>
+                    <th>Progression</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for participation in team_participations %}
+                    {% set tournament = participation.tournamentId %}
+                    {% set tournamentId = tournament ? tournament.tournamentId : 0 %}
+                    {% set matchesTotal = matches_total_by_tournament_id[tournamentId] ?? 0 %}
+                    {% set matchesFinished = matches_finished_by_tournament_id[tournamentId] ?? 0 %}
+                    <tr>
+                      <td>
+                        <a href="{{ path('front_tournament_detail', {id: tournamentId}) }}">{{ tournament.title ?: ('Tournoi #' ~ tournamentId) }}</a>
+                      </td>
+                      <td>
+                        {% set status = participation.status ?: 'PENDING' %}
+                        <span class="badge {{ status == 'ACCEPTED' ? 'badge--success' : (status == 'REFUSED' ? 'badge--danger' : (status == 'PENDING' ? 'badge--info' : '')) }}">
+                          {{ status }}
+                        </span>
+                      </td>
+                      <td>
+                        {% if participation.checkedIn %}
+                          <span class="badge badge--success">OK</span>
+                        {% else %}
+                          <span class="badge">NON</span>
+                        {% endif %}
+                      </td>
+                      <td>{{ matchesFinished }}/{{ matchesTotal }}</td>
+                      <td>
+                        <div class="postCard__actions">
+                          {% if participation.status in ['PENDING', 'ACCEPTED'] %}
+                            <form method="post" action="{{ path('front_captain_tournaments_cancel', {id: tournamentId}) }}">
+                              <input type="hidden" name="_token" value="{{ csrf_token('captain_tournament_cancel_' ~ tournamentId) }}">
+                              <input type="hidden" name="team_id" value="{{ active_team.teamId }}">
+                              <button class="btn btn--ghost" type="submit">Annuler</button>
+                            </form>
+                          {% endif %}
+
+                          {% if participation.status == 'ACCEPTED' and not participation.checkedIn %}
+                            <form method="post" action="{{ path('front_captain_tournaments_checkin', {id: tournamentId}) }}">
+                              <input type="hidden" name="_token" value="{{ csrf_token('captain_tournament_checkin_' ~ tournamentId) }}">
+                              <input type="hidden" name="team_id" value="{{ active_team.teamId }}">
+                              <button class="btn btn--primary" type="submit">Check-in</button>
+                            </form>
+                          {% endif %}
+                        </div>
+                      </td>
+                    </tr>
+                  {% else %}
+                    <tr>
+                      <td colspan="5">Aucune inscription pour cette equipe.</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel__head">
+              <div>
+                <h3 class="panel__title">TOURNOIS OUVERTS</h3>
+                <div class="panel__desc">Inscription directe ou demande selon le mode du tournoi.</div>
+              </div>
+            </div>
+
+            <div class="cardsGrid" style="margin-top:10px;">
+              {% for row in open_tournaments_data %}
+                {% set tournament = row.tournament %}
+                {% set participation = row.participation %}
+                {% set tournamentId = tournament.tournamentId %}
+                {% set progress = row.matches_total > 0 ? ((row.matches_finished / row.matches_total) * 100)|round : 0 %}
+                {% set tournamentPhotoPath = tournament.photoPath ?: '' %}
+                {% set tournamentPhotoUrl = tournamentPhotoPath ? (tournamentPhotoPath starts with 'http' ? tournamentPhotoPath : asset(tournamentPhotoPath)) : 'https://picsum.photos/seed/captain_tournament_' ~ tournamentId ~ '/1200/800' %}
+                <article class="card card--tournament">
+                  <div class="card__media" data-bg="{{ tournamentPhotoUrl }}">
+                    <div class="card__chips">
+                      <span class="chip chip--status">{{ tournament.status }}</span>
+                      <span class="chip chip--format">{{ tournament.format }}</span>
+                      <span class="chip">{{ tournament.registrationMode }}</span>
+                    </div>
+                  </div>
+                  <div class="card__body">
+                    <h4 class="card__title">{{ tournament.title }}</h4>
+                    <p class="card__desc">
+                      Deadline: <b>{{ tournament.registrationDeadline ? tournament.registrationDeadline|date('d/m/Y') : '-' }}</b>
+                      - Prize: <b>{{ tournament.prizePool }} DT</b>
+                    </p>
+                    <div class="card__metaRow">
+                      <span class="metaPill">Inscrits: <b>{{ row.registered_count }}</b></span>
+                      <span class="metaPill">Acceptes: <b>{{ row.accepted_count }}/{{ tournament.maxTeams }}</b></span>
+                    </div>
+                    <div class="progress"><div class="progress__bar" style="width:{{ progress }}%"></div></div>
+                    <div class="card__actions">
+                      <a class="btn btn--ghost" href="{{ path('front_tournament_detail', {id: tournamentId}) }}">Voir detail</a>
+                      {% if participation and participation.status in ['PENDING', 'ACCEPTED'] %}
+                        <span class="badge {{ participation.status == 'ACCEPTED' ? 'badge--success' : 'badge--info' }}">{{ participation.status }}</span>
+                      {% elseif row.registration_open %}
+                        <form method="post" action="{{ path('front_captain_tournaments_register') }}">
+                          <input type="hidden" name="_token" value="{{ csrf_token('captain_tournament_register') }}">
+                          <input type="hidden" name="team_id" value="{{ active_team.teamId }}">
+                          <input type="hidden" name="tournament_id" value="{{ tournamentId }}">
+                          <button class="btn btn--primary" type="submit">
+                            {{ tournament.registrationMode == 'OPEN' ? 'Inscrire equipe' : 'Envoyer demande' }}
+                          </button>
+                        </form>
+                      {% else %}
+                        <span class="badge badge--danger">Inscriptions fermees</span>
+                      {% endif %}
+                    </div>
+                  </div>
+                </article>
+              {% else %}
+                <div class="emptyState">Aucun tournoi OPEN actuellement.</div>
+              {% endfor %}
+            </div>
+          </section>
+        </div>
+      </div>
+
+      {% include 'front/partials/_footer.html.twig' %}
+    </section>
+  </main>
+
+  {% include 'front/partials/_auth_modal.html.twig' %}
+{% endblock %}
+

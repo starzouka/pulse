@@ -1,0 +1,133 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}PULSE - Catalogue des equipes{% endblock %}
+
+{% block body %}
+  {% include 'front/partials/_hero_mini.html.twig' with {
+    hero_kicker: 'EQUIPES',
+    hero_title: 'Catalogue des equipes',
+    hero_sub: 'Recherche, filtres et tri directement depuis la base de donnees.',
+    breadcrumb_current: 'Catalogue des equipes'
+  } %}
+
+  <main class="page">
+    <section class="belowHero">
+      <div class="pageHeader">
+        <div>
+          <h1>Catalogue des equipes</h1>
+          <p>{{ pagination.total_items|default(teams|length) }} equipe(s) trouvee(s) avec les filtres en cours.</p>
+        </div>
+        <div class="pageHeader__actions">
+          <a class="btn btn--ghost" href="{{ path('front_teams') }}">Reinitialiser</a>
+          <a class="btn btn--ghost" href="{{ path('front_tournaments') }}">Voir les tournois</a>
+        </div>
+      </div>
+
+      <section class="panel">
+        <form class="filtersRow" method="get" action="{{ path('front_teams') }}" data-auto-submit="1">
+          <input
+            class="input"
+            type="search"
+            name="q"
+            value="{{ filters.q|default('') }}"
+            placeholder="Rechercher une equipe..."
+          />
+
+          <div class="select">
+            <select name="region">
+              <option value="">Toutes regions</option>
+              {% for region in regions %}
+                <option value="{{ region }}" {{ (filters.region|default('')) == region ? 'selected' : '' }}>
+                  {{ region }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="select">
+            <select name="sort">
+              <option value="latest" {{ (filters.sort|default('latest')) == 'latest' ? 'selected' : '' }}>Plus recentes</option>
+              <option value="oldest" {{ (filters.sort|default('latest')) == 'oldest' ? 'selected' : '' }}>Plus anciennes</option>
+              <option value="name" {{ (filters.sort|default('latest')) == 'name' ? 'selected' : '' }}>Nom A-Z</option>
+              <option value="region" {{ (filters.sort|default('latest')) == 'region' ? 'selected' : '' }}>Region</option>
+              <option value="popular" {{ (filters.sort|default('latest')) == 'popular' ? 'selected' : '' }}>Popularite</option>
+            </select>
+          </div>
+
+          <label class="btn btn--ghost" style="display:flex; align-items:center; gap:8px;">
+            <input type="checkbox" name="products" value="1" {{ filters.products|default(false) ? 'checked' : '' }}>
+            Avec produits
+          </label>
+
+          <label class="btn btn--ghost" style="display:flex; align-items:center; gap:8px;">
+            <input type="checkbox" name="active_tournaments" value="1" {{ filters.active_tournaments|default(false) ? 'checked' : '' }}>
+            Actives en tournois
+          </label>
+
+          <button class="btn btn--primary" type="submit">Filtrer</button>
+          <a class="btn btn--ghost" href="{{ path('front_teams') }}">Reset</a>
+        </form>
+      </section>
+
+      <section class="cardsGrid">
+        {% if teams is empty %}
+          <div class="panel emptyState" style="grid-column: 1 / -1;">
+            Aucune equipe ne correspond aux filtres.
+          </div>
+        {% else %}
+          {% for team in teams %}
+            {% set teamId = team.teamId ?? 0 %}
+            {% set logoPath = team.logoImageId ? team.logoImageId.fileUrl : '' %}
+            {% set logoUrl = logoPath ? (logoPath starts with 'http' ? logoPath : asset(logoPath)) : 'https://picsum.photos/seed/pulse_team_logo_' ~ teamId ~ '/600/600' %}
+            {% set bannerUrl = logoPath ? (logoPath starts with 'http' ? logoPath : asset(logoPath)) : 'https://picsum.photos/seed/pulse_team_banner_' ~ teamId ~ '/1200/800' %}
+            {% set membersCount = members_count_by_team_id[teamId]|default(0) %}
+            {% set productsCount = products_count_by_team_id[teamId]|default(0) %}
+            {% set tournamentsCount = active_tournaments_count_by_team_id[teamId]|default(0) %}
+            {% set captain = team.captainUserId %}
+
+            <article class="card card--team">
+              <div class="card__media" data-bg="{{ bannerUrl }}">
+                <div class="card__chips">
+                  <span class="chip chip--region">{{ team.region ?: 'Region -' }}</span>
+                  <span class="chip">Membres: {{ membersCount }}</span>
+                  <span class="chip">Tournois actifs: {{ tournamentsCount }}</span>
+                </div>
+              </div>
+
+              <div class="card__body">
+                <h4 class="card__title">{{ team.name }}</h4>
+                <p class="card__desc">
+                  {{ team.description ? team.description|slice(0, 95) ~ (team.description|length > 95 ? '...' : '') : 'Equipe e-sport active sur PULSE.' }}
+                </p>
+
+                <div class="avatarRow">
+                  <div class="avatar" data-avatar="{{ logoUrl }}" aria-hidden="true"></div>
+                  <div class="avatarText">
+                    <div class="name">{{ team.name }}</div>
+                    <div class="sub">
+                      Capitaine: {{ captain ? (captain.displayName ?: captain.username) : '-' }} | Produits: {{ productsCount }}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="card__actions">
+                  <a class="btn btn--ghost" href="{{ teamId > 0 ? path('front_team_detail', {id: teamId}) : path('front_teams') }}">Detail equipe</a>
+                  <a class="btn btn--primary" href="{{ teamId > 0 ? path('front_shop', {team: teamId}) : path('front_shop') }}">Boutique equipe</a>
+                </div>
+              </div>
+            </article>
+          {% endfor %}
+        {% endif %}
+      </section>
+
+      {% include 'front/partials/_pagination.html.twig' with {
+        pagination: pagination,
+        route_name: 'front_teams'
+      } %}
+
+      {% include 'front/partials/_footer.html.twig' %}
+    </section>
+  </main>
+
+  {% include 'front/partials/_auth_modal.html.twig' %}
+{% endblock %}

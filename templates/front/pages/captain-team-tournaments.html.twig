@@ -1,0 +1,79 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}PULSE - Suivi tournois{% endblock %}
+
+{% block body %}
+
+
+  {% include 'front/partials/_hero_mini.html.twig' with {
+  hero_kicker: 'CAPITAINE',
+  hero_title: 'Suivi tournois',
+  hero_sub: 'Matchs et résultats.',
+  breadcrumb_current: 'Suivi tournois'
+} %}
+
+
+  <main class="page">
+    <section class="belowHero">
+
+      <div class="layout">
+        
+  <aside class="sideNav">
+    <div class="sideNav__title">ESPACE CAPITAINE</div>
+    <a class="" href="{{ path('front_captain_team_manage') }}">Mon équipe</a><a class="" href="{{ path('front_captain_members') }}">Membres</a><a class="" href="{{ path('front_captain_requests') }}">Demandes</a><a class="" href="{{ path('front_captain_invite') }}">Inviter</a><a class="" href="{{ path('front_captain_products') }}">Produits</a><a class="" href="{{ path('front_captain_orders') }}">Commandes</a><a class="is-active" href="{{ path('front_captain_tournaments') }}">Tournois</a>
+  </aside>
+
+        <div>
+          
+        
+          <div class="panel">
+            <div class="filtersRow">
+              <div class="select">
+                <select>
+                  <option>Équipe active</option>
+                  <option>Nebula Five</option>
+                  <option>North Hydra</option>
+                </select>
+              </div>
+              <button class="btn btn--ghost" type="button">Changer</button>
+            </div>
+          </div>
+
+        <div class="panel">
+          <div class="tableWrap">
+            <table class="table">
+              <thead><tr><th>Tournoi</th><th>Statut</th><th>Prochains matchs</th></tr></thead>
+              <tbody>
+                <tr><td>Pulse Invitational</td><td><span class="badge badge--info">ONGOING</span></td><td>Nebula Five vs Sandstorm</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+      <div class="panel">
+        <div class="panel__head">
+          <div>
+            <h3 class="panel__title">TABLES UTILISÉES</h3>
+            <div class="panel__desc">Schéma réel + colonnes clés.</div>
+          </div>
+        </div>
+        <div class="list">
+          <div class="listItem"><span><b>tournament_teams</b></span><span class="listItem__meta">tournament_id, team_id, status</span></div><div class="listItem"><span><b>matches</b></span><span class="listItem__meta">match_id, tournament_id, status</span></div><div class="listItem"><span><b>match_teams</b></span><span class="listItem__meta">match_id, team_id, score</span></div>
+        </div>
+      </div>
+
+      
+        </div>
+      </div>
+
+
+      {% include 'front/partials/_footer.html.twig' %}
+
+    </section>
+  </main>
+
+  {% include 'front/partials/_auth_modal.html.twig' %}
+
+{% endblock %}
+
+

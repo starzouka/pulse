@@ -1,0 +1,307 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Pulse - Accueil{% endblock %}
+
+{% block body %}
+  {% include 'front/partials/_hero_full.html.twig' with {
+    show_widgets: true,
+    hero_kicker: 'VOTRE PLATEFORME E-SPORT',
+    hero_title: 'PULSE',
+    hero_sub: 'Creez des equipes, participez aux tournois, suivez les matchs et gagnez des recompenses.',
+    hero_stat_matches: hero_stats.matches|default(0),
+    hero_stat_tournaments: hero_stats.tournaments|default(0),
+    hero_stat_players: hero_stats.players|default(0)
+  } %}
+
+  <main class="page">
+    <section class="belowHero">
+      <section class="globalSearchWrap" aria-label="Recherche globale">
+        <form class="globalSearch" id="globalSearchForm" role="search" autocomplete="off">
+          <span class="globalSearch__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" class="ico">
+              <path d="M10 2a8 8 0 105.3 14l4.7 4.7 1.4-1.4-4.7-4.7A8 8 0 0010 2zm0 2a6 6 0 110 12 6 6 0 010-12z"/>
+            </svg>
+          </span>
+
+          <input
+            class="globalSearch__input"
+            id="globalSearchInput"
+            type="search"
+            placeholder="Rechercher joueurs, equipes, tournois, matchs, jeux, produits..."
+            aria-label="Rechercher dans toute la plateforme"
+          />
+
+          <button class="globalSearch__btn" id="globalSearchBtn" type="submit">
+            Rechercher
+          </button>
+
+          <button class="globalSearch__clear" id="globalSearchClear" type="button" aria-label="Effacer la recherche">
+            <svg viewBox="0 0 24 24" class="ico">
+              <path d="M18.3 5.7L12 12l6.3 6.3-1.4 1.4L10.6 13.4 4.3 19.7 2.9 18.3 9.2 12 2.9 5.7 4.3 4.3l6.3 6.3 6.3-6.3 1.4 1.4z"/>
+            </svg>
+          </button>
+        </form>
+
+        <div class="globalSearchHint">
+          Astuce: tape au moins <b>2 caracteres</b>. Resultats: joueurs, equipes, tournois, matchs, jeux, produits.
+        </div>
+      </section>
+
+      <section class="section section--search" id="searchResultsSection" hidden>
+        <div class="section__head">
+          <div>
+            <h2>SEARCH RESULTS</h2>
+            <p class="muted" id="searchResultsSub">Resultats multi-types (joueurs, equipes, tournois, matchs, jeux, produits).</p>
+          </div>
+          <div class="section__actions">
+            <button class="btn btn--ghost" id="searchResultsClose" type="button">Fermer</button>
+          </div>
+        </div>
+
+        <div class="searchResultsWrap" id="searchResultsWrap"></div>
+      </section>
+
+      <section class="section">
+        <div class="section__head">
+          <div>
+            <h2>THIS WEEK TOURNAMENTS</h2>
+            <p class="muted">
+              Tournois qui demarrent cette semaine
+              {% if week_window.start is defined and week_window.end is defined %}
+                ({{ week_window.start|date('d/m') }} - {{ week_window.end|date('d/m') }})
+              {% endif %}
+            </p>
+          </div>
+          <div class="section__actions">
+            <button class="btn btn--ghost" type="button" id="weekTournamentsPrev">‹</button>
+            <button class="btn btn--ghost" type="button" id="weekTournamentsNext">›</button>
+            <a class="btn btn--soft" href="{{ path('front_tournaments') }}">Voir tout</a>
+          </div>
+        </div>
+
+        <div class="cardsGrid cardsGrid--tournaments cardsScroller hide-scrollbar overflow-x-scroll" id="weekTournamentsGrid" data-server-rendered="1">
+          {% if week_tournament_cards is empty %}
+            <div class="panel emptyState">Aucun tournoi disponible pour le moment.</div>
+          {% else %}
+            {% for row in week_tournament_cards %}
+              {% set tournament = row.tournament %}
+              {% set tournamentId = tournament.tournamentId ?? 0 %}
+              {% set tournamentImagePath = tournament.photoPath ?? '' %}
+              {% set tournamentImageUrl = tournamentImagePath ? (tournamentImagePath starts with 'http' ? tournamentImagePath : asset(tournamentImagePath)) : 'https://picsum.photos/seed/pulse_home_tournament_' ~ tournamentId ~ '/1200/800' %}
+              {% set game = tournament.gameId %}
+              {% set organizer = tournament.organizerUserId %}
+
+              <article class="card card--tournament">
+                <div class="card__media" data-bg="{{ tournamentImageUrl }}">
+                  <div class="card__chips">
+                    <span class="chip chip--status">{{ tournament.status }}</span>
+                    <span class="chip chip--format">{{ tournament.format }}</span>
+                    <span class="chip">{{ game ? game.name : 'Jeu' }}</span>
+                  </div>
+                </div>
+
+                <div class="card__body">
+                  <h4 class="card__title">{{ tournament.title }}</h4>
+                  <p class="card__desc">
+                    Organisateur: <b>{{ organizer ? (organizer.displayName ?: organizer.username) : '-' }}</b>
+                    | Debut: <b>{{ tournament.startDate ? tournament.startDate|date('d/m/Y') : '-' }}</b>
+                  </p>
+
+                  <div class="card__metaRow">
+                    <span class="metaPill">Prize: <b>{{ tournament.prizePool }} DT</b></span>
+                    <span class="metaPill">Participants: <b>{{ row.participants_count }}</b></span>
+                    <span class="metaPill">Matchs: <b>{{ row.finished_matches }}/{{ row.total_matches }}</b></span>
+                  </div>
+
+                  <div class="progress">
+                    <div class="progress__bar" style="width: {{ row.progress_percent }}%"></div>
+                  </div>
+
+                  <div class="card__actions">
+                    {% if tournamentId > 0 %}
+                      <a class="btn btn--ghost" href="{{ path('front_tournament_detail', {id: tournamentId}) }}">Voir detail</a>
+                    {% else %}
+                      <a class="btn btn--ghost" href="{{ path('front_tournaments') }}">Voir detail</a>
+                    {% endif %}
+                  </div>
+                </div>
+              </article>
+            {% endfor %}
+          {% endif %}
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section__head">
+          <div>
+            <h2>THIS WEEK CHAMPIONS</h2>
+            <p class="muted">Equipes gagnantes des tournois termines cette semaine (template front).</p>
+          </div>
+          <div class="section__actions">
+            <button class="btn btn--ghost" type="button" id="championsPrev">‹</button>
+            <button class="btn btn--ghost" type="button" id="championsNext">›</button>
+            <button class="btn btn--soft" type="button">Hall of Fame</button>
+          </div>
+        </div>
+
+        <div class="cardsGrid cardsGrid--champions cardsScroller hide-scrollbar overflow-x-scroll" id="championsGrid"></div>
+      </section>
+
+      <section class="section">
+        <div class="section__head">
+          <div>
+            <h2>BEST SELLERS</h2>
+            <p class="muted">Produits recents en stock depuis la base de donnees.</p>
+          </div>
+          <div class="section__actions">
+            <button class="btn btn--ghost" type="button" id="bestSellersPrev">‹</button>
+            <button class="btn btn--ghost" type="button" id="bestSellersNext">›</button>
+            <a class="btn btn--soft" href="{{ path('front_shop') }}">Boutique</a>
+          </div>
+        </div>
+
+        <div class="cardsGrid cardsGrid--products cardsScroller hide-scrollbar overflow-x-scroll" id="bestSellersGrid" data-server-rendered="1">
+          {% if home_products is empty %}
+            <div class="panel emptyState">Aucun produit disponible.</div>
+          {% else %}
+            {% for product in home_products %}
+              {% set productId = product.productId ?? 0 %}
+              {% set primaryImage = home_product_primary_images_by_product_id[productId]|default(null) %}
+              {% set imagePath = primaryImage ? primaryImage.fileUrl : '' %}
+              {% set imageUrl = imagePath ? (imagePath starts with 'http' ? imagePath : asset(imagePath)) : 'https://picsum.photos/seed/pulse_home_product_' ~ productId ~ '/1200/800' %}
+
+              <article class="card card--product">
+                <div class="card__media" data-bg="{{ imageUrl }}">
+                  <div class="card__chips">
+                    <span class="chip chip--price">{{ product.price|number_format(2, '.', ' ') }} DT</span>
+                    <span class="chip">Stock: {{ product.stockQty }}</span>
+                    <span class="chip">{{ product.teamId ? product.teamId.name : 'Equipe' }}</span>
+                  </div>
+                </div>
+
+                <div class="card__body">
+                  <h4 class="card__title">{{ product.name }}</h4>
+                  <p class="card__desc">{{ product.description ? product.description|slice(0, 85) ~ (product.description|length > 85 ? '...' : '') : 'Produit de boutique.' }}</p>
+                  <div class="card__actions">
+                    <a class="btn btn--ghost" href="{{ productId > 0 ? path('front_product_detail', {id: productId}) : path('front_shop') }}">Detail</a>
+                  </div>
+                </div>
+              </article>
+            {% endfor %}
+          {% endif %}
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section__head">
+          <div>
+            <h2>POPULAR GAMES</h2>
+            <p class="muted">Jeux populaires par activite tournoi depuis la base.</p>
+          </div>
+          <div class="section__actions">
+            <button class="btn btn--ghost" type="button" id="popularGamesPrev">‹</button>
+            <button class="btn btn--ghost" type="button" id="popularGamesNext">›</button>
+            <a class="btn btn--soft" href="{{ path('front_games') }}">Voir jeux</a>
+          </div>
+        </div>
+
+        <div class="cardsGrid cardsGrid--games cardsScroller hide-scrollbar overflow-x-scroll" id="popularGamesGrid" data-server-rendered="1">
+          {% if home_game_cards is empty %}
+            <div class="panel emptyState">Aucun jeu disponible.</div>
+          {% else %}
+            {% for row in home_game_cards %}
+              {% set game = row.game %}
+              {% set gameId = game.gameId ?? 0 %}
+              {% set imagePath = game.coverImageId ? game.coverImageId.fileUrl : '' %}
+              {% set imageUrl = imagePath ? (imagePath starts with 'http' ? imagePath : asset(imagePath)) : 'https://picsum.photos/seed/pulse_home_game_' ~ gameId ~ '/1200/800' %}
+
+              <article class="card card--game">
+                <div class="card__media" data-bg="{{ imageUrl }}">
+                  <div class="card__chips">
+                    <span class="chip chip--category">{{ game.categoryId ? game.categoryId.name : 'Categorie' }}</span>
+                    <span class="chip">Actifs: {{ row.active_tournaments_count }}</span>
+                    <span class="chip">{{ game.publisher ?: 'Publisher -' }}</span>
+                  </div>
+                </div>
+
+                <div class="card__body">
+                  <h4 class="card__title">{{ game.name }}</h4>
+                  <p class="card__desc">Tournois total: <b>{{ row.total_tournaments_count }}</b> | Actifs: <b>{{ row.active_tournaments_count }}</b></p>
+                  <div class="card__actions">
+                    <a class="btn btn--ghost" href="{{ gameId > 0 ? path('front_game_detail', {id: gameId}) : path('front_games') }}">Detail</a>
+                  </div>
+                </div>
+              </article>
+            {% endfor %}
+          {% endif %}
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section__head">
+          <div>
+            <h2>TOP TEAMS</h2>
+            <p class="muted">Equipes actives selon membres, produits et tournois.</p>
+          </div>
+          <div class="section__actions">
+            <button class="btn btn--ghost" type="button" id="topTeamsPrev">‹</button>
+            <button class="btn btn--ghost" type="button" id="topTeamsNext">›</button>
+            <a class="btn btn--soft" href="{{ path('front_teams') }}">Voir equipes</a>
+          </div>
+        </div>
+
+        <div class="cardsGrid cardsGrid--teams cardsScroller hide-scrollbar overflow-x-scroll" id="topTeamsGrid" data-server-rendered="1">
+          {% if home_team_cards is empty %}
+            <div class="panel emptyState">Aucune equipe disponible.</div>
+          {% else %}
+            {% for row in home_team_cards %}
+              {% set team = row.team %}
+              {% set teamId = team.teamId ?? 0 %}
+              {% set logoPath = team.logoImageId ? team.logoImageId.fileUrl : '' %}
+              {% set logoUrl = logoPath ? (logoPath starts with 'http' ? logoPath : asset(logoPath)) : 'https://picsum.photos/seed/pulse_home_team_' ~ teamId ~ '/1200/800' %}
+              {% set captain = team.captainUserId %}
+
+              <article class="card card--team">
+                <div class="card__media" data-bg="{{ logoUrl }}">
+                  <div class="card__chips">
+                    <span class="chip chip--region">{{ team.region ?: 'Region -' }}</span>
+                    <span class="chip">Membres: {{ row.members_count }}</span>
+                    <span class="chip">Tournois actifs: {{ row.active_tournaments_count }}</span>
+                  </div>
+                </div>
+
+                <div class="card__body">
+                  <h4 class="card__title">{{ team.name }}</h4>
+                  <p class="card__desc">Capitaine: <b>{{ captain ? (captain.displayName ?: captain.username) : '-' }}</b> | Produits: <b>{{ row.products_count }}</b></p>
+                  <div class="card__actions">
+                    <a class="btn btn--ghost" href="{{ teamId > 0 ? path('front_team_detail', {id: teamId}) : path('front_teams') }}">Detail</a>
+                  </div>
+                </div>
+              </article>
+            {% endfor %}
+          {% endif %}
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section__head">
+          <div>
+            <h2>NEW PLAYERS</h2>
+            <p class="muted">Cartes membre (template): profil, stats, equipes.</p>
+          </div>
+          <div class="section__actions">
+            <button class="btn btn--ghost" type="button" id="newPlayersPrev">‹</button>
+            <button class="btn btn--ghost" type="button" id="newPlayersNext">›</button>
+            <button class="btn btn--soft" type="button">Explorer joueurs</button>
+          </div>
+        </div>
+
+        <div class="cardsGrid cardsGrid--members cardsScroller hide-scrollbar overflow-x-scroll" id="newPlayersGrid"></div>
+      </section>
+
+      {% include 'front/partials/_footer.html.twig' %}
+    </section>
+  </main>
+
+  {% include 'front/partials/_auth_modal.html.twig' %}
+{% endblock %}

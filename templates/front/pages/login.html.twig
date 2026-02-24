@@ -1,0 +1,67 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}PULSE - Connexion{% endblock %}
+
+{% block body %}
+  {% include 'front/partials/_hero_mini.html.twig' with {
+    hero_kicker: 'AUTH',
+    hero_title: 'Connexion',
+    hero_sub: 'Connectez-vous pour acceder aux actions sensibles.',
+    breadcrumb_current: 'Connexion'
+  } %}
+
+  <main class="page">
+    <section class="belowHero">
+      <form class="panel" method="post" action="{{ path('front_login') }}">
+        {% for label, messages in app.flashes %}
+          {% for message in messages %}
+            <div class="listItem">
+              <span>{{ message }}</span>
+              <span class="badge {{ label == 'error' ? 'badge--danger' : 'badge--success' }}">{{ label|upper }}</span>
+            </div>
+          {% endfor %}
+        {% endfor %}
+
+        {% if error %}
+          <div class="listItem">
+            <span>{{ error.messageKey|trans(error.messageData, 'security') }}</span>
+            <span class="badge badge--danger">ERROR</span>
+          </div>
+        {% endif %}
+
+        {% if app.user %}
+          <div class="listItem">
+            <span>Connecte en tant que {{ app.user.userIdentifier }}</span>
+            <a class="btn btn--ghost" href="{{ path('app_logout') }}">Se deconnecter</a>
+          </div>
+        {% endif %}
+
+        <div class="formGrid">
+          <label class="field">
+            <span class="field__label">Email</span>
+            <input class="input" type="email" name="_username" value="{{ last_username }}" autocomplete="email" required />
+          </label>
+          <label class="field">
+            <span class="field__label">Mot de passe</span>
+            <input class="input" type="password" name="_password" autocomplete="current-password" required />
+          </label>
+          <label class="field">
+            <span class="field__label">Se souvenir de moi</span>
+            <input type="checkbox" name="_remember_me" />
+          </label>
+        </div>
+
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+        <input type="hidden" name="_target_path" value="{{ app.request.query.get('_target_path', path('front_home')) }}">
+
+        <div class="formActions" style="margin-top:12px;">
+          <button class="btn btn--primary" type="submit">Se connecter</button>
+          <a class="btn btn--ghost" href="{{ path('front_register') }}">Creer un compte</a>
+          <a class="btn btn--ghost" href="{{ path('front_forgot_password') }}">Mot de passe oublie</a>
+        </div>
+      </form>
+
+      {% include 'front/partials/_footer.html.twig' %}
+    </section>
+  </main>
+{% endblock %}

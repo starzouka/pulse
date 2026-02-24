@@ -1,0 +1,192 @@
+﻿{% extends 'base.html.twig' %}
+
+{% block title %}PULSE - Amis{% endblock %}
+
+{% block body %}
+  {% include 'front/partials/_hero_mini.html.twig' with {
+    hero_kicker: 'JOUEUR',
+    hero_title: 'Amis',
+    hero_sub: "Gestion des relations et demandes d'amis.",
+    breadcrumb_current: 'Amis'
+  } %}
+
+  <main class="page">
+    <section class="belowHero">
+      <div class="layout">
+        {% include 'front/partials/_player_side_nav.html.twig' with { active: 'friends' } %}
+
+        <div class="socialShell">
+          <div class="socialStack">
+            {% for label, messages in app.flashes %}
+              {% for message in messages %}
+                <div class="listItem">
+                  <span>{{ message }}</span>
+                  <span class="badge {{ label == 'error' ? 'badge--danger' : 'badge--success' }}">{{ label|upper }}</span>
+                </div>
+              {% endfor %}
+            {% endfor %}
+
+            <section class="panel gadget">
+              <form class="filtersRow" method="get" action="{{ path('front_friends') }}" style="margin-bottom:12px;" data-auto-submit="1">
+                <input type="hidden" name="tab" value="{{ active_tab|default('my-friends') }}">
+                <input class="input" type="search" name="friend_q" value="{{ filters.friend_q|default('') }}" placeholder="Rechercher un ami..." />
+                <div class="select">
+                  <select name="friends_sort">
+                    <option value="recent" {{ (filters.friends_sort|default('recent')) == 'recent' ? 'selected' : '' }}>Amis recents</option>
+                    <option value="oldest" {{ (filters.friends_sort|default('recent')) == 'oldest' ? 'selected' : '' }}>Amis anciens</option>
+                    <option value="name" {{ (filters.friends_sort|default('recent')) == 'name' ? 'selected' : '' }}>Nom A-Z</option>
+                  </select>
+                </div>
+                <input class="input" type="search" name="requests_q" value="{{ filters.requests_q|default('') }}" placeholder="Rechercher une demande..." />
+                <div class="select">
+                  <select name="requests_status">
+                    <option value="" {{ (filters.requests_status|default('PENDING')) == '' ? 'selected' : '' }}>Tous statuts</option>
+                    <option value="PENDING" {{ (filters.requests_status|default('PENDING')) == 'PENDING' ? 'selected' : '' }}>PENDING</option>
+                    <option value="ACCEPTED" {{ (filters.requests_status|default('PENDING')) == 'ACCEPTED' ? 'selected' : '' }}>ACCEPTED</option>
+                    <option value="REFUSED" {{ (filters.requests_status|default('PENDING')) == 'REFUSED' ? 'selected' : '' }}>REFUSED</option>
+                    <option value="CANCELLED" {{ (filters.requests_status|default('PENDING')) == 'CANCELLED' ? 'selected' : '' }}>CANCELLED</option>
+                  </select>
+                </div>
+                <div class="select">
+                  <select name="requests_sort">
+                    <option value="latest" {{ (filters.requests_sort|default('latest')) == 'latest' ? 'selected' : '' }}>Demandes recentes</option>
+                    <option value="oldest" {{ (filters.requests_sort|default('latest')) == 'oldest' ? 'selected' : '' }}>Demandes anciennes</option>
+                    <option value="name" {{ (filters.requests_sort|default('latest')) == 'name' ? 'selected' : '' }}>Nom</option>
+                    <option value="status" {{ (filters.requests_sort|default('latest')) == 'status' ? 'selected' : '' }}>Statut</option>
+                  </select>
+                </div>
+                <button class="btn btn--ghost" type="submit">Filtrer</button>
+                <a class="btn btn--ghost" href="{{ path('front_friends') }}">Reset</a>
+              </form>
+
+              <div class="tabs" data-tabs="friends-tabs">
+                <button class="tab {{ (active_tab|default('my-friends')) == 'my-friends' ? 'is-active' : '' }}" data-tab="my-friends">Mes amis</button>
+                <button class="tab {{ (active_tab|default('my-friends')) == 'received' ? 'is-active' : '' }}" data-tab="received">Demandes recues</button>
+                <button class="tab {{ (active_tab|default('my-friends')) == 'sent' ? 'is-active' : '' }}" data-tab="sent">Demandes envoyees</button>
+              </div>
+
+              <div class="tabPanels" data-panels="friends-tabs">
+                <section class="tabPanel {{ (active_tab|default('my-friends')) == 'my-friends' ? 'is-active' : '' }}" data-panel="my-friends">
+                  {% if friends is empty %}
+                    <div class="emptyState">Aucun ami pour le moment.</div>
+                  {% else %}
+                    <div class="socialQuickList">
+                      {% for friend in friends %}
+                        {% set friendId = friend.userId ?? 0 %}
+                        <a class="listItem" href="{{ path('front_player_profile', {id: friendId}) }}">
+                          <span>{{ friend.displayName ?? friend.username }} (@{{ friend.username }})</span>
+                          <span class="listItem__meta">{{ friend.role }}</span>
+                        </a>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+
+                  {% include 'front/partials/_pagination.html.twig' with {
+                    pagination: pagination.friends|default(null),
+                    route_name: 'front_friends',
+                    page_param: 'friends_page',
+                    query_params: app.request.query.all|merge({tab: 'my-friends'})
+                  } %}
+                </section>
+
+                <section class="tabPanel {{ (active_tab|default('my-friends')) == 'received' ? 'is-active' : '' }}" data-panel="received">
+                  {% if received_requests is empty %}
+                    <div class="emptyState">Aucune demande recue avec ces filtres.</div>
+                  {% else %}
+                    {% for request in received_requests %}
+                      {% set sender = request.fromUserId %}
+                      <article class="panel profilePost">
+                        <div class="postCard__head">
+                          <div class="postCard__author">
+                            <div>
+                              <div class="name">{{ sender ? (sender.displayName ?? sender.username) : 'Utilisateur' }}</div>
+                              <div class="sub">Recu le {{ request.createdAt ? request.createdAt|date('d/m/Y H:i') : '-' }}</div>
+                            </div>
+                          </div>
+                          <span class="badge">PENDING</span>
+                        </div>
+                        <div class="postCard__actions">
+                          <form method="post" action="{{ path('front_friends_request_accept', {id: request.requestId}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('friend_request_accept_' ~ request.requestId) }}">
+                            <button class="btn btn--primary" type="submit">Accepter</button>
+                          </form>
+                          <form method="post" action="{{ path('front_friends_request_refuse', {id: request.requestId}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('friend_request_refuse_' ~ request.requestId) }}">
+                            <button class="btn btn--ghost" type="submit">Refuser</button>
+                          </form>
+                        </div>
+                      </article>
+                    {% endfor %}
+                  {% endif %}
+
+                  {% include 'front/partials/_pagination.html.twig' with {
+                    pagination: pagination.received|default(null),
+                    route_name: 'front_friends',
+                    page_param: 'received_page',
+                    query_params: app.request.query.all|merge({tab: 'received'})
+                  } %}
+                </section>
+
+                <section class="tabPanel {{ (active_tab|default('my-friends')) == 'sent' ? 'is-active' : '' }}" data-panel="sent">
+                  {% if sent_requests is empty %}
+                    <div class="emptyState">Aucune demande envoyee avec ces filtres.</div>
+                  {% else %}
+                    {% for request in sent_requests %}
+                      {% set target = request.toUserId %}
+                      <article class="panel profilePost">
+                        <div class="postCard__head">
+                          <div class="postCard__author">
+                            <div>
+                              <div class="name">{{ target ? (target.displayName ?? target.username) : 'Utilisateur' }}</div>
+                              <div class="sub">Envoyee le {{ request.createdAt ? request.createdAt|date('d/m/Y H:i') : '-' }}</div>
+                            </div>
+                          </div>
+                          <span class="badge">PENDING</span>
+                        </div>
+                        <div class="postCard__actions">
+                          <form method="post" action="{{ path('front_friends_request_cancel', {id: request.requestId}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('friend_request_cancel_' ~ request.requestId) }}">
+                            <button class="btn btn--ghost" type="submit">Annuler</button>
+                          </form>
+                        </div>
+                      </article>
+                    {% endfor %}
+                  {% endif %}
+
+                  {% include 'front/partials/_pagination.html.twig' with {
+                    pagination: pagination.sent|default(null),
+                    route_name: 'front_friends',
+                    page_param: 'sent_page',
+                    query_params: app.request.query.all|merge({tab: 'sent'})
+                  } %}
+                </section>
+              </div>
+            </section>
+          </div>
+
+          <aside class="socialStack">
+            <section class="panel gadget">
+              <h3 class="panel__title">SUGGESTIONS</h3>
+              <div class="socialQuickList">
+                <a class="listItem" href="{{ path('front_players') }}"><span>Trouver des joueurs</span><span class="listItem__meta">Explorer</span></a>
+                <a class="listItem" href="{{ path('front_players', {role: 'CAPTAIN'}) }}"><span>Capitaines actifs</span><span class="listItem__meta">Filtrer</span></a>
+              </div>
+            </section>
+
+            <section class="panel gadget">
+              <h3 class="panel__title">RACCOURCIS</h3>
+              <div class="socialQuickList">
+                <a class="listItem" href="{{ path('front_messages') }}"><span>Ouvrir messagerie</span><span class="listItem__meta">Direct</span></a>
+                <a class="listItem" href="{{ path('front_feed') }}"><span>Aller au fil</span><span class="listItem__meta">Social</span></a>
+              </div>
+            </section>
+          </aside>
+        </div>
+      </div>
+
+      {% include 'front/partials/_footer.html.twig' %}
+    </section>
+  </main>
+
+  {% include 'front/partials/_auth_modal.html.twig' %}
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}PULSE - Créer une équipe{% endblock %}
+
+{% block body %}
+
+
+  {% include 'front/partials/_hero_mini.html.twig' with {
+  hero_kicker: 'CAPITAINE',
+  hero_title: 'Créer une équipe',
+  hero_sub: 'Créer une nouvelle équipe.',
+  breadcrumb_current: 'Créer une équipe'
+} %}
+
+
+  <main class="page">
+    <section class="belowHero">
+
+      <div class="layout">
+        
+  <aside class="sideNav">
+    <div class="sideNav__title">ESPACE CAPITAINE</div>
+    <a class="is-active" href="{{ path('front_captain_team_manage') }}">Mon équipe</a><a class="" href="{{ path('front_captain_members') }}">Membres</a><a class="" href="{{ path('front_captain_requests') }}">Demandes</a><a class="" href="{{ path('front_captain_invite') }}">Inviter</a><a class="" href="{{ path('front_captain_products') }}">Produits</a><a class="" href="{{ path('front_captain_orders') }}">Commandes</a><a class="" href="{{ path('front_captain_tournaments') }}">Tournois</a>
+  </aside>
+
+        <div>
+          
+        
+          <div class="panel">
+            <div class="filtersRow">
+              <div class="select">
+                <select>
+                  <option>Équipe active</option>
+                  <option>Nebula Five</option>
+                  <option>North Hydra</option>
+                </select>
+              </div>
+              <button class="btn btn--ghost" type="button">Changer</button>
+            </div>
+          </div>
+
+        <form class="panel">
+          <div class="formGrid">
+            <label class="field"><span class="field__label">Nom</span><input class="input" type="text" /></label>
+            <label class="field"><span class="field__label">Région</span><input class="input" type="text" /></label>
+            <label class="field"><span class="field__label">Description</span><textarea class="textarea"></textarea></label>
+            <label class="field"><span class="field__label">Logo</span><input class="input" type="file" /></label>
+          </div>
+          <div class="formActions" style="margin-top:12px;">
+            <button class="btn btn--primary" type="submit">Créer équipe</button>
+          </div>
+        </form>
+        
+      <div class="panel">
+        <div class="panel__head">
+          <div>
+            <h3 class="panel__title">TABLES UTILISÉES</h3>
+            <div class="panel__desc">Schéma réel + colonnes clés.</div>
+          </div>
+        </div>
+        <div class="list">
+          <div class="listItem"><span><b>teams</b></span><span class="listItem__meta">team_id, name, region, captain_user_id, logo_image_id</span></div><div class="listItem"><span><b>team_members</b></span><span class="listItem__meta">team_id, user_id, joined_at, is_active</span></div><div class="listItem"><span><b>images</b></span><span class="listItem__meta">image_id, file_url</span></div>
+        </div>
+      </div>
+
+      
+        </div>
+      </div>
+
+
+      {% include 'front/partials/_footer.html.twig' %}
+
+    </section>
+  </main>
+
+  {% include 'front/partials/_auth_modal.html.twig' %}
+
+{% endblock %}
+
+

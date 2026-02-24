@@ -1,0 +1,63 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}PULSE - FAQ / Règlement{% endblock %}
+
+{% block body %}
+
+
+  {% include 'front/partials/_hero_mini.html.twig' with {
+  hero_kicker: 'AIDE',
+  hero_title: 'FAQ / Règlement',
+  hero_sub: 'Règles des tournois, boutique et comportement.',
+  breadcrumb_current: 'FAQ / Règlement'
+} %}
+
+
+  <main class="page">
+    <section class="belowHero">
+
+      <div class="panel">
+        <div class="filtersRow">
+          <input class="input" type="search" placeholder="Rechercher une question..." />
+          <span class="muted">Dernière mise à jour: 05/02/2026</span>
+        </div>
+      </div>
+      <div class="panel faq">
+        <details open>
+          <summary>Comment s’inscrire à un tournoi ?</summary>
+          <p class="muted">Connectez-vous, choisissez votre équipe et cliquez sur “Inscrire”.</p>
+        </details>
+        <details>
+          <summary>Puis-je rejoindre plusieurs équipes ?</summary>
+          <p class="muted">Oui, selon les règles de votre ligue.</p>
+        </details>
+        <details>
+          <summary>Comment suivre mes commandes ?</summary>
+          <p class="muted">Depuis l’espace joueur, onglet “Commandes”.</p>
+        </details>
+      </div>
+      
+      <div class="panel">
+        <div class="panel__head">
+          <div>
+            <h3 class="panel__title">TABLES UTILISÉES</h3>
+            <div class="panel__desc">Schéma réel + colonnes clés.</div>
+          </div>
+        </div>
+        <div class="list">
+          <div class="listItem"><span><b>Aucune table</b></span><span class="listItem__meta">Page statique (option CMS)</span></div>
+        </div>
+      </div>
+
+    
+
+      {% include 'front/partials/_footer.html.twig' %}
+
+    </section>
+  </main>
+
+  {% include 'front/partials/_auth_modal.html.twig' %}
+
+{% endblock %}
+
+

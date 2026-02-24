@@ -1,0 +1,142 @@
+﻿{% extends 'base.html.twig' %}
+
+{% block title %}PULSE - Notifications{% endblock %}
+
+{% block body %}
+  {% include 'front/partials/_hero_mini.html.twig' with {
+    hero_kicker: 'JOUEUR',
+    hero_title: 'Notifications',
+    hero_sub: 'Fil des alertes et evenements importants.',
+    breadcrumb_current: 'Notifications'
+  } %}
+
+  <main class="page">
+    <section class="belowHero">
+      <div class="layout">
+        {% include 'front/partials/_player_side_nav.html.twig' with { active: 'notifications' } %}
+
+        <div class="socialShell">
+          <div class="socialStack">
+            {% for label, messages in app.flashes %}
+              {% for message in messages %}
+                <div class="listItem">
+                  <span>{{ message }}</span>
+                  <span class="badge {{ label == 'error' ? 'badge--danger' : (label == 'info' ? 'badge--info' : 'badge--success') }}">{{ label|upper }}</span>
+                </div>
+              {% endfor %}
+            {% endfor %}
+
+            <section class="panel">
+              <div class="panel__head">
+                <h3 class="panel__title">ALERTES</h3>
+                <form method="post" action="{{ path('front_notifications_mark_all_read') }}">
+                  <input type="hidden" name="_token" value="{{ csrf_token('notifications_mark_all_read') }}">
+                  <button class="btn btn--ghost" type="submit">Tout marquer lu</button>
+                </form>
+              </div>
+
+              <form class="filtersRow" method="get" action="{{ path('front_notifications') }}" style="margin-bottom:12px;" data-auto-submit="1">
+                <input class="input" type="search" name="q" value="{{ filters.q|default('') }}" placeholder="Rechercher dans les notifications..." />
+                <div class="select">
+                  <select name="type">
+                    <option value="" {{ (filters.type|default('')) == '' ? 'selected' : '' }}>Tous types</option>
+                    <option value="FRIEND_REQUEST" {{ (filters.type|default('')) == 'FRIEND_REQUEST' ? 'selected' : '' }}>FRIEND_REQUEST</option>
+                    <option value="TEAM_INVITE" {{ (filters.type|default('')) == 'TEAM_INVITE' ? 'selected' : '' }}>TEAM_INVITE</option>
+                    <option value="TEAM_JOIN_RESPONSE" {{ (filters.type|default('')) == 'TEAM_JOIN_RESPONSE' ? 'selected' : '' }}>TEAM_JOIN_RESPONSE</option>
+                    <option value="NEW_MESSAGE" {{ (filters.type|default('')) == 'NEW_MESSAGE' ? 'selected' : '' }}>NEW_MESSAGE</option>
+                    <option value="TOURNAMENT_REQUEST_STATUS" {{ (filters.type|default('')) == 'TOURNAMENT_REQUEST_STATUS' ? 'selected' : '' }}>TOURNAMENT_REQUEST_STATUS</option>
+                    <option value="ORDER_STATUS" {{ (filters.type|default('')) == 'ORDER_STATUS' ? 'selected' : '' }}>ORDER_STATUS</option>
+                  </select>
+                </div>
+                <div class="select">
+                  <select name="sort">
+                    <option value="latest" {{ (filters.sort|default('latest')) == 'latest' ? 'selected' : '' }}>Plus recentes</option>
+                    <option value="oldest" {{ (filters.sort|default('latest')) == 'oldest' ? 'selected' : '' }}>Plus anciennes</option>
+                    <option value="type" {{ (filters.sort|default('latest')) == 'type' ? 'selected' : '' }}>Type</option>
+                  </select>
+                </div>
+                {% if only_unread %}
+                  <input type="hidden" name="unread" value="1">
+                {% endif %}
+                <button class="btn btn--ghost" type="submit">Filtrer</button>
+                <a class="btn btn--ghost" href="{{ path('front_notifications') }}">Reset</a>
+              </form>
+
+              {% if notifications is empty %}
+                <div class="emptyState">Aucune notification a afficher.</div>
+              {% else %}
+                <div class="list">
+                  {% for notification in notifications %}
+                    {% set isNew = not notification.isRead %}
+                    {% set link = path('front_notifications') %}
+                    {% if notification.type == 'NEW_MESSAGE' %}
+                      {% set link = path('front_messages') %}
+                    {% elseif notification.type == 'TEAM_INVITE' %}
+                      {% set link = path('front_my_teams') %}
+                    {% elseif notification.type == 'TEAM_JOIN_RESPONSE' %}
+                      {% set link = path('front_my_requests') %}
+                    {% elseif notification.type == 'ORDER_STATUS' %}
+                      {% set link = path('front_orders') %}
+                    {% elseif notification.type == 'TOURNAMENT_REQUEST_STATUS' %}
+                      {% set link = path('front_organizer_requests') %}
+                    {% endif %}
+
+                    <a class="listItem" href="{{ link }}">
+                      <span>{{ notification.content }}</span>
+                      <span class="badge {{ isNew ? 'badge--info' : '' }}">{{ isNew ? 'Nouveau' : (notification.createdAt ? notification.createdAt|date('d/m H:i') : 'Lu') }}</span>
+                    </a>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </section>
+
+            {% include 'front/partials/_pagination.html.twig' with {
+              pagination: pagination,
+              route_name: 'front_notifications'
+            } %}
+          </div>
+
+          <aside class="socialStack">
+            <section class="panel">
+              <h3 class="panel__title">FILTRES</h3>
+              <div class="postCard__actions">
+                <a class="btn {{ not only_unread ? 'btn--soft' : 'btn--ghost' }}" href="{{ path('front_notifications', {
+                  q: filters.q|default(''),
+                  type: filters.type|default(''),
+                  sort: filters.sort|default('latest')
+                }) }}">Toutes</a>
+                <a class="btn {{ only_unread ? 'btn--soft' : 'btn--ghost' }}" href="{{ path('front_notifications', {
+                  unread: 1,
+                  q: filters.q|default(''),
+                  type: filters.type|default(''),
+                  sort: filters.sort|default('latest')
+                }) }}">Non lues</a>
+              </div>
+            </section>
+
+            <section class="panel">
+              <h3 class="panel__title">STATISTIQUES</h3>
+              <div class="statsRow">
+                <div class="statCard"><div class="statCard__value">{{ notifications|length }}</div><div class="statCard__label">Affichees</div></div>
+                <div class="statCard"><div class="statCard__value">{{ unread_count }}</div><div class="statCard__label">Non lues</div></div>
+              </div>
+            </section>
+
+            <section class="panel">
+              <h3 class="panel__title">RACCOURCIS</h3>
+              <div class="socialQuickList">
+                <a class="listItem" href="{{ path('front_messages') }}"><span>Messages</span><span class="listItem__meta">Ouvrir</span></a>
+                <a class="listItem" href="{{ path('front_my_teams') }}"><span>Mes equipes</span><span class="listItem__meta">Gerer</span></a>
+                <a class="listItem" href="{{ path('front_orders') }}"><span>Mes commandes</span><span class="listItem__meta">Suivi</span></a>
+              </div>
+            </section>
+          </aside>
+        </div>
+      </div>
+
+      {% include 'front/partials/_footer.html.twig' %}
+    </section>
+  </main>
+
+  {% include 'front/partials/_auth_modal.html.twig' %}
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}PULSE - Detail produit{% endblock %}
+
+{% block admin_content %}
+
+        
+  <div class="pageHeader">
+    <div>
+      <h2>Detail produit</h2>
+      <div class="pageSub">Infos + commandes impactees.</div>
+    </div>
+    
+  </div>
+  
+  <div class="tabs" data-tabs="product">
+    <button class="tab isActive" data-tab="info">Infos</button>
+<button class="tab" data-tab="orders">Commandes</button>
+  </div>
+  <div class="tabPanels" data-panels="product">
+    <div class="tabPanel isActive" data-panel="info"><section class="panel"><div class="list"><div class="listItem"><span>product_id</span><span class="listMeta">1</span></div><div class="listItem"><span>name</span><span class="listMeta">—</span></div><div class="listItem"><span>price</span><span class="listMeta">120 DT</span></div><div class="listItem"><span>stock_qty</span><span class="listMeta">—</span></div></div></section></div>
+<div class="tabPanel" data-panel="orders"><section class="panel">
+  <div class="dataTableWrap">
+    <table class="dataTable">
+      <thead><tr><th>order_number</th><th>status</th><th>quantity</th></tr></thead>
+      <tbody>
+        <tr><td>ORD-2026-001</td><td><span class="badge badge--warning">PENDING</span></td><td>—</td></tr>
+        <tr><td>ORD-2026-001</td><td><span class="badge badge--warning">PENDING</span></td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div></section></div>
+  </div>
+
+  
+  <section class="panel">
+    <div class="panelHeader">
+      <div>
+        <h3 class="panelTitle">SCHEMA UTILISE</h3>
+        <div class="panelDesc">Tables et colonnes principales.</div>
+      </div>
+    </div>
+    <div class="list">
+      <div class="listItem"><span><b>products</b></span><span class="listMeta">product_id, name, price, stock_qty, order_number, status, quantity</span></div>
+    </div>
+  </section>
+
+
+      
+{% endblock %}

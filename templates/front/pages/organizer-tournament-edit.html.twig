@@ -1,0 +1,66 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}PULSE - Éditer tournoi{% endblock %}
+
+{% block body %}
+
+
+  {% include 'front/partials/_hero_mini.html.twig' with {
+  hero_kicker: 'ORGANISATEUR',
+  hero_title: 'Éditer tournoi',
+  hero_sub: 'Mettre à jour les infos.',
+  breadcrumb_current: 'Éditer tournoi'
+} %}
+
+
+  <main class="page">
+    <section class="belowHero">
+
+      <div class="layout">
+        
+  <aside class="sideNav">
+    <div class="sideNav__title">ESPACE ORGANISATEUR</div>
+    <a class="" href="{{ path('front_organizer_request_create') }}">Demande tournoi</a><a class="" href="{{ path('front_organizer_requests') }}">Mes demandes</a><a class="is-active" href="{{ path('front_organizer_tournaments') }}">Mes tournois</a><a class="" href="{{ path('front_organizer_registrations') }}">Inscriptions</a><a class="" href="{{ path('front_organizer_matches') }}">Matchs</a>
+  </aside>
+
+        <div>
+          
+        <form class="panel">
+          <div class="formGrid">
+            <label class="field"><span class="field__label">Titre</span><input class="input" type="text" value="Pulse Invitational" /></label>
+            <label class="field"><span class="field__label">Statut</span><select class="input"><option>OPEN</option><option>ONGOING</option><option>FINISHED</option></select></label>
+            <label class="field"><span class="field__label">Dates</span><input class="input" type="text" value="18–22 fév" /></label>
+            <label class="field"><span class="field__label">Prize pool</span><input class="input" type="number" value="1200" /></label>
+          </div>
+          <div class="formActions" style="margin-top:12px;">
+            <button class="btn btn--primary" type="submit">Mettre à jour</button>
+          </div>
+        </form>
+        
+      <div class="panel">
+        <div class="panel__head">
+          <div>
+            <h3 class="panel__title">TABLES UTILISÉES</h3>
+            <div class="panel__desc">Schéma réel + colonnes clés.</div>
+          </div>
+        </div>
+        <div class="list">
+          <div class="listItem"><span><b>tournaments</b></span><span class="listItem__meta">title, status, start_date, end_date, prize_pool</span></div>
+        </div>
+      </div>
+
+      
+        </div>
+      </div>
+
+
+      {% include 'front/partials/_footer.html.twig' %}
+
+    </section>
+  </main>
+
+  {% include 'front/partials/_auth_modal.html.twig' %}
+
+{% endblock %}
+
+

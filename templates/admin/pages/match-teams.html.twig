@@ -1,0 +1,45 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}PULSE - Gestion match_teams{% endblock %}
+
+{% block admin_content %}
+
+        
+  <div class="pageHeader">
+    <div>
+      <h2>Gestion match_teams</h2>
+      <div class="pageSub">Associer equipes + scores.</div>
+    </div>
+    
+  </div>
+  
+  <section class="panel">
+    <div class="panelHeader"><h3 class="panelTitle">LISTE</h3></div>
+    
+  <div class="dataTableWrap">
+    <table class="dataTable">
+      <thead><tr><th>match_id</th><th>team_id</th><th>score</th><th>is_winner</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Nebula Five</td><td>2</td><td>—</td></tr>
+        <tr><td>1</td><td>Nebula Five</td><td>2</td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div>
+    
+  </section>
+  
+  <section class="panel">
+    <div class="panelHeader">
+      <div>
+        <h3 class="panelTitle">SCHEMA UTILISE</h3>
+        <div class="panelDesc">Tables et colonnes principales.</div>
+      </div>
+    </div>
+    <div class="list">
+      <div class="listItem"><span><b>match_teams</b></span><span class="listMeta">match_id, team_id, score, is_winner</span></div>
+    </div>
+  </section>
+
+
+      
+{% endblock %}

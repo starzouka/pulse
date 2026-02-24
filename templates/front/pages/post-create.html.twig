@@ -1,0 +1,65 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}PULSE - Créer un post{% endblock %}
+
+{% block body %}
+
+
+  {% include 'front/partials/_hero_mini.html.twig' with {
+  hero_kicker: 'JOUEUR',
+  hero_title: 'Créer un post',
+  hero_sub: 'Texte + images + visibilité.',
+  breadcrumb_current: 'Créer un post'
+} %}
+
+
+  <main class="page">
+    <section class="belowHero">
+
+      <div class="layout">
+        
+  <aside class="sideNav">
+    <div class="sideNav__title">ESPACE JOUEUR</div>
+    <a class="" href="{{ path('front_dashboard') }}">Dashboard</a><a class="" href="{{ path('front_profile') }}">Mon profil</a><a class="" href="{{ path('front_players') }}">Recherche joueurs</a><a class="" href="{{ path('front_friends') }}">Amis</a><a class="" href="{{ path('front_messages') }}">Messages</a><a class="is-active" href="{{ path('front_feed') }}">Fil d’actualité</a><a class="" href="{{ path('front_my_teams') }}">Mes équipes</a><a class="" href="{{ path('front_my_requests') }}">Mes demandes</a><a class="" href="{{ path('front_orders') }}">Mes commandes</a><a class="" href="{{ path('front_notifications') }}">Notifications</a>
+  </aside>
+
+        <div>
+          
+        <form class="panel">
+          <div class="formGrid">
+            <label class="field"><span class="field__label">Contenu</span><textarea class="textarea" placeholder="Votre message..."></textarea></label>
+            <label class="field"><span class="field__label">Visibilité</span><select class="input"><option>PUBLIC</option><option>FRIENDS</option><option>TEAM_ONLY</option></select></label>
+            <label class="field"><span class="field__label">Images</span><input class="input" type="file" multiple /></label>
+          </div>
+          <div class="formActions" style="margin-top:12px;">
+            <button class="btn btn--primary" type="submit">Publier</button>
+          </div>
+        </form>
+        
+      <div class="panel">
+        <div class="panel__head">
+          <div>
+            <h3 class="panel__title">TABLES UTILISÉES</h3>
+            <div class="panel__desc">Schéma réel + colonnes clés.</div>
+          </div>
+        </div>
+        <div class="list">
+          <div class="listItem"><span><b>posts</b></span><span class="listItem__meta">post_id, author_user_id, content_text, visibility</span></div><div class="listItem"><span><b>post_images</b></span><span class="listItem__meta">post_id, image_id, position</span></div><div class="listItem"><span><b>images</b></span><span class="listItem__meta">image_id, file_url</span></div>
+        </div>
+      </div>
+
+      
+        </div>
+      </div>
+
+
+      {% include 'front/partials/_footer.html.twig' %}
+
+    </section>
+  </main>
+
+  {% include 'front/partials/_auth_modal.html.twig' %}
+
+{% endblock %}
+
+

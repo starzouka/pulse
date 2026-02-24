@@ -1,0 +1,16 @@
+<header class="topbar">
+  <form class="topSearchForm" method="get" action="{{ path('admin_dashboard') }}" role="search">
+    <div class="searchBox searchBoxWide">
+      <svg class="icon iconSmall muted"><use href="#i-search"></use></svg>
+      <input
+        id="globalSearch"
+        name="q"
+        type="search"
+        value="{{ app.request.query.get('q') }}"
+        placeholder="Rechercher utilisateurs, commandes, tournois..."
+        autocomplete="off"
+      />
+    </div>
+  </form>
+</header>
+

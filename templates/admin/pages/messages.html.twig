@@ -1,0 +1,137 @@
+﻿{% extends 'admin/base_admin.html.twig' %}
+
+{% macro sort_link(route_name, filters, field, label) %}
+  {% set current_sort = filters.sort|default('created_at') %}
+  {% set current_direction = filters.direction|default('desc') %}
+  {% set is_current = current_sort == field %}
+  {% set next_direction = is_current and current_direction == 'asc' ? 'desc' : 'asc' %}
+  {% set marker = is_current ? (current_direction == 'asc' ? ' (ASC)' : ' (DESC)') : '' %}
+  <a href="{{ path(route_name, filters|merge({sort: field, direction: next_direction})) }}" style="color:inherit;text-decoration:none;">
+    {{ label }}{{ marker }}
+  </a>
+{% endmacro %}
+
+{% import _self as sorter %}
+
+{% block title %}PULSE - Gestion messages{% endblock %}
+
+{% block admin_content %}
+  <div class="pageHeader">
+    <div>
+      <h2>Gestion messages</h2>
+      <div class="pageSub">CRUD + filtres DB + exports.</div>
+    </div>
+    <div class="formActions">
+      <a class="btn btnGhost" href="{{ path('admin_messages_export', filters|merge({format: 'pdf'})) }}">Exporter PDF</a>
+      <a class="btn btnGhost" href="{{ path('admin_messages_export', filters|merge({format: 'excel'})) }}">Exporter Excel</a>
+    </div>
+  </div>
+
+  {% for label, messages in app.flashes %}
+    {% for message in messages %}
+      <div class="listItem">
+        <span>{{ message }}</span>
+        <span class="badge {{ label == 'error' ? 'badge--danger' : 'badge--success' }}">{{ label|upper }}</span>
+      </div>
+    {% endfor %}
+  {% endfor %}
+
+  <section class="panel">
+    <div class="panelHeader">
+      <h3 class="panelTitle">{{ editingMessage ? 'MODIFIER MESSAGE #' ~ editingMessage.messageId : 'NOUVEAU MESSAGE' }}</h3>
+    </div>
+
+    {{ form_start(messageForm, {attr: {novalidate: 'novalidate'}}) }}
+      {{ form_errors(messageForm) }}
+      {% include 'admin/pages/_message_form_fields.html.twig' with {form: messageForm} %}
+      <div class="formActions" style="margin-top:12px;">
+        <button class="btn btnPrimary" type="submit">{{ editingMessage ? 'Mettre a jour' : 'Creer message' }}</button>
+        {% if editingMessage %}
+          <a class="btn btnGhost" href="{{ path('admin_messages') }}">Annuler edition</a>
+        {% endif %}
+      </div>
+    {{ form_end(messageForm) }}
+  </section>
+
+  <form class="filtersBar" method="get" action="{{ path('admin_messages') }}">
+    <input type="hidden" name="sort" value="{{ filters.sort|default('created_at') }}" />
+    <input type="hidden" name="direction" value="{{ filters.direction|default('desc') }}" />
+    <div class="filterGroup">
+      <label>Recherche</label>
+      <input type="search" name="q" value="{{ filters.q }}" placeholder="contenu" />
+    </div>
+
+    <div class="filterGroup">
+      <label>Sender</label>
+      <input type="search" name="sender" value="{{ filters.sender }}" placeholder="username/email" />
+    </div>
+
+    <div class="filterGroup">
+      <label>Receiver</label>
+      <input type="search" name="receiver" value="{{ filters.receiver }}" placeholder="username/email" />
+    </div>
+
+    <div class="filterGroup">
+      <label>is_read</label>
+      <select name="is_read">
+        <option value="" {{ filters.is_read == '' ? 'selected' : '' }}>ALL</option>
+        <option value="0" {{ filters.is_read == '0' ? 'selected' : '' }}>Non</option>
+        <option value="1" {{ filters.is_read == '1' ? 'selected' : '' }}>Oui</option>
+      </select>
+    </div>
+
+    <div class="formActions">
+      <button class="btn btnPrimary" type="submit">Filtrer</button>
+      <a class="btn btnGhost" href="{{ path('admin_messages') }}">Reset</a>
+    </div>
+  </form>
+
+  <section class="panel">
+    <div class="panelHeader">
+      <h3 class="panelTitle">LISTE</h3>
+      <span class="listMeta">{{ messages|length }} resultat(s)</span>
+    </div>
+
+    <div class="dataTableWrap">
+      <table class="dataTable">
+        <thead>
+          <tr>
+            <th>{{ sorter.sort_link('admin_messages', filters, 'id', 'ID') }}</th>
+            <th>{{ sorter.sort_link('admin_messages', filters, 'sender', 'Sender') }}</th>
+            <th>{{ sorter.sort_link('admin_messages', filters, 'receiver', 'Receiver') }}</th>
+            <th>{{ sorter.sort_link('admin_messages', filters, 'content', 'Extrait') }}</th>
+            <th>{{ sorter.sort_link('admin_messages', filters, 'created_at', 'Created') }}</th>
+            <th>{{ sorter.sort_link('admin_messages', filters, 'is_read', 'Read') }}</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for message in messages %}
+            {% set messageId = message.messageId ?? 0 %}
+            <tr>
+              <td>#{{ messageId }}</td>
+              <td>{{ message.senderUserId ? message.senderUserId.username : '-' }}</td>
+              <td>{{ message.receiverUserId ? message.receiverUserId.username : '-' }}</td>
+              <td>{{ message.bodyText ? message.bodyText|slice(0, 90) : '-' }}</td>
+              <td>{{ message.createdAt ? message.createdAt|date('d/m/Y H:i') : '-' }}</td>
+              <td>{{ message.isRead ? 'Oui' : 'Non' }}</td>
+              <td>
+                <div class="formActions">
+                  <a class="btn btnTiny" href="{{ path('admin_messages', {edit: messageId}) }}">Update</a>
+                  <form method="post" action="{{ path('admin_message_delete', {id: messageId}) }}" onsubmit="return confirm('Supprimer ce message ?');" style="display:inline-block;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete_message_' ~ messageId) }}" />
+                    <button class="btn btnTiny" type="submit">Delete</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="7" class="listMeta">Aucun message trouve.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+{% endblock %}

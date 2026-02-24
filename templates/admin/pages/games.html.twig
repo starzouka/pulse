@@ -1,0 +1,185 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% macro sort_link(route_name, filters, field, label) %}
+  {% set current_sort = filters.sort|default('created_at') %}
+  {% set current_direction = filters.direction|default('desc') %}
+  {% set is_current = current_sort == field %}
+  {% set next_direction = is_current and current_direction == 'asc' ? 'desc' : 'asc' %}
+  {% set marker = is_current ? (current_direction == 'asc' ? ' (ASC)' : ' (DESC)') : '' %}
+  <a href="{{ path(route_name, filters|merge({sort: field, direction: next_direction})) }}" style="color:inherit;text-decoration:none;">
+    {{ label }}{{ marker }}
+  </a>
+{% endmacro %}
+
+{% import _self as sorter %}
+
+{% block title %}PULSE - Gestion jeux{% endblock %}
+
+{% block admin_content %}
+  <div class="pageHeader">
+    <div>
+      <h2>Gestion jeux</h2>
+      <div class="pageSub">CRUD + filtres DB + export.</div>
+    </div>
+    <div class="formActions">
+      <a class="btn btnGhost" href="{{ path('admin_games_export', filters|merge({format: 'pdf'})) }}">Exporter PDF</a>
+      <a class="btn btnGhost" href="{{ path('admin_games_export', filters|merge({format: 'excel'})) }}">Exporter Excel</a>
+    </div>
+  </div>
+
+  {% for label, messages in app.flashes %}
+    {% for message in messages %}
+      <div class="listItem">
+        <span>{{ message }}</span>
+        <span class="badge {{ label == 'error' ? 'badge--danger' : 'badge--success' }}">{{ label|upper }}</span>
+      </div>
+    {% endfor %}
+  {% endfor %}
+
+  <section class="panel">
+    <div class="panelHeader">
+      <h3 class="panelTitle">{{ editingGame ? 'MODIFIER JEU #' ~ editingGame.gameId : 'NOUVEAU JEU' }}</h3>
+    </div>
+
+    <form method="post" enctype="multipart/form-data">
+      <input type="hidden" name="_token" value="{{ csrf_token('admin_game_form') }}" />
+      <input type="hidden" name="game_id" value="{{ editingGame ? editingGame.gameId : '' }}" />
+
+      <div class="formGrid">
+        <div class="field">
+          <label for="game_name">Nom jeu *</label>
+          <input id="game_name" type="text" name="name" required value="{{ editingGame ? editingGame.name : '' }}" />
+        </div>
+
+        <div class="field">
+          <label for="game_category_id">Categorie *</label>
+          <select id="game_category_id" name="category_id" required>
+            <option value="">Selectionner</option>
+            {% for category in categories %}
+              {% set categoryId = category.categoryId ?? 0 %}
+              <option value="{{ categoryId }}" {{ editingGame and editingGame.categoryId and editingGame.categoryId.categoryId == categoryId ? 'selected' : '' }}>
+                {{ category.name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="game_publisher">Publisher</label>
+          <input id="game_publisher" type="text" name="publisher" value="{{ editingGame ? editingGame.publisher : '' }}" />
+        </div>
+
+        <div class="field">
+          <label for="game_cover_file">Cover (fichier)</label>
+          <input id="game_cover_file" type="file" name="cover_file" accept="image/png,image/jpeg,image/webp,image/gif" />
+          {% if editingGame and editingGame.coverImageId %}
+            {% set currentCoverUrl = editingGame.coverImageId.fileUrl %}
+            <div class="listMeta">Cover actuelle</div>
+            <img src="{{ currentCoverUrl starts with 'http' ? currentCoverUrl : asset(currentCoverUrl) }}" alt="cover actuelle" style="width:56px;height:56px;border-radius:12px;object-fit:cover;border:1px solid rgba(255,255,255,.12);" />
+          {% endif %}
+        </div>
+
+        <div class="field" style="grid-column: 1 / -1;">
+          <label for="game_description">Description</label>
+          <textarea id="game_description" name="description">{{ editingGame ? editingGame.description : '' }}</textarea>
+        </div>
+      </div>
+
+      <div class="formActions" style="margin-top:12px;">
+        <button class="btn btnPrimary" type="submit">{{ editingGame ? 'Mettre a jour' : 'Creer jeu' }}</button>
+        {% if editingGame %}
+          <a class="btn btnGhost" href="{{ path('admin_games') }}">Annuler edition</a>
+        {% endif %}
+      </div>
+    </form>
+  </section>
+
+  <form class="filtersBar js-live-filters" method="get" action="{{ path('admin_games') }}">
+    <input type="hidden" name="sort" value="{{ filters.sort|default('created_at') }}" />
+    <input type="hidden" name="direction" value="{{ filters.direction|default('desc') }}" />
+
+    <div class="filterGroup">
+      <label>Recherche</label>
+      <input type="search" name="q" value="{{ filters.q }}" placeholder="name, desc, publisher" />
+    </div>
+
+    <div class="filterGroup">
+      <label>Categorie</label>
+      <select name="category_id">
+        <option value="" {{ filters.category_id == '' ? 'selected' : '' }}>ALL</option>
+        {% for category in categories %}
+          {% set categoryId = category.categoryId ?? 0 %}
+          <option value="{{ categoryId }}" {{ filters.category_id == categoryId ? 'selected' : '' }}>
+            {{ category.name }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="filterGroup">
+      <label>Publisher</label>
+      <input type="text" name="publisher" value="{{ filters.publisher }}" placeholder="Riot, Valve, ..." />
+    </div>
+
+    <div class="formActions">
+      <button class="btn btnPrimary" type="submit">Filtrer</button>
+      <a class="btn btnGhost" href="{{ path('admin_games') }}">Reset</a>
+    </div>
+  </form>
+
+  <section class="panel">
+    <div class="panelHeader">
+      <h3 class="panelTitle">LISTE JEUX</h3>
+      <span class="listMeta">{{ games|length }} resultat(s)</span>
+    </div>
+
+    <div class="dataTableWrap">
+      <table class="dataTable">
+        <thead>
+          <tr>
+            <th>Cover</th>
+            <th>{{ sorter.sort_link('admin_games', filters, 'id', 'ID') }}</th>
+            <th>{{ sorter.sort_link('admin_games', filters, 'name', 'Nom') }}</th>
+            <th>{{ sorter.sort_link('admin_games', filters, 'category', 'Categorie') }}</th>
+            <th>{{ sorter.sort_link('admin_games', filters, 'publisher', 'Publisher') }}</th>
+            <th>{{ sorter.sort_link('admin_games', filters, 'created_at', 'Cree le') }}</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for game in games %}
+            {% set gameId = game.gameId ?? 0 %}
+            <tr>
+              <td>
+                {% if game.coverImageId %}
+                  {% set coverUrl = game.coverImageId.fileUrl %}
+                  <img src="{{ coverUrl starts with 'http' ? coverUrl : asset(coverUrl) }}" alt="cover" style="width:34px;height:34px;border-radius:8px;object-fit:cover;" />
+                {% else %}
+                  <span class="avatarSmall">{{ game.name|slice(0, 1)|upper }}</span>
+                {% endif %}
+              </td>
+              <td>#{{ gameId }}</td>
+              <td>{{ game.name }}</td>
+              <td>{{ game.categoryId ? game.categoryId.name : '-' }}</td>
+              <td>{{ game.publisher ?: '-' }}</td>
+              <td>{{ game.createdAt ? game.createdAt|date('d/m/Y H:i') : '-' }}</td>
+              <td>
+                <div class="formActions">
+                  <a class="btn btnTiny" href="{{ path('admin_games', {edit: gameId}) }}">Update</a>
+                  <form method="post" action="{{ path('admin_game_delete', {id: gameId}) }}" onsubmit="return confirm('Supprimer ce jeu ?');" style="display:inline-block;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete_game_' ~ gameId) }}" />
+                    <button class="btn btnTiny" type="submit">Delete</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="7" class="listMeta">Aucun jeu trouve.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+{% endblock %}

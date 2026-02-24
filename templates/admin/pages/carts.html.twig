@@ -1,0 +1,162 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% macro sort_link(route_name, filters, field, label) %}
+  {% set current_sort = filters.sort|default('updated_at') %}
+  {% set current_direction = filters.direction|default('desc') %}
+  {% set is_current = current_sort == field %}
+  {% set next_direction = is_current and current_direction == 'asc' ? 'desc' : 'asc' %}
+  {% set marker = is_current ? (current_direction == 'asc' ? ' (ASC)' : ' (DESC)') : '' %}
+  <a href="{{ path(route_name, filters|merge({sort: field, direction: next_direction})) }}" style="color:inherit;text-decoration:none;">
+    {{ label }}{{ marker }}
+  </a>
+{% endmacro %}
+
+{% import _self as sorter %}
+
+{% block title %}PULSE - Gestion paniers{% endblock %}
+
+{% block admin_content %}
+  <div class="pageHeader">
+    <div>
+      <h2>Gestion paniers</h2>
+      <div class="pageSub">CRUD + filtres DB + export.</div>
+    </div>
+    <div class="formActions">
+      <a class="btn btnGhost" href="{{ path('admin_carts_export', filters|merge({format: 'pdf'})) }}">Exporter PDF</a>
+      <a class="btn btnGhost" href="{{ path('admin_carts_export', filters|merge({format: 'excel'})) }}">Exporter Excel</a>
+    </div>
+  </div>
+
+  {% for label, messages in app.flashes %}
+    {% for message in messages %}
+      <div class="listItem">
+        <span>{{ message }}</span>
+        <span class="badge {{ label == 'error' ? 'badge--danger' : 'badge--success' }}">{{ label|upper }}</span>
+      </div>
+    {% endfor %}
+  {% endfor %}
+
+  <section class="panel">
+    <div class="panelHeader">
+      <h3 class="panelTitle">{{ editingCart ? 'MODIFIER PANIER #' ~ editingCart.cartId : 'NOUVEAU PANIER' }}</h3>
+    </div>
+
+    <form method="post">
+      <input type="hidden" name="_token" value="{{ csrf_token('admin_cart_form') }}" />
+      <input type="hidden" name="cart_id" value="{{ editingCart ? editingCart.cartId : '' }}" />
+
+      <div class="formGrid">
+        <div class="field">
+          <label for="cart_user_id">Utilisateur *</label>
+          <select id="cart_user_id" name="user_id" required>
+            <option value="">Selectionner</option>
+            {% for user in users %}
+              {% set userId = user.userId ?? 0 %}
+              <option value="{{ userId }}" {{ editingCart and editingCart.userId and editingCart.userId.userId == userId ? 'selected' : '' }}>
+                {{ user.username }} ({{ user.email }})
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="cart_status">Statut *</label>
+          <select id="cart_status" name="status" required>
+            {% set selectedStatus = editingCart ? editingCart.status : 'OPEN' %}
+            <option value="OPEN" {{ selectedStatus == 'OPEN' ? 'selected' : '' }}>OPEN</option>
+            <option value="LOCKED" {{ selectedStatus == 'LOCKED' ? 'selected' : '' }}>LOCKED</option>
+            <option value="ORDERED" {{ selectedStatus == 'ORDERED' ? 'selected' : '' }}>ORDERED</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="cart_locked_at">Locked at</label>
+          <input id="cart_locked_at" type="datetime-local" name="locked_at" value="{{ editingCart and editingCart.lockedAt ? editingCart.lockedAt|date('Y-m-d\\TH:i') : '' }}" />
+        </div>
+      </div>
+
+      <div class="formActions" style="margin-top:12px;">
+        <button class="btn btnPrimary" type="submit">{{ editingCart ? 'Mettre a jour' : 'Creer panier' }}</button>
+        {% if editingCart %}
+          <a class="btn btnGhost" href="{{ path('admin_carts') }}">Annuler edition</a>
+        {% endif %}
+      </div>
+    </form>
+  </section>
+
+  <form class="filtersBar js-live-filters" method="get" action="{{ path('admin_carts') }}">
+    <input type="hidden" name="sort" value="{{ filters.sort|default('updated_at') }}" />
+    <input type="hidden" name="direction" value="{{ filters.direction|default('desc') }}" />
+
+    <div class="filterGroup">
+      <label>Recherche</label>
+      <input type="search" name="q" value="{{ filters.q }}" placeholder="username, email" />
+    </div>
+
+    <div class="filterGroup">
+      <label>Status</label>
+      <select name="status">
+        <option value="" {{ filters.status == '' ? 'selected' : '' }}>ALL</option>
+        <option value="OPEN" {{ filters.status == 'OPEN' ? 'selected' : '' }}>OPEN</option>
+        <option value="LOCKED" {{ filters.status == 'LOCKED' ? 'selected' : '' }}>LOCKED</option>
+        <option value="ORDERED" {{ filters.status == 'ORDERED' ? 'selected' : '' }}>ORDERED</option>
+      </select>
+    </div>
+
+    <div class="formActions">
+      <button class="btn btnPrimary" type="submit">Filtrer</button>
+      <a class="btn btnGhost" href="{{ path('admin_carts') }}">Reset</a>
+    </div>
+  </form>
+
+  <section class="panel">
+    <div class="panelHeader">
+      <h3 class="panelTitle">LISTE</h3>
+      <span class="listMeta">{{ carts|length }} resultat(s)</span>
+    </div>
+
+    <div class="dataTableWrap">
+      <table class="dataTable">
+        <thead>
+          <tr>
+            <th>{{ sorter.sort_link('admin_carts', filters, 'id', 'ID') }}</th>
+            <th>{{ sorter.sort_link('admin_carts', filters, 'user', 'User') }}</th>
+            <th>{{ sorter.sort_link('admin_carts', filters, 'status', 'Status') }}</th>
+            <th>{{ sorter.sort_link('admin_carts', filters, 'items', 'Items') }}</th>
+            <th>{{ sorter.sort_link('admin_carts', filters, 'created_at', 'Created') }}</th>
+            <th>{{ sorter.sort_link('admin_carts', filters, 'updated_at', 'Updated') }}</th>
+            <th>{{ sorter.sort_link('admin_carts', filters, 'locked_at', 'Locked') }}</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for cart in carts %}
+            {% set cartId = cart.cartId ?? 0 %}
+            <tr>
+              <td>#{{ cartId }}</td>
+              <td>{{ cart.userId ? cart.userId.username : '-' }}</td>
+              <td><span class="badge badge--info">{{ cart.status }}</span></td>
+              <td>{{ itemsByCartId[cartId]|default(0) }}</td>
+              <td>{{ cart.createdAt ? cart.createdAt|date('d/m/Y H:i') : '-' }}</td>
+              <td>{{ cart.updatedAt ? cart.updatedAt|date('d/m/Y H:i') : '-' }}</td>
+              <td>{{ cart.lockedAt ? cart.lockedAt|date('d/m/Y H:i') : '-' }}</td>
+              <td>
+                <div class="formActions">
+                  <a class="btn btnTiny" href="{{ path('admin_carts', {edit: cartId}) }}">Update</a>
+                  <form method="post" action="{{ path('admin_cart_delete', {id: cartId}) }}" onsubmit="return confirm('Supprimer ce panier ?');" style="display:inline-block;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete_cart_' ~ cartId) }}" />
+                    <button class="btn btnTiny" type="submit">Delete</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="8" class="listMeta">Aucun panier trouve.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+{% endblock %}

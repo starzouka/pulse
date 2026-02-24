@@ -1,0 +1,107 @@
+﻿{% extends 'base.html.twig' %}
+
+{% block title %}PULSE - Messagerie{% endblock %}
+
+{% block body %}
+  {% include 'front/partials/_hero_mini.html.twig' with {
+    hero_kicker: 'JOUEUR',
+    hero_title: 'Messagerie',
+    hero_sub: 'Vue inbox sociale de vos conversations privees.',
+    breadcrumb_current: 'Messagerie'
+  } %}
+
+  <main class="page">
+    <section class="belowHero">
+      <div class="layout">
+        {% include 'front/partials/_player_side_nav.html.twig' with { active: 'messages' } %}
+
+        <div class="socialShell--chat">
+          <aside class="socialStack">
+            <section class="panel gadget">
+              <form class="filtersRow" method="get" action="{{ path('front_messages') }}" data-auto-submit="1">
+                <input class="input" type="search" name="q" value="{{ filters.q|default(search) }}" placeholder="Rechercher une conversation..." />
+                <div class="select">
+                  <select name="sort">
+                    <option value="latest" {{ (filters.sort|default('latest')) == 'latest' ? 'selected' : '' }}>Plus recentes</option>
+                    <option value="oldest" {{ (filters.sort|default('latest')) == 'oldest' ? 'selected' : '' }}>Plus anciennes</option>
+                    <option value="unread" {{ (filters.sort|default('latest')) == 'unread' ? 'selected' : '' }}>Priorite non lues</option>
+                  </select>
+                </div>
+                <label class="listItem__meta" style="display:flex; align-items:center; gap:6px;">
+                  <input type="checkbox" name="unread" value="1" {{ filters.unread|default(false) ? 'checked' : '' }}>
+                  Non lues
+                </label>
+                <button class="btn btn--ghost" type="submit">Filtrer</button>
+                <a class="btn btn--ghost" href="{{ path('front_messages') }}">Reset</a>
+              </form>
+
+              <div class="socialQuickList" style="margin-top:10px;">
+                {% for conversation in conversations %}
+                  {% set partner = conversation.partner %}
+                  {% set partnerId = partner.userId ?? 0 %}
+                  {% set active = selected_partner and selected_partner.userId == partnerId %}
+                  <a class="listItem {{ active ? 'is-active' : '' }}" href="{{ path('front_conversation', {id: partnerId}) }}">
+                    <span>{{ partner.displayName ?? partner.username }}</span>
+                    {% if conversation.unread_count > 0 %}
+                      <span class="badge">{{ conversation.unread_count }} non lu(s)</span>
+                    {% elseif conversation.latest_message %}
+                      <span class="listItem__meta">{{ conversation.latest_message.createdAt ? conversation.latest_message.createdAt|date('d/m H:i') : '' }}</span>
+                    {% else %}
+                      <span class="listItem__meta">Aucun message</span>
+                    {% endif %}
+                  </a>
+                {% else %}
+                  <div class="emptyState">Aucune conversation.</div>
+                {% endfor %}
+              </div>
+
+              {% include 'front/partials/_pagination.html.twig' with {
+                pagination: pagination,
+                route_name: 'front_messages'
+              } %}
+            </section>
+          </aside>
+
+          <div class="socialStack">
+            <section class="panel gadget">
+              {% if selected_partner %}
+                {% set partnerId = selected_partner.userId ?? 0 %}
+                <div class="panel__head">
+                  <div>
+                    <h3 class="panel__title">APERCU CONVERSATION</h3>
+                    <div class="panel__desc">Avec {{ selected_partner.displayName ?? selected_partner.username }}</div>
+                  </div>
+                  <a class="btn btn--ghost" href="{{ path('front_conversation', {id: partnerId}) }}">Ouvrir</a>
+                </div>
+
+                <div class="list">
+                  {% for message in preview_messages %}
+                    <div class="listItem">
+                      <span>
+                        {{ message.senderUserId and viewer_user and message.senderUserId.userId == viewer_user.userId ? 'Moi' : (message.senderUserId ? (message.senderUserId.displayName ?? message.senderUserId.username) : 'User') }}:
+                        {{ message.bodyText }}
+                      </span>
+                      <span class="listItem__meta">{{ message.createdAt ? message.createdAt|date('H:i') : '' }}</span>
+                    </div>
+                  {% else %}
+                    <div class="emptyState">Aucun message dans cette conversation.</div>
+                  {% endfor %}
+                </div>
+
+                <div class="postCard__actions" style="margin-top:10px;">
+                  <a class="btn btn--primary" href="{{ path('front_conversation', {id: partnerId}) }}">Continuer la conversation</a>
+                </div>
+              {% else %}
+                <div class="emptyState">Selectionnez une conversation.</div>
+              {% endif %}
+            </section>
+          </div>
+        </div>
+      </div>
+
+      {% include 'front/partials/_footer.html.twig' %}
+    </section>
+  </main>
+
+  {% include 'front/partials/_auth_modal.html.twig' %}
+{% endblock %}

@@ -1,0 +1,124 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}PULSE - Inviter joueurs{% endblock %}
+
+{% block body %}
+  {% include 'front/partials/_hero_mini.html.twig' with {
+    hero_kicker: 'CAPITAINE',
+    hero_title: 'Inviter',
+    hero_sub: 'Recherche de joueurs et envoi des invitations.',
+    breadcrumb_current: 'Inviter'
+  } %}
+
+  <main class="page">
+    <section class="belowHero">
+      <div class="layout">
+        {% include 'front/partials/_captain_side_nav.html.twig' with {
+          active: 'invite',
+          active_team: active_team
+        } %}
+
+        <div>
+          {% include 'front/partials/_captain_team_selector.html.twig' with {
+            captain_teams: captain_teams,
+            active_team: active_team,
+            selector_route: 'front_captain_invite'
+          } %}
+
+          <form class="panel" method="get" action="{{ path('front_captain_invite') }}">
+            <div class="filtersRow">
+              <input type="hidden" name="team" value="{{ active_team.teamId }}">
+              <input class="input" type="search" name="q" value="{{ search_query }}" placeholder="Rechercher par username ou nom">
+              <button class="btn btn--primary" type="submit">Rechercher</button>
+            </div>
+          </form>
+
+          <section class="panel">
+            <h3 class="panel__title">RESULTATS RECHERCHE</h3>
+            <div class="tableWrap" style="margin-top:10px;">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Joueur</th>
+                    <th>Role</th>
+                    <th>Pays</th>
+                    <th>Invitation</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for candidate in search_results %}
+                    <tr>
+                      <td>{{ candidate.displayName ?: candidate.username }} <span class="muted">@{{ candidate.username }}</span></td>
+                      <td>{{ candidate.role }}</td>
+                      <td>{{ candidate.country ?: '-' }}</td>
+                      <td>
+                        <form method="post" action="{{ path('front_captain_invite_send') }}">
+                          <input type="hidden" name="_token" value="{{ csrf_token('captain_invite_send') }}">
+                          <input type="hidden" name="team_id" value="{{ active_team.teamId }}">
+                          <input type="hidden" name="invited_user_id" value="{{ candidate.userId }}">
+                          <input class="input" type="text" name="message" placeholder="Message optionnel" maxlength="255" style="max-width:220px;">
+                          <button class="btn btn--ghost" type="submit">Inviter</button>
+                        </form>
+                      </td>
+                    </tr>
+                  {% else %}
+                    <tr>
+                      <td colspan="4">
+                        {% if search_query %}
+                          Aucun joueur disponible pour cette recherche.
+                        {% else %}
+                          Lancez une recherche pour inviter un joueur.
+                        {% endif %}
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="panel">
+            <h3 class="panel__title">HISTORIQUE INVITATIONS</h3>
+            <div class="tableWrap" style="margin-top:10px;">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Joueur invite</th>
+                    <th>Message</th>
+                    <th>Date</th>
+                    <th>Statut</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for invite in latest_invites %}
+                    {% set invitedUser = invite.invitedUserId %}
+                    <tr>
+                      <td>{{ invitedUser.displayName ?: invitedUser.username }}</td>
+                      <td>{{ invite.message ?: '-' }}</td>
+                      <td>{{ invite.createdAt ? invite.createdAt|date('d/m/Y H:i') : '-' }}</td>
+                      <td>
+                        {% set status = invite.status ?: 'PENDING' %}
+                        <span class="badge {{ status == 'ACCEPTED' ? 'badge--success' : (status == 'REFUSED' ? 'badge--danger' : (status == 'PENDING' ? 'badge--info' : '')) }}">
+                          {{ status }}
+                        </span>
+                      </td>
+                    </tr>
+                  {% else %}
+                    <tr>
+                      <td colspan="4">Aucune invitation pour le moment.</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      {% include 'front/partials/_footer.html.twig' %}
+    </section>
+  </main>
+
+  {% include 'front/partials/_auth_modal.html.twig' %}
+{% endblock %}
+

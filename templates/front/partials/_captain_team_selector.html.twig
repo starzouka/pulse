@@ -1,0 +1,33 @@
+{% set selector_route = selector_route|default(app.request.attributes.get('_route')) %}
+
+{% if captain_teams is not empty %}
+  <form class="panel" method="get" action="{{ path(selector_route) }}">
+    <div class="filtersRow">
+      <div class="select">
+        <select name="team" aria-label="Equipe active">
+          {% for team in captain_teams %}
+            <option value="{{ team.teamId }}" {{ active_team and active_team.teamId == team.teamId ? 'selected' : '' }}>
+              {{ team.name }}{% if team.region %} - {{ team.region }}{% endif %}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      {% if keep_mode is defined and keep_mode %}
+        <input type="hidden" name="mode" value="{{ keep_mode }}">
+      {% endif %}
+
+      <button class="btn btn--ghost" type="submit">Changer</button>
+    </div>
+  </form>
+{% else %}
+  <div class="panel">
+    <div class="emptyState">
+      Aucune equipe disponible. Creez votre premiere equipe pour utiliser l'espace capitaine.
+      <div style="margin-top:10px;">
+        <a class="btn btn--primary" href="{{ path('front_captain_team_manage', {mode: 'create'}) }}">Creer une equipe</a>
+      </div>
+    </div>
+  </div>
+{% endif %}
+

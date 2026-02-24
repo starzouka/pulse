@@ -1,0 +1,45 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}PULSE - Notifications systeme{% endblock %}
+
+{% block admin_content %}
+
+        
+  <div class="pageHeader">
+    <div>
+      <h2>Notifications systeme</h2>
+      <div class="pageSub">Optionnel: lire / marquer lu.</div>
+    </div>
+    
+  </div>
+  
+  <section class="panel">
+    <div class="panelHeader"><h3 class="panelTitle">LISTE</h3></div>
+    
+  <div class="dataTableWrap">
+    <table class="dataTable">
+      <thead><tr><th>notification_id</th><th>user</th><th>type</th><th>content</th><th>is_read</th><th>created_at</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>zed_99</td><td>—</td><td>—</td><td>—</td><td>2026-02-05</td></tr>
+        <tr><td>1</td><td>zed_99</td><td>—</td><td>—</td><td>—</td><td>2026-02-05</td></tr>
+      </tbody>
+    </table>
+  </div>
+    
+  </section>
+  
+  <section class="panel">
+    <div class="panelHeader">
+      <div>
+        <h3 class="panelTitle">SCHEMA UTILISE</h3>
+        <div class="panelDesc">Tables et colonnes principales.</div>
+      </div>
+    </div>
+    <div class="list">
+      <div class="listItem"><span><b>notifications</b></span><span class="listMeta">notification_id, user, type, content, is_read, created_at</span></div>
+    </div>
+  </section>
+
+
+      
+{% endblock %}
