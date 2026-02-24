@@ -394,6 +394,60 @@ button{ font-family:inherit; }
   text-shadow: 0 0 22px rgba(255,157,46,.20);
 }
 
+/* STATS GRID */
+.statsGrid{
+  display:grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap:14px;
+  margin-bottom:18px;
+}
+.statsGrid .statCard{
+  flex-direction:column;
+  align-items:flex-start;
+  padding:18px 16px;
+}
+.statsGrid .statLabel{
+  font-size:13px;
+  font-weight:600;
+  color: var(--muted);
+  margin-bottom:8px;
+}
+.statsGrid .statValue{
+  margin-left:0;
+  font-size:32px;
+  font-weight:800;
+  letter-spacing:-.8px;
+  color: var(--accent);
+  text-shadow: 0 0 24px rgba(255,157,46,.22);
+}
+
+/* CHART GRID */
+.chartGrid{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap:14px;
+  margin-bottom:18px;
+}
+.chartWrap{
+  width:100%;
+  height:280px;
+  padding:8px;
+}
+.chartWrap--sm{
+  height:220px;
+}
+.chartWrap > div{
+  width:100%;
+  height:100%;
+}
+/* Force le texte des graphiques Google Charts en blanc */
+.chartWrap text,
+.chartWrap svg text,
+.chartWrap g text {
+  fill: #ffffff !important;
+  color: #ffffff !important;
+}
+
 /* GRID LAYOUT (comme la maquette) */
 .grid{
   display:grid;

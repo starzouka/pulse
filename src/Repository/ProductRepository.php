@@ -376,4 +376,14 @@ class ProductRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
+
+    public function countByTeam(Team $team): int
+    {
+        return (int) $this->createQueryBuilder('product')
+            ->select('COUNT(product.productId)')
+            ->andWhere('product.teamId = :team')
+            ->setParameter('team', $team)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }

@@ -223,7 +223,8 @@ final class OrdersController extends AbstractController
         string $format,
         Request $request,
         OrderRepository $orderRepository,
-        TableExportService $tableExportService
+        TableExportService $tableExportService,
+        OrderPdfService $orderPdfService
     ): Response {
         $filters = [
             'q' => trim((string) $request->query->get('q', '')),
@@ -281,7 +282,8 @@ final class OrdersController extends AbstractController
             return $tableExportService->exportExcel('Commandes', $headers, $rows, sprintf('admin_orders_%s.xlsx', $fileSuffix));
         }
 
-        return $tableExportService->exportPdf('Commandes', $headers, $rows, sprintf('admin_orders_%s.pdf', $fileSuffix));
+        // Use site-styled OrderPdfService for PDF exports (one page per order)
+        return $orderPdfService->renderOrdersPdfResponse($orders, sprintf('admin_orders_%s.pdf', $fileSuffix));
     }
 
     private function sanitizeSort(string $value): string

@@ -13,6 +13,8 @@ use App\Repository\ImageRepository;
 use App\Repository\ProductImageRepository;
 use App\Repository\ProductRepository;
 use App\Repository\TeamRepository;
+use App\Service\Admin\ProductStatisticsService;
+use App\Service\Admin\ProductPdfService;
 use App\Service\Admin\TableExportService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -32,7 +34,9 @@ final class ProductsController extends AbstractController
         ProductImageRepository $productImageRepository,
         TeamRepository $teamRepository,
         ImageRepository $imageRepository,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        ProductStatisticsService $productStatisticsService,
+        ProductPdfService $productPdfService
     ): Response {
         $editId = $request->query->getInt('edit', 0);
         $editingProduct = $editId > 0 ? $productRepository->findOneWithRelationsById($editId) : null;
@@ -157,6 +161,7 @@ final class ProductsController extends AbstractController
             'primaryImagesByProductId' => $primaryImagesByProductId,
             'editingPrimaryImageUrl' => $editingPrimaryImageUrl,
             'filters' => $filters,
+            'charts' => $productStatisticsService->getProductStatistics(),
         ]);
     }
 
@@ -197,6 +202,7 @@ final class ProductsController extends AbstractController
         Request $request,
         ProductRepository $productRepository,
         ProductImageRepository $productImageRepository,
+        ProductPdfService $productPdfService,
         TableExportService $tableExportService
     ): Response {
         $teamId = $request->query->getInt('team_id', 0);
@@ -223,6 +229,8 @@ final class ProductsController extends AbstractController
         $rows = [];
         foreach ($products as $product) {
             $productId = (int) ($product->getProductId() ?? 0);
+            $primaryImage = $primaryImagesByProductId[$productId] ?? null;
+            $imageUrl = $primaryImage?->getFileUrl() ?? '-';
             $rows[] = [
                 $productId,
                 (string) ($product->getName() ?? '-'),
@@ -231,7 +239,7 @@ final class ProductsController extends AbstractController
                 (int) ($product->getStockQty() ?? 0),
                 $product->isActive() ? 'Oui' : 'Non',
                 (string) ($product->getSku() ?? '-'),
-                (string) ($primaryImagesByProductId[$productId]?->getFileUrl() ?? '-'),
+                (string) $imageUrl,
                 $product->getCreatedAt()?->format('Y-m-d H:i') ?? '-',
                 $product->getUpdatedAt()?->format('Y-m-d H:i') ?? '-',
             ];
@@ -242,7 +250,8 @@ final class ProductsController extends AbstractController
             return $tableExportService->exportExcel('Produits', $headers, $rows, sprintf('admin_products_%s.xlsx', $fileSuffix));
         }
 
-        return $tableExportService->exportPdf('Produits', $headers, $rows, sprintf('admin_products_%s.pdf', $fileSuffix));
+        // Use site-styled ProductPdfService for PDF exports
+        return $productPdfService->renderProductsPdfResponse($products, sprintf('admin_products_%s.pdf', $fileSuffix));
     }
 
     private function syncPrimaryImage(
