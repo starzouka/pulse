@@ -65,6 +65,7 @@ final class DashboardController extends AbstractController
             'orderStatusOptions' => self::ORDER_STATUSES,
             'reportStatusOptions' => self::REPORT_STATUSES,
             'requestStatusOptions' => self::REQUEST_STATUSES,
+        
         ];
     }
 

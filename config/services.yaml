@@ -4,6 +4,7 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    openrouter.api_key: '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'
 
 services:
     # default configuration for services in *this* file
@@ -34,4 +35,9 @@ services:
         public: true
 
     # add more service definitions when explicit configuration is needed
-    # please note that last definitions always *replace* previous ones
+    # please note that last definitions always *replace* previous
+
+    App\Service\OpenRouterAIService:
+        arguments:
+            $apiKey: '%openrouter.api_key%'
+        public: true

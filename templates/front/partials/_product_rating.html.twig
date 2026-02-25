@@ -1,0 +1,22 @@
+{% set avgRating = product.averageRating|default(null) %}
+{% set ratingCount = product.ratingCount|default(0) %}
+<div class="product-rating">
+  <div class="stars">
+    {% for i in 1..5 %}
+      <span class="star {{ avgRating >= i ? 'star--filled' : 'star--empty' }}">★</span>
+    {% endfor %}
+  </div>
+  <span class="rating-count">({{ ratingCount }} vote{{ ratingCount > 1 ? 's' : '' }})</span>
+  {% if app.user %}
+    <form method="post" action="{{ path('front_product_rate', {id: product.productId}) }}" class="rating-form">
+      <input type="hidden" name="_token" value="{{ csrf_token('product_rate_' ~ product.productId) }}">
+      <div class="rating-buttons">
+        {% for i in 1..5 %}
+          <button type="button" name="rating" value="{{ i }}" class="rating-btn" title="Noter {{ i }}/5">{{ i }}</button>
+        {% endfor %}
+      </div>
+    </form>
+  {% else %}
+    <a href="{{ path('front_login', {'_target_path': app.request.uri}) }}" class="login-to-rate">Connectez-vous pour noter</a>
+  {% endif %}
+</div>

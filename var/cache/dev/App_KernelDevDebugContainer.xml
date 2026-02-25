@@ -88,6 +88,7 @@
     </parameter>
     <parameter key="kernel.charset">UTF-8</parameter>
     <parameter key="kernel.container_class">App_KernelDevDebugContainer</parameter>
+    <parameter key="openrouter.api_key">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</parameter>
     <parameter key="event_dispatcher.event_aliases" type="collection">
       <parameter key="Symfony\Component\Console\Event\ConsoleCommandEvent">console.command</parameter>
       <parameter key="Symfony\Component\Console\Event\ConsoleErrorEvent">console.error</parameter>
@@ -653,6 +654,13 @@
         <argument type="service" id=".service_locator.O2p6Lk7.App\Controller\Admin\Page\UsersController"/>
       </call>
     </service>
+    <service id="App\Controller\Front\AIAssistantController" class="App\Controller\Front\AIAssistantController" public="true" autowire="true" autoconfigure="true">
+      <tag name="controller.service_arguments"/>
+      <tag name="container.service_subscriber"/>
+      <call method="setContainer">
+        <argument type="service" id=".service_locator.O2p6Lk7.App\Controller\Front\AIAssistantController"/>
+      </call>
+    </service>
     <service id="App\Controller\Front\HomeController" class="App\Controller\Front\HomeController" public="true" autowire="true" autoconfigure="true">
       <tag name="controller.service_arguments"/>
       <tag name="container.service_subscriber"/>
@@ -1003,6 +1011,13 @@
         <argument type="service" id=".service_locator.O2p6Lk7.App\Controller\Front\Page\ProductDetailController"/>
       </call>
     </service>
+    <service id="App\Controller\Front\Page\ProductRatingController" class="App\Controller\Front\Page\ProductRatingController" public="true" autowire="true" autoconfigure="true">
+      <tag name="controller.service_arguments"/>
+      <tag name="container.service_subscriber"/>
+      <call method="setContainer">
+        <argument type="service" id=".service_locator.O2p6Lk7.App\Controller\Front\Page\ProductRatingController"/>
+      </call>
+    </service>
     <service id="App\Controller\Front\Page\ProfileController" class="App\Controller\Front\Page\ProfileController" public="true" autowire="true" autoconfigure="true">
       <tag name="controller.service_arguments"/>
       <tag name="container.service_subscriber"/>
@@ -1272,6 +1287,10 @@
       <tag name="doctrine.repository_service"/>
       <argument type="service" id="doctrine"/>
     </service>
+    <service id="App\Repository\ProductRatingRepository" class="App\Repository\ProductRatingRepository" autowire="true" autoconfigure="true">
+      <tag name="doctrine.repository_service"/>
+      <argument type="service" id="doctrine"/>
+    </service>
     <service id="App\Repository\ProductRepository" class="App\Repository\ProductRepository" autowire="true" autoconfigure="true">
       <tag name="doctrine.repository_service"/>
       <argument type="service" id="doctrine"/>
@@ -1357,6 +1376,10 @@
     <service id="App\Service\Media\ImageUploader" class="App\Service\Media\ImageUploader" autowire="true" autoconfigure="true">
       <argument type="service" id="kernel"/>
     </service>
+    <service id="App\Service\OpenRouterAIService" class="App\Service\OpenRouterAIService" public="true" autowire="true" autoconfigure="true">
+      <argument type="service" id=".debug.http_client"/>
+      <argument>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</argument>
+    </service>
     <service id="App\Service\Payment\StripeService" class="App\Service\Payment\StripeService" autowire="true" autoconfigure="true"/>
     <service id="App\Service\Post\FeedPostAssembler" class="App\Service\Post\FeedPostAssembler" autowire="true" autoconfigure="true">
       <argument type="service" id="App\Repository\PostRepository"/>
@@ -1412,7 +1435,7 @@
     </service>
     <service id="argument_resolver.service" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\ServiceValueResolver">
       <tag priority="-50" name="Symfony\Component\HttpKernel\Controller\ArgumentResolver\ServiceValueResolver">controller.argument_value_resolver</tag>
-      <argument type="service" id=".service_locator.i9_v_lx"/>
+      <argument type="service" id=".service_locator.uQMzhm5"/>
     </service>
     <service id="argument_resolver.default" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\DefaultValueResolver">
       <tag priority="-100" name="Symfony\Component\HttpKernel\Controller\ArgumentResolver\DefaultValueResolver">controller.argument_value_resolver</tag>
@@ -4398,7 +4421,7 @@
     </service>
     <service id="argument_resolver.not_tagged_controller" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\NotTaggedControllerValueResolver">
       <tag name="controller.argument_value_resolver" priority="-200"/>
-      <argument type="service" id=".service_locator.i9_v_lx"/>
+      <argument type="service" id=".service_locator.uQMzhm5"/>
     </service>
     <service id="debug.log_processor" class="Symfony\Bridge\Monolog\Processor\DebugProcessor">
       <tag name="kernel.reset" method="reset"/>
@@ -6143,7 +6166,7 @@
     <service id="doctrine.orm.configuration" class="Doctrine\ORM\Configuration" abstract="true"/>
     <service id="doctrine.orm.entity_manager.abstract" class="Doctrine\ORM\EntityManager" lazy="true" abstract="true"/>
     <service id="doctrine.orm.container_repository_factory" class="Doctrine\Bundle\DoctrineBundle\Repository\ContainerRepositoryFactory">
-      <argument type="service" id=".service_locator.dXL7a9w"/>
+      <argument type="service" id=".service_locator.oQibQE3"/>
     </service>
     <service id="doctrine.orm.manager_configurator.abstract" class="Doctrine\Bundle\DoctrineBundle\ManagerConfigurator" abstract="true">
       <argument type="collection"/>
@@ -8550,6 +8573,9 @@
     <service id=".instanceof.Symfony\Contracts\Service\ServiceSubscriberInterface.0.App\Controller\Admin\Page\UsersController" class="App\Controller\Admin\Page\UsersController" autowire="true" abstract="true"/>
     <service id=".instanceof.Symfony\Bundle\FrameworkBundle\Controller\AbstractController.0.App\Controller\Admin\Page\UsersController" class="App\Controller\Admin\Page\UsersController" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\Controller\Admin\Page\UsersController" class="App\Controller\Admin\Page\UsersController" autowire="true" autoconfigure="true" abstract="true"/>
+    <service id=".instanceof.Symfony\Contracts\Service\ServiceSubscriberInterface.0.App\Controller\Front\AIAssistantController" class="App\Controller\Front\AIAssistantController" autowire="true" abstract="true"/>
+    <service id=".instanceof.Symfony\Bundle\FrameworkBundle\Controller\AbstractController.0.App\Controller\Front\AIAssistantController" class="App\Controller\Front\AIAssistantController" autowire="true" abstract="true"/>
+    <service id=".abstract.instanceof.App\Controller\Front\AIAssistantController" class="App\Controller\Front\AIAssistantController" autowire="true" autoconfigure="true" abstract="true"/>
     <service id=".instanceof.Symfony\Contracts\Service\ServiceSubscriberInterface.0.App\Controller\Front\HomeController" class="App\Controller\Front\HomeController" autowire="true" abstract="true"/>
     <service id=".instanceof.Symfony\Bundle\FrameworkBundle\Controller\AbstractController.0.App\Controller\Front\HomeController" class="App\Controller\Front\HomeController" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\Controller\Front\HomeController" class="App\Controller\Front\HomeController" autowire="true" autoconfigure="true" abstract="true"/>
@@ -8700,6 +8726,9 @@
     <service id=".instanceof.Symfony\Contracts\Service\ServiceSubscriberInterface.0.App\Controller\Front\Page\ProductDetailController" class="App\Controller\Front\Page\ProductDetailController" autowire="true" abstract="true"/>
     <service id=".instanceof.Symfony\Bundle\FrameworkBundle\Controller\AbstractController.0.App\Controller\Front\Page\ProductDetailController" class="App\Controller\Front\Page\ProductDetailController" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\Controller\Front\Page\ProductDetailController" class="App\Controller\Front\Page\ProductDetailController" autowire="true" autoconfigure="true" abstract="true"/>
+    <service id=".instanceof.Symfony\Contracts\Service\ServiceSubscriberInterface.0.App\Controller\Front\Page\ProductRatingController" class="App\Controller\Front\Page\ProductRatingController" autowire="true" abstract="true"/>
+    <service id=".instanceof.Symfony\Bundle\FrameworkBundle\Controller\AbstractController.0.App\Controller\Front\Page\ProductRatingController" class="App\Controller\Front\Page\ProductRatingController" autowire="true" abstract="true"/>
+    <service id=".abstract.instanceof.App\Controller\Front\Page\ProductRatingController" class="App\Controller\Front\Page\ProductRatingController" autowire="true" autoconfigure="true" abstract="true"/>
     <service id=".instanceof.Symfony\Contracts\Service\ServiceSubscriberInterface.0.App\Controller\Front\Page\ProfileController" class="App\Controller\Front\Page\ProfileController" autowire="true" abstract="true"/>
     <service id=".instanceof.Symfony\Bundle\FrameworkBundle\Controller\AbstractController.0.App\Controller\Front\Page\ProfileController" class="App\Controller\Front\Page\ProfileController" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\Controller\Front\Page\ProfileController" class="App\Controller\Front\Page\ProfileController" autowire="true" autoconfigure="true" abstract="true"/>
@@ -8843,6 +8872,8 @@
     <service id=".abstract.instanceof.App\Repository\PostRepository" class="App\Repository\PostRepository" autowire="true" autoconfigure="true" abstract="true"/>
     <service id=".instanceof.Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface.0.App\Repository\ProductImageRepository" class="App\Repository\ProductImageRepository" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\Repository\ProductImageRepository" class="App\Repository\ProductImageRepository" autowire="true" autoconfigure="true" abstract="true"/>
+    <service id=".instanceof.Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface.0.App\Repository\ProductRatingRepository" class="App\Repository\ProductRatingRepository" autowire="true" abstract="true"/>
+    <service id=".abstract.instanceof.App\Repository\ProductRatingRepository" class="App\Repository\ProductRatingRepository" autowire="true" autoconfigure="true" abstract="true"/>
     <service id=".instanceof.Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface.0.App\Repository\ProductRepository" class="App\Repository\ProductRepository" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\Repository\ProductRepository" class="App\Repository\ProductRepository" autowire="true" autoconfigure="true" abstract="true"/>
     <service id=".instanceof.Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface.0.App\Repository\ReportRepository" class="App\Repository\ReportRepository" autowire="true" abstract="true"/>
@@ -9673,6 +9704,12 @@
         <argument key="userRepository" type="service_closure" id="App\Repository\UserRepository"/>
       </argument>
     </service>
+    <service id=".service_locator.t2MJEkB" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator"/>
+      <argument type="collection">
+        <argument key="aiService" type="service_closure" id="App\Service\OpenRouterAIService"/>
+      </argument>
+    </service>
     <service id=".service_locator.9g_W4nt" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
@@ -10140,6 +10177,14 @@
         <argument key="productRepository" type="service_closure" id="App\Repository\ProductRepository"/>
       </argument>
     </service>
+    <service id=".service_locator.ifhYFzy" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator"/>
+      <argument type="collection">
+        <argument key="entityManager" type="service_closure" id="doctrine.orm.default_entity_manager"/>
+        <argument key="productRepository" type="service_closure" id="App\Repository\ProductRepository"/>
+        <argument key="ratingRepository" type="service_closure" id="App\Repository\ProductRatingRepository"/>
+      </argument>
+    </service>
     <service id=".service_locator.0SWUNmX" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
@@ -10253,7 +10298,7 @@
         <argument key="userRepository" type="service_closure" id="App\Repository\UserRepository"/>
       </argument>
     </service>
-    <service id=".service_locator.i9_v_lx" class="Symfony\Component\DependencyInjection\ServiceLocator">
+    <service id=".service_locator.uQMzhm5" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
         <argument key="App\Controller\Admin\Page\CartsController::delete" type="service_closure" id=".service_locator.LapGI0r"/>
@@ -10307,6 +10352,7 @@
         <argument key="App\Controller\Admin\Page\UsersController::delete" type="service_closure" id=".service_locator.NjUBG3v"/>
         <argument key="App\Controller\Admin\Page\UsersController::export" type="service_closure" id=".service_locator.yMsuOqV"/>
         <argument key="App\Controller\Admin\Page\UsersController::index" type="service_closure" id=".service_locator.kPUOGb8"/>
+        <argument key="App\Controller\Front\AIAssistantController::chat" type="service_closure" id=".service_locator.t2MJEkB"/>
         <argument key="App\Controller\Front\HomeController::index" type="service_closure" id=".service_locator.9g_W4nt"/>
         <argument key="App\Controller\Front\Page\CaptainInviteController::index" type="service_closure" id=".service_locator.wQsrZI3"/>
         <argument key="App\Controller\Front\Page\CaptainInviteController::send" type="service_closure" id=".service_locator.sSKnT4V"/>
@@ -10376,6 +10422,7 @@
         <argument key="App\Controller\Front\Page\PlayerProfileController::index" type="service_closure" id=".service_locator.tJ6uCav"/>
         <argument key="App\Controller\Front\Page\PlayersController::index" type="service_closure" id=".service_locator.a6UAoqG"/>
         <argument key="App\Controller\Front\Page\ProductDetailController::index" type="service_closure" id=".service_locator.vy5rD9G"/>
+        <argument key="App\Controller\Front\Page\ProductRatingController::rate" type="service_closure" id=".service_locator.ifhYFzy"/>
         <argument key="App\Controller\Front\Page\ProfileController::addComment" type="service_closure" id=".service_locator.9fKbSLg"/>
         <argument key="App\Controller\Front\Page\ProfileController::addFriend" type="service_closure" id=".service_locator.hmHP_XA"/>
         <argument key="App\Controller\Front\Page\ProfileController::createPost" type="service_closure" id=".service_locator.6pXVFnQ"/>
@@ -10451,6 +10498,7 @@
         <argument key="App\Controller\Admin\Page\UsersController:delete" type="service_closure" id=".service_locator.NjUBG3v"/>
         <argument key="App\Controller\Admin\Page\UsersController:export" type="service_closure" id=".service_locator.yMsuOqV"/>
         <argument key="App\Controller\Admin\Page\UsersController:index" type="service_closure" id=".service_locator.kPUOGb8"/>
+        <argument key="App\Controller\Front\AIAssistantController:chat" type="service_closure" id=".service_locator.t2MJEkB"/>
         <argument key="App\Controller\Front\HomeController:index" type="service_closure" id=".service_locator.9g_W4nt"/>
         <argument key="App\Controller\Front\Page\CaptainInviteController:index" type="service_closure" id=".service_locator.wQsrZI3"/>
         <argument key="App\Controller\Front\Page\CaptainInviteController:send" type="service_closure" id=".service_locator.sSKnT4V"/>
@@ -10520,6 +10568,7 @@
         <argument key="App\Controller\Front\Page\PlayerProfileController:index" type="service_closure" id=".service_locator.tJ6uCav"/>
         <argument key="App\Controller\Front\Page\PlayersController:index" type="service_closure" id=".service_locator.a6UAoqG"/>
         <argument key="App\Controller\Front\Page\ProductDetailController:index" type="service_closure" id=".service_locator.vy5rD9G"/>
+        <argument key="App\Controller\Front\Page\ProductRatingController:rate" type="service_closure" id=".service_locator.ifhYFzy"/>
         <argument key="App\Controller\Front\Page\ProfileController:addComment" type="service_closure" id=".service_locator.9fKbSLg"/>
         <argument key="App\Controller\Front\Page\ProfileController:addFriend" type="service_closure" id=".service_locator.hmHP_XA"/>
         <argument key="App\Controller\Front\Page\ProfileController:createPost" type="service_closure" id=".service_locator.6pXVFnQ"/>
@@ -10862,7 +10911,7 @@
         <argument key="turbo.doctrine.event_listener" type="service_closure" id="turbo.doctrine.event_listener"/>
       </argument>
     </service>
-    <service id=".service_locator.dXL7a9w" class="Symfony\Component\DependencyInjection\ServiceLocator">
+    <service id=".service_locator.oQibQE3" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
         <argument key="App\Repository\CartItemRepository" type="service_closure" id="App\Repository\CartItemRepository"/>
@@ -10881,6 +10930,7 @@
         <argument key="App\Repository\PostLikeRepository" type="service_closure" id="App\Repository\PostLikeRepository"/>
         <argument key="App\Repository\PostRepository" type="service_closure" id="App\Repository\PostRepository"/>
         <argument key="App\Repository\ProductImageRepository" type="service_closure" id="App\Repository\ProductImageRepository"/>
+        <argument key="App\Repository\ProductRatingRepository" type="service_closure" id="App\Repository\ProductRatingRepository"/>
         <argument key="App\Repository\ProductRepository" type="service_closure" id="App\Repository\ProductRepository"/>
         <argument key="App\Repository\ReportRepository" type="service_closure" id="App\Repository\ReportRepository"/>
         <argument key="App\Repository\TeamInviteRepository" type="service_closure" id="App\Repository\TeamInviteRepository"/>
@@ -11527,6 +11577,12 @@
       <argument type="service" id="service_container"/>
       <factory service=".service_locator.O2p6Lk7" method="withContext"/>
     </service>
+    <service id=".service_locator.O2p6Lk7.App\Controller\Front\AIAssistantController" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator_context" id="App\Controller\Front\AIAssistantController"/>
+      <argument>App\Controller\Front\AIAssistantController</argument>
+      <argument type="service" id="service_container"/>
+      <factory service=".service_locator.O2p6Lk7" method="withContext"/>
+    </service>
     <service id=".service_locator.O2p6Lk7.App\Controller\Front\HomeController" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator_context" id="App\Controller\Front\HomeController"/>
       <argument>App\Controller\Front\HomeController</argument>
@@ -11824,6 +11880,12 @@
     <service id=".service_locator.O2p6Lk7.App\Controller\Front\Page\ProductDetailController" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator_context" id="App\Controller\Front\Page\ProductDetailController"/>
       <argument>App\Controller\Front\Page\ProductDetailController</argument>
+      <argument type="service" id="service_container"/>
+      <factory service=".service_locator.O2p6Lk7" method="withContext"/>
+    </service>
+    <service id=".service_locator.O2p6Lk7.App\Controller\Front\Page\ProductRatingController" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator_context" id="App\Controller\Front\Page\ProductRatingController"/>
+      <argument>App\Controller\Front\Page\ProductRatingController</argument>
       <argument type="service" id="service_container"/>
       <factory service=".service_locator.O2p6Lk7" method="withContext"/>
     </service>
@@ -12136,6 +12198,7 @@
           <argument>App\Controller\Admin\Page\UserDetailController</argument>
           <argument>App\Controller\Admin\Page\UserEditController</argument>
           <argument>App\Controller\Admin\Page\UsersController</argument>
+          <argument>App\Controller\Front\AIAssistantController</argument>
           <argument>App\Controller\Front\HomeController</argument>
           <argument>App\Controller\Front\Page\AboutController</argument>
           <argument>App\Controller\Front\Page\CaptainInviteController</argument>
@@ -12186,6 +12249,7 @@
           <argument>App\Controller\Front\Page\PostCreateController</argument>
           <argument>App\Controller\Front\Page\PostDetailController</argument>
           <argument>App\Controller\Front\Page\ProductDetailController</argument>
+          <argument>App\Controller\Front\Page\ProductRatingController</argument>
           <argument>App\Controller\Front\Page\ProfileController</argument>
           <argument>App\Controller\Front\Page\ProfileEditController</argument>
           <argument>App\Controller\Front\Page\RegisterController</argument>
@@ -13603,7 +13667,7 @@
     <service id="SymfonyCasts\Bundle\VerifyEmail\VerifyEmailHelperInterface" alias="symfonycasts.verify_email.helper"/>
     <service id="container.env_var_processors_locator" alias=".service_locator.w7.f4fT" public="true"/>
     <service id="twig.loader.filesystem" alias="twig.loader.native_filesystem"/>
-    <service id="argument_resolver.controller_locator" alias=".service_locator.i9_v_lx"/>
+    <service id="argument_resolver.controller_locator" alias=".service_locator.uQMzhm5"/>
     <service id="doctrine.id_generator_locator" alias=".service_locator.KLVvNIq"/>
     <service id="twig.loader" alias="twig.loader.native_filesystem"/>
     <service id=".Psr\Log\LoggerInterface $request.logger" alias="monolog.logger.request"/>
@@ -13723,6 +13787,7 @@
     <service id=".service_locator.qaAvjTE" alias=".service_locator.tJ6uCav"/>
     <service id=".service_locator.gLp6ODP" alias=".service_locator.a6UAoqG"/>
     <service id=".service_locator.somFkyB" alias=".service_locator.vy5rD9G"/>
+    <service id=".service_locator.Rv5PKGr" alias=".service_locator.ifhYFzy"/>
     <service id=".service_locator.ie72Vqn" alias=".service_locator.hmHP_XA"/>
     <service id=".service_locator.cdCix5t" alias=".service_locator.pP.FdsX"/>
     <service id=".service_locator.04ttP50" alias=".service_locator.bMHRIMl"/>
@@ -13734,7 +13799,7 @@
     <service id=".service_locator.AVfjW7W" alias=".service_locator.VBibqjr"/>
     <service id=".service_locator.3bnxwQV" alias=".service_locator.kaWZVDw"/>
     <service id=".service_locator.NIZDy73" alias=".service_locator.66ORwCM"/>
-    <service id=".service_locator.F0Wb4G3" alias=".service_locator.i9_v_lx"/>
+    <service id=".service_locator.cVfDJu5" alias=".service_locator.uQMzhm5"/>
     <service id=".service_locator.BFrsqsn" alias=".service_locator.F9PKc.7"/>
     <service id=".service_locator.9M81fJ0" alias=".service_locator.YBKZsNJ"/>
     <service id=".service_locator.XtmiKbi" alias=".service_locator.MfxSDRP"/>
@@ -13807,6 +13872,7 @@
     <service id=".service_locator.025Wi8b" alias=".service_locator.kPUOGb8"/>
     <service id=".service_locator.SPFAmCQ" alias=".service_locator.NjUBG3v"/>
     <service id=".service_locator.w93T0Fk" alias=".service_locator.yMsuOqV"/>
+    <service id=".service_locator.Yz.3nz1" alias=".service_locator.t2MJEkB"/>
     <service id=".service_locator.KqrzvWC" alias=".service_locator.9g_W4nt"/>
     <service id=".service_locator.FPGX8uC" alias=".service_locator.wQsrZI3"/>
     <service id=".service_locator._wMCvQ8" alias=".service_locator.sSKnT4V"/>
@@ -13863,6 +13929,7 @@
     <service id=".service_locator.beO2UJd" alias=".service_locator.tJ6uCav"/>
     <service id=".service_locator.BpvyyAO" alias=".service_locator.a6UAoqG"/>
     <service id=".service_locator.SaSeU_d" alias=".service_locator.vy5rD9G"/>
+    <service id=".service_locator.AbT9EJ3" alias=".service_locator.ifhYFzy"/>
     <service id=".service_locator.v25Jr2_" alias=".service_locator.0SWUNmX"/>
     <service id=".service_locator.HehzfP1" alias=".service_locator.hmHP_XA"/>
     <service id=".service_locator.YMsoH.2" alias=".service_locator.pP.FdsX"/>

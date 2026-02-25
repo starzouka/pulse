@@ -58,6 +58,10 @@ final class ShopController extends AbstractController
         $pagination = $this->paginateItems($products, $this->readPage($request), 12);
         $products = $pagination['items'];
         $primaryImagesByProductId = $productImageRepository->findPrimaryImagesByProducts($products);
+        
+        // Charger les notes moyennes des produits
+        $productIds = array_map(fn($p) => $p->getProductId(), $products);
+        $ratingsStatsByProductId = $productRepository->getRatingsStatsForProducts($productIds);
 
         $viewer = $this->getUser();
         $cartItemsCount = 0;
@@ -71,6 +75,7 @@ final class ShopController extends AbstractController
         return $this->render('front/pages/shop.html.twig', [
             'products' => $products,
             'product_primary_images' => $primaryImagesByProductId,
+            'product_ratings_stats' => $ratingsStatsByProductId,
             'teams' => $teamRepository->findBy([], ['name' => 'ASC'], 200),
             'filters' => [
                 'q' => $query,
