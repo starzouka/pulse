@@ -6,6 +6,9 @@
   {% set requestId = request.requestId ?? 0 %}
   {% set status = request.status|default('PENDING') %}
   {% set statusBadge = status == 'ACCEPTED' ? 'badge--success' : (status == 'REFUSED' ? 'badge--danger' : 'badge--warning') %}
+  {% set ai = aiAssessment|default(null) %}
+  {% set aiRisk = ai.riskLevel|default('LOW') %}
+  {% set aiBadge = aiRisk == 'HIGH' ? 'badge--danger' : (aiRisk == 'MEDIUM' ? 'badge--warning' : 'badge--success') %}
 
   <div class="pageHeader">
     <div>
@@ -51,6 +54,52 @@
         <div class="listItem"><span>Photo</span><span class="listMeta"><a href="{{ request.photoPath starts with 'http' ? request.photoPath : asset(request.photoPath) }}" target="_blank" rel="noopener">Voir image</a></span></div>
       {% endif %}
     </div>
+  </section>
+
+  <section class="panel">
+    <div class="panelHeader">
+      <h3 class="panelTitle">Analyse IA de validation</h3>
+      {% if ai %}
+        <span class="badge {{ aiBadge }}">{{ ai.score|default(0) }}/100 {{ aiRisk }}</span>
+      {% else %}
+        <span class="listMeta">Non disponible</span>
+      {% endif %}
+    </div>
+
+    {% if ai %}
+      <div class="list">
+        <div class="listItem"><span>Score de qualite</span><span class="listMeta">{{ ai.score|default(0) }}/100</span></div>
+        <div class="listItem"><span>Niveau de risque</span><span class="listMeta"><span class="badge {{ aiBadge }}">{{ aiRisk }}</span></span></div>
+        <div class="listItem"><span>Problemes detectes</span><span class="listMeta">{{ ai.issuesCount|default(0) }}</span></div>
+        <div class="listItem"><span>Penalite totale</span><span class="listMeta">{{ ai.penaltyPoints|default(0) }} pts</span></div>
+        <div class="listItem"><span>Doublon probable</span><span class="listMeta">{{ ai.hasProbableDuplicate|default(false) ? 'Oui' : 'Non' }}</span></div>
+      </div>
+
+      <div class="panel" style="margin-top:12px;">
+        <div class="panelHeader">
+          <h3 class="panelTitle">Raisons (explicables)</h3>
+          <span class="listMeta">{{ ai.reasons|default([])|length }} raison(s)</span>
+        </div>
+        <div class="list">
+          {% for reason in ai.reasons|default([]) %}
+            <div class="listItem">
+              <span>{{ loop.index }}.</span>
+              <span class="listMeta">{{ reason }}</span>
+            </div>
+          {% else %}
+            <div class="listItem">
+              <span>Aucun signalement</span>
+              <span class="badge badge--success">LOW RISK</span>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% else %}
+      <div class="listItem">
+        <span>L'analyse IA n'a pas pu etre calculee pour cette demande.</span>
+        <span class="badge badge--warning">N/A</span>
+      </div>
+    {% endif %}
   </section>
 
   <section class="panel">

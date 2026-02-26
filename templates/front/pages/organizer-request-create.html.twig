@@ -26,15 +26,62 @@
           {% endfor %}
 
           <section class="panel">
-            {{ form_start(tournamentRequestForm, {attr: {novalidate: 'novalidate'}}) }}
+            {{ form_start(tournamentRequestForm, {attr: {novalidate: 'novalidate', id: 'organizerRequestCreateForm'}}) }}
               {{ form_errors(tournamentRequestForm) }}
               {% include 'shared/_tournament_form_fields.html.twig' with {form: tournamentRequestForm} %}
+              {% if recaptchaEnabled and recaptchaSiteKey %}
+                <div id="organizerRequestRecaptcha" style="min-height:1px;"></div>
+                <div class="listMeta" style="margin-top:6px;">
+                  Protection Google reCAPTCHA activee ({{ recaptchaMode == 'invisible' ? 'invisible' : 'checkbox' }}).
+                </div>
+              {% endif %}
               <div class="formActions" style="margin-top:12px;">
-                <button class="btn btn--primary" type="submit">Envoyer</button>
+                <button
+                  class="btn btn--primary"
+                  id="organizerRequestSubmitBtn"
+                  type="submit"
+                  {{ recaptchaEnabled and recaptchaSiteKey ? 'data-recaptcha-protected="1"' : '' }}
+                >Envoyer</button>
                 <a class="btn btn--ghost" href="{{ path('front_organizer_requests') }}">Annuler</a>
               </div>
             {{ form_end(tournamentRequestForm) }}
           </section>
+
+          {% if aiRequestAssessment is defined and aiRequestAssessment %}
+            {% set aiRisk = aiRequestAssessment.riskLevel|default('LOW') %}
+            {% set aiRiskBadge = aiRisk == 'HIGH'
+              ? 'badge--danger'
+              : (aiRisk == 'MEDIUM' ? 'badge--warning' : 'badge--success')
+            %}
+            <div class="panel">
+              <div class="panel__head">
+                <div>
+                  <h3 class="panel__title">PRE-ANALYSE IA DEMANDE</h3>
+                  <div class="panel__desc">Score de validation (regles + scoring explicable).</div>
+                </div>
+                <div class="panel__actions">
+                  <span class="badge {{ aiRiskBadge }}">RISQUE {{ aiRisk }}</span>
+                  <span class="badge">SCORE {{ aiRequestAssessment.score|default(0) }}/100</span>
+                </div>
+              </div>
+
+              <div class="list">
+                <div class="listItem">
+                  <span><b>Resume IA</b></span>
+                  <span class="listItem__meta">
+                    {{ aiRequestAssessment.issuesCount|default(0) }} point(s) detecte(s) •
+                    Penalites: {{ aiRequestAssessment.penaltyPoints|default(0) }}
+                  </span>
+                </div>
+                {% for reason in aiRequestAssessment.reasons|default([]) %}
+                  <div class="listItem">
+                    <span>{{ reason }}</span>
+                    <span class="listItem__meta">IA</span>
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+          {% endif %}
 
           <div class="panel">
             <div class="panel__head">
@@ -55,4 +102,98 @@
   </main>
 
   {% include 'front/partials/_auth_modal.html.twig' %}
+{% endblock %}
+
+{% block javascripts %}
+  {{ parent() }}
+  {% if recaptchaEnabled and recaptchaSiteKey %}
+    <script>
+      (function () {
+        var form = document.getElementById('organizerRequestCreateForm');
+        var submitButton = document.getElementById('organizerRequestSubmitBtn');
+        if (!form || !submitButton) {
+          return;
+        }
+
+        var widgetId = null;
+        var recaptchaMode = '{{ recaptchaMode|default('checkbox')|e('js') }}';
+        var recaptchaPassed = false;
+        var pendingSubmit = false;
+
+        window.pulseOrganizerRequestRecaptchaCallback = function () {
+          if (recaptchaMode !== 'invisible') {
+            return;
+          }
+
+          recaptchaPassed = true;
+          pendingSubmit = false;
+          form.submit();
+        };
+
+        window.pulseOrganizerRequestRecaptchaExpired = function () {
+          recaptchaPassed = false;
+        };
+
+        window.pulseOrganizerRequestRecaptchaOnLoad = function () {
+          if (typeof grecaptcha === 'undefined') {
+            return;
+          }
+
+          try {
+            widgetId = grecaptcha.render('organizerRequestRecaptcha', {
+              sitekey: '{{ recaptchaSiteKey|e('js') }}',
+              size: recaptchaMode === 'invisible' ? 'invisible' : 'normal',
+              callback: 'pulseOrganizerRequestRecaptchaCallback',
+              'expired-callback': 'pulseOrganizerRequestRecaptchaExpired'
+            });
+          } catch (error) {
+            widgetId = null;
+          }
+        };
+
+        form.addEventListener('submit', function (event) {
+          if (recaptchaMode !== 'invisible') {
+            if (typeof grecaptcha === 'undefined' || widgetId === null) {
+              return;
+            }
+
+            try {
+              if (!grecaptcha.getResponse(widgetId)) {
+                event.preventDefault();
+                alert('Veuillez valider le reCAPTCHA avant d\'envoyer.');
+              }
+            } catch (error) {
+              // Let server-side validation handle it if the widget state is unavailable.
+            }
+
+            return;
+          }
+
+          if (recaptchaPassed) {
+            recaptchaPassed = false;
+            return;
+          }
+
+          if (pendingSubmit) {
+            event.preventDefault();
+            return;
+          }
+
+          if (typeof grecaptcha === 'undefined' || widgetId === null) {
+            return;
+          }
+
+          event.preventDefault();
+          pendingSubmit = true;
+
+          try {
+            grecaptcha.execute(widgetId);
+          } catch (error) {
+            pendingSubmit = false;
+          }
+        });
+      })();
+    </script>
+    <script src="https://www.google.com/recaptcha/api.js?onload=pulseOrganizerRequestRecaptchaOnLoad&render=explicit" async defer></script>
+  {% endif %}
 {% endblock %}

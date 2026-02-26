@@ -9,6 +9,7 @@ use App\Repository\GameRepository;
 use App\Repository\TournamentRepository;
 use App\Repository\TournamentRequestRepository;
 use App\Service\Admin\TableExportService;
+use App\Service\Organizer\OrganizerAiAssistantService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -29,6 +30,7 @@ final class TournamentRequestsController extends AbstractController
         Request $request,
         TournamentRequestRepository $tournamentRequestRepository,
         GameRepository $gameRepository,
+        OrganizerAiAssistantService $organizerAiAssistantService,
     ): Response
     {
         $query = trim((string) $request->query->get('q', ''));
@@ -40,6 +42,16 @@ final class TournamentRequestsController extends AbstractController
         $sort = in_array($sort, self::SORTS, true) ? $sort : 'latest';
 
         $requests = $tournamentRequestRepository->searchForAdmin($query, $status, $gameId, $sort, 500);
+
+        $aiAssessmentsByRequestId = [];
+        foreach ($requests as $requestItem) {
+            $requestId = $requestItem->getRequestId();
+            if (!is_int($requestId) || $requestId <= 0) {
+                continue;
+            }
+
+            $aiAssessmentsByRequestId[$requestId] = $organizerAiAssistantService->evaluateTournamentRequestEntity($requestItem);
+        }
 
         return $this->render('admin/pages/tournament-requests.html.twig', [
             'requests' => $requests,
@@ -53,6 +65,7 @@ final class TournamentRequestsController extends AbstractController
             'statusOptions' => self::STATUSES,
             'sortOptions' => self::SORTS,
             'counter' => count($requests),
+            'aiAssessmentsByRequestId' => $aiAssessmentsByRequestId,
         ]);
     }
 
@@ -75,7 +88,12 @@ final class TournamentRequestsController extends AbstractController
 
         $headers = ['ID', 'Titre', 'Organisateur', 'Jeu', 'Start date', 'End date', 'Status', 'Prize pool', 'Created at'];
         $rows = [];
+        $pdfRows = [];
+        $statusCounts = [];
+        $totalPrizePool = 0.0;
         foreach ($requests as $requestItem) {
+            $statusValue = (string) ($requestItem->getStatus() ?? '-');
+            $prizePoolRaw = (float) ($requestItem->getPrizePool() ?? 0);
             $rows[] = [
                 (int) ($requestItem->getRequestId() ?? 0),
                 (string) ($requestItem->getTitle() ?? '-'),
@@ -83,10 +101,26 @@ final class TournamentRequestsController extends AbstractController
                 (string) ($requestItem->getGameId()?->getName() ?? '-'),
                 $requestItem->getStartDate()?->format('Y-m-d') ?? '-',
                 $requestItem->getEndDate()?->format('Y-m-d') ?? '-',
-                (string) ($requestItem->getStatus() ?? '-'),
+                $statusValue,
                 (string) ($requestItem->getPrizePool() ?? '0'),
                 $requestItem->getCreatedAt()?->format('Y-m-d H:i') ?? '-',
             ];
+
+            $pdfRows[] = [
+                'id' => (int) ($requestItem->getRequestId() ?? 0),
+                'title' => (string) ($requestItem->getTitle() ?? '-'),
+                'photoPath' => (string) ($requestItem->getPhotoPath() ?? ''),
+                'organizer' => (string) ($requestItem->getOrganizerUserId()?->getUsername() ?? '-'),
+                'game' => (string) ($requestItem->getGameId()?->getName() ?? '-'),
+                'startDate' => $requestItem->getStartDate()?->format('d/m/Y') ?? '-',
+                'endDate' => $requestItem->getEndDate()?->format('d/m/Y') ?? '-',
+                'status' => $statusValue,
+                'prizePool' => number_format($prizePoolRaw, 2, '.', ' ') . ' DT',
+                'createdAt' => $requestItem->getCreatedAt()?->format('d/m/Y H:i') ?? '-',
+            ];
+
+            $statusCounts[$statusValue] = (int) ($statusCounts[$statusValue] ?? 0) + 1;
+            $totalPrizePool += $prizePoolRaw;
         }
 
         $timestamp = (new \DateTimeImmutable())->format('Ymd_His');
@@ -94,7 +128,39 @@ final class TournamentRequestsController extends AbstractController
             return $tableExportService->exportExcel('Demandes Tournois', $headers, $rows, sprintf('admin_tournament_requests_%s.xlsx', $timestamp));
         }
 
-        return $tableExportService->exportPdf('Demandes Tournois', $headers, $rows, sprintf('admin_tournament_requests_%s.pdf', $timestamp));
+        $activeFilters = [];
+        if ($query !== '') {
+            $activeFilters[] = ['label' => 'Recherche', 'value' => $query];
+        }
+        if ($status !== '') {
+            $activeFilters[] = ['label' => 'Status', 'value' => $status];
+        }
+        if ($gameId !== null) {
+            $activeFilters[] = ['label' => 'Game', 'value' => '#' . $gameId];
+        }
+        $activeFilters[] = ['label' => 'Tri', 'value' => strtoupper($sort)];
+
+        $html = $this->renderView('admin/pdf/tournament_requests_export.html.twig', [
+            'reportTitle' => 'Demandes tournois',
+            'reportSubtitle' => 'Export admin - workflow organisateur',
+            'generatedAt' => new \DateTimeImmutable(),
+            'summaryCards' => [
+                ['label' => 'Resultats', 'value' => (string) count($requests)],
+                ['label' => 'Pending', 'value' => (string) ($statusCounts['PENDING'] ?? 0)],
+                ['label' => 'Accepted', 'value' => (string) ($statusCounts['ACCEPTED'] ?? 0)],
+                ['label' => 'Refused', 'value' => (string) ($statusCounts['REFUSED'] ?? 0)],
+                ['label' => 'Prize total', 'value' => number_format($totalPrizePool, 2, '.', ' ') . ' DT'],
+            ],
+            'activeFilters' => $activeFilters,
+            'rows' => $pdfRows,
+        ]);
+
+        return $tableExportService->exportPdfHtml(
+            $html,
+            sprintf('admin_tournament_requests_%s.pdf', $timestamp),
+            'A3',
+            'landscape'
+        );
     }
 
     #[Route('/admin/tournament-requests/{id}/review', name: 'admin_tournament_request_review', requirements: ['id' => '\d+'], methods: ['POST'])]

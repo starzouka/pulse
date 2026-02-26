@@ -1,0 +1,61 @@
+{% extends 'admin/pdf/_list_export_base.html.twig' %}
+
+{% block report_table %}
+  <div class="panelHeader">
+    <h3 class="panelTitle">LISTE MATCHS</h3>
+    <span class="listMeta">{{ rows|length }} resultat(s)</span>
+  </div>
+
+  <div class="dataTableWrap">
+    <table class="dataTable">
+      <thead>
+        <tr>
+          <th style="width: 5%;">ID</th>
+          <th style="width: 20%;">Tournoi</th>
+          <th style="width: 13%;">Jeu</th>
+          <th style="width: 13%;">Round</th>
+          <th style="width: 28%;">Participants</th>
+          <th style="width: 12%;">Horaire</th>
+          <th style="width: 9%;">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+        {% set badgeClass = row.status == 'ONGOING' ? 'badge--success' : (row.status == 'SCHEDULED' ? 'badge--info' : (row.status == 'FINISHED' ? '' : 'badge--danger')) %}
+          <tr>
+            <td>#{{ row.id }}</td>
+            <td>
+              <div class="strong">{{ row.tournament }}</div>
+              <div class="listMeta">#{{ row.tournamentId }} - {{ row.game }}</div>
+            </td>
+            <td>{{ row.game }}</td>
+            <td>{{ row.round }}</td>
+            <td>
+              {% if row.participants is empty %}
+                <span class="listMeta">Aucun participant</span>
+              {% else %}
+                <ul class="participantsList">
+                  {% for participant in row.participants %}
+                    <li>
+                      <span class="strong">{{ participant.team }}</span>
+                      <span class="listMeta">score: {{ participant.score }}</span>
+                      {% if participant.isWinner %}
+                        <span class="badge badge--success badge--mini">WINNER</span>
+                      {% endif %}
+                    </li>
+                  {% endfor %}
+                </ul>
+              {% endif %}
+            </td>
+            <td>{{ row.scheduledAt }}</td>
+            <td><span class="badge {{ badgeClass }}">{{ row.status }}</span></td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="7" class="emptyState">Aucun match trouve.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

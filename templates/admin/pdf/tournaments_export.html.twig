@@ -1,0 +1,59 @@
+{% extends 'admin/pdf/_list_export_base.html.twig' %}
+
+{% block report_table %}
+  <div class="panelHeader">
+    <h3 class="panelTitle">LISTE DES TOURNOIS</h3>
+    <span class="listMeta">{{ rows|length }} resultat(s)</span>
+  </div>
+
+  <div class="dataTableWrap">
+    <table class="dataTable">
+      <thead>
+        <tr>
+          <th style="width: 5%;">ID</th>
+          <th style="width: 20%;">Titre</th>
+          <th style="width: 11%;">Jeu</th>
+          <th style="width: 12%;">Organisateur</th>
+          <th style="width: 9%;">Status</th>
+          <th style="width: 13%;">Dates</th>
+          <th style="width: 14%;">Inscriptions</th>
+          <th style="width: 7%;">Matchs</th>
+          <th style="width: 9%;">Prize Pool</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+          {% set badgeClass = row.status in ['OPEN', 'ONGOING'] ? 'badge--success' : (row.status == 'FINISHED' ? 'badge--info' : (row.status == 'CANCELLED' ? 'badge--danger' : 'badge--warning')) %}
+          <tr>
+            <td>#{{ row.id }}</td>
+            <td>
+              <div class="strong">{{ row.title }}</div>
+              {% if row.photoPath %}
+                <div class="listMeta">Photo: {{ row.photoPath }}</div>
+              {% else %}
+                <div class="listMeta">Photo: -</div>
+              {% endif %}
+            </td>
+            <td>{{ row.game }}</td>
+            <td>{{ row.organizer }}</td>
+            <td><span class="badge {{ badgeClass }}">{{ row.status }}</span></td>
+            <td>
+              <div>{{ row.startDate }}</div>
+              <div class="listMeta">{{ row.endDate }}</div>
+            </td>
+            <td>
+              <div class="strong">{{ row.acceptedTeams }}/{{ row.maxTeams }}</div>
+              <div class="listMeta">total: {{ row.registrationsTotal }}</div>
+            </td>
+            <td>{{ row.matchesCount }}</td>
+            <td>{{ row.prizePool }}</td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="9" class="emptyState">Aucun tournoi trouve.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

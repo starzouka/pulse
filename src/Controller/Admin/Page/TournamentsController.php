@@ -94,25 +94,59 @@ final class TournamentsController extends AbstractController
             }
         }
 
+        $registrationsByTournamentId = $tournamentTeamRepository->countByTournamentIds($tournamentIds, ['PENDING', 'ACCEPTED']);
         $acceptedByTournamentId = $tournamentTeamRepository->countByTournamentIds($tournamentIds, ['ACCEPTED']);
         $matchesByTournamentId = $tournamentMatchRepository->countByTournamentIds($tournamentIds);
 
         $headers = ['ID', 'Titre', 'Jeu', 'Organisateur', 'Status', 'Start date', 'End date', 'Equipes', 'Matchs', 'Prize pool'];
         $rows = [];
+        $pdfRows = [];
+        $statusCounts = [];
+        $totalMatches = 0;
+        $totalAcceptedTeams = 0;
+        $totalPrizePool = 0.0;
         foreach ($tournaments as $tournament) {
             $tournamentId = (int) ($tournament->getTournamentId() ?? 0);
+            $statusValue = (string) ($tournament->getStatus() ?? '-');
+            $acceptedTeams = (int) ($acceptedByTournamentId[$tournamentId] ?? 0);
+            $matchesCount = (int) ($matchesByTournamentId[$tournamentId] ?? 0);
+            $prizePoolRaw = (float) ($tournament->getPrizePool() ?? 0);
+
+            $registrationCount = (int) ($registrationsByTournamentId[$tournamentId] ?? 0);
+
             $rows[] = [
                 $tournamentId,
                 (string) ($tournament->getTitle() ?? '-'),
                 (string) ($tournament->getGameId()?->getName() ?? '-'),
                 (string) ($tournament->getOrganizerUserId()?->getUsername() ?? '-'),
-                (string) ($tournament->getStatus() ?? '-'),
+                $statusValue,
                 $tournament->getStartDate()?->format('Y-m-d') ?? '-',
                 $tournament->getEndDate()?->format('Y-m-d') ?? '-',
-                (int) ($acceptedByTournamentId[$tournamentId] ?? 0),
-                (int) ($matchesByTournamentId[$tournamentId] ?? 0),
+                $acceptedTeams,
+                $matchesCount,
                 (string) ($tournament->getPrizePool() ?? '0'),
             ];
+
+            $pdfRows[] = [
+                'id' => $tournamentId,
+                'title' => (string) ($tournament->getTitle() ?? '-'),
+                'photoPath' => (string) ($tournament->getPhotoPath() ?? ''),
+                'game' => (string) ($tournament->getGameId()?->getName() ?? '-'),
+                'organizer' => (string) ($tournament->getOrganizerUserId()?->getUsername() ?? '-'),
+                'status' => $statusValue,
+                'startDate' => $tournament->getStartDate()?->format('d/m/Y') ?? '-',
+                'endDate' => $tournament->getEndDate()?->format('d/m/Y') ?? '-',
+                'acceptedTeams' => $acceptedTeams,
+                'maxTeams' => (int) ($tournament->getMaxTeams() ?? 0),
+                'registrationsTotal' => $registrationCount,
+                'matchesCount' => $matchesCount,
+                'prizePool' => number_format($prizePoolRaw, 2, '.', ' ') . ' DT',
+            ];
+
+            $statusCounts[$statusValue] = (int) ($statusCounts[$statusValue] ?? 0) + 1;
+            $totalMatches += $matchesCount;
+            $totalAcceptedTeams += $acceptedTeams;
+            $totalPrizePool += $prizePoolRaw;
         }
 
         $timestamp = (new \DateTimeImmutable())->format('Ymd_His');
@@ -120,7 +154,39 @@ final class TournamentsController extends AbstractController
             return $tableExportService->exportExcel('Tournois', $headers, $rows, sprintf('admin_tournaments_%s.xlsx', $timestamp));
         }
 
-        return $tableExportService->exportPdf('Tournois', $headers, $rows, sprintf('admin_tournaments_%s.pdf', $timestamp));
+        $activeFilters = [];
+        if ($query !== '') {
+            $activeFilters[] = ['label' => 'Recherche', 'value' => $query];
+        }
+        if ($status !== '') {
+            $activeFilters[] = ['label' => 'Status', 'value' => $status];
+        }
+        if ($gameId !== null) {
+            $activeFilters[] = ['label' => 'Game', 'value' => '#' . $gameId];
+        }
+        $activeFilters[] = ['label' => 'Tri', 'value' => strtoupper($sort)];
+
+        $html = $this->renderView('admin/pdf/tournaments_export.html.twig', [
+            'reportTitle' => 'Gestion tournois',
+            'reportSubtitle' => 'Export admin - liste des tournois',
+            'generatedAt' => new \DateTimeImmutable(),
+            'summaryCards' => [
+                ['label' => 'Resultats', 'value' => (string) count($tournaments)],
+                ['label' => 'Actifs', 'value' => (string) (($statusCounts['OPEN'] ?? 0) + ($statusCounts['ONGOING'] ?? 0))],
+                ['label' => 'Equipes acceptees', 'value' => (string) $totalAcceptedTeams],
+                ['label' => 'Matchs', 'value' => (string) $totalMatches],
+                ['label' => 'Prize total', 'value' => number_format($totalPrizePool, 2, '.', ' ') . ' DT'],
+            ],
+            'activeFilters' => $activeFilters,
+            'rows' => $pdfRows,
+        ]);
+
+        return $tableExportService->exportPdfHtml(
+            $html,
+            sprintf('admin_tournaments_%s.pdf', $timestamp),
+            'A3',
+            'landscape'
+        );
     }
 
     #[Route('/admin/tournaments/{id}/delete', name: 'admin_tournament_delete', requirements: ['id' => '\d+'], methods: ['POST'])]

@@ -234,6 +234,27 @@ class TournamentRepository extends ServiceEntityRepository
     /**
      * @return list<Tournament>
      */
+    public function findRecentByOrganizerAndGame(int $organizerUserId, int $gameId, int $limit = 30): array
+    {
+        if ($organizerUserId <= 0 || $gameId <= 0) {
+            return [];
+        }
+
+        return $this->createQueryBuilder('tournament')
+            ->andWhere('IDENTITY(tournament.organizerUserId) = :organizerUserId')
+            ->andWhere('IDENTITY(tournament.gameId) = :gameId')
+            ->setParameter('organizerUserId', $organizerUserId)
+            ->setParameter('gameId', $gameId)
+            ->orderBy('tournament.startDate', 'DESC')
+            ->addOrderBy('tournament.createdAt', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return list<Tournament>
+     */
     public function searchForAdmin(
         ?string $query,
         ?string $status,

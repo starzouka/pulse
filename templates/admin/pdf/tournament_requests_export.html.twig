@@ -1,0 +1,54 @@
+{% extends 'admin/pdf/_list_export_base.html.twig' %}
+
+{% block report_table %}
+  <div class="panelHeader">
+    <h3 class="panelTitle">LISTE DES DEMANDES</h3>
+    <span class="listMeta">{{ rows|length }} resultat(s)</span>
+  </div>
+
+  <div class="dataTableWrap">
+    <table class="dataTable">
+      <thead>
+        <tr>
+          <th style="width: 6%;">ID</th>
+          <th style="width: 22%;">Titre</th>
+          <th style="width: 12%;">Organisateur</th>
+          <th style="width: 11%;">Jeu</th>
+          <th style="width: 13%;">Dates</th>
+          <th style="width: 10%;">Prize Pool</th>
+          <th style="width: 10%;">Status</th>
+          <th style="width: 16%;">Creation</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+          {% set badgeClass = row.status == 'ACCEPTED' ? 'badge--success' : (row.status == 'REFUSED' ? 'badge--danger' : 'badge--warning') %}
+          <tr>
+            <td>#{{ row.id }}</td>
+            <td>
+              <div class="strong">{{ row.title }}</div>
+              {% if row.photoPath %}
+                <div class="listMeta">Photo: {{ row.photoPath }}</div>
+              {% else %}
+                <div class="listMeta">Photo: -</div>
+              {% endif %}
+            </td>
+            <td>{{ row.organizer }}</td>
+            <td>{{ row.game }}</td>
+            <td>
+              <div>{{ row.startDate }}</div>
+              <div class="listMeta">{{ row.endDate }}</div>
+            </td>
+            <td>{{ row.prizePool }}</td>
+            <td><span class="badge {{ badgeClass }}">{{ row.status }}</span></td>
+            <td>{{ row.createdAt }}</td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="8" class="emptyState">Aucune demande trouvee.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}
