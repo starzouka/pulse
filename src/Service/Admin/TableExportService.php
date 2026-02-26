@@ -19,12 +19,23 @@ final class TableExportService
      */
     public function exportPdf(string $title, array $headers, array $rows, string $fileName): Response
     {
-        $options = new Options();
-        $options->set('defaultFont', 'DejaVu Sans');
+        return $this->exportPdfHtml(
+            $this->buildPdfHtml($title, $headers, $rows),
+            $fileName,
+            'A4',
+            'landscape'
+        );
+    }
 
-        $dompdf = new Dompdf($options);
-        $dompdf->loadHtml($this->buildPdfHtml($title, $headers, $rows));
-        $dompdf->setPaper('A4', 'landscape');
+    public function exportPdfHtml(
+        string $html,
+        string $fileName,
+        string $paper = 'A4',
+        string $orientation = 'portrait',
+    ): Response {
+        $dompdf = $this->createDompdf();
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper($paper, $orientation);
         $dompdf->render();
 
         $response = new Response($dompdf->output());
@@ -109,6 +120,15 @@ final class TableExportService
             th { background: #f4f7fb; font-weight: 700; }
             tr:nth-child(even) td { background: #fafcff; }
         ';
+    }
+
+    private function createDompdf(): Dompdf
+    {
+        $options = new Options();
+        $options->set('defaultFont', 'DejaVu Sans');
+        $options->set('isRemoteEnabled', true);
+
+        return new Dompdf($options);
     }
 
     private function escape(string $value): string

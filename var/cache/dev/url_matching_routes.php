@@ -15,6 +15,7 @@ return [
         '/_profiler/xdebug' => [[['_route' => '_profiler_xdebug', '_controller' => 'web_profiler.controller.profiler::xdebugAction'], null, null, null, false, false, null]],
         '/_profiler/open' => [[['_route' => '_profiler_open_file', '_controller' => 'web_profiler.controller.profiler::openAction'], null, null, null, false, false, null]],
         '/admin/add-user-legacy' => [[['_route' => 'admin_add_user_legacy', '_controller' => 'App\\Controller\\Admin\\AddUserController::index'], null, ['GET' => 0], null, false, false, null]],
+        '/admin/api/ai/ollama/status' => [[['_route' => 'admin_api_ai_ollama_status', '_controller' => 'App\\Controller\\Admin\\Api\\OllamaStatusController'], null, ['GET' => 0], null, false, false, null]],
         '/admin' => [[['_route' => 'admin_dashboard', '_controller' => 'App\\Controller\\Admin\\DashboardController::index'], null, ['GET' => 0], null, false, false, null]],
         '/admin/dashboard' => [[['_route' => 'admin_dashboard_page', '_controller' => 'App\\Controller\\Admin\\DashboardController::index'], null, ['GET' => 0], null, false, false, null]],
         '/admin/carts' => [[['_route' => 'admin_carts', '_controller' => 'App\\Controller\\Admin\\Page\\CartsController::index'], null, ['GET' => 0, 'POST' => 1], null, false, false, null]],
@@ -139,87 +140,91 @@ return [
                     .')'
                 .')'
                 .'|/admin/(?'
+                    .'|api/ai/tournament\\-requests/(\\d+)/review(*:252)'
                     .'|c(?'
                         .'|a(?'
                             .'|rts/(?'
-                                .'|(\\d+)/delete(*:239)'
-                                .'|export/(pdf|excel)(*:265)'
+                                .'|(\\d+)/delete(*:287)'
+                                .'|export/(pdf|excel)(*:313)'
                             .')'
                             .'|tegories/(?'
-                                .'|(\\d+)/delete(*:298)'
-                                .'|export/(pdf|excel)(*:324)'
+                                .'|(\\d+)/delete(*:346)'
+                                .'|export/(pdf|excel)(*:372)'
                             .')'
                         .')'
                         .'|omments/(?'
-                            .'|(\\d+)/delete(*:357)'
-                            .'|export/(pdf|excel)(*:383)'
+                            .'|(\\d+)/delete(*:405)'
+                            .'|export/(pdf|excel)(*:431)'
                         .')'
                     .')'
                     .'|games/(?'
-                        .'|(\\d+)/delete(*:414)'
-                        .'|export/(pdf|excel)(*:440)'
+                        .'|(\\d+)/delete(*:462)'
+                        .'|export/(pdf|excel)(*:488)'
                     .')'
                     .'|m(?'
                         .'|atch(?'
-                            .'|\\-detail/(\\d+)(*:474)'
-                            .'|es/(\\d+)/delete(*:497)'
+                            .'|\\-detail/(\\d+)(*:522)'
+                            .'|es/(?'
+                                .'|export/(pdf|excel)(*:554)'
+                                .'|(\\d+)/delete(*:574)'
+                            .')'
                         .')'
                         .'|essages/(?'
-                            .'|(\\d+)/delete(*:529)'
-                            .'|export/(pdf|excel)(*:555)'
+                            .'|(\\d+)/delete(*:607)'
+                            .'|export/(pdf|excel)(*:633)'
                         .')'
                     .')'
                     .'|orders/(?'
-                        .'|(\\d+)/delete(*:587)'
-                        .'|export/(pdf|excel)(*:613)'
+                        .'|(\\d+)/delete(*:665)'
+                        .'|export/(pdf|excel)(*:691)'
                     .')'
                     .'|p(?'
                         .'|ost(?'
-                            .'|\\-detail/(\\d+)(*:646)'
+                            .'|\\-detail/(\\d+)(*:724)'
                             .'|s/(?'
-                                .'|(\\d+)/delete(*:671)'
-                                .'|export/(pdf|excel)(*:697)'
+                                .'|(\\d+)/delete(*:749)'
+                                .'|export/(pdf|excel)(*:775)'
                             .')'
                         .')'
                         .'|roducts/(?'
-                            .'|(\\d+)/delete(*:730)'
-                            .'|export/(pdf|excel)(*:756)'
+                            .'|(\\d+)/delete(*:808)'
+                            .'|export/(pdf|excel)(*:834)'
                         .')'
                     .')'
                     .'|report(?'
-                        .'|\\-detail/(\\d+)(*:789)'
+                        .'|\\-detail/(\\d+)(*:867)'
                         .'|s/(?'
-                            .'|(\\d+)/delete(*:814)'
-                            .'|export/(pdf|excel)(*:840)'
+                            .'|(\\d+)/delete(*:892)'
+                            .'|export/(pdf|excel)(*:918)'
                         .')'
                     .')'
                     .'|t(?'
                         .'|eams/(?'
-                            .'|(\\d+)/delete(*:874)'
-                            .'|export/(pdf|excel)(*:900)'
+                            .'|(\\d+)/delete(*:952)'
+                            .'|export/(pdf|excel)(*:978)'
                         .')'
                         .'|ournament(?'
                             .'|s/(?'
-                                .'|(\\d+)/detail(*:938)'
-                                .'|(\\d+)/edit(*:956)'
-                                .'|export/(pdf|excel)(*:982)'
-                                .'|(\\d+)/delete(*:1002)'
+                                .'|(\\d+)/detail(*:1016)'
+                                .'|(\\d+)/edit(*:1035)'
+                                .'|export/(pdf|excel)(*:1062)'
+                                .'|(\\d+)/delete(*:1083)'
                             .')'
                             .'|\\-requests/(?'
-                                .'|(\\d+)/detail(*:1038)'
-                                .'|export/(pdf|excel)(*:1065)'
-                                .'|(\\d+)/review(*:1086)'
+                                .'|(\\d+)/detail(*:1119)'
+                                .'|export/(pdf|excel)(*:1146)'
+                                .'|(\\d+)/review(*:1167)'
                             .')'
                         .')'
                     .')'
                     .'|user(?'
                         .'|\\-(?'
-                            .'|detail/(\\d+)(*:1122)'
-                            .'|edit/(\\d+)(*:1141)'
+                            .'|detail/(\\d+)(*:1203)'
+                            .'|edit/(\\d+)(*:1222)'
                         .')'
                         .'|s/(?'
-                            .'|(\\d+)/delete(*:1168)'
-                            .'|export/(pdf|excel)(*:1195)'
+                            .'|(\\d+)/delete(*:1249)'
+                            .'|export/(pdf|excel)(*:1276)'
                         .')'
                     .')'
                 .')'
@@ -227,96 +232,96 @@ return [
                     .'|c(?'
                         .'|a(?'
                             .'|ptain\\-(?'
-                                .'|members/(\\d+)/(\\d+)/remove(*:1261)'
+                                .'|members/(\\d+)/(\\d+)/remove(*:1342)'
                                 .'|product(?'
                                     .'|\\-edit(?'
-                                        .'|(?:/(\\d+))?(*:1300)'
-                                        .'|/(\\d+)/images/(\\d+)/remove(*:1335)'
+                                        .'|(?:/(\\d+))?(*:1381)'
+                                        .'|/(\\d+)/images/(\\d+)/remove(*:1416)'
                                     .')'
-                                    .'|s/(\\d+)/delete(*:1359)'
+                                    .'|s/(\\d+)/delete(*:1440)'
                                 .')'
-                                .'|requests/(\\d+)/respond(*:1391)'
+                                .'|requests/(\\d+)/respond(*:1472)'
                                 .'|t(?'
-                                    .'|eam\\-manage/(\\d+)/update(*:1428)'
+                                    .'|eam\\-manage/(\\d+)/update(*:1509)'
                                     .'|ournaments/(?'
-                                        .'|(\\d+)/cancel(*:1463)'
-                                        .'|(\\d+)/checkin(*:1485)'
+                                        .'|(\\d+)/cancel(*:1544)'
+                                        .'|(\\d+)/checkin(*:1566)'
                                     .')'
                                 .')'
                             .')'
                             .'|rt/(?'
-                                .'|add/(\\d+)(*:1512)'
+                                .'|add/(\\d+)(*:1593)'
                                 .'|items/(?'
-                                    .'|(\\d+)/quantity(*:1544)'
-                                    .'|(\\d+)/remove(*:1565)'
+                                    .'|(\\d+)/quantity(*:1625)'
+                                    .'|(\\d+)/remove(*:1646)'
                                 .')'
                             .')'
                         .')'
-                        .'|onversation(?:/(\\d+))?(*:1599)'
+                        .'|onversation(?:/(\\d+))?(*:1680)'
                     .')'
                     .'|f(?'
                         .'|eed/posts/(?'
-                            .'|(\\d+)/like(*:1636)'
-                            .'|(\\d+)/comment(*:1658)'
-                            .'|(\\d+)/report(*:1679)'
+                            .'|(\\d+)/like(*:1717)'
+                            .'|(\\d+)/comment(*:1739)'
+                            .'|(\\d+)/report(*:1760)'
                         .')'
                         .'|riends/requests/(?'
-                            .'|(\\d+)/accept(*:1720)'
-                            .'|(\\d+)/refuse(*:1741)'
-                            .'|(\\d+)/cancel(*:1762)'
+                            .'|(\\d+)/accept(*:1801)'
+                            .'|(\\d+)/refuse(*:1822)'
+                            .'|(\\d+)/cancel(*:1843)'
                         .')'
                     .')'
                     .'|p(?'
-                        .'|osts/(\\d+)/delete(*:1794)'
-                        .'|layer\\-profile(?:/(\\d+))?(*:1828)'
+                        .'|osts/(\\d+)/delete(*:1875)'
+                        .'|layer\\-profile(?:/(\\d+))?(*:1909)'
                         .'|ro(?'
-                            .'|duct\\-detail(?:/(\\d+))?(*:1865)'
+                            .'|duct\\-detail(?:/(\\d+))?(*:1946)'
                             .'|file/(?'
                                 .'|posts/(?'
-                                    .'|(\\d+)/like(*:1901)'
-                                    .'|(\\d+)/comment(*:1923)'
-                                    .'|(\\d+)/report(*:1944)'
+                                    .'|(\\d+)/like(*:1982)'
+                                    .'|(\\d+)/comment(*:2004)'
+                                    .'|(\\d+)/report(*:2025)'
                                 .')'
-                                .'|(\\d+)/add\\-friend(*:1971)'
+                                .'|(\\d+)/add\\-friend(*:2052)'
                             .')'
                         .')'
                     .')'
-                    .'|game\\-detail(?:/(\\d+))?(*:2006)'
+                    .'|game\\-detail(?:/(\\d+))?(*:2087)'
                     .'|m(?'
-                        .'|atch\\-detail(?:/(\\d+))?(*:2042)'
+                        .'|atch\\-detail(?:/(\\d+))?(*:2123)'
                         .'|y\\-(?'
-                            .'|requests/(\\d+)/cancel(*:2078)'
+                            .'|requests/(\\d+)/cancel(*:2159)'
                             .'|teams/(?'
-                                .'|invites/(\\d+)/respond(*:2117)'
-                                .'|(\\d+)/leave(*:2137)'
+                                .'|invites/(\\d+)/respond(*:2198)'
+                                .'|(\\d+)/leave(*:2218)'
                             .')'
                         .')'
                     .')'
                     .'|or(?'
-                        .'|der\\-detail(?:/(\\d+))?(*:2176)'
+                        .'|der\\-detail(?:/(\\d+))?(*:2257)'
                         .'|ganizer\\-(?'
-                            .'|match\\-edit/(\\d+)(*:2214)'
+                            .'|match\\-edit/(\\d+)(*:2295)'
                             .'|re(?'
-                                .'|gistrations/(\\d+)/(\\d+)/status(*:2258)'
+                                .'|gistrations/(\\d+)/(\\d+)/status(*:2339)'
                                 .'|quest(?'
-                                    .'|\\-detail/(\\d+)(*:2289)'
-                                    .'|s/export/(pdf|excel)(*:2318)'
+                                    .'|\\-detail/(\\d+)(*:2370)'
+                                    .'|s/export/(pdf|excel)(*:2399)'
                                 .')'
                             .')'
-                            .'|tournament\\-detail/(\\d+)(*:2353)'
+                            .'|tournament\\-detail/(\\d+)(*:2434)'
                         .')'
                     .')'
                     .'|t(?'
                         .'|eam\\-detail(?'
-                            .'|(?:/(\\d+))?(*:2393)'
-                            .'|/(\\d+)/join(*:2413)'
+                            .'|(?:/(\\d+))?(*:2474)'
+                            .'|/(\\d+)/join(*:2494)'
                         .')'
                         .'|ournament(?'
                             .'|\\-detail(?'
-                                .'|(?:/(\\d+))?(*:2457)'
-                                .'|/(\\d+)/participate(*:2484)'
+                                .'|(?:/(\\d+))?(*:2538)'
+                                .'|/(\\d+)/participate(*:2565)'
                             .')'
-                            .'|s/export/(pdf|excel)(*:2514)'
+                            .'|s/export/(pdf|excel)(*:2595)'
                         .')'
                     .')'
                 .')'
@@ -331,82 +336,84 @@ return [
         168 => [[['_route' => '_profiler_exception', '_controller' => 'web_profiler.controller.exception_panel::body'], ['token'], null, null, false, false, null]],
         181 => [[['_route' => '_profiler_exception_css', '_controller' => 'web_profiler.controller.exception_panel::stylesheet'], ['token'], null, null, false, false, null]],
         191 => [[['_route' => '_profiler', '_controller' => 'web_profiler.controller.profiler::panelAction'], ['token'], null, null, false, true, null]],
-        239 => [[['_route' => 'admin_cart_delete', '_controller' => 'App\\Controller\\Admin\\Page\\CartsController::delete'], ['id'], ['POST' => 0], null, false, false, null]],
-        265 => [[['_route' => 'admin_carts_export', '_controller' => 'App\\Controller\\Admin\\Page\\CartsController::export'], ['format'], ['GET' => 0], null, false, true, null]],
-        298 => [[['_route' => 'admin_category_delete', '_controller' => 'App\\Controller\\Admin\\Page\\CategoriesController::delete'], ['id'], ['POST' => 0], null, false, false, null]],
-        324 => [[['_route' => 'admin_categories_export', '_controller' => 'App\\Controller\\Admin\\Page\\CategoriesController::export'], ['format'], ['GET' => 0], null, false, true, null]],
-        357 => [[['_route' => 'admin_comment_delete', '_controller' => 'App\\Controller\\Admin\\Page\\CommentsController::delete'], ['id'], ['POST' => 0], null, false, false, null]],
-        383 => [[['_route' => 'admin_comments_export', '_controller' => 'App\\Controller\\Admin\\Page\\CommentsController::export'], ['format'], ['GET' => 0], null, false, true, null]],
-        414 => [[['_route' => 'admin_game_delete', '_controller' => 'App\\Controller\\Admin\\Page\\GamesController::delete'], ['id'], ['POST' => 0], null, false, false, null]],
-        440 => [[['_route' => 'admin_games_export', '_controller' => 'App\\Controller\\Admin\\Page\\GamesController::export'], ['format'], ['GET' => 0], null, false, true, null]],
-        474 => [[['_route' => 'admin_match_detail', '_controller' => 'App\\Controller\\Admin\\Page\\MatchDetailController::index'], ['id'], ['GET' => 0], null, false, true, null]],
-        497 => [[['_route' => 'admin_match_delete', '_controller' => 'App\\Controller\\Admin\\Page\\MatchesController::delete'], ['id'], ['POST' => 0], null, false, false, null]],
-        529 => [[['_route' => 'admin_message_delete', '_controller' => 'App\\Controller\\Admin\\Page\\MessagesController::delete'], ['id'], ['POST' => 0], null, false, false, null]],
-        555 => [[['_route' => 'admin_messages_export', '_controller' => 'App\\Controller\\Admin\\Page\\MessagesController::export'], ['format'], ['GET' => 0], null, false, true, null]],
-        587 => [[['_route' => 'admin_order_delete', '_controller' => 'App\\Controller\\Admin\\Page\\OrdersController::delete'], ['id'], ['POST' => 0], null, false, false, null]],
-        613 => [[['_route' => 'admin_orders_export', '_controller' => 'App\\Controller\\Admin\\Page\\OrdersController::export'], ['format'], ['GET' => 0], null, false, true, null]],
-        646 => [[['_route' => 'admin_post_detail', '_controller' => 'App\\Controller\\Admin\\Page\\PostDetailController::index'], ['id'], ['GET' => 0, 'POST' => 1], null, false, true, null]],
-        671 => [[['_route' => 'admin_post_delete', '_controller' => 'App\\Controller\\Admin\\Page\\PostsController::delete'], ['id'], ['POST' => 0], null, false, false, null]],
-        697 => [[['_route' => 'admin_posts_export', '_controller' => 'App\\Controller\\Admin\\Page\\PostsController::export'], ['format'], ['GET' => 0], null, false, true, null]],
-        730 => [[['_route' => 'admin_product_delete', '_controller' => 'App\\Controller\\Admin\\Page\\ProductsController::delete'], ['id'], ['POST' => 0], null, false, false, null]],
-        756 => [[['_route' => 'admin_products_export', '_controller' => 'App\\Controller\\Admin\\Page\\ProductsController::export'], ['format'], ['GET' => 0], null, false, true, null]],
-        789 => [[['_route' => 'admin_report_detail', '_controller' => 'App\\Controller\\Admin\\Page\\ReportDetailController::index'], ['id'], ['GET' => 0, 'POST' => 1], null, false, true, null]],
-        814 => [[['_route' => 'admin_report_delete', '_controller' => 'App\\Controller\\Admin\\Page\\ReportsController::delete'], ['id'], ['POST' => 0], null, false, false, null]],
-        840 => [[['_route' => 'admin_reports_export', '_controller' => 'App\\Controller\\Admin\\Page\\ReportsController::export'], ['format'], ['GET' => 0], null, false, true, null]],
-        874 => [[['_route' => 'admin_team_delete', '_controller' => 'App\\Controller\\Admin\\Page\\TeamsController::delete'], ['id'], ['POST' => 0], null, false, false, null]],
-        900 => [[['_route' => 'admin_teams_export', '_controller' => 'App\\Controller\\Admin\\Page\\TeamsController::export'], ['format'], ['GET' => 0], null, false, true, null]],
-        938 => [[['_route' => 'admin_tournament_detail', 'id' => null, '_controller' => 'App\\Controller\\Admin\\Page\\TournamentDetailController::index'], ['id'], ['GET' => 0], null, false, false, null]],
-        956 => [[['_route' => 'admin_tournament_edit', 'id' => null, '_controller' => 'App\\Controller\\Admin\\Page\\TournamentFormController::index'], ['id'], ['GET' => 0, 'POST' => 1], null, false, false, null]],
-        982 => [[['_route' => 'admin_tournaments_export', '_controller' => 'App\\Controller\\Admin\\Page\\TournamentsController::export'], ['format'], ['GET' => 0], null, false, true, null]],
-        1002 => [[['_route' => 'admin_tournament_delete', '_controller' => 'App\\Controller\\Admin\\Page\\TournamentsController::delete'], ['id'], ['POST' => 0], null, false, false, null]],
-        1038 => [[['_route' => 'admin_tournament_request_detail', 'id' => null, '_controller' => 'App\\Controller\\Admin\\Page\\TournamentRequestDetailController::index'], ['id'], ['GET' => 0], null, false, false, null]],
-        1065 => [[['_route' => 'admin_tournament_requests_export', '_controller' => 'App\\Controller\\Admin\\Page\\TournamentRequestsController::export'], ['format'], ['GET' => 0], null, false, true, null]],
-        1086 => [[['_route' => 'admin_tournament_request_review', '_controller' => 'App\\Controller\\Admin\\Page\\TournamentRequestsController::review'], ['id'], ['POST' => 0], null, false, false, null]],
-        1122 => [[['_route' => 'admin_user_detail', '_controller' => 'App\\Controller\\Admin\\Page\\UserDetailController::index'], ['id'], ['GET' => 0], null, false, true, null]],
-        1141 => [[['_route' => 'admin_user_edit', '_controller' => 'App\\Controller\\Admin\\Page\\UserEditController::index'], ['id'], ['GET' => 0, 'POST' => 1], null, false, true, null]],
-        1168 => [[['_route' => 'admin_user_delete', '_controller' => 'App\\Controller\\Admin\\Page\\UsersController::delete'], ['id'], ['POST' => 0], null, false, false, null]],
-        1195 => [[['_route' => 'admin_users_export', '_controller' => 'App\\Controller\\Admin\\Page\\UsersController::export'], ['format'], ['GET' => 0], null, false, true, null]],
-        1261 => [[['_route' => 'front_captain_members_remove', '_controller' => 'App\\Controller\\Front\\Page\\CaptainMembersController::remove'], ['teamId', 'userId'], ['POST' => 0], null, false, false, null]],
-        1300 => [[['_route' => 'front_captain_product_edit', 'id' => null, '_controller' => 'App\\Controller\\Front\\Page\\CaptainProductEditController::index'], ['id'], ['GET' => 0, 'POST' => 1], null, false, true, null]],
-        1335 => [[['_route' => 'front_captain_product_image_remove', '_controller' => 'App\\Controller\\Front\\Page\\CaptainProductEditController::removeImage'], ['id', 'imageId'], ['POST' => 0], null, false, false, null]],
-        1359 => [[['_route' => 'front_captain_product_delete', '_controller' => 'App\\Controller\\Front\\Page\\CaptainProductsController::delete'], ['id'], ['POST' => 0], null, false, false, null]],
-        1391 => [[['_route' => 'front_captain_requests_respond', '_controller' => 'App\\Controller\\Front\\Page\\CaptainRequestsController::respond'], ['id'], ['POST' => 0], null, false, false, null]],
-        1428 => [[['_route' => 'front_captain_team_manage_update', '_controller' => 'App\\Controller\\Front\\Page\\CaptainTeamManageController::update'], ['id'], ['POST' => 0], null, false, false, null]],
-        1463 => [[['_route' => 'front_captain_tournaments_cancel', '_controller' => 'App\\Controller\\Front\\Page\\CaptainTournamentsController::cancel'], ['id'], ['POST' => 0], null, false, false, null]],
-        1485 => [[['_route' => 'front_captain_tournaments_checkin', '_controller' => 'App\\Controller\\Front\\Page\\CaptainTournamentsController::checkin'], ['id'], ['POST' => 0], null, false, false, null]],
-        1512 => [[['_route' => 'front_cart_add', '_controller' => 'App\\Controller\\Front\\Page\\CartController::add'], ['id'], ['POST' => 0], null, false, true, null]],
-        1544 => [[['_route' => 'front_cart_item_update', '_controller' => 'App\\Controller\\Front\\Page\\CartController::updateQuantity'], ['id'], ['POST' => 0], null, false, false, null]],
-        1565 => [[['_route' => 'front_cart_item_remove', '_controller' => 'App\\Controller\\Front\\Page\\CartController::remove'], ['id'], ['POST' => 0], null, false, false, null]],
-        1599 => [[['_route' => 'front_conversation', 'id' => null, '_controller' => 'App\\Controller\\Front\\Page\\ConversationController::index'], ['id'], ['GET' => 0, 'POST' => 1], null, false, true, null]],
-        1636 => [[['_route' => 'front_feed_post_like', '_controller' => 'App\\Controller\\Front\\Page\\FeedController::toggleLike'], ['id'], ['POST' => 0], null, false, false, null]],
-        1658 => [[['_route' => 'front_feed_post_comment', '_controller' => 'App\\Controller\\Front\\Page\\FeedController::addComment'], ['id'], ['POST' => 0], null, false, false, null]],
-        1679 => [[['_route' => 'front_feed_post_report', '_controller' => 'App\\Controller\\Front\\Page\\FeedController::report'], ['id'], ['POST' => 0], null, false, false, null]],
-        1720 => [[['_route' => 'front_friends_request_accept', '_controller' => 'App\\Controller\\Front\\Page\\FriendsController::acceptRequest'], ['id'], ['POST' => 0], null, false, false, null]],
-        1741 => [[['_route' => 'front_friends_request_refuse', '_controller' => 'App\\Controller\\Front\\Page\\FriendsController::refuseRequest'], ['id'], ['POST' => 0], null, false, false, null]],
-        1762 => [[['_route' => 'front_friends_request_cancel', '_controller' => 'App\\Controller\\Front\\Page\\FriendsController::cancelRequest'], ['id'], ['POST' => 0], null, false, false, null]],
-        1794 => [[['_route' => 'front_post_delete', '_controller' => 'App\\Controller\\Front\\Page\\FeedController::deletePost'], ['id'], ['POST' => 0], null, false, false, null]],
-        1828 => [[['_route' => 'front_player_profile', 'id' => null, '_controller' => 'App\\Controller\\Front\\Page\\PlayerProfileController::index'], ['id'], ['GET' => 0], null, false, true, null]],
-        1865 => [[['_route' => 'front_product_detail', 'id' => null, '_controller' => 'App\\Controller\\Front\\Page\\ProductDetailController::index'], ['id'], ['GET' => 0], null, false, true, null]],
-        1901 => [[['_route' => 'front_profile_post_like', '_controller' => 'App\\Controller\\Front\\Page\\ProfileController::toggleLike'], ['id'], ['POST' => 0], null, false, false, null]],
-        1923 => [[['_route' => 'front_profile_post_comment', '_controller' => 'App\\Controller\\Front\\Page\\ProfileController::addComment'], ['id'], ['POST' => 0], null, false, false, null]],
-        1944 => [[['_route' => 'front_profile_post_report', '_controller' => 'App\\Controller\\Front\\Page\\ProfileController::reportPost'], ['id'], ['POST' => 0], null, false, false, null]],
-        1971 => [[['_route' => 'front_profile_add_friend', '_controller' => 'App\\Controller\\Front\\Page\\ProfileController::addFriend'], ['id'], ['POST' => 0], null, false, false, null]],
-        2006 => [[['_route' => 'front_game_detail', 'id' => null, '_controller' => 'App\\Controller\\Front\\Page\\GameDetailController::index'], ['id'], ['GET' => 0], null, false, true, null]],
-        2042 => [[['_route' => 'front_match_detail', 'id' => null, '_controller' => 'App\\Controller\\Front\\Page\\MatchDetailController::index'], ['id'], ['GET' => 0], null, false, true, null]],
-        2078 => [[['_route' => 'front_my_requests_cancel', '_controller' => 'App\\Controller\\Front\\Page\\MyRequestsController::cancel'], ['id'], ['POST' => 0], null, false, false, null]],
-        2117 => [[['_route' => 'front_my_teams_invite_respond', '_controller' => 'App\\Controller\\Front\\Page\\MyTeamsController::respondInvite'], ['id'], ['POST' => 0], null, false, false, null]],
-        2137 => [[['_route' => 'front_my_teams_leave', '_controller' => 'App\\Controller\\Front\\Page\\MyTeamsController::leaveTeam'], ['teamId'], ['POST' => 0], null, false, false, null]],
-        2176 => [[['_route' => 'front_order_detail', 'id' => null, '_controller' => 'App\\Controller\\Front\\Page\\OrderDetailController::index'], ['id'], ['GET' => 0], null, false, true, null]],
-        2214 => [[['_route' => 'front_organizer_match_edit', '_controller' => 'App\\Controller\\Front\\Page\\OrganizerMatchEditController::index'], ['id'], ['GET' => 0, 'POST' => 1], null, false, true, null]],
-        2258 => [[['_route' => 'front_organizer_registration_status', '_controller' => 'App\\Controller\\Front\\Page\\OrganizerRegistrationsController::updateStatus'], ['tournamentId', 'teamId'], ['POST' => 0], null, false, false, null]],
-        2289 => [[['_route' => 'front_organizer_request_detail', '_controller' => 'App\\Controller\\Front\\Page\\OrganizerRequestDetailController::index'], ['id'], ['GET' => 0], null, false, true, null]],
-        2318 => [[['_route' => 'front_organizer_requests_export', '_controller' => 'App\\Controller\\Front\\Page\\OrganizerRequestsController::export'], ['format'], ['GET' => 0], null, false, true, null]],
-        2353 => [[['_route' => 'front_organizer_tournament_detail', '_controller' => 'App\\Controller\\Front\\Page\\OrganizerTournamentDetailController::index'], ['id'], ['GET' => 0, 'POST' => 1], null, false, true, null]],
-        2393 => [[['_route' => 'front_team_detail', 'id' => null, '_controller' => 'App\\Controller\\Front\\Page\\TeamDetailController::index'], ['id'], ['GET' => 0], null, false, true, null]],
-        2413 => [[['_route' => 'front_team_detail_join', '_controller' => 'App\\Controller\\Front\\Page\\TeamDetailController::join'], ['id'], ['POST' => 0], null, false, false, null]],
-        2457 => [[['_route' => 'front_tournament_detail', 'id' => null, '_controller' => 'App\\Controller\\Front\\Page\\TournamentDetailController::index'], ['id'], ['GET' => 0], null, false, true, null]],
-        2484 => [[['_route' => 'front_tournament_participate', '_controller' => 'App\\Controller\\Front\\Page\\TournamentDetailController::participate'], ['id'], ['POST' => 0], null, false, false, null]],
-        2514 => [
+        252 => [[['_route' => 'admin_api_ai_tournament_request_review', '_controller' => 'App\\Controller\\Admin\\Api\\TournamentRequestAiReviewController'], ['id'], ['GET' => 0], null, false, false, null]],
+        287 => [[['_route' => 'admin_cart_delete', '_controller' => 'App\\Controller\\Admin\\Page\\CartsController::delete'], ['id'], ['POST' => 0], null, false, false, null]],
+        313 => [[['_route' => 'admin_carts_export', '_controller' => 'App\\Controller\\Admin\\Page\\CartsController::export'], ['format'], ['GET' => 0], null, false, true, null]],
+        346 => [[['_route' => 'admin_category_delete', '_controller' => 'App\\Controller\\Admin\\Page\\CategoriesController::delete'], ['id'], ['POST' => 0], null, false, false, null]],
+        372 => [[['_route' => 'admin_categories_export', '_controller' => 'App\\Controller\\Admin\\Page\\CategoriesController::export'], ['format'], ['GET' => 0], null, false, true, null]],
+        405 => [[['_route' => 'admin_comment_delete', '_controller' => 'App\\Controller\\Admin\\Page\\CommentsController::delete'], ['id'], ['POST' => 0], null, false, false, null]],
+        431 => [[['_route' => 'admin_comments_export', '_controller' => 'App\\Controller\\Admin\\Page\\CommentsController::export'], ['format'], ['GET' => 0], null, false, true, null]],
+        462 => [[['_route' => 'admin_game_delete', '_controller' => 'App\\Controller\\Admin\\Page\\GamesController::delete'], ['id'], ['POST' => 0], null, false, false, null]],
+        488 => [[['_route' => 'admin_games_export', '_controller' => 'App\\Controller\\Admin\\Page\\GamesController::export'], ['format'], ['GET' => 0], null, false, true, null]],
+        522 => [[['_route' => 'admin_match_detail', '_controller' => 'App\\Controller\\Admin\\Page\\MatchDetailController::index'], ['id'], ['GET' => 0], null, false, true, null]],
+        554 => [[['_route' => 'admin_matches_export', '_controller' => 'App\\Controller\\Admin\\Page\\MatchesController::export'], ['format'], ['GET' => 0], null, false, true, null]],
+        574 => [[['_route' => 'admin_match_delete', '_controller' => 'App\\Controller\\Admin\\Page\\MatchesController::delete'], ['id'], ['POST' => 0], null, false, false, null]],
+        607 => [[['_route' => 'admin_message_delete', '_controller' => 'App\\Controller\\Admin\\Page\\MessagesController::delete'], ['id'], ['POST' => 0], null, false, false, null]],
+        633 => [[['_route' => 'admin_messages_export', '_controller' => 'App\\Controller\\Admin\\Page\\MessagesController::export'], ['format'], ['GET' => 0], null, false, true, null]],
+        665 => [[['_route' => 'admin_order_delete', '_controller' => 'App\\Controller\\Admin\\Page\\OrdersController::delete'], ['id'], ['POST' => 0], null, false, false, null]],
+        691 => [[['_route' => 'admin_orders_export', '_controller' => 'App\\Controller\\Admin\\Page\\OrdersController::export'], ['format'], ['GET' => 0], null, false, true, null]],
+        724 => [[['_route' => 'admin_post_detail', '_controller' => 'App\\Controller\\Admin\\Page\\PostDetailController::index'], ['id'], ['GET' => 0, 'POST' => 1], null, false, true, null]],
+        749 => [[['_route' => 'admin_post_delete', '_controller' => 'App\\Controller\\Admin\\Page\\PostsController::delete'], ['id'], ['POST' => 0], null, false, false, null]],
+        775 => [[['_route' => 'admin_posts_export', '_controller' => 'App\\Controller\\Admin\\Page\\PostsController::export'], ['format'], ['GET' => 0], null, false, true, null]],
+        808 => [[['_route' => 'admin_product_delete', '_controller' => 'App\\Controller\\Admin\\Page\\ProductsController::delete'], ['id'], ['POST' => 0], null, false, false, null]],
+        834 => [[['_route' => 'admin_products_export', '_controller' => 'App\\Controller\\Admin\\Page\\ProductsController::export'], ['format'], ['GET' => 0], null, false, true, null]],
+        867 => [[['_route' => 'admin_report_detail', '_controller' => 'App\\Controller\\Admin\\Page\\ReportDetailController::index'], ['id'], ['GET' => 0, 'POST' => 1], null, false, true, null]],
+        892 => [[['_route' => 'admin_report_delete', '_controller' => 'App\\Controller\\Admin\\Page\\ReportsController::delete'], ['id'], ['POST' => 0], null, false, false, null]],
+        918 => [[['_route' => 'admin_reports_export', '_controller' => 'App\\Controller\\Admin\\Page\\ReportsController::export'], ['format'], ['GET' => 0], null, false, true, null]],
+        952 => [[['_route' => 'admin_team_delete', '_controller' => 'App\\Controller\\Admin\\Page\\TeamsController::delete'], ['id'], ['POST' => 0], null, false, false, null]],
+        978 => [[['_route' => 'admin_teams_export', '_controller' => 'App\\Controller\\Admin\\Page\\TeamsController::export'], ['format'], ['GET' => 0], null, false, true, null]],
+        1016 => [[['_route' => 'admin_tournament_detail', 'id' => null, '_controller' => 'App\\Controller\\Admin\\Page\\TournamentDetailController::index'], ['id'], ['GET' => 0], null, false, false, null]],
+        1035 => [[['_route' => 'admin_tournament_edit', 'id' => null, '_controller' => 'App\\Controller\\Admin\\Page\\TournamentFormController::index'], ['id'], ['GET' => 0, 'POST' => 1], null, false, false, null]],
+        1062 => [[['_route' => 'admin_tournaments_export', '_controller' => 'App\\Controller\\Admin\\Page\\TournamentsController::export'], ['format'], ['GET' => 0], null, false, true, null]],
+        1083 => [[['_route' => 'admin_tournament_delete', '_controller' => 'App\\Controller\\Admin\\Page\\TournamentsController::delete'], ['id'], ['POST' => 0], null, false, false, null]],
+        1119 => [[['_route' => 'admin_tournament_request_detail', 'id' => null, '_controller' => 'App\\Controller\\Admin\\Page\\TournamentRequestDetailController::index'], ['id'], ['GET' => 0], null, false, false, null]],
+        1146 => [[['_route' => 'admin_tournament_requests_export', '_controller' => 'App\\Controller\\Admin\\Page\\TournamentRequestsController::export'], ['format'], ['GET' => 0], null, false, true, null]],
+        1167 => [[['_route' => 'admin_tournament_request_review', '_controller' => 'App\\Controller\\Admin\\Page\\TournamentRequestsController::review'], ['id'], ['POST' => 0], null, false, false, null]],
+        1203 => [[['_route' => 'admin_user_detail', '_controller' => 'App\\Controller\\Admin\\Page\\UserDetailController::index'], ['id'], ['GET' => 0], null, false, true, null]],
+        1222 => [[['_route' => 'admin_user_edit', '_controller' => 'App\\Controller\\Admin\\Page\\UserEditController::index'], ['id'], ['GET' => 0, 'POST' => 1], null, false, true, null]],
+        1249 => [[['_route' => 'admin_user_delete', '_controller' => 'App\\Controller\\Admin\\Page\\UsersController::delete'], ['id'], ['POST' => 0], null, false, false, null]],
+        1276 => [[['_route' => 'admin_users_export', '_controller' => 'App\\Controller\\Admin\\Page\\UsersController::export'], ['format'], ['GET' => 0], null, false, true, null]],
+        1342 => [[['_route' => 'front_captain_members_remove', '_controller' => 'App\\Controller\\Front\\Page\\CaptainMembersController::remove'], ['teamId', 'userId'], ['POST' => 0], null, false, false, null]],
+        1381 => [[['_route' => 'front_captain_product_edit', 'id' => null, '_controller' => 'App\\Controller\\Front\\Page\\CaptainProductEditController::index'], ['id'], ['GET' => 0, 'POST' => 1], null, false, true, null]],
+        1416 => [[['_route' => 'front_captain_product_image_remove', '_controller' => 'App\\Controller\\Front\\Page\\CaptainProductEditController::removeImage'], ['id', 'imageId'], ['POST' => 0], null, false, false, null]],
+        1440 => [[['_route' => 'front_captain_product_delete', '_controller' => 'App\\Controller\\Front\\Page\\CaptainProductsController::delete'], ['id'], ['POST' => 0], null, false, false, null]],
+        1472 => [[['_route' => 'front_captain_requests_respond', '_controller' => 'App\\Controller\\Front\\Page\\CaptainRequestsController::respond'], ['id'], ['POST' => 0], null, false, false, null]],
+        1509 => [[['_route' => 'front_captain_team_manage_update', '_controller' => 'App\\Controller\\Front\\Page\\CaptainTeamManageController::update'], ['id'], ['POST' => 0], null, false, false, null]],
+        1544 => [[['_route' => 'front_captain_tournaments_cancel', '_controller' => 'App\\Controller\\Front\\Page\\CaptainTournamentsController::cancel'], ['id'], ['POST' => 0], null, false, false, null]],
+        1566 => [[['_route' => 'front_captain_tournaments_checkin', '_controller' => 'App\\Controller\\Front\\Page\\CaptainTournamentsController::checkin'], ['id'], ['POST' => 0], null, false, false, null]],
+        1593 => [[['_route' => 'front_cart_add', '_controller' => 'App\\Controller\\Front\\Page\\CartController::add'], ['id'], ['POST' => 0], null, false, true, null]],
+        1625 => [[['_route' => 'front_cart_item_update', '_controller' => 'App\\Controller\\Front\\Page\\CartController::updateQuantity'], ['id'], ['POST' => 0], null, false, false, null]],
+        1646 => [[['_route' => 'front_cart_item_remove', '_controller' => 'App\\Controller\\Front\\Page\\CartController::remove'], ['id'], ['POST' => 0], null, false, false, null]],
+        1680 => [[['_route' => 'front_conversation', 'id' => null, '_controller' => 'App\\Controller\\Front\\Page\\ConversationController::index'], ['id'], ['GET' => 0, 'POST' => 1], null, false, true, null]],
+        1717 => [[['_route' => 'front_feed_post_like', '_controller' => 'App\\Controller\\Front\\Page\\FeedController::toggleLike'], ['id'], ['POST' => 0], null, false, false, null]],
+        1739 => [[['_route' => 'front_feed_post_comment', '_controller' => 'App\\Controller\\Front\\Page\\FeedController::addComment'], ['id'], ['POST' => 0], null, false, false, null]],
+        1760 => [[['_route' => 'front_feed_post_report', '_controller' => 'App\\Controller\\Front\\Page\\FeedController::report'], ['id'], ['POST' => 0], null, false, false, null]],
+        1801 => [[['_route' => 'front_friends_request_accept', '_controller' => 'App\\Controller\\Front\\Page\\FriendsController::acceptRequest'], ['id'], ['POST' => 0], null, false, false, null]],
+        1822 => [[['_route' => 'front_friends_request_refuse', '_controller' => 'App\\Controller\\Front\\Page\\FriendsController::refuseRequest'], ['id'], ['POST' => 0], null, false, false, null]],
+        1843 => [[['_route' => 'front_friends_request_cancel', '_controller' => 'App\\Controller\\Front\\Page\\FriendsController::cancelRequest'], ['id'], ['POST' => 0], null, false, false, null]],
+        1875 => [[['_route' => 'front_post_delete', '_controller' => 'App\\Controller\\Front\\Page\\FeedController::deletePost'], ['id'], ['POST' => 0], null, false, false, null]],
+        1909 => [[['_route' => 'front_player_profile', 'id' => null, '_controller' => 'App\\Controller\\Front\\Page\\PlayerProfileController::index'], ['id'], ['GET' => 0], null, false, true, null]],
+        1946 => [[['_route' => 'front_product_detail', 'id' => null, '_controller' => 'App\\Controller\\Front\\Page\\ProductDetailController::index'], ['id'], ['GET' => 0], null, false, true, null]],
+        1982 => [[['_route' => 'front_profile_post_like', '_controller' => 'App\\Controller\\Front\\Page\\ProfileController::toggleLike'], ['id'], ['POST' => 0], null, false, false, null]],
+        2004 => [[['_route' => 'front_profile_post_comment', '_controller' => 'App\\Controller\\Front\\Page\\ProfileController::addComment'], ['id'], ['POST' => 0], null, false, false, null]],
+        2025 => [[['_route' => 'front_profile_post_report', '_controller' => 'App\\Controller\\Front\\Page\\ProfileController::reportPost'], ['id'], ['POST' => 0], null, false, false, null]],
+        2052 => [[['_route' => 'front_profile_add_friend', '_controller' => 'App\\Controller\\Front\\Page\\ProfileController::addFriend'], ['id'], ['POST' => 0], null, false, false, null]],
+        2087 => [[['_route' => 'front_game_detail', 'id' => null, '_controller' => 'App\\Controller\\Front\\Page\\GameDetailController::index'], ['id'], ['GET' => 0], null, false, true, null]],
+        2123 => [[['_route' => 'front_match_detail', 'id' => null, '_controller' => 'App\\Controller\\Front\\Page\\MatchDetailController::index'], ['id'], ['GET' => 0], null, false, true, null]],
+        2159 => [[['_route' => 'front_my_requests_cancel', '_controller' => 'App\\Controller\\Front\\Page\\MyRequestsController::cancel'], ['id'], ['POST' => 0], null, false, false, null]],
+        2198 => [[['_route' => 'front_my_teams_invite_respond', '_controller' => 'App\\Controller\\Front\\Page\\MyTeamsController::respondInvite'], ['id'], ['POST' => 0], null, false, false, null]],
+        2218 => [[['_route' => 'front_my_teams_leave', '_controller' => 'App\\Controller\\Front\\Page\\MyTeamsController::leaveTeam'], ['teamId'], ['POST' => 0], null, false, false, null]],
+        2257 => [[['_route' => 'front_order_detail', 'id' => null, '_controller' => 'App\\Controller\\Front\\Page\\OrderDetailController::index'], ['id'], ['GET' => 0], null, false, true, null]],
+        2295 => [[['_route' => 'front_organizer_match_edit', '_controller' => 'App\\Controller\\Front\\Page\\OrganizerMatchEditController::index'], ['id'], ['GET' => 0, 'POST' => 1], null, false, true, null]],
+        2339 => [[['_route' => 'front_organizer_registration_status', '_controller' => 'App\\Controller\\Front\\Page\\OrganizerRegistrationsController::updateStatus'], ['tournamentId', 'teamId'], ['POST' => 0], null, false, false, null]],
+        2370 => [[['_route' => 'front_organizer_request_detail', '_controller' => 'App\\Controller\\Front\\Page\\OrganizerRequestDetailController::index'], ['id'], ['GET' => 0], null, false, true, null]],
+        2399 => [[['_route' => 'front_organizer_requests_export', '_controller' => 'App\\Controller\\Front\\Page\\OrganizerRequestsController::export'], ['format'], ['GET' => 0], null, false, true, null]],
+        2434 => [[['_route' => 'front_organizer_tournament_detail', '_controller' => 'App\\Controller\\Front\\Page\\OrganizerTournamentDetailController::index'], ['id'], ['GET' => 0, 'POST' => 1], null, false, true, null]],
+        2474 => [[['_route' => 'front_team_detail', 'id' => null, '_controller' => 'App\\Controller\\Front\\Page\\TeamDetailController::index'], ['id'], ['GET' => 0], null, false, true, null]],
+        2494 => [[['_route' => 'front_team_detail_join', '_controller' => 'App\\Controller\\Front\\Page\\TeamDetailController::join'], ['id'], ['POST' => 0], null, false, false, null]],
+        2538 => [[['_route' => 'front_tournament_detail', 'id' => null, '_controller' => 'App\\Controller\\Front\\Page\\TournamentDetailController::index'], ['id'], ['GET' => 0], null, false, true, null]],
+        2565 => [[['_route' => 'front_tournament_participate', '_controller' => 'App\\Controller\\Front\\Page\\TournamentDetailController::participate'], ['id'], ['POST' => 0], null, false, false, null]],
+        2595 => [
             [['_route' => 'front_tournaments_export', '_controller' => 'App\\Controller\\Front\\Page\\TournamentsController::export'], ['format'], ['GET' => 0], null, false, true, null],
             [null, null, null, null, false, false, 0],
         ],

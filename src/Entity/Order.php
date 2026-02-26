@@ -32,7 +32,7 @@ class Order
     private Cart $cartId;
     
     #[ORM\ManyToOne(targetEntity: User::class)]
-    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'user_id', nullable: false, onDelete: 'RESTRICT')]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'user_id', nullable: false, onDelete: 'CASCADE')]
     #[Assert\NotNull(message: "L'utilisateur est obligatoire.")]
     private User $userId;
     

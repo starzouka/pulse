@@ -16,6 +16,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final class CaptainInviteController extends AbstractController
 {
@@ -49,6 +50,7 @@ final class CaptainInviteController extends AbstractController
 
         $searchQuery = trim((string) $request->query->get('q', ''));
         $latestInvites = $teamInviteRepository->findLatestByTeam($activeTeam, 120);
+        $recaptchaSiteKey = $this->getEnvString('GOOGLE_RECAPTCHA_SITE_KEY');
 
         $searchResults = [];
         if ($searchQuery !== '') {
@@ -79,6 +81,7 @@ final class CaptainInviteController extends AbstractController
             'search_query' => $searchQuery,
             'search_results' => $searchResults,
             'latest_invites' => $latestInvites,
+            'recaptcha_site_key' => $recaptchaSiteKey,
         ]);
     }
 
@@ -90,6 +93,7 @@ final class CaptainInviteController extends AbstractController
         TeamMemberRepository $teamMemberRepository,
         UserRepository $userRepository,
         EntityManagerInterface $entityManager,
+        HttpClientInterface $httpClient,
     ): Response {
         $viewer = $this->getUser();
         if (!$viewer instanceof User) {
@@ -105,6 +109,33 @@ final class CaptainInviteController extends AbstractController
         $teamId = (int) $request->request->get('team_id', 0);
         $invitedUserId = (int) $request->request->get('invited_user_id', 0);
         $message = $this->normalizeNullableText($request->request->get('message'));
+        $recaptchaSecret = $this->getEnvString('GOOGLE_RECAPTCHA_SECRET_KEY');
+        $recaptchaToken = trim((string) $request->request->get('g_recaptcha_token', ''));
+
+        if ($recaptchaSecret === '') {
+            $this->addFlash('error', 'reCAPTCHA non configuree. Ajoutez GOOGLE_RECAPTCHA_SECRET_KEY.');
+
+            return $this->redirectToRoute('front_captain_invite', ['team' => $teamId > 0 ? $teamId : null]);
+        }
+
+        if ($recaptchaToken === '') {
+            $this->addFlash('error', 'Veuillez confirmer la reCAPTCHA avant envoi.');
+
+            return $this->redirectToRoute('front_captain_invite', ['team' => $teamId > 0 ? $teamId : null]);
+        }
+
+        $verification = $this->verifyRecaptchaToken(
+            $httpClient,
+            $recaptchaSecret,
+            $recaptchaToken,
+            $request->getClientIp(),
+        );
+
+        if (!$verification['success']) {
+            $this->addFlash('error', 'Verification reCAPTCHA invalide. Reessayez.');
+
+            return $this->redirectToRoute('front_captain_invite', ['team' => $teamId > 0 ? $teamId : null]);
+        }
 
         $team = $captainTeamContextProvider->resolveManagedTeamById($viewer, $teamId);
         if (!$team instanceof Team) {
@@ -176,6 +207,47 @@ final class CaptainInviteController extends AbstractController
         $value = trim((string) $rawValue);
 
         return $value !== '' ? $value : null;
+    }
+
+    private function getEnvString(string $key): string
+    {
+        $value = $_ENV[$key] ?? $_SERVER[$key] ?? getenv($key) ?: '';
+
+        return is_string($value) ? trim($value) : '';
+    }
+
+    /**
+     * @return array{success: bool}
+     */
+    private function verifyRecaptchaToken(
+        HttpClientInterface $httpClient,
+        string $secret,
+        string $token,
+        ?string $clientIp,
+    ): array {
+        $payload = [
+            'secret' => $secret,
+            'response' => $token,
+        ];
+
+        if (is_string($clientIp) && $clientIp !== '') {
+            $payload['remoteip'] = $clientIp;
+        }
+
+        try {
+            $response = $httpClient->request(
+                'POST',
+                'https://www.google.com/recaptcha/api/siteverify',
+                ['body' => $payload],
+            );
+            $data = $response->toArray(false);
+        } catch (\Throwable) {
+            return ['success' => false];
+        }
+
+        return [
+            'success' => isset($data['success']) && $data['success'] === true,
+        ];
     }
 }
 

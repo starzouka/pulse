@@ -75,7 +75,19 @@ final class TournamentRequestsController extends AbstractController
 
         $headers = ['ID', 'Titre', 'Organisateur', 'Jeu', 'Start date', 'End date', 'Status', 'Prize pool', 'Created at'];
         $rows = [];
+        $statusCounts = [
+            'PENDING' => 0,
+            'ACCEPTED' => 0,
+            'REFUSED' => 0,
+        ];
+        $totalPrizePool = 0.0;
         foreach ($requests as $requestItem) {
+            $statusValue = strtoupper((string) ($requestItem->getStatus() ?? 'PENDING'));
+            if (isset($statusCounts[$statusValue])) {
+                $statusCounts[$statusValue]++;
+            }
+
+            $totalPrizePool += (float) ($requestItem->getPrizePool() ?? 0);
             $rows[] = [
                 (int) ($requestItem->getRequestId() ?? 0),
                 (string) ($requestItem->getTitle() ?? '-'),
@@ -94,7 +106,33 @@ final class TournamentRequestsController extends AbstractController
             return $tableExportService->exportExcel('Demandes Tournois', $headers, $rows, sprintf('admin_tournament_requests_%s.xlsx', $timestamp));
         }
 
-        return $tableExportService->exportPdf('Demandes Tournois', $headers, $rows, sprintf('admin_tournament_requests_%s.pdf', $timestamp));
+        $html = $this->renderView('admin/pdf/tournament_requests_export.html.twig', [
+            'documentTitle' => 'Export Demandes Tournois',
+            'documentSubtitle' => 'Vue admin stylisee (HTML/CSS) des demandes de tournoi.',
+            'generatedAt' => new \DateTimeImmutable(),
+            'filters' => [
+                'q' => $query,
+                'status' => $status,
+                'game' => $gameId,
+                'sort' => $sort,
+            ],
+            'stats' => [
+                ['label' => 'Demandes', 'value' => count($requests)],
+                ['label' => 'Pending', 'value' => $statusCounts['PENDING']],
+                ['label' => 'Accepted', 'value' => $statusCounts['ACCEPTED']],
+                ['label' => 'Prize pool total', 'value' => number_format($totalPrizePool, 2, '.', ' ') . ' DT'],
+            ],
+            'requests' => $requests,
+            'photoUris' => $this->buildRequestPhotoUris($requests),
+            'counter' => count($requests),
+        ]);
+
+        return $tableExportService->exportPdfHtml(
+            $html,
+            sprintf('admin_tournament_requests_%s.pdf', $timestamp),
+            'A4',
+            'landscape'
+        );
     }
 
     #[Route('/admin/tournament-requests/{id}/review', name: 'admin_tournament_request_review', requirements: ['id' => '\d+'], methods: ['POST'])]
@@ -234,5 +272,52 @@ final class TournamentRequestsController extends AbstractController
         } catch (\Throwable) {
             $this->addFlash('warning', "La demande a ete traitee, mais l'email n'a pas pu etre envoye.");
         }
+    }
+
+    /**
+     * @param list<TournamentRequest> $requests
+     * @return array<int, string>
+     */
+    private function buildRequestPhotoUris(array $requests): array
+    {
+        $photoUris = [];
+        foreach ($requests as $requestItem) {
+            $requestId = $requestItem->getRequestId();
+            if (!is_int($requestId) || $requestId <= 0) {
+                continue;
+            }
+
+            $photoUri = $this->resolvePdfImageUri($requestItem->getPhotoPath());
+            if ($photoUri !== null) {
+                $photoUris[$requestId] = $photoUri;
+            }
+        }
+
+        return $photoUris;
+    }
+
+    private function resolvePdfImageUri(?string $rawPath): ?string
+    {
+        $path = trim((string) $rawPath);
+        if ($path === '') {
+            return null;
+        }
+
+        if (preg_match('#^https?://#i', $path) === 1) {
+            return $path;
+        }
+
+        $projectDir = (string) $this->getParameter('kernel.project_dir');
+        $normalized = ltrim(str_replace('\\', '/', $path), '/');
+        $fullPath = str_starts_with($normalized, 'public/')
+            ? $projectDir . '/' . $normalized
+            : $projectDir . '/public/' . $normalized;
+
+        $realPath = realpath($fullPath);
+        if (!is_string($realPath) || !is_file($realPath)) {
+            return null;
+        }
+
+        return str_replace(' ', '%20', 'file:///' . ltrim(str_replace('\\', '/', $realPath), '/'));
     }
 }

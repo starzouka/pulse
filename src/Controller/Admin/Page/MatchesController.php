@@ -15,6 +15,7 @@ use App\Repository\MatchTeamRepository;
 use App\Repository\TournamentMatchRepository;
 use App\Repository\TournamentRepository;
 use App\Repository\TournamentTeamRepository;
+use App\Service\Admin\TableExportService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormError;
@@ -258,6 +259,126 @@ final class MatchesController extends AbstractController
             'sortOptions' => self::SORTS,
             'counter' => count($matches),
         ]);
+    }
+
+    #[Route('/admin/matches/export/{format}', name: 'admin_matches_export', requirements: ['format' => 'pdf|excel'], methods: ['GET'])]
+    public function export(
+        string $format,
+        Request $request,
+        TournamentMatchRepository $tournamentMatchRepository,
+        MatchTeamRepository $matchTeamRepository,
+        TableExportService $tableExportService,
+    ): Response {
+        $filters = [
+            'q' => trim((string) $request->query->get('q', '')),
+            'tournament' => $this->toPositiveInt($request->query->get('tournament')),
+            'status' => $this->sanitizeEnum((string) $request->query->get('status', ''), self::STATUSES),
+            'game' => $this->toPositiveInt($request->query->get('game')),
+            'date_from' => trim((string) $request->query->get('date_from', '')),
+            'date_to' => trim((string) $request->query->get('date_to', '')),
+            'team' => trim((string) $request->query->get('team', '')),
+            'sort' => $this->sanitizeEnum((string) $request->query->get('sort', 'latest'), self::SORTS) ?? 'latest',
+        ];
+
+        $dateFrom = $this->parseDate($filters['date_from']);
+        $dateTo = $this->parseDate($filters['date_to']);
+
+        $matches = $tournamentMatchRepository->searchForAdmin(
+            $filters['q'],
+            $filters['tournament'],
+            $filters['game'],
+            $filters['status'],
+            $dateFrom,
+            $dateTo,
+            $filters['team'],
+            (string) $filters['sort'],
+            5000
+        );
+
+        $matchIds = [];
+        foreach ($matches as $match) {
+            $matchId = $match->getMatchId();
+            if (is_int($matchId) && $matchId > 0) {
+                $matchIds[] = $matchId;
+            }
+        }
+
+        $matchTeams = $matchTeamRepository->findByMatchIdsWithTeam($matchIds);
+        $matchTeamsByMatchId = [];
+        foreach ($matchTeams as $matchTeam) {
+            $matchId = $matchTeam->getMatchId()?->getMatchId();
+            if (!is_int($matchId) || $matchId <= 0) {
+                continue;
+            }
+
+            $matchTeamsByMatchId[$matchId] ??= [];
+            $matchTeamsByMatchId[$matchId][] = $matchTeam;
+        }
+
+        $headers = ['ID', 'Tournoi', 'Jeu', 'Round', 'Best Of', 'Participants', 'Horaire', 'Status', 'Maj'];
+        $rows = [];
+        $statusCounts = [
+            'SCHEDULED' => 0,
+            'ONGOING' => 0,
+            'FINISHED' => 0,
+            'CANCELLED' => 0,
+        ];
+
+        foreach ($matches as $match) {
+            $matchId = (int) ($match->getMatchId() ?? 0);
+            $participants = [];
+            foreach ($matchTeamsByMatchId[$matchId] ?? [] as $relation) {
+                $teamName = (string) ($relation->getTeamId()?->getName() ?? '-');
+                $label = $teamName;
+                if ($relation->getScore() !== null) {
+                    $label .= ' (' . $relation->getScore() . ')';
+                }
+                if ($relation->isWinner() === true) {
+                    $label .= ' W';
+                }
+                $participants[] = $label;
+            }
+
+            $statusValue = strtoupper((string) ($match->getStatus() ?? 'SCHEDULED'));
+            if (isset($statusCounts[$statusValue])) {
+                $statusCounts[$statusValue]++;
+            }
+
+            $rows[] = [
+                $matchId,
+                (string) ($match->getTournamentId()?->getTitle() ?? '-'),
+                (string) ($match->getTournamentId()?->getGameId()?->getName() ?? '-'),
+                (string) ($match->getRoundName() ?? '-'),
+                $match->getBestOf() !== null ? ('BO' . $match->getBestOf()) : '-',
+                $participants !== [] ? implode(', ', $participants) : '-',
+                $match->getScheduledAt()?->format('Y-m-d H:i') ?? '-',
+                (string) ($match->getStatus() ?? '-'),
+                $match->getUpdatedAt()?->format('Y-m-d H:i') ?? '-',
+            ];
+        }
+
+        $timestamp = (new \DateTimeImmutable())->format('Ymd_His');
+        if ($format === 'excel') {
+            return $tableExportService->exportExcel('Matchs', $headers, $rows, sprintf('admin_matches_%s.xlsx', $timestamp));
+        }
+
+        $html = $this->renderView('admin/pdf/matches_export.html.twig', [
+            'documentTitle' => 'Export Matchs',
+            'documentSubtitle' => 'Vue admin stylisee (HTML/CSS) des matchs filtres.',
+            'generatedAt' => new \DateTimeImmutable(),
+            'filters' => $filters,
+            'stats' => [
+                ['label' => 'Matchs', 'value' => count($matches)],
+                ['label' => 'Scheduled', 'value' => $statusCounts['SCHEDULED']],
+                ['label' => 'Ongoing', 'value' => $statusCounts['ONGOING']],
+                ['label' => 'Finished', 'value' => $statusCounts['FINISHED']],
+            ],
+            'matches' => $matches,
+            'matchTeamsByMatchId' => $matchTeamsByMatchId,
+            'counter' => count($matches),
+        ]);
+
+        return $tableExportService->exportPdfHtml($html, sprintf('admin_matches_%s.pdf', $timestamp), 'A4', 'landscape');
     }
 
     #[Route('/admin/matches/{id}/delete', name: 'admin_match_delete', requirements: ['id' => '\d+'], methods: ['POST'])]
