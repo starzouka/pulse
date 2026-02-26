@@ -11,6 +11,11 @@ use App\Repository\TeamInviteRepository;
 use App\Repository\TeamMemberRepository;
 use App\Repository\UserRepository;
 use App\Service\Captain\CaptainTeamContextProvider;
+use App\Service\Captain\RosterManager;
+use App\Service\Ai\InvitationMessageAssistant;
+use App\Service\Ai\MessageModerationService;
+use App\Service\Realtime\RealtimeNotifier;
+use App\Service\Security\GoogleRecaptchaVerifier;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -26,6 +31,7 @@ final class CaptainInviteController extends AbstractController
         TeamInviteRepository $teamInviteRepository,
         TeamMemberRepository $teamMemberRepository,
         UserRepository $userRepository,
+        MessageModerationService $messageModerationService,
     ): Response {
         $viewer = $this->getUser();
         if (!$viewer instanceof User) {
@@ -79,6 +85,9 @@ final class CaptainInviteController extends AbstractController
             'search_query' => $searchQuery,
             'search_results' => $searchResults,
             'latest_invites' => $latestInvites,
+            'spam_terms_examples' => array_slice($messageModerationService->getSpamTerms(), 0, 8),
+            'toxic_terms_examples' => array_slice($messageModerationService->getToxicTerms(), 0, 8),
+            'google_recaptcha_site_key' => trim((string) ($_ENV['GOOGLE_RECAPTCHA_SITE_KEY'] ?? $_SERVER['GOOGLE_RECAPTCHA_SITE_KEY'] ?? '')),
         ]);
     }
 
@@ -89,6 +98,11 @@ final class CaptainInviteController extends AbstractController
         TeamInviteRepository $teamInviteRepository,
         TeamMemberRepository $teamMemberRepository,
         UserRepository $userRepository,
+        RosterManager $rosterManager,
+        InvitationMessageAssistant $invitationMessageAssistant,
+        MessageModerationService $messageModerationService,
+        RealtimeNotifier $realtimeNotifier,
+        GoogleRecaptchaVerifier $googleRecaptchaVerifier,
         EntityManagerInterface $entityManager,
     ): Response {
         $viewer = $this->getUser();
@@ -105,6 +119,7 @@ final class CaptainInviteController extends AbstractController
         $teamId = (int) $request->request->get('team_id', 0);
         $invitedUserId = (int) $request->request->get('invited_user_id', 0);
         $message = $this->normalizeNullableText($request->request->get('message'));
+        $useAiMessage = (string) $request->request->get('use_ai_message', '') === '1';
 
         $team = $captainTeamContextProvider->resolveManagedTeamById($viewer, $teamId);
         if (!$team instanceof Team) {
@@ -123,6 +138,19 @@ final class CaptainInviteController extends AbstractController
 
             return $this->redirectToRoute('front_captain_invite', ['team' => $teamId]);
         }
+        $recaptcha = $googleRecaptchaVerifier->verifyRequest($request, 'captain_invite_send');
+        if (!$recaptcha['success']) {
+            $this->addFlash('error', 'reCAPTCHA: ' . ($recaptcha['message'] ?? 'validation échouée.'));
+
+            return $this->redirectToRoute('front_captain_invite');
+        }
+
+        $rosterCapacity = $rosterManager->validateAddActiveMember($team);
+        if (!$rosterCapacity['ok']) {
+            $this->addFlash('error', $rosterCapacity['message']);
+
+            return $this->redirectToRoute('front_captain_invite', ['team' => $teamId]);
+        }
 
         $activeMembership = $teamMemberRepository->findOneByTeamAndUser($team, $invitedUser);
         if ($activeMembership !== null && $activeMembership->isActive()) {
@@ -138,18 +166,49 @@ final class CaptainInviteController extends AbstractController
             return $this->redirectToRoute('front_captain_invite', ['team' => $teamId]);
         }
 
-        $entityManager->persist(
-            (new TeamInvite())
-                ->setTeamId($team)
-                ->setInvitedUserId($invitedUser)
-                ->setInvitedByUserId($viewer)
-                ->setStatus('PENDING')
-                ->setMessage($message)
-                ->setCreatedAt(new \DateTime())
-                ->setRespondedAt(null),
-        );
+        if ($useAiMessage && $message === null) {
+            $message = $invitationMessageAssistant->generateTeamInviteMessage($team, $viewer, $invitedUser);
+        }
+
+        if ($message !== null) {
+            $moderation = $messageModerationService->analyze($message);
+            if (!$moderation['is_allowed']) {
+                $details = array_filter([
+                    $moderation['spam_matches'] !== [] ? 'spam: ' . implode(', ', $moderation['spam_matches']) : null,
+                    $moderation['toxic_matches'] !== [] ? 'toxicité: ' . implode(', ', $moderation['toxic_matches']) : null,
+                ]);
+                $this->addFlash('error', 'Invitation bloquée par modération (' . implode(' | ', $details) . ').');
+
+                return $this->redirectToRoute('front_captain_invite', ['team' => $teamId, 'q' => (string) $request->request->get('q', '')]);
+            }
+
+            if ($moderation['severity'] === 'medium') {
+                $this->addFlash('info', 'Message d’invitation envoyé avec avertissement modération.');
+            }
+        }
+
+        $invite = (new TeamInvite())
+            ->setTeamId($team)
+            ->setInvitedUserId($invitedUser)
+            ->setInvitedByUserId($viewer)
+            ->setStatus('PENDING')
+            ->setMessage($message)
+            ->setCreatedAt(new \DateTime())
+            ->setRespondedAt(null);
+        $entityManager->persist($invite);
 
         $entityManager->flush();
+
+        $realtimeNotifier->publish(
+            sprintf('/users/%d/team-invites', (int) ($invitedUser->getUserId() ?? 0)),
+            [
+                'type' => 'team_invite.created',
+                'team_id' => $team->getTeamId(),
+                'team_name' => $team->getName(),
+                'invite_id' => $invite->getInviteId(),
+                'message' => $invite->getMessage(),
+            ]
+        );
 
         $this->addFlash('success', 'Invitation envoyee.');
 

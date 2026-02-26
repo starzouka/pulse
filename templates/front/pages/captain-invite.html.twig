@@ -31,6 +31,10 @@
               <input class="input" type="search" name="q" value="{{ search_query }}" placeholder="Rechercher par username ou nom">
               <button class="btn btn--primary" type="submit">Rechercher</button>
             </div>
+            <div class="muted" style="margin-top:10px;">
+              Tests modération (spam): {{ spam_terms_examples|join(', ') }}<br>
+              Tests toxicité: {{ toxic_terms_examples|join(', ') }}
+            </div>
           </form>
 
           <section class="panel">
@@ -54,10 +58,12 @@
                       <td>
                         <form method="post" action="{{ path('front_captain_invite_send') }}">
                           <input type="hidden" name="_token" value="{{ csrf_token('captain_invite_send') }}">
+                          <input type="hidden" name="g-recaptcha-response" data-recaptcha-token>
                           <input type="hidden" name="team_id" value="{{ active_team.teamId }}">
                           <input type="hidden" name="invited_user_id" value="{{ candidate.userId }}">
                           <input class="input" type="text" name="message" placeholder="Message optionnel" maxlength="255" style="max-width:220px;">
                           <button class="btn btn--ghost" type="submit">Inviter</button>
+                          <button class="btn btn--soft" type="submit" name="use_ai_message" value="1">Inviter (IA)</button>
                         </form>
                       </td>
                     </tr>
@@ -120,5 +126,29 @@
   </main>
 
   {% include 'front/partials/_auth_modal.html.twig' %}
+
+  {% if google_recaptcha_site_key %}
+    <script src="https://www.google.com/recaptcha/api.js?render={{ google_recaptcha_site_key }}"></script>
+    <script>
+      (() => {
+        const forms = document.querySelectorAll('form[action$="{{ path('front_captain_invite_send')|e('js') }}"]');
+        if (!forms.length || !window.grecaptcha) return;
+        forms.forEach((form) => {
+          form.addEventListener('submit', async (event) => {
+            const tokenInput = form.querySelector('[data-recaptcha-token]');
+            if (!tokenInput || tokenInput.value) return;
+            event.preventDefault();
+            try {
+              const token = await window.grecaptcha.execute('{{ google_recaptcha_site_key|e('js') }}', { action: 'captain_invite_send' });
+              tokenInput.value = token;
+            } catch (e) {
+              tokenInput.value = '';
+            }
+            form.submit();
+          });
+        });
+      })();
+    </script>
+  {% endif %}
 {% endblock %}
 

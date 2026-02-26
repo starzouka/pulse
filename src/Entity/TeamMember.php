@@ -13,6 +13,10 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Table(name: 'team_members')]
 class TeamMember
 {
+    public const ROSTER_ROLE_CAPTAIN = 'CAPTAIN';
+    public const ROSTER_ROLE_CO_CAPTAIN = 'CO_CAPTAIN';
+    public const ROSTER_ROLE_STARTER = 'STARTER';
+    public const ROSTER_ROLE_SUBSTITUTE = 'SUBSTITUTE';
     
     #[ORM\Id]
     #[ORM\ManyToOne(targetEntity: Team::class)]
@@ -34,6 +38,9 @@ class TeamMember
     
     #[ORM\Column(name: 'left_at', type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $leftAt = null;
+
+    #[ORM\Column(name: 'roster_role', type: Types::STRING, length: 20, options: ['default' => self::ROSTER_ROLE_STARTER])]
+    private string $rosterRole = self::ROSTER_ROLE_STARTER;
 
     public function getTeamId(): ?Team
     {
@@ -91,6 +98,28 @@ class TeamMember
     public function setLeftAt(?\DateTime $leftAt): static
     {
         $this->leftAt = $leftAt;
+
+        return $this;
+    }
+
+    public function getRosterRole(): string
+    {
+        return $this->rosterRole;
+    }
+
+    public function setRosterRole(string $rosterRole): static
+    {
+        $normalized = strtoupper(trim($rosterRole));
+        if (!in_array($normalized, [
+            self::ROSTER_ROLE_CAPTAIN,
+            self::ROSTER_ROLE_CO_CAPTAIN,
+            self::ROSTER_ROLE_STARTER,
+            self::ROSTER_ROLE_SUBSTITUTE,
+        ], true)) {
+            $normalized = self::ROSTER_ROLE_STARTER;
+        }
+
+        $this->rosterRole = $normalized;
 
         return $this;
     }

@@ -4,6 +4,35 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    app.team_roster.max_active_members: 10
+    app.team_roster.max_substitutes: 3
+    app.team_roster.max_co_captains: 2
+    app.message_moderation.spam_terms:
+        - whatsapp
+        - telegram
+        - t.me
+        - bit.ly
+        - tinyurl
+        - free money
+        - click here
+        - guaranteed win
+        - crypto signal
+        - promo code
+        - casino
+        - loan
+        - urgent transfer
+        - investment plan
+    app.message_moderation.toxic_terms:
+        - idiot
+        - noob
+        - loser
+        - trash
+        - stupid
+        - moron
+        - dumb
+        - kill yourself
+        - shut up
+        - toxic
 
 services:
     # default configuration for services in *this* file
@@ -32,6 +61,48 @@ services:
     App\Controller\Front\Page\MatchDetailController:
         tags: ['controller.service_arguments']
         public: true
+
+    App\Service\Media\ImageUploader:
+        arguments:
+            $cloudinaryCloudName: '%env(string:CLOUDINARY_CLOUD_NAME)%'
+            $cloudinaryApiKey: '%env(string:CLOUDINARY_API_KEY)%'
+            $cloudinaryApiSecret: '%env(string:CLOUDINARY_API_SECRET)%'
+            $cloudinaryFolder: '%env(string:CLOUDINARY_FOLDER)%'
+
+    App\Service\Location\OpenStreetMapGeocoder:
+        arguments:
+            $baseUrl: '%env(string:OSM_NOMINATIM_BASE_URL)%'
+            $contactEmail: '%env(string:OSM_NOMINATIM_EMAIL)%'
+
+    App\Service\Ai\InvitationMessageAssistant:
+        arguments:
+            $openAiApiKey: '%env(string:OPENAI_API_KEY)%'
+            $openAiModel: '%env(string:OPENAI_MODEL)%'
+            $remoteEnabled: '%env(bool:PULSE_AI_ENABLE_REMOTE)%'
+
+    App\Service\Ai\TeamBrandingAssistant:
+        arguments:
+            $openAiApiKey: '%env(string:OPENAI_API_KEY)%'
+            $openAiModel: '%env(string:OPENAI_MODEL)%'
+            $remoteEnabled: '%env(bool:PULSE_AI_ENABLE_REMOTE)%'
+
+    App\Service\Ai\MessageModerationService:
+        arguments:
+            $spamTerms: '%app.message_moderation.spam_terms%'
+            $toxicTerms: '%app.message_moderation.toxic_terms%'
+
+    App\Service\Ai\TeamChatModerationService: ~
+
+    App\Service\Captain\RosterManager:
+        arguments:
+            $maxActiveMembers: '%app.team_roster.max_active_members%'
+            $maxSubstitutes: '%app.team_roster.max_substitutes%'
+            $maxCoCaptains: '%app.team_roster.max_co_captains%'
+
+    App\Service\Security\GoogleRecaptchaVerifier:
+        arguments:
+            $secretKey: '%env(string:GOOGLE_RECAPTCHA_SECRET_KEY)%'
+            $minScore: '%env(float:GOOGLE_RECAPTCHA_MIN_SCORE)%'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

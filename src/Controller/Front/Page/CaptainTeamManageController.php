@@ -12,11 +12,14 @@ use App\Repository\TeamMemberRepository;
 use App\Repository\TeamRepository;
 use App\Repository\TournamentTeamRepository;
 use App\Service\Captain\CaptainTeamContextProvider;
+use App\Service\Ai\TeamBrandingAssistant;
+use App\Service\Location\OpenStreetMapGeocoder;
 use App\Service\Media\ImageUploader;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 
 final class CaptainTeamManageController extends AbstractController
@@ -70,6 +73,37 @@ final class CaptainTeamManageController extends AbstractController
             'active_team' => $activeTeam,
             'team_form_mode' => $teamFormMode,
             'team_stats' => $teamStats,
+            'google_recaptcha_site_key' => trim((string) ($_ENV['GOOGLE_RECAPTCHA_SITE_KEY'] ?? $_SERVER['GOOGLE_RECAPTCHA_SITE_KEY'] ?? '')),
+        ]);
+    }
+
+    #[Route('/pages/captain-team-manage/ai-branding', name: 'front_captain_team_manage_ai_branding', methods: ['POST'])]
+    public function generateBrandingSuggestion(
+        Request $request,
+        TeamBrandingAssistant $teamBrandingAssistant,
+    ): JsonResponse {
+        $viewer = $this->getUser();
+        if (!$viewer instanceof User) {
+            return $this->json(['ok' => false, 'message' => 'Non authentifié.'], 401);
+        }
+
+        if (!$this->isCsrfTokenValid('captain_team_branding_ai', (string) $request->request->get('_token'))) {
+            return $this->json(['ok' => false, 'message' => 'CSRF invalide.'], 400);
+        }
+
+        $teamName = trim((string) $request->request->get('name', ''));
+        $region = $this->normalizeNullableText($request->request->get('region'));
+        $style = $this->normalizeNullableText($request->request->get('style_hint'));
+
+        if ($teamName === '') {
+            return $this->json(['ok' => false, 'message' => "Le nom de l'équipe est obligatoire pour générer un branding."], 422);
+        }
+
+        $suggestion = $teamBrandingAssistant->generate($teamName, $region, $style);
+
+        return $this->json([
+            'ok' => true,
+            'data' => $suggestion,
         ]);
     }
 
@@ -78,6 +112,8 @@ final class CaptainTeamManageController extends AbstractController
         Request $request,
         TeamRepository $teamRepository,
         ImageUploader $imageUploader,
+        OpenStreetMapGeocoder $openStreetMapGeocoder,
+        \App\Service\Security\GoogleRecaptchaVerifier $googleRecaptchaVerifier,
         EntityManagerInterface $entityManager,
     ): Response {
         $viewer = $this->getUser();
@@ -96,6 +132,15 @@ final class CaptainTeamManageController extends AbstractController
         $name = trim((string) $request->request->get('name', ''));
         $region = $this->normalizeNullableText($request->request->get('region'));
         $description = $this->normalizeNullableText($request->request->get('description'));
+        $regionLookup = $openStreetMapGeocoder->geocodeRegion($region);
+        if (is_array($regionLookup)) {
+            $region = $regionLookup['normalized_region'];
+        }
+        $recaptcha = $googleRecaptchaVerifier->verifyRequest($request, 'captain_team_create');
+        if (!$recaptcha['success']) {
+            $this->addFlash('error', 'reCAPTCHA: ' . ($recaptcha['message'] ?? 'validation échouée'));
+            return $this->redirectToRoute('front_captain_team_manage', ['mode' => 'create']);
+        }
 
         if ($name === '') {
             $this->addFlash('error', "Le nom de l'equipe est obligatoire.");
@@ -143,11 +188,15 @@ final class CaptainTeamManageController extends AbstractController
                 ->setUserId($viewer)
                 ->setJoinedAt($now)
                 ->setIsActive(true)
-                ->setLeftAt(null),
+                ->setLeftAt(null)
+                ->setRosterRole(TeamMember::ROSTER_ROLE_CAPTAIN),
         );
 
         $entityManager->flush();
 
+        if (is_array($regionLookup)) {
+            $this->addFlash('info', 'Région normalisée via OpenStreetMap: ' . $regionLookup['normalized_region']);
+        }
         $this->addFlash('success', "L'equipe a ete creee.");
 
         return $this->redirectToRoute('front_captain_team_manage', [
@@ -163,6 +212,8 @@ final class CaptainTeamManageController extends AbstractController
         TeamRepository $teamRepository,
         TeamMemberRepository $teamMemberRepository,
         ImageUploader $imageUploader,
+        OpenStreetMapGeocoder $openStreetMapGeocoder,
+        \App\Service\Security\GoogleRecaptchaVerifier $googleRecaptchaVerifier,
         EntityManagerInterface $entityManager,
     ): Response {
         $viewer = $this->getUser();
@@ -186,6 +237,15 @@ final class CaptainTeamManageController extends AbstractController
         $name = trim((string) $request->request->get('name', ''));
         $region = $this->normalizeNullableText($request->request->get('region'));
         $description = $this->normalizeNullableText($request->request->get('description'));
+        $regionLookup = $openStreetMapGeocoder->geocodeRegion($region);
+        if (is_array($regionLookup)) {
+            $region = $regionLookup['normalized_region'];
+        }
+        $recaptcha = $googleRecaptchaVerifier->verifyRequest($request, 'captain_team_update');
+        if (!$recaptcha['success']) {
+            $this->addFlash('error', 'reCAPTCHA: ' . ($recaptcha['message'] ?? 'validation échouée'));
+            return $this->redirectToRoute('front_captain_team_manage', ['team' => $id]);
+        }
 
         if ($name === '') {
             $this->addFlash('error', "Le nom de l'equipe est obligatoire.");
@@ -227,7 +287,8 @@ final class CaptainTeamManageController extends AbstractController
         if ($captainMembership instanceof TeamMember) {
             $captainMembership
                 ->setIsActive(true)
-                ->setLeftAt(null);
+                ->setLeftAt(null)
+                ->setRosterRole(TeamMember::ROSTER_ROLE_CAPTAIN);
         } else {
             $entityManager->persist(
                 (new TeamMember())
@@ -235,12 +296,16 @@ final class CaptainTeamManageController extends AbstractController
                     ->setUserId($viewer)
                     ->setJoinedAt(new \DateTime())
                     ->setIsActive(true)
-                    ->setLeftAt(null),
+                    ->setLeftAt(null)
+                    ->setRosterRole(TeamMember::ROSTER_ROLE_CAPTAIN),
             );
         }
 
         $entityManager->flush();
 
+        if (is_array($regionLookup)) {
+            $this->addFlash('info', 'Région normalisée via OpenStreetMap: ' . $regionLookup['normalized_region']);
+        }
         $this->addFlash('success', "L'equipe a ete mise a jour.");
 
         return $this->redirectToRoute('front_captain_team_manage', [

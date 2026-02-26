@@ -34,13 +34,21 @@
                 </div>
               </div>
             </div>
+            <div class="statsRow" style="margin-top:12px;">
+              <div class="statCard"><div class="statCard__value">{{ roster_stats.total_active }}</div><div class="statCard__label">Actifs</div></div>
+              <div class="statCard"><div class="statCard__value">{{ roster_stats.captains }}</div><div class="statCard__label">Captain</div></div>
+              <div class="statCard"><div class="statCard__value">{{ roster_stats.co_captains }}</div><div class="statCard__label">Co-captains</div></div>
+              <div class="statCard"><div class="statCard__value">{{ roster_stats.starters }}</div><div class="statCard__label">Titulaires</div></div>
+              <div class="statCard"><div class="statCard__value">{{ roster_stats.substitutes }}</div><div class="statCard__label">Remplaçants</div></div>
+            </div>
 
             <div class="tableWrap" style="margin-top:10px;">
               <table class="table">
                 <thead>
                   <tr>
                     <th>Joueur</th>
-                    <th>Role</th>
+                    <th>Role compte</th>
+                    <th>Role roster</th>
                     <th>Date adhesion</th>
                     <th>Action</th>
                   </tr>
@@ -60,6 +68,23 @@
                           <span class="badge">MEMBRE</span>
                         {% endif %}
                       </td>
+                      <td>
+                        {% if active_team.captainUserId and member.userId == active_team.captainUserId.userId %}
+                          <span class="badge badge--info">CAPTAIN</span>
+                        {% else %}
+                          <form method="post" action="{{ path('front_captain_members_role', {teamId: active_team.teamId, userId: member.userId}) }}" style="display:flex; gap:8px; align-items:center;">
+                            <input type="hidden" name="_token" value="{{ csrf_token('captain_member_role_' ~ active_team.teamId ~ '_' ~ member.userId) }}">
+                            <div class="select" style="min-width:160px;">
+                              <select name="roster_role">
+                                {% for rosterRole in assignable_roster_roles %}
+                                  <option value="{{ rosterRole }}" {{ membership.rosterRole == rosterRole ? 'selected' : '' }}>{{ rosterRole }}</option>
+                                {% endfor %}
+                              </select>
+                            </div>
+                            <button class="btn btn--ghost" type="submit">Maj</button>
+                          </form>
+                        {% endif %}
+                      </td>
                       <td>{{ membership.joinedAt ? membership.joinedAt|date('d/m/Y H:i') : '-' }}</td>
                       <td>
                         {% if active_team.captainUserId and member.userId == active_team.captainUserId.userId %}
@@ -74,7 +99,7 @@
                     </tr>
                   {% else %}
                     <tr>
-                      <td colspan="4">Aucun membre actif.</td>
+                      <td colspan="5">Aucun membre actif.</td>
                     </tr>
                   {% endfor %}
                 </tbody>
@@ -89,7 +114,9 @@
                 <thead>
                   <tr>
                     <th>Joueur</th>
+                    <th>Dernier role roster</th>
                     <th>Date sortie</th>
+                    <th>Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -97,11 +124,18 @@
                     {% set member = membership.userId %}
                     <tr>
                       <td>{{ member.displayName ?: member.username }}</td>
+                      <td>{{ membership.rosterRole ?: 'STARTER' }}</td>
                       <td>{{ membership.leftAt ? membership.leftAt|date('d/m/Y H:i') : '-' }}</td>
+                      <td>
+                        <form method="post" action="{{ path('front_captain_members_reactivate', {teamId: active_team.teamId, userId: member.userId}) }}">
+                          <input type="hidden" name="_token" value="{{ csrf_token('captain_member_reactivate_' ~ active_team.teamId ~ '_' ~ member.userId) }}">
+                          <button class="btn btn--ghost" type="submit">Réactiver</button>
+                        </form>
+                      </td>
                     </tr>
                   {% else %}
                     <tr>
-                      <td colspan="2">Aucun historique de sortie.</td>
+                      <td colspan="4">Aucun historique de sortie.</td>
                     </tr>
                   {% endfor %}
                 </tbody>

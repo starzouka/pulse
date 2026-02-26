@@ -78,7 +78,7 @@
           {% for game in games %}
             {% set gameId = game.gameId ?? 0 %}
             {% set imagePath = game.coverImageId ? game.coverImageId.fileUrl : '' %}
-            {% set imageUrl = imagePath ? (imagePath starts with 'http' ? imagePath : asset(imagePath)) : 'https://picsum.photos/seed/pulse_game_' ~ gameId ~ '/1200/800' %}
+            {% set imageUrl = imagePath ? (imagePath starts with 'http' ? imagePath : (asset(imagePath)|imagine_filter('game_cover_card'))) : 'https://picsum.photos/seed/pulse_game_' ~ gameId ~ '/1200/800' %}
             {% set activeCount = active_tournaments_count_by_game_id[gameId]|default(0) %}
             {% set totalCount = tournaments_count_by_game_id[gameId]|default(0) %}
 

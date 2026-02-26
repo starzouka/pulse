@@ -48,7 +48,7 @@
 
           {% if active_team %}
             {% set teamLogoPath = active_team.logoImageId ? active_team.logoImageId.fileUrl : '' %}
-            {% set teamLogoUrl = teamLogoPath ? (teamLogoPath starts with 'http' ? teamLogoPath : asset(teamLogoPath)) : 'https://picsum.photos/seed/captain_team_' ~ active_team.teamId ~ '/320/320' %}
+            {% set teamLogoUrl = teamLogoPath ? (teamLogoPath starts with 'http' ? teamLogoPath : (asset(teamLogoPath)|imagine_filter('team_logo_thumb'))) : 'https://picsum.photos/seed/captain_team_' ~ active_team.teamId ~ '/320/320' %}
             <section class="panel">
               <div class="profileHeader">
                 <div class="avatarLg" data-avatar="{{ teamLogoUrl }}"></div>
@@ -76,23 +76,40 @@
           {% endif %}
 
           {% if team_form_mode == 'create' %}
-            <form class="panel" method="post" action="{{ path('front_captain_team_manage_create') }}" enctype="multipart/form-data">
+            <form class="panel" method="post" action="{{ path('front_captain_team_manage_create') }}" enctype="multipart/form-data" data-team-manage-form>
               <h3 class="panel__title">CREER UNE EQUIPE</h3>
 
               <div class="formGrid" style="margin-top:12px;">
                 <label class="field">
                   <span class="field__label">Nom de l'equipe *</span>
-                  <input class="input" type="text" name="name" required maxlength="100">
+                  <input class="input" type="text" name="name" required maxlength="100" data-team-name-input>
                 </label>
 
                 <label class="field">
                   <span class="field__label">Region</span>
-                  <input class="input" type="text" name="region" maxlength="80">
+                  <div style="display:flex; gap:8px; align-items:center;">
+                    <input class="input" type="text" name="region" maxlength="80" data-team-region-input style="flex:1;">
+                    <button class="btn btn--ghost" type="button" data-geo-fill-region>Ma position</button>
+                  </div>
                 </label>
 
                 <label class="field">
                   <span class="field__label">Description</span>
-                  <textarea class="textarea" name="description" rows="5"></textarea>
+                  <textarea class="textarea" name="description" rows="5" data-team-description-input></textarea>
+                </label>
+
+                <label class="field">
+                  <span class="field__label">Style IA (optionnel)</span>
+                  <input class="input" type="text" name="style_hint" placeholder="ex: agressif, pro, tactique..." data-team-style-input>
+                </label>
+
+                <label class="field">
+                  <span class="field__label">Slogan IA (aperçu)</span>
+                  <input class="input" type="text" value="" readonly data-team-slogan-output placeholder="Générer via IA">
+                  <div style="margin-top:8px; display:flex; gap:8px; align-items:center;">
+                    <button class="btn btn--soft" type="button" data-generate-team-branding data-branding-url="{{ path('front_captain_team_manage_ai_branding') }}" data-branding-csrf="{{ csrf_token('captain_team_branding_ai') }}">Générer bio + slogan (IA)</button>
+                    <span class="muted" data-branding-source></span>
+                  </div>
                 </label>
 
                 <label class="field">
@@ -103,27 +120,45 @@
 
               <div class="formActions" style="margin-top:12px;">
                 <input type="hidden" name="_token" value="{{ csrf_token('captain_team_create') }}">
+                <input type="hidden" name="g-recaptcha-response" data-recaptcha-token>
                 <button class="btn btn--primary" type="submit">Creer equipe</button>
               </div>
             </form>
           {% elseif active_team %}
-            <form class="panel" method="post" action="{{ path('front_captain_team_manage_update', {id: active_team.teamId}) }}" enctype="multipart/form-data">
+            <form class="panel" method="post" action="{{ path('front_captain_team_manage_update', {id: active_team.teamId}) }}" enctype="multipart/form-data" data-team-manage-form>
               <h3 class="panel__title">MODIFIER L'EQUIPE ACTIVE</h3>
 
               <div class="formGrid" style="margin-top:12px;">
                 <label class="field">
                   <span class="field__label">Nom de l'equipe *</span>
-                  <input class="input" type="text" name="name" value="{{ active_team.name }}" required maxlength="100">
+                  <input class="input" type="text" name="name" value="{{ active_team.name }}" required maxlength="100" data-team-name-input>
                 </label>
 
                 <label class="field">
                   <span class="field__label">Region</span>
-                  <input class="input" type="text" name="region" value="{{ active_team.region }}" maxlength="80">
+                  <div style="display:flex; gap:8px; align-items:center;">
+                    <input class="input" type="text" name="region" value="{{ active_team.region }}" maxlength="80" data-team-region-input style="flex:1;">
+                    <button class="btn btn--ghost" type="button" data-geo-fill-region>Ma position</button>
+                  </div>
                 </label>
 
                 <label class="field">
                   <span class="field__label">Description</span>
-                  <textarea class="textarea" name="description" rows="5">{{ active_team.description }}</textarea>
+                  <textarea class="textarea" name="description" rows="5" data-team-description-input>{{ active_team.description }}</textarea>
+                </label>
+
+                <label class="field">
+                  <span class="field__label">Style IA (optionnel)</span>
+                  <input class="input" type="text" name="style_hint" placeholder="ex: agressif, pro, tactique..." data-team-style-input>
+                </label>
+
+                <label class="field">
+                  <span class="field__label">Slogan IA (aperçu)</span>
+                  <input class="input" type="text" value="" readonly data-team-slogan-output placeholder="Générer via IA">
+                  <div style="margin-top:8px; display:flex; gap:8px; align-items:center;">
+                    <button class="btn btn--soft" type="button" data-generate-team-branding data-branding-url="{{ path('front_captain_team_manage_ai_branding') }}" data-branding-csrf="{{ csrf_token('captain_team_branding_ai') }}">Générer bio + slogan (IA)</button>
+                    <span class="muted" data-branding-source></span>
+                  </div>
                 </label>
 
                 <label class="field">
@@ -134,6 +169,7 @@
 
               <div class="formActions" style="margin-top:12px;">
                 <input type="hidden" name="_token" value="{{ csrf_token('captain_team_update_' ~ active_team.teamId) }}">
+                <input type="hidden" name="g-recaptcha-response" data-recaptcha-token>
                 <button class="btn btn--primary" type="submit">Enregistrer</button>
               </div>
             </form>
@@ -176,5 +212,118 @@
   </main>
 
   {% include 'front/partials/_auth_modal.html.twig' %}
+  <script>
+    (() => {
+      const forms = document.querySelectorAll('[data-team-manage-form]');
+      if (!forms.length) return;
+
+      forms.forEach((form) => {
+        const regionInput = form.querySelector('[data-team-region-input]');
+        const nameInput = form.querySelector('[data-team-name-input]');
+        const descriptionInput = form.querySelector('[data-team-description-input]');
+        const styleInput = form.querySelector('[data-team-style-input]');
+        const sloganOutput = form.querySelector('[data-team-slogan-output]');
+        const brandingSource = form.querySelector('[data-branding-source]');
+
+        const geoButton = form.querySelector('[data-geo-fill-region]');
+        if (geoButton && regionInput) {
+          geoButton.addEventListener('click', async () => {
+            if (!navigator.geolocation) {
+              alert('Géolocalisation non supportée par le navigateur.');
+              return;
+            }
+            geoButton.disabled = true;
+            geoButton.textContent = 'Localisation...';
+            navigator.geolocation.getCurrentPosition(async (position) => {
+              try {
+                const url = new URL('{{ path('api_location_reverse_geocode') }}', window.location.origin);
+                url.searchParams.set('lat', String(position.coords.latitude));
+                url.searchParams.set('lon', String(position.coords.longitude));
+                const resp = await fetch(url.toString(), { headers: { 'Accept': 'application/json' } });
+                const payload = await resp.json();
+                if (payload && payload.ok && payload.data && payload.data.normalized_region) {
+                  regionInput.value = payload.data.normalized_region;
+                } else {
+                  alert((payload && payload.message) || 'Localisation introuvable.');
+                }
+              } catch (e) {
+                alert('Erreur API géolocalisation.');
+              } finally {
+                geoButton.disabled = false;
+                geoButton.textContent = 'Ma position';
+              }
+            }, () => {
+              geoButton.disabled = false;
+              geoButton.textContent = 'Ma position';
+              alert('Accès à la position refusé.');
+            }, { enableHighAccuracy: true, timeout: 10000 });
+          });
+        }
+
+        const brandingButton = form.querySelector('[data-generate-team-branding]');
+        if (brandingButton && nameInput && descriptionInput && sloganOutput) {
+          brandingButton.addEventListener('click', async () => {
+            brandingButton.disabled = true;
+            brandingButton.textContent = 'Génération...';
+            try {
+              const body = new URLSearchParams();
+              body.set('_token', brandingButton.dataset.brandingCsrf || '');
+              body.set('name', nameInput.value || '');
+              body.set('region', regionInput ? regionInput.value || '' : '');
+              body.set('style_hint', styleInput ? styleInput.value || '' : '');
+
+              const resp = await fetch(brandingButton.dataset.brandingUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json' },
+                body: body.toString(),
+              });
+              const payload = await resp.json();
+              if (payload && payload.ok && payload.data) {
+                if (!descriptionInput.value.trim()) {
+                  descriptionInput.value = payload.data.bio || '';
+                } else {
+                  descriptionInput.value = (descriptionInput.value.trim() + "\\n\\n" + (payload.data.bio || '')).trim();
+                }
+                sloganOutput.value = payload.data.slogan || '';
+                if (brandingSource) {
+                  brandingSource.textContent = 'Source: ' + (payload.data.source || 'IA');
+                }
+              } else {
+                alert((payload && payload.message) || 'Erreur génération IA.');
+              }
+            } catch (e) {
+              alert('Erreur génération IA.');
+            } finally {
+              brandingButton.disabled = false;
+              brandingButton.textContent = 'Générer bio + slogan (IA)';
+            }
+          });
+        }
+      });
+    })();
+  </script>
+  {% if google_recaptcha_site_key %}
+    <script src="https://www.google.com/recaptcha/api.js?render={{ google_recaptcha_site_key }}"></script>
+    <script>
+      (() => {
+        const forms = document.querySelectorAll('[data-team-manage-form]');
+        if (!forms.length || !window.grecaptcha) return;
+        forms.forEach((form) => {
+          form.addEventListener('submit', async (event) => {
+            const tokenInput = form.querySelector('[data-recaptcha-token]');
+            if (!tokenInput || tokenInput.value) return;
+            event.preventDefault();
+            const action = form.action.includes('/update') ? 'captain_team_update' : 'captain_team_create';
+            try {
+              tokenInput.value = await window.grecaptcha.execute('{{ google_recaptcha_site_key|e('js') }}', { action });
+            } catch (e) {
+              tokenInput.value = '';
+            }
+            form.submit();
+          });
+        });
+      })();
+    </script>
+  {% endif %}
 {% endblock %}
 

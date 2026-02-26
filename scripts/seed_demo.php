@@ -8,6 +8,41 @@ $c = $kernel->getContainer()->get('doctrine')->getConnection();
 $b = new DateTimeImmutable('2026-02-12 10:00:00');
 $D = fn($d) => $d->format('Y-m-d');
 $T = fn($d) => $d->format('Y-m-d H:i:s');
+$inferMime = static function (string $url): string {
+  $path = (string) parse_url($url, PHP_URL_PATH);
+  $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+  return match ($ext) {
+    'png' => 'image/png',
+    'webp' => 'image/webp',
+    'svg' => 'image/svg+xml',
+    'gif' => 'image/gif',
+    default => 'image/jpeg',
+  };
+};
+$wikiThumb = static function (string $title, ?string $fallback = null): ?string {
+  $url = 'https://en.wikipedia.org/api/rest_v1/page/summary/'.rawurlencode($title);
+  for ($attempt = 1; $attempt <= 2; $attempt++) {
+    $ctx = stream_context_create([
+      'http' => [
+        'method' => 'GET',
+        'timeout' => 8,
+        'header' => "User-Agent: PulseSeedDemo/1.0\r\nAccept: application/json\r\n",
+      ],
+    ]);
+    $json = @file_get_contents($url, false, $ctx);
+    if ($json !== false) {
+      $data = json_decode($json, true);
+      if (is_array($data)) {
+        $thumb = $data['thumbnail']['source'] ?? $data['originalimage']['source'] ?? null;
+        if (is_string($thumb) && $thumb !== '') {
+          return $thumb;
+        }
+      }
+    }
+    usleep(200000);
+  }
+  return $fallback;
+};
 $tables=['match_teams','matches','tournament_teams','tournaments','tournament_requests','orders','cart_items','carts','product_images','products','team_invites','team_join_requests','team_members','teams','reports','notifications','messages','post_likes','comments','post_images','posts','friendships','friend_requests','games','categories','images','users'];
 
 try {
@@ -17,11 +52,47 @@ try {
 
   $roles=['ADMIN','ORGANIZER','CAPTAIN','PLAYER','ORGANIZER','CAPTAIN','PLAYER','PLAYER','ORGANIZER','PLAYER'];
   $genders=['MALE','FEMALE','OTHER','UNKNOWN','MALE','FEMALE','OTHER','UNKNOWN','MALE','FEMALE'];
+  $usernames=[
+    1 => 'admin_demo',
+    2 => 'organizer_demo',
+    3 => 'captain_demo',
+    4 => 'player_demo',
+  ];
+  $emails=[
+    1 => 'admin@pulse.test',
+    2 => 'organizer@pulse.test',
+    3 => 'captain@pulse.test',
+    4 => 'player@pulse.test',
+  ];
+  $displayNames=[
+    1 => 'Admin Demo',
+    2 => 'Organizer Demo',
+    3 => 'Captain Demo',
+    4 => 'Player Demo',
+  ];
   $hash=password_hash('Password123!', PASSWORD_BCRYPT);
   for($i=1;$i<=10;$i++){
     $d=$b->modify('-'.(30-$i).' days');
     $c->insert('users',[
-      'user_id'=>$i,'username'=>sprintf('user_%02d',$i),'email'=>sprintf('user%02d@pulse.test',$i),'password_hash'=>$hash,'role'=>$roles[$i-1],'display_name'=>sprintf('User %02d',$i),'bio'=>sprintf('Profil test %02d',$i),'phone'=>sprintf('+2165000%04d',$i),'country'=>'Tunisia','birth_date'=>$D($b->modify('-'.(9000+$i*100).' days')),'gender'=>$genders[$i-1],'email_verified'=>$i<=8?1:0,'is_active'=>1,'last_login_at'=>$T($b->modify('-'.$i.' hours')),'profile_image_id'=>null,'created_at'=>$T($d),'updated_at'=>$T($d->modify('+2 hours')),'reset_password_token_hash'=>null,'reset_password_expires_at'=>null
+      'user_id'=>$i,
+      'username'=>$usernames[$i] ?? sprintf('user_%02d',$i),
+      'email'=>$emails[$i] ?? sprintf('user%02d@pulse.test',$i),
+      'password_hash'=>$hash,
+      'role'=>$roles[$i-1],
+      'display_name'=>$displayNames[$i] ?? sprintf('User %02d',$i),
+      'bio'=>sprintf('Profil test %02d',$i),
+      'phone'=>sprintf('+2165000%04d',$i),
+      'country'=>'Tunisia',
+      'birth_date'=>$D($b->modify('-'.(9000+$i*100).' days')),
+      'gender'=>$genders[$i-1],
+      'email_verified'=>$i<=8?1:0,
+      'is_active'=>1,
+      'last_login_at'=>$T($b->modify('-'.$i.' hours')),
+      'profile_image_id'=>null,
+      'created_at'=>$T($d),
+      'updated_at'=>$T($d->modify('+2 hours')),
+      'reset_password_token_hash'=>null,
+      'reset_password_expires_at'=>null
     ]);
   }
 
@@ -31,11 +102,70 @@ try {
     $c->update('users',['profile_image_id'=>$i],['user_id'=>$i]);
   }
 
+  $gameImageSources = [
+    1 => ['Valorant', 'https://picsum.photos/seed/valorant_fallback/1200/800'],
+    2 => ['League_of_Legends', 'https://picsum.photos/seed/lol_fallback/1200/800'],
+    3 => ['Fortnite:_Save_the_World', 'https://upload.wikimedia.org/wikipedia/en/a/ae/Fortnite_Save_The_World.jpg'],
+    4 => ['EA_Sports_FC_24', 'https://picsum.photos/seed/eafc_fallback/1200/800'],
+    5 => ['Gran_Turismo_7', 'https://picsum.photos/seed/gt7_fallback/1200/800'],
+    6 => ['Street_Fighter_6', 'https://picsum.photos/seed/sf6_fallback/1200/800'],
+    7 => ['StarCraft_II:_Wings_of_Liberty', 'https://picsum.photos/seed/sc2_fallback/1200/800'],
+    8 => ['Hearthstone', 'https://picsum.photos/seed/hearthstone_fallback/1200/800'],
+    9 => ['World_of_Warcraft', 'https://picsum.photos/seed/wow_fallback/1200/800'],
+    10 => ['Football_Manager_2024', 'https://upload.wikimedia.org/wikipedia/en/e/e2/Football_Manager_2024.jpg'],
+  ];
+  foreach ($gameImageSources as $i => [$wikiTitle, $fallbackUrl]) {
+    $fileUrl = $wikiThumb($wikiTitle, $fallbackUrl) ?? $fallbackUrl;
+    $c->insert('images',[
+      'image_id'=>10+$i,
+      'file_url'=>$fileUrl,
+      'mime_type'=>$inferMime($fileUrl),
+      'size_bytes'=>0,
+      'width'=>1200,
+      'height'=>800,
+      'alt_text'=>'Game cover '.$i,
+      'uploaded_by_user_id'=>1,
+      'created_at'=>$T($b->modify('-'.(8-$i).' days')),
+    ]);
+  }
+
+  $teamLogoFallbacks = [
+    'uploads/teams/team_logo_7a45900be6ae2bde3151.png',
+    'uploads/teams/team_logo_bae8f45f98a2be314c73.webp',
+  ];
+  $teamImageSources = [
+    1 => ['Team_Liquid', $teamLogoFallbacks[0]],
+    2 => ['Fnatic', $teamLogoFallbacks[1]],
+    3 => ['G2_Esports', $teamLogoFallbacks[0]],
+    4 => ['Natus_Vincere', $teamLogoFallbacks[1]],
+    5 => ['Cloud9', $teamLogoFallbacks[0]],
+    6 => ['T1_(esports)', $teamLogoFallbacks[1]],
+    7 => ['Karmine_Corp', $teamLogoFallbacks[0]],
+    8 => ['FaZe_Clan', $teamLogoFallbacks[1]],
+    9 => ['Team_Vitality', $teamLogoFallbacks[0]],
+    10 => ['Gen.G', $teamLogoFallbacks[1]],
+  ];
+  foreach ($teamImageSources as $i => [$wikiTitle, $fallbackUrl]) {
+    $fileUrl = $wikiThumb($wikiTitle, $fallbackUrl) ?? $fallbackUrl;
+    $localPath = str_starts_with($fileUrl, 'http') ? null : (__DIR__.'/../public/'.$fileUrl);
+    $c->insert('images',[
+      'image_id'=>20+$i,
+      'file_url'=>$fileUrl,
+      'mime_type'=>$inferMime($fileUrl),
+      'size_bytes'=>$localPath && is_file($localPath) ? filesize($localPath) : 0,
+      'width'=>800,
+      'height'=>800,
+      'alt_text'=>'Team logo '.$i,
+      'uploaded_by_user_id'=>1,
+      'created_at'=>$T($b->modify('-'.(6-$i).' days')),
+    ]);
+  }
+
   $cats=['FPS','MOBA','Battle Royale','Sports','Racing','Fighting','RTS','Card Game','MMORPG','Simulation'];
   $games=['Valorant','League of Legends','Fortnite','EA FC 26','Gran Turismo 7','Street Fighter 6','StarCraft II','Hearthstone','World of Warcraft','Football Manager 2026'];
   for($i=1;$i<=10;$i++){
     $c->insert('categories',['category_id'=>$i,'name'=>$cats[$i-1],'description'=>'Categorie '.$cats[$i-1],'created_at'=>$T($b->modify('-'.(40-$i).' days'))]);
-    $c->insert('games',['game_id'=>$i,'category_id'=>$i,'name'=>$games[$i-1],'description'=>$games[$i-1].' jeu test','publisher'=>sprintf('Publisher %02d',$i),'cover_image_id'=>$i,'created_at'=>$T($b->modify('-'.(20-$i).' days'))]);
+    $c->insert('games',['game_id'=>$i,'category_id'=>$i,'name'=>$games[$i-1],'description'=>$games[$i-1].' jeu test','publisher'=>sprintf('Publisher %02d',$i),'cover_image_id'=>10+$i,'created_at'=>$T($b->modify('-'.(20-$i).' days'))]);
   }
 
   $fr=[[1,2,'PENDING'],[2,3,'ACCEPTED'],[3,4,'REFUSED'],[4,5,'CANCELLED'],[5,6,'PENDING'],[6,7,'ACCEPTED'],[7,8,'PENDING'],[8,9,'ACCEPTED'],[9,10,'REFUSED'],[10,1,'PENDING']];
@@ -75,8 +205,8 @@ try {
   $caps=[3,6,2,5,9,4,7,8,10,1];
   for($i=1;$i<=10;$i++){
     $d=$b->modify('-'.(25-$i).' days');
-    $c->insert('teams',['team_id'=>$i,'name'=>sprintf('Team Pulse %02d',$i),'description'=>'Equipe '.$i,'region'=>sprintf('Region-%02d',$i),'logo_image_id'=>$i,'captain_user_id'=>$caps[$i-1],'created_at'=>$T($d),'updated_at'=>$T($d->modify('+2 hours'))]);
-    $c->insert('team_members',['team_id'=>$i,'user_id'=>$caps[$i-1],'joined_at'=>$T($b->modify('-'.(12-$i).' days')),'is_active'=>1,'left_at'=>null]);
+    $c->insert('teams',['team_id'=>$i,'name'=>sprintf('Team Pulse %02d',$i),'description'=>'Equipe '.$i,'region'=>sprintf('Region-%02d',$i),'logo_image_id'=>20+$i,'captain_user_id'=>$caps[$i-1],'created_at'=>$T($d),'updated_at'=>$T($d->modify('+2 hours'))]);
+    $c->insert('team_members',['team_id'=>$i,'user_id'=>$caps[$i-1],'joined_at'=>$T($b->modify('-'.(12-$i).' days')),'is_active'=>1,'left_at'=>null,'roster_role'=>'CAPTAIN']);
   }
 
   $st=['PENDING','ACCEPTED','REFUSED','CANCELLED'];

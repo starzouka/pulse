@@ -78,8 +78,8 @@
           {% for team in teams %}
             {% set teamId = team.teamId ?? 0 %}
             {% set logoPath = team.logoImageId ? team.logoImageId.fileUrl : '' %}
-            {% set logoUrl = logoPath ? (logoPath starts with 'http' ? logoPath : asset(logoPath)) : 'https://picsum.photos/seed/pulse_team_logo_' ~ teamId ~ '/600/600' %}
-            {% set bannerUrl = logoPath ? (logoPath starts with 'http' ? logoPath : asset(logoPath)) : 'https://picsum.photos/seed/pulse_team_banner_' ~ teamId ~ '/1200/800' %}
+            {% set logoUrl = logoPath ? (logoPath starts with 'http' ? logoPath : (asset(logoPath)|imagine_filter('team_logo_thumb'))) : 'https://picsum.photos/seed/pulse_team_logo_' ~ teamId ~ '/600/600' %}
+            {% set bannerUrl = logoPath ? (logoPath starts with 'http' ? logoPath : (asset(logoPath)|imagine_filter('team_banner'))) : 'https://picsum.photos/seed/pulse_team_banner_' ~ teamId ~ '/1200/800' %}
             {% set membersCount = members_count_by_team_id[teamId]|default(0) %}
             {% set productsCount = products_count_by_team_id[teamId]|default(0) %}
             {% set tournamentsCount = active_tournaments_count_by_team_id[teamId]|default(0) %}

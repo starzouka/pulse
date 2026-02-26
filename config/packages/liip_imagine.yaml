@@ -1,0 +1,23 @@
+liip_imagine:
+    driver: gd
+    twig:
+        mode: lazy
+    filter_sets:
+        cache: ~
+        team_logo_thumb:
+            quality: 85
+            filters:
+                thumbnail: { size: [320, 320], mode: outbound }
+                background: { size: [320, 320], position: center, color: '#111111' }
+        team_banner:
+            quality: 85
+            filters:
+                thumbnail: { size: [1200, 675], mode: outbound }
+        game_cover_card:
+            quality: 85
+            filters:
+                thumbnail: { size: [1200, 800], mode: outbound }
+        avatar_small:
+            quality: 85
+            filters:
+                thumbnail: { size: [96, 96], mode: outbound }

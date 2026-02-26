@@ -70,9 +70,11 @@
 
                 <form method="post" action="{{ path('front_conversation', {id: partnerId}) }}" style="margin-top:10px; display:flex; gap:8px; align-items:flex-start;">
                   <input type="hidden" name="_token" value="{{ csrf_token('conversation_send') }}">
+                  <input type="hidden" name="g-recaptcha-response" data-recaptcha-token>
                   <textarea class="textarea" name="body_text" placeholder="Ecrire un message..." style="min-height: 70px; flex:1;" required></textarea>
                   <button class="btn btn--primary" type="submit">Envoyer</button>
                 </form>
+                <div class="muted" style="margin-top:8px;">Modération chat équipe (tests): spam/scam, toxicité, agressivité (MAJUSCULES).</div>
               {% else %}
                 <div class="emptyState">Aucun destinataire selectionne.</div>
               {% endif %}
@@ -86,4 +88,24 @@
   </main>
 
   {% include 'front/partials/_auth_modal.html.twig' %}
+  {% if google_recaptcha_site_key %}
+    <script src="https://www.google.com/recaptcha/api.js?render={{ google_recaptcha_site_key }}"></script>
+    <script>
+      (() => {
+        const form = document.querySelector('form[action*="/pages/conversation/"]');
+        if (!form || !window.grecaptcha) return;
+        form.addEventListener('submit', async (event) => {
+          const tokenInput = form.querySelector('[data-recaptcha-token]');
+          if (!tokenInput || tokenInput.value) return;
+          event.preventDefault();
+          try {
+            tokenInput.value = await window.grecaptcha.execute('{{ google_recaptcha_site_key|e('js') }}', { action: 'conversation_send' });
+          } catch (e) {
+            tokenInput.value = '';
+          }
+          form.submit();
+        });
+      })();
+    </script>
+  {% endif %}
 {% endblock %}
