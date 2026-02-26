@@ -278,125 +278,179 @@ class __TwigTemplate_5af86e5521f5671ecd02140f960f6d0b extends Template
             <th>Dates</th>
             <th>Prize pool</th>
             <th>Status</th>
+            <th>IA</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           ";
-        // line 100
+        // line 101
         $context['_parent'] = $context;
-        $context['_seq'] = CoreExtension::ensureTraversable((isset($context["requests"]) || array_key_exists("requests", $context) ? $context["requests"] : (function () { throw new RuntimeError('Variable "requests" does not exist.', 100, $this->source); })()));
+        $context['_seq'] = CoreExtension::ensureTraversable((isset($context["requests"]) || array_key_exists("requests", $context) ? $context["requests"] : (function () { throw new RuntimeError('Variable "requests" does not exist.', 101, $this->source); })()));
         $context['_iterated'] = false;
         foreach ($context['_seq'] as $context["_key"] => $context["requestItem"]) {
-            // line 101
-            yield "            ";
-            $context["requestId"] = (((CoreExtension::getAttribute($this->env, $this->source, $context["requestItem"], "requestId", [], "any", true, true, false, 101) &&  !(null === CoreExtension::getAttribute($this->env, $this->source, $context["requestItem"], "requestId", [], "any", false, false, false, 101)))) ? (CoreExtension::getAttribute($this->env, $this->source, $context["requestItem"], "requestId", [], "any", false, false, false, 101)) : (0));
             // line 102
             yield "            ";
-            $context["status"] = ((CoreExtension::getAttribute($this->env, $this->source, $context["requestItem"], "status", [], "any", true, true, false, 102)) ? (Twig\Extension\CoreExtension::default(CoreExtension::getAttribute($this->env, $this->source, $context["requestItem"], "status", [], "any", false, false, false, 102), "PENDING")) : ("PENDING"));
+            $context["requestId"] = (((CoreExtension::getAttribute($this->env, $this->source, $context["requestItem"], "requestId", [], "any", true, true, false, 102) &&  !(null === CoreExtension::getAttribute($this->env, $this->source, $context["requestItem"], "requestId", [], "any", false, false, false, 102)))) ? (CoreExtension::getAttribute($this->env, $this->source, $context["requestItem"], "requestId", [], "any", false, false, false, 102)) : (0));
             // line 103
             yield "            ";
-            $context["statusBadge"] = ((((isset($context["status"]) || array_key_exists("status", $context) ? $context["status"] : (function () { throw new RuntimeError('Variable "status" does not exist.', 103, $this->source); })()) == "ACCEPTED")) ? ("badge--success") : (((((isset($context["status"]) || array_key_exists("status", $context) ? $context["status"] : (function () { throw new RuntimeError('Variable "status" does not exist.', 103, $this->source); })()) == "REFUSED")) ? ("badge--danger") : ("badge--warning"))));
+            $context["status"] = ((CoreExtension::getAttribute($this->env, $this->source, $context["requestItem"], "status", [], "any", true, true, false, 103)) ? (Twig\Extension\CoreExtension::default(CoreExtension::getAttribute($this->env, $this->source, $context["requestItem"], "status", [], "any", false, false, false, 103), "PENDING")) : ("PENDING"));
             // line 104
+            yield "            ";
+            $context["statusBadge"] = ((((isset($context["status"]) || array_key_exists("status", $context) ? $context["status"] : (function () { throw new RuntimeError('Variable "status" does not exist.', 104, $this->source); })()) == "ACCEPTED")) ? ("badge--success") : (((((isset($context["status"]) || array_key_exists("status", $context) ? $context["status"] : (function () { throw new RuntimeError('Variable "status" does not exist.', 104, $this->source); })()) == "REFUSED")) ? ("badge--danger") : ("badge--warning"))));
+            // line 105
+            yield "            ";
+            $context["ai"] = ((CoreExtension::getAttribute($this->env, $this->source, ($context["aiAssessmentsByRequestId"] ?? null), (isset($context["requestId"]) || array_key_exists("requestId", $context) ? $context["requestId"] : (function () { throw new RuntimeError('Variable "requestId" does not exist.', 105, $this->source); })()), [], "array", true, true, false, 105)) ? (Twig\Extension\CoreExtension::default(CoreExtension::getAttribute($this->env, $this->source, (isset($context["aiAssessmentsByRequestId"]) || array_key_exists("aiAssessmentsByRequestId", $context) ? $context["aiAssessmentsByRequestId"] : (function () { throw new RuntimeError('Variable "aiAssessmentsByRequestId" does not exist.', 105, $this->source); })()), (isset($context["requestId"]) || array_key_exists("requestId", $context) ? $context["requestId"] : (function () { throw new RuntimeError('Variable "requestId" does not exist.', 105, $this->source); })()), [], "array", false, false, false, 105), null)) : (null));
+            // line 106
+            yield "            ";
+            $context["aiRisk"] = ((CoreExtension::getAttribute($this->env, $this->source, ($context["ai"] ?? null), "riskLevel", [], "any", true, true, false, 106)) ? (Twig\Extension\CoreExtension::default(CoreExtension::getAttribute($this->env, $this->source, (isset($context["ai"]) || array_key_exists("ai", $context) ? $context["ai"] : (function () { throw new RuntimeError('Variable "ai" does not exist.', 106, $this->source); })()), "riskLevel", [], "any", false, false, false, 106), "LOW")) : ("LOW"));
+            // line 107
+            yield "            ";
+            $context["aiBadge"] = ((((isset($context["aiRisk"]) || array_key_exists("aiRisk", $context) ? $context["aiRisk"] : (function () { throw new RuntimeError('Variable "aiRisk" does not exist.', 107, $this->source); })()) == "HIGH")) ? ("badge--danger") : (((((isset($context["aiRisk"]) || array_key_exists("aiRisk", $context) ? $context["aiRisk"] : (function () { throw new RuntimeError('Variable "aiRisk" does not exist.', 107, $this->source); })()) == "MEDIUM")) ? ("badge--warning") : ("badge--success"))));
+            // line 108
             yield "            <tr>
               <td>#";
-            // line 105
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape((isset($context["requestId"]) || array_key_exists("requestId", $context) ? $context["requestId"] : (function () { throw new RuntimeError('Variable "requestId" does not exist.', 105, $this->source); })()), "html", null, true);
+            // line 109
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape((isset($context["requestId"]) || array_key_exists("requestId", $context) ? $context["requestId"] : (function () { throw new RuntimeError('Variable "requestId" does not exist.', 109, $this->source); })()), "html", null, true);
             yield "</td>
               <td>
                 <strong>";
-            // line 107
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["requestItem"], "title", [], "any", false, false, false, 107), "html", null, true);
+            // line 111
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["requestItem"], "title", [], "any", false, false, false, 111), "html", null, true);
             yield "</strong>
                 ";
-            // line 108
-            if ((($tmp = CoreExtension::getAttribute($this->env, $this->source, $context["requestItem"], "photoPath", [], "any", false, false, false, 108)) && $tmp instanceof Markup ? (string) $tmp : $tmp)) {
-                // line 109
+            // line 112
+            if ((($tmp = CoreExtension::getAttribute($this->env, $this->source, $context["requestItem"], "photoPath", [], "any", false, false, false, 112)) && $tmp instanceof Markup ? (string) $tmp : $tmp)) {
+                // line 113
                 yield "                  <div class=\"listMeta\"><a href=\"";
-                yield (((is_string($_v0 = CoreExtension::getAttribute($this->env, $this->source, $context["requestItem"], "photoPath", [], "any", false, false, false, 109)) && is_string($_v1 = "http") && str_starts_with($_v0, $_v1))) ? ($this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["requestItem"], "photoPath", [], "any", false, false, false, 109), "html", null, true)) : ($this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\AssetExtension']->getAssetUrl(CoreExtension::getAttribute($this->env, $this->source, $context["requestItem"], "photoPath", [], "any", false, false, false, 109)), "html", null, true)));
+                yield (((is_string($_v0 = CoreExtension::getAttribute($this->env, $this->source, $context["requestItem"], "photoPath", [], "any", false, false, false, 113)) && is_string($_v1 = "http") && str_starts_with($_v0, $_v1))) ? ($this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["requestItem"], "photoPath", [], "any", false, false, false, 113), "html", null, true)) : ($this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\AssetExtension']->getAssetUrl(CoreExtension::getAttribute($this->env, $this->source, $context["requestItem"], "photoPath", [], "any", false, false, false, 113)), "html", null, true)));
                 yield "\" target=\"_blank\" rel=\"noopener\">Photo</a></div>
                 ";
             }
-            // line 111
+            // line 115
             yield "              </td>
               <td>";
-            // line 112
-            yield (((($tmp = CoreExtension::getAttribute($this->env, $this->source, $context["requestItem"], "organizerUserId", [], "any", false, false, false, 112)) && $tmp instanceof Markup ? (string) $tmp : $tmp)) ? ($this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["requestItem"], "organizerUserId", [], "any", false, false, false, 112), "username", [], "any", false, false, false, 112), "html", null, true)) : ("-"));
+            // line 116
+            yield (((($tmp = CoreExtension::getAttribute($this->env, $this->source, $context["requestItem"], "organizerUserId", [], "any", false, false, false, 116)) && $tmp instanceof Markup ? (string) $tmp : $tmp)) ? ($this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["requestItem"], "organizerUserId", [], "any", false, false, false, 116), "username", [], "any", false, false, false, 116), "html", null, true)) : ("-"));
             yield "</td>
               <td>";
-            // line 113
-            yield (((($tmp = CoreExtension::getAttribute($this->env, $this->source, $context["requestItem"], "gameId", [], "any", false, false, false, 113)) && $tmp instanceof Markup ? (string) $tmp : $tmp)) ? ($this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["requestItem"], "gameId", [], "any", false, false, false, 113), "name", [], "any", false, false, false, 113), "html", null, true)) : ("-"));
+            // line 117
+            yield (((($tmp = CoreExtension::getAttribute($this->env, $this->source, $context["requestItem"], "gameId", [], "any", false, false, false, 117)) && $tmp instanceof Markup ? (string) $tmp : $tmp)) ? ($this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["requestItem"], "gameId", [], "any", false, false, false, 117), "name", [], "any", false, false, false, 117), "html", null, true)) : ("-"));
             yield "</td>
               <td>";
-            // line 114
-            yield (((($tmp = CoreExtension::getAttribute($this->env, $this->source, $context["requestItem"], "startDate", [], "any", false, false, false, 114)) && $tmp instanceof Markup ? (string) $tmp : $tmp)) ? ($this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Twig\Extension\CoreExtension']->formatDate(CoreExtension::getAttribute($this->env, $this->source, $context["requestItem"], "startDate", [], "any", false, false, false, 114), "d/m/Y"), "html", null, true)) : ("-"));
+            // line 118
+            yield (((($tmp = CoreExtension::getAttribute($this->env, $this->source, $context["requestItem"], "startDate", [], "any", false, false, false, 118)) && $tmp instanceof Markup ? (string) $tmp : $tmp)) ? ($this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Twig\Extension\CoreExtension']->formatDate(CoreExtension::getAttribute($this->env, $this->source, $context["requestItem"], "startDate", [], "any", false, false, false, 118), "d/m/Y"), "html", null, true)) : ("-"));
             yield " -> ";
-            yield (((($tmp = CoreExtension::getAttribute($this->env, $this->source, $context["requestItem"], "endDate", [], "any", false, false, false, 114)) && $tmp instanceof Markup ? (string) $tmp : $tmp)) ? ($this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Twig\Extension\CoreExtension']->formatDate(CoreExtension::getAttribute($this->env, $this->source, $context["requestItem"], "endDate", [], "any", false, false, false, 114), "d/m/Y"), "html", null, true)) : ("-"));
+            yield (((($tmp = CoreExtension::getAttribute($this->env, $this->source, $context["requestItem"], "endDate", [], "any", false, false, false, 118)) && $tmp instanceof Markup ? (string) $tmp : $tmp)) ? ($this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Twig\Extension\CoreExtension']->formatDate(CoreExtension::getAttribute($this->env, $this->source, $context["requestItem"], "endDate", [], "any", false, false, false, 118), "d/m/Y"), "html", null, true)) : ("-"));
             yield "</td>
               <td>";
-            // line 115
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Twig\Extension\CoreExtension']->formatNumber(CoreExtension::getAttribute($this->env, $this->source, $context["requestItem"], "prizePool", [], "any", false, false, false, 115), 2, ".", " "), "html", null, true);
+            // line 119
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Twig\Extension\CoreExtension']->formatNumber(CoreExtension::getAttribute($this->env, $this->source, $context["requestItem"], "prizePool", [], "any", false, false, false, 119), 2, ".", " "), "html", null, true);
             yield " DT</td>
               <td><span class=\"badge ";
-            // line 116
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape((isset($context["statusBadge"]) || array_key_exists("statusBadge", $context) ? $context["statusBadge"] : (function () { throw new RuntimeError('Variable "statusBadge" does not exist.', 116, $this->source); })()), "html", null, true);
+            // line 120
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape((isset($context["statusBadge"]) || array_key_exists("statusBadge", $context) ? $context["statusBadge"] : (function () { throw new RuntimeError('Variable "statusBadge" does not exist.', 120, $this->source); })()), "html", null, true);
             yield "\">";
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape((isset($context["status"]) || array_key_exists("status", $context) ? $context["status"] : (function () { throw new RuntimeError('Variable "status" does not exist.', 116, $this->source); })()), "html", null, true);
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape((isset($context["status"]) || array_key_exists("status", $context) ? $context["status"] : (function () { throw new RuntimeError('Variable "status" does not exist.', 120, $this->source); })()), "html", null, true);
             yield "</span></td>
+              <td>
+                ";
+            // line 122
+            if ((($tmp = (isset($context["ai"]) || array_key_exists("ai", $context) ? $context["ai"] : (function () { throw new RuntimeError('Variable "ai" does not exist.', 122, $this->source); })())) && $tmp instanceof Markup ? (string) $tmp : $tmp)) {
+                // line 123
+                yield "                  <div class=\"listMeta\">
+                    <span class=\"badge ";
+                // line 124
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape((isset($context["aiBadge"]) || array_key_exists("aiBadge", $context) ? $context["aiBadge"] : (function () { throw new RuntimeError('Variable "aiBadge" does not exist.', 124, $this->source); })()), "html", null, true);
+                yield "\">";
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(((CoreExtension::getAttribute($this->env, $this->source, ($context["ai"] ?? null), "score", [], "any", true, true, false, 124)) ? (Twig\Extension\CoreExtension::default(CoreExtension::getAttribute($this->env, $this->source, (isset($context["ai"]) || array_key_exists("ai", $context) ? $context["ai"] : (function () { throw new RuntimeError('Variable "ai" does not exist.', 124, $this->source); })()), "score", [], "any", false, false, false, 124), 0)) : (0)), "html", null, true);
+                yield "/100 ";
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape((isset($context["aiRisk"]) || array_key_exists("aiRisk", $context) ? $context["aiRisk"] : (function () { throw new RuntimeError('Variable "aiRisk" does not exist.', 124, $this->source); })()), "html", null, true);
+                yield "</span>
+                  </div>
+                  ";
+                // line 126
+                if ((CoreExtension::getAttribute($this->env, $this->source, ($context["ai"] ?? null), "reasons", [], "any", true, true, false, 126) && is_iterable(CoreExtension::getAttribute($this->env, $this->source, (isset($context["ai"]) || array_key_exists("ai", $context) ? $context["ai"] : (function () { throw new RuntimeError('Variable "ai" does not exist.', 126, $this->source); })()), "reasons", [], "any", false, false, false, 126)))) {
+                    // line 127
+                    yield "                    ";
+                    $context['_parent'] = $context;
+                    $context['_seq'] = CoreExtension::ensureTraversable(Twig\Extension\CoreExtension::slice($this->env->getCharset(), CoreExtension::getAttribute($this->env, $this->source, (isset($context["ai"]) || array_key_exists("ai", $context) ? $context["ai"] : (function () { throw new RuntimeError('Variable "ai" does not exist.', 127, $this->source); })()), "reasons", [], "any", false, false, false, 127), 0, 2));
+                    foreach ($context['_seq'] as $context["_key"] => $context["reason"]) {
+                        // line 128
+                        yield "                      <div class=\"listMeta\">";
+                        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($context["reason"], "html", null, true);
+                        yield "</div>
+                    ";
+                    }
+                    $_parent = $context['_parent'];
+                    unset($context['_seq'], $context['_key'], $context['reason'], $context['_parent']);
+                    $context = array_intersect_key($context, $_parent) + $_parent;
+                    // line 130
+                    yield "                  ";
+                }
+                // line 131
+                yield "                ";
+            } else {
+                // line 132
+                yield "                  <span class=\"listMeta\">-</span>
+                ";
+            }
+            // line 134
+            yield "              </td>
               <td>
                 <div class=\"formActions\">
                   <a class=\"btn btnTiny\" href=\"";
-            // line 119
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("admin_tournament_request_detail", ["id" => (isset($context["requestId"]) || array_key_exists("requestId", $context) ? $context["requestId"] : (function () { throw new RuntimeError('Variable "requestId" does not exist.', 119, $this->source); })())]), "html", null, true);
+            // line 137
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("admin_tournament_request_detail", ["id" => (isset($context["requestId"]) || array_key_exists("requestId", $context) ? $context["requestId"] : (function () { throw new RuntimeError('Variable "requestId" does not exist.', 137, $this->source); })())]), "html", null, true);
             yield "\">Voir detail</a>
 
                   ";
-            // line 121
-            if (((isset($context["status"]) || array_key_exists("status", $context) ? $context["status"] : (function () { throw new RuntimeError('Variable "status" does not exist.', 121, $this->source); })()) == "PENDING")) {
-                // line 122
+            // line 139
+            if (((isset($context["status"]) || array_key_exists("status", $context) ? $context["status"] : (function () { throw new RuntimeError('Variable "status" does not exist.', 139, $this->source); })()) == "PENDING")) {
+                // line 140
                 yield "                    <form method=\"post\" action=\"";
-                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("admin_tournament_request_review", ["id" => (isset($context["requestId"]) || array_key_exists("requestId", $context) ? $context["requestId"] : (function () { throw new RuntimeError('Variable "requestId" does not exist.', 122, $this->source); })())]), "html", null, true);
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("admin_tournament_request_review", ["id" => (isset($context["requestId"]) || array_key_exists("requestId", $context) ? $context["requestId"] : (function () { throw new RuntimeError('Variable "requestId" does not exist.', 140, $this->source); })())]), "html", null, true);
                 yield "\" style=\"display:inline-block;\">
                       <input type=\"hidden\" name=\"_token\" value=\"";
-                // line 123
-                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->env->getRuntime('Symfony\Component\Form\FormRenderer')->renderCsrfToken(("review_tournament_request_" . (isset($context["requestId"]) || array_key_exists("requestId", $context) ? $context["requestId"] : (function () { throw new RuntimeError('Variable "requestId" does not exist.', 123, $this->source); })()))), "html", null, true);
+                // line 141
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->env->getRuntime('Symfony\Component\Form\FormRenderer')->renderCsrfToken(("review_tournament_request_" . (isset($context["requestId"]) || array_key_exists("requestId", $context) ? $context["requestId"] : (function () { throw new RuntimeError('Variable "requestId" does not exist.', 141, $this->source); })()))), "html", null, true);
                 yield "\" />
                       <input type=\"hidden\" name=\"decision\" value=\"ACCEPTED\" />
                       <button class=\"btn btnTiny\" type=\"submit\">Accepter</button>
                     </form>
 
                     <form method=\"post\" action=\"";
-                // line 128
-                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("admin_tournament_request_review", ["id" => (isset($context["requestId"]) || array_key_exists("requestId", $context) ? $context["requestId"] : (function () { throw new RuntimeError('Variable "requestId" does not exist.', 128, $this->source); })())]), "html", null, true);
+                // line 146
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("admin_tournament_request_review", ["id" => (isset($context["requestId"]) || array_key_exists("requestId", $context) ? $context["requestId"] : (function () { throw new RuntimeError('Variable "requestId" does not exist.', 146, $this->source); })())]), "html", null, true);
                 yield "\" style=\"display:inline-block;\" onsubmit=\"return confirm('Refuser cette demande ?');\">
                       <input type=\"hidden\" name=\"_token\" value=\"";
-                // line 129
-                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->env->getRuntime('Symfony\Component\Form\FormRenderer')->renderCsrfToken(("review_tournament_request_" . (isset($context["requestId"]) || array_key_exists("requestId", $context) ? $context["requestId"] : (function () { throw new RuntimeError('Variable "requestId" does not exist.', 129, $this->source); })()))), "html", null, true);
+                // line 147
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->env->getRuntime('Symfony\Component\Form\FormRenderer')->renderCsrfToken(("review_tournament_request_" . (isset($context["requestId"]) || array_key_exists("requestId", $context) ? $context["requestId"] : (function () { throw new RuntimeError('Variable "requestId" does not exist.', 147, $this->source); })()))), "html", null, true);
                 yield "\" />
                       <input type=\"hidden\" name=\"decision\" value=\"REFUSED\" />
                       <button class=\"btn btnTiny\" type=\"submit\">Refuser</button>
                     </form>
                   ";
             }
-            // line 134
+            // line 152
             yield "                </div>
               </td>
             </tr>
           ";
             $context['_iterated'] = true;
         }
-        // line 137
+        // line 155
         if (!$context['_iterated']) {
-            // line 138
+            // line 156
             yield "            <tr>
-              <td colspan=\"8\" class=\"listMeta\">Aucune demande trouvee.</td>
+              <td colspan=\"9\" class=\"listMeta\">Aucune demande trouvee.</td>
             </tr>
           ";
         }
         $_parent = $context['_parent'];
         unset($context['_seq'], $context['_key'], $context['requestItem'], $context['_parent'], $context['_iterated']);
         $context = array_intersect_key($context, $_parent) + $_parent;
-        // line 142
+        // line 160
         yield "        </tbody>
       </table>
     </div>
@@ -432,7 +486,7 @@ class __TwigTemplate_5af86e5521f5671ecd02140f960f6d0b extends Template
      */
     public function getDebugInfo(): array
     {
-        return array (  400 => 142,  391 => 138,  389 => 137,  382 => 134,  374 => 129,  370 => 128,  362 => 123,  357 => 122,  355 => 121,  350 => 119,  342 => 116,  338 => 115,  332 => 114,  328 => 113,  324 => 112,  321 => 111,  315 => 109,  313 => 108,  309 => 107,  304 => 105,  301 => 104,  298 => 103,  295 => 102,  292 => 101,  287 => 100,  266 => 82,  256 => 75,  249 => 70,  236 => 68,  232 => 67,  224 => 61,  211 => 59,  207 => 58,  198 => 51,  185 => 49,  181 => 48,  171 => 41,  165 => 38,  162 => 37,  156 => 36,  145 => 33,  141 => 32,  138 => 31,  133 => 30,  129 => 29,  123 => 25,  121 => 24,  120 => 23,  119 => 22,  118 => 21,  117 => 19,  114 => 18,  112 => 17,  111 => 16,  110 => 15,  109 => 14,  108 => 12,  100 => 6,  87 => 5,  64 => 3,  41 => 1,);
+        return array (  454 => 160,  445 => 156,  443 => 155,  436 => 152,  428 => 147,  424 => 146,  416 => 141,  411 => 140,  409 => 139,  404 => 137,  399 => 134,  395 => 132,  392 => 131,  389 => 130,  380 => 128,  375 => 127,  373 => 126,  364 => 124,  361 => 123,  359 => 122,  352 => 120,  348 => 119,  342 => 118,  338 => 117,  334 => 116,  331 => 115,  325 => 113,  323 => 112,  319 => 111,  314 => 109,  311 => 108,  308 => 107,  305 => 106,  302 => 105,  299 => 104,  296 => 103,  293 => 102,  288 => 101,  266 => 82,  256 => 75,  249 => 70,  236 => 68,  232 => 67,  224 => 61,  211 => 59,  207 => 58,  198 => 51,  185 => 49,  181 => 48,  171 => 41,  165 => 38,  162 => 37,  156 => 36,  145 => 33,  141 => 32,  138 => 31,  133 => 30,  129 => 29,  123 => 25,  121 => 24,  120 => 23,  119 => 22,  118 => 21,  117 => 19,  114 => 18,  112 => 17,  111 => 16,  110 => 15,  109 => 14,  108 => 12,  100 => 6,  87 => 5,  64 => 3,  41 => 1,);
     }
 
     public function getSourceContext(): Source
@@ -532,6 +586,7 @@ class __TwigTemplate_5af86e5521f5671ecd02140f960f6d0b extends Template
             <th>Dates</th>
             <th>Prize pool</th>
             <th>Status</th>
+            <th>IA</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -540,6 +595,9 @@ class __TwigTemplate_5af86e5521f5671ecd02140f960f6d0b extends Template
             {% set requestId = requestItem.requestId ?? 0 %}
             {% set status = requestItem.status|default('PENDING') %}
             {% set statusBadge = status == 'ACCEPTED' ? 'badge--success' : (status == 'REFUSED' ? 'badge--danger' : 'badge--warning') %}
+            {% set ai = aiAssessmentsByRequestId[requestId]|default(null) %}
+            {% set aiRisk = ai.riskLevel|default('LOW') %}
+            {% set aiBadge = aiRisk == 'HIGH' ? 'badge--danger' : (aiRisk == 'MEDIUM' ? 'badge--warning' : 'badge--success') %}
             <tr>
               <td>#{{ requestId }}</td>
               <td>
@@ -553,6 +611,20 @@ class __TwigTemplate_5af86e5521f5671ecd02140f960f6d0b extends Template
               <td>{{ requestItem.startDate ? requestItem.startDate|date('d/m/Y') : '-' }} -> {{ requestItem.endDate ? requestItem.endDate|date('d/m/Y') : '-' }}</td>
               <td>{{ requestItem.prizePool|number_format(2, '.', ' ') }} DT</td>
               <td><span class=\"badge {{ statusBadge }}\">{{ status }}</span></td>
+              <td>
+                {% if ai %}
+                  <div class=\"listMeta\">
+                    <span class=\"badge {{ aiBadge }}\">{{ ai.score|default(0) }}/100 {{ aiRisk }}</span>
+                  </div>
+                  {% if ai.reasons is defined and ai.reasons is iterable %}
+                    {% for reason in ai.reasons|slice(0, 2) %}
+                      <div class=\"listMeta\">{{ reason }}</div>
+                    {% endfor %}
+                  {% endif %}
+                {% else %}
+                  <span class=\"listMeta\">-</span>
+                {% endif %}
+              </td>
               <td>
                 <div class=\"formActions\">
                   <a class=\"btn btnTiny\" href=\"{{ path('admin_tournament_request_detail', {id: requestId}) }}\">Voir detail</a>
@@ -575,7 +647,7 @@ class __TwigTemplate_5af86e5521f5671ecd02140f960f6d0b extends Template
             </tr>
           {% else %}
             <tr>
-              <td colspan=\"8\" class=\"listMeta\">Aucune demande trouvee.</td>
+              <td colspan=\"9\" class=\"listMeta\">Aucune demande trouvee.</td>
             </tr>
           {% endfor %}
         </tbody>

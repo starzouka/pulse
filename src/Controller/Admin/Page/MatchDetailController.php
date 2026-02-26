@@ -7,6 +7,7 @@ namespace App\Controller\Admin\Page;
 use App\Entity\TournamentMatch;
 use App\Repository\MatchTeamRepository;
 use App\Repository\TournamentMatchRepository;
+use App\Service\Ai\MatchAiAssistantService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -19,6 +20,7 @@ final class MatchDetailController extends AbstractController
         int $id,
         TournamentMatchRepository $tournamentMatchRepository,
         MatchTeamRepository $matchTeamRepository,
+        MatchAiAssistantService $matchAiAssistantService,
     ): Response {
         $match = $tournamentMatchRepository->findOneWithContextById($id);
         if (!$match instanceof TournamentMatch) {
@@ -30,6 +32,7 @@ final class MatchDetailController extends AbstractController
         return $this->render('admin/pages/match-detail.html.twig', [
             'match' => $match,
             'matchTeams' => $matchTeams,
+            'matchAi' => $matchAiAssistantService->analyzeMatchWithAssistant($match, $matchTeams),
         ]);
     }
 

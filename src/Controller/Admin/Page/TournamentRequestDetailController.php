@@ -30,7 +30,7 @@ final class TournamentRequestDetailController extends AbstractController
 
         return $this->render('admin/pages/tournament-request-detail.html.twig', [
             'request' => $tournamentRequest,
-            'aiAssessment' => $organizerAiAssistantService->evaluateTournamentRequestEntity($tournamentRequest),
+            'aiAssessment' => $organizerAiAssistantService->evaluateTournamentRequestEntityWithAssistant($tournamentRequest),
         ]);
     }
 }

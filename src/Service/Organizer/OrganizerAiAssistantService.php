@@ -8,6 +8,7 @@ use App\Entity\Tournament;
 use App\Entity\TournamentRequest;
 use App\Entity\User;
 use App\Repository\TournamentRepository;
+use App\Service\Ai\OllamaClientService;
 
 final class OrganizerAiAssistantService
 {
@@ -16,6 +17,7 @@ final class OrganizerAiAssistantService
 
     public function __construct(
         private readonly TournamentRepository $tournamentRepository,
+        private readonly ?OllamaClientService $ollamaClientService = null,
     ) {
     }
 
@@ -91,6 +93,67 @@ final class OrganizerAiAssistantService
         ];
 
         return $this->evaluateNormalizedInput($input);
+    }
+
+    /**
+     * Version enrichie avec assistant local Ollama (resume + suggestions).
+     *
+     * @return array<string, mixed>
+     */
+    public function evaluateTournamentRequestEntityWithAssistant(TournamentRequest $request): array
+    {
+        $assessment = $this->evaluateTournamentRequestEntity($request);
+
+        $context = [
+            'title' => (string) ($request->getTitle() ?? ''),
+            'game' => (string) ($request->getGameId()?->getName() ?? ''),
+            'organizer' => (string) ($request->getOrganizerUserId()?->getUsername() ?? ''),
+            'format' => (string) ($request->getFormat() ?? ''),
+            'registrationMode' => (string) ($request->getRegistrationMode() ?? ''),
+            'startDate' => $request->getStartDate()?->format('Y-m-d'),
+            'endDate' => $request->getEndDate()?->format('Y-m-d'),
+            'registrationDeadline' => $request->getRegistrationDeadline()?->format('Y-m-d'),
+            'maxTeams' => (int) ($request->getMaxTeams() ?? 0),
+            'prizePool' => (string) ($request->getPrizePool() ?? ''),
+            'prizeDescription' => (string) ($request->getPrizeDescription() ?? ''),
+            'description' => (string) ($request->getDescription() ?? ''),
+            'rules' => (string) ($request->getRules() ?? ''),
+            'status' => (string) ($request->getStatus() ?? 'PENDING'),
+            'source' => 'entity',
+        ];
+
+        return $this->appendLocalAssistantInsights($assessment, $context);
+    }
+
+    /**
+     * Version enrichie avec assistant local Ollama (resume + suggestions).
+     *
+     * @param array<string, mixed> $payload
+     * @return array<string, mixed>
+     */
+    public function evaluateTournamentRequestDraftWithAssistant(array $payload, ?User $organizerUser = null): array
+    {
+        $assessment = $this->evaluateTournamentRequestDraft($payload, $organizerUser);
+
+        $context = [
+            'title' => $this->toString($payload['title'] ?? null),
+            'gameId' => $this->parseInt($payload['gameId'] ?? null),
+            'organizer' => (string) ($organizerUser?->getUsername() ?? ''),
+            'format' => $this->toString($payload['format'] ?? null),
+            'registrationMode' => $this->toString($payload['registrationMode'] ?? null),
+            'startDate' => $this->toString($payload['startDate'] ?? null),
+            'endDate' => $this->toString($payload['endDate'] ?? null),
+            'registrationDeadline' => $this->toString($payload['registrationDeadline'] ?? null),
+            'maxTeams' => $this->parseInt($payload['maxTeams'] ?? null) ?? 0,
+            'prizePool' => $this->toString($payload['prizePool'] ?? null),
+            'prizeDescription' => $this->toString($payload['prizeDescription'] ?? null),
+            'description' => $this->toString($payload['description'] ?? null),
+            'rules' => $this->toString($payload['rules'] ?? null),
+            'status' => 'PENDING',
+            'source' => 'draft',
+        ];
+
+        return $this->appendLocalAssistantInsights($assessment, $context);
     }
 
     /**
@@ -570,6 +633,216 @@ final class OrganizerAiAssistantService
         $similarTextScore = (int) round($similarTextPercent);
 
         return (int) round(($jaccard * 0.55) + ($similarTextScore * 0.45));
+    }
+
+    /**
+     * @param array<string, mixed> $assessment
+     * @param array<string, mixed> $context
+     * @return array<string, mixed>
+     */
+    private function appendLocalAssistantInsights(array $assessment, array $context): array
+    {
+        if (!($this->ollamaClientService instanceof OllamaClientService)) {
+            $assessment['ollamaAssistant'] = [
+                'status' => 'DISABLED',
+                'model' => null,
+                'baseUrl' => null,
+                'summary' => null,
+                'adminDecisionHint' => null,
+                'organizerSuggestions' => [],
+                'latencyMs' => 0,
+                'error' => 'Ollama client service unavailable.',
+            ];
+
+            return $assessment;
+        }
+
+        $systemPrompt = $this->buildOllamaSystemPrompt();
+        $userPrompt = $this->buildOllamaUserPrompt($assessment, $context);
+        $response = $this->ollamaClientService->chatJson($systemPrompt, $userPrompt);
+
+        $assistant = [
+            'status' => (string) ($response['status'] ?? 'ERROR'),
+            'model' => (string) ($response['model'] ?? $this->ollamaClientService->getChatModel()),
+            'baseUrl' => (string) ($response['baseUrl'] ?? $this->ollamaClientService->getBaseUrl()),
+            'summary' => null,
+            'adminDecisionHint' => null,
+            'organizerSuggestions' => [],
+            'latencyMs' => (int) ($response['latencyMs'] ?? 0),
+            'error' => null,
+        ];
+
+        if (($response['ok'] ?? false) !== true) {
+            $assistant['error'] = (string) ($response['error'] ?? 'Ollama request failed.');
+            $assessment['ollamaAssistant'] = $assistant;
+
+            return $assessment;
+        }
+
+        $data = $response['data'] ?? null;
+        if (!is_array($data)) {
+            $assistant['status'] = 'ERROR';
+            $assistant['error'] = 'Ollama returned empty JSON payload.';
+            $assessment['ollamaAssistant'] = $assistant;
+
+            return $assessment;
+        }
+
+        $assistant['summary'] = $this->sanitizeAssistantText($data['summary'] ?? null, 380);
+        $assistant['adminDecisionHint'] = $this->sanitizeEnum(
+            $data['adminDecisionHint'] ?? null,
+            ['APPROVE', 'REVIEW', 'REJECT']
+        );
+        $assistant['organizerSuggestions'] = $this->sanitizeSuggestions($data['organizerSuggestions'] ?? null);
+
+        if ($assistant['summary'] === null && $assistant['organizerSuggestions'] === []) {
+            $assistant['status'] = 'ERROR';
+            $assistant['error'] = 'Ollama JSON payload missing expected fields.';
+        }
+
+        $assessment['ollamaAssistant'] = $assistant;
+
+        return $assessment;
+    }
+
+    private function buildOllamaSystemPrompt(): string
+    {
+        return implode("\n", [
+            'You are a tournament-admin assistant for an esports platform.',
+            'You receive a rule-based risk assessment and the request payload.',
+            'Return ONLY a valid JSON object (no markdown, no comments).',
+            'Write all user-facing text in French (ASCII only, no accents required).',
+            'Do not change the numeric score. Explain and suggest improvements.',
+            'JSON shape:',
+            '{',
+            '  "summary": "short French summary for admin (1-3 sentences)",',
+            '  "adminDecisionHint": "APPROVE|REVIEW|REJECT",',
+            '  "organizerSuggestions": ["actionable suggestion 1", "actionable suggestion 2"]',
+            '}',
+            'Rules:',
+            '- If risk is HIGH or score < 55 => adminDecisionHint should usually be REJECT or REVIEW.',
+            '- If risk is MEDIUM => adminDecisionHint should usually be REVIEW.',
+            '- If risk is LOW and no serious issues => adminDecisionHint can be APPROVE.',
+            '- Suggestions must be concrete and short (max 120 chars each).',
+            '- Max 4 suggestions.',
+        ]);
+    }
+
+    /**
+     * @param array<string, mixed> $assessment
+     * @param array<string, mixed> $context
+     */
+    private function buildOllamaUserPrompt(array $assessment, array $context): string
+    {
+        $payload = [
+            'assessment' => [
+                'score' => (int) ($assessment['score'] ?? 0),
+                'riskLevel' => (string) ($assessment['riskLevel'] ?? 'LOW'),
+                'penaltyPoints' => (int) ($assessment['penaltyPoints'] ?? 0),
+                'issuesCount' => (int) ($assessment['issuesCount'] ?? 0),
+                'hasProbableDuplicate' => (bool) ($assessment['hasProbableDuplicate'] ?? false),
+                'reasons' => array_values(array_slice(
+                    array_map('strval', is_array($assessment['reasons'] ?? null) ? $assessment['reasons'] : []),
+                    0,
+                    8
+                )),
+            ],
+            'request' => [
+                'source' => (string) ($context['source'] ?? 'unknown'),
+                'title' => $this->truncateForPrompt((string) ($context['title'] ?? ''), 140),
+                'game' => $this->truncateForPrompt((string) ($context['game'] ?? ''), 80),
+                'organizer' => $this->truncateForPrompt((string) ($context['organizer'] ?? ''), 80),
+                'format' => (string) ($context['format'] ?? ''),
+                'registrationMode' => (string) ($context['registrationMode'] ?? ''),
+                'startDate' => (string) ($context['startDate'] ?? ''),
+                'endDate' => (string) ($context['endDate'] ?? ''),
+                'registrationDeadline' => (string) ($context['registrationDeadline'] ?? ''),
+                'maxTeams' => (int) ($context['maxTeams'] ?? 0),
+                'prizePool' => (string) ($context['prizePool'] ?? ''),
+                'prizeDescription' => $this->truncateForPrompt((string) ($context['prizeDescription'] ?? ''), 220),
+                'description' => $this->truncateForPrompt((string) ($context['description'] ?? ''), 550),
+                'rules' => $this->truncateForPrompt((string) ($context['rules'] ?? ''), 550),
+                'status' => (string) ($context['status'] ?? 'PENDING'),
+            ],
+        ];
+
+        $json = json_encode($payload, JSON_UNESCAPED_SLASHES);
+        if (!is_string($json) || $json === '') {
+            $json = '{}';
+        }
+
+        return "Analyze this tournament request assessment and return JSON only.\n" . $json;
+    }
+
+    private function truncateForPrompt(string $value, int $maxChars): string
+    {
+        $normalized = trim((string) preg_replace('/\s+/u', ' ', $value));
+        if ($normalized === '') {
+            return '';
+        }
+
+        if (mb_strlen($normalized) <= $maxChars) {
+            return $normalized;
+        }
+
+        return rtrim(mb_substr($normalized, 0, $maxChars - 3)) . '...';
+    }
+
+    private function sanitizeAssistantText(mixed $value, int $maxChars): ?string
+    {
+        if (!is_scalar($value)) {
+            return null;
+        }
+
+        $normalized = trim((string) preg_replace('/\s+/u', ' ', (string) $value));
+        if ($normalized === '') {
+            return null;
+        }
+
+        return mb_substr($normalized, 0, $maxChars);
+    }
+
+    /**
+     * @param list<string> $allowed
+     */
+    private function sanitizeEnum(mixed $value, array $allowed): ?string
+    {
+        if (!is_scalar($value)) {
+            return null;
+        }
+
+        $normalized = strtoupper(trim((string) $value));
+
+        return in_array($normalized, $allowed, true) ? $normalized : null;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function sanitizeSuggestions(mixed $value): array
+    {
+        if (!is_array($value)) {
+            return [];
+        }
+
+        $result = [];
+        foreach ($value as $item) {
+            if (!is_scalar($item)) {
+                continue;
+            }
+
+            $normalized = trim((string) preg_replace('/\s+/u', ' ', (string) $item));
+            if ($normalized === '') {
+                continue;
+            }
+
+            $result[] = mb_substr($normalized, 0, 140);
+            if (count($result) >= 4) {
+                break;
+            }
+        }
+
+        return $result;
     }
 
     private function parseDate(mixed $value): ?\DateTimeImmutable

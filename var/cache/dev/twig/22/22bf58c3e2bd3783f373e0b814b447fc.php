@@ -181,6 +181,15 @@ class __TwigTemplate_3395adc5afddebafdfc51169112b6b31 extends Template
       <svg class=\"icon\"><use href=\"#i-gear\"></use></svg>
       <span>Images</span>
     </a>
+    <a class=\"navItem ";
+        // line 76
+        yield ((((isset($context["currentRoute"]) || array_key_exists("currentRoute", $context) ? $context["currentRoute"] : (function () { throw new RuntimeError('Variable "currentRoute" does not exist.', 76, $this->source); })()) == "admin_ai_ollama_test")) ? ("active") : (""));
+        yield "\" href=\"";
+        yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("admin_ai_ollama_test");
+        yield "\">
+      <svg class=\"icon\"><use href=\"#i-gear\"></use></svg>
+      <span>Test Ollama IA</span>
+    </a>
   </nav>
 
 </aside>
@@ -216,7 +225,7 @@ class __TwigTemplate_3395adc5afddebafdfc51169112b6b31 extends Template
      */
     public function getDebugInfo(): array
     {
-        return array (  177 => 72,  168 => 68,  157 => 62,  148 => 58,  139 => 54,  121 => 41,  112 => 37,  103 => 33,  94 => 29,  83 => 23,  74 => 19,  63 => 13,  50 => 2,  48 => 1,);
+        return array (  186 => 76,  177 => 72,  168 => 68,  157 => 62,  148 => 58,  139 => 54,  121 => 41,  112 => 37,  103 => 33,  94 => 29,  83 => 23,  74 => 19,  63 => 13,  50 => 2,  48 => 1,);
     }
 
     public function getSourceContext(): Source
@@ -295,6 +304,10 @@ class __TwigTemplate_3395adc5afddebafdfc51169112b6b31 extends Template
     <a class=\"navItem {{ currentRoute == 'admin_images' ? 'active' : '' }}\" href=\"{{ path('admin_images') }}\">
       <svg class=\"icon\"><use href=\"#i-gear\"></use></svg>
       <span>Images</span>
+    </a>
+    <a class=\"navItem {{ currentRoute == 'admin_ai_ollama_test' ? 'active' : '' }}\" href=\"{{ path('admin_ai_ollama_test') }}\">
+      <svg class=\"icon\"><use href=\"#i-gear\"></use></svg>
+      <span>Test Ollama IA</span>
     </a>
   </nav>
 

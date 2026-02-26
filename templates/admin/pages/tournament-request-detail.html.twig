@@ -94,6 +94,36 @@
           {% endfor %}
         </div>
       </div>
+
+      {% if ai.ollamaAssistant is defined %}
+        {% set ollama = ai.ollamaAssistant %}
+        {% set ollamaStatus = ollama.status|default('ERROR') %}
+        {% set ollamaBadge = ollamaStatus == 'READY' ? 'badge--success' : (ollamaStatus == 'DISABLED' ? 'badge--warning' : 'badge--danger') %}
+        <div class="panel" style="margin-top:12px;">
+          <div class="panelHeader">
+            <h3 class="panelTitle">Assistant IA local (Ollama)</h3>
+            <span class="badge {{ ollamaBadge }}">{{ ollamaStatus }}</span>
+          </div>
+
+          <div class="list">
+            <div class="listItem"><span>Modele</span><span class="listMeta">{{ ollama.model|default('n/a') }}</span></div>
+            <div class="listItem"><span>API locale</span><span class="listMeta">{{ ollama.baseUrl|default('n/a') }}</span></div>
+            <div class="listItem"><span>Latence</span><span class="listMeta">{{ ollama.latencyMs|default(0) }} ms</span></div>
+            {% if ollama.adminDecisionHint %}
+              <div class="listItem"><span>Suggestion admin</span><span class="listMeta">{{ ollama.adminDecisionHint }}</span></div>
+            {% endif %}
+            {% if ollama.summary %}
+              <div class="listItem"><span>Resume</span><span class="listMeta">{{ ollama.summary }}</span></div>
+            {% endif %}
+            {% for suggestion in ollama.organizerSuggestions|default([]) %}
+              <div class="listItem"><span>Suggestion {{ loop.index }}</span><span class="listMeta">{{ suggestion }}</span></div>
+            {% endfor %}
+            {% if ollama.error %}
+              <div class="listItem"><span>Erreur</span><span class="listMeta">{{ ollama.error }}</span></div>
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
     {% else %}
       <div class="listItem">
         <span>L'analyse IA n'a pas pu etre calculee pour cette demande.</span>

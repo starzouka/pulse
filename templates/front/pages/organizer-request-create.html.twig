@@ -80,6 +80,61 @@
                   </div>
                 {% endfor %}
               </div>
+
+              {% if aiRequestAssessment.ollamaAssistant is defined %}
+                {% set ollama = aiRequestAssessment.ollamaAssistant %}
+                {% set ollamaStatus = ollama.status|default('ERROR') %}
+                {% set ollamaBadge = ollamaStatus == 'READY'
+                  ? 'badge--success'
+                  : (ollamaStatus == 'DISABLED' ? 'badge--warning' : 'badge--danger')
+                %}
+                <div class="panel" style="margin-top:12px;">
+                  <div class="panel__head">
+                    <div>
+                      <h3 class="panel__title">ASSISTANT IA LOCAL (OLLAMA)</h3>
+                      <div class="panel__desc">
+                        {{ ollama.model|default('n/a') }} via {{ ollama.baseUrl|default('localhost') }}
+                      </div>
+                    </div>
+                    <div class="panel__actions">
+                      <span class="badge {{ ollamaBadge }}">{{ ollamaStatus }}</span>
+                      {% if ollama.latencyMs is defined and ollama.latencyMs %}
+                        <span class="badge">{{ ollama.latencyMs }} ms</span>
+                      {% endif %}
+                    </div>
+                  </div>
+
+                  <div class="list">
+                    {% if ollama.summary %}
+                      <div class="listItem">
+                        <span>{{ ollama.summary }}</span>
+                        <span class="listItem__meta">Resume</span>
+                      </div>
+                    {% endif %}
+
+                    {% if ollama.adminDecisionHint %}
+                      <div class="listItem">
+                        <span><b>Suggestion admin</b></span>
+                        <span class="listItem__meta">{{ ollama.adminDecisionHint }}</span>
+                      </div>
+                    {% endif %}
+
+                    {% for suggestion in ollama.organizerSuggestions|default([]) %}
+                      <div class="listItem">
+                        <span>{{ suggestion }}</span>
+                        <span class="listItem__meta">Suggestion</span>
+                      </div>
+                    {% endfor %}
+
+                    {% if ollama.error %}
+                      <div class="listItem">
+                        <span>{{ ollama.error }}</span>
+                        <span class="listItem__meta">Erreur</span>
+                      </div>
+                    {% endif %}
+                  </div>
+                </div>
+              {% endif %}
             </div>
           {% endif %}
 

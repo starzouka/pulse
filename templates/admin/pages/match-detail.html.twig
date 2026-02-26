@@ -9,6 +9,7 @@
       <div class="pageSub">Lecture detaillee + lien vers edition.</div>
     </div>
     <div class="formActions">
+      <a class="btn btnGhost" href="{{ path('admin_ai_ollama_test') }}">Test Ollama</a>
       <a class="btn btnPrimary" href="{{ path('admin_matches', {edit: match.matchId}) }}">Modifier</a>
       <a class="btn btnGhost" href="{{ path('admin_matches') }}">Retour liste</a>
     </div>
@@ -17,6 +18,7 @@
   <div class="tabs" data-tabs="match">
     <button class="tab isActive" data-tab="info">Infos</button>
     <button class="tab" data-tab="teams">Participants</button>
+    <button class="tab" data-tab="ai">IA Assistant</button>
   </div>
 
   <div class="tabPanels" data-panels="match">
@@ -64,6 +66,132 @@
             </tbody>
           </table>
         </div>
+      </section>
+    </div>
+
+    <div class="tabPanel" data-panel="ai">
+      {% set ai = matchAi|default(null) %}
+      {% set aiRisk = ai.anomalyRisk|default('LOW') %}
+      {% set aiBadge = aiRisk == 'HIGH' ? 'badge--danger' : (aiRisk == 'MEDIUM' ? 'badge--warning' : 'badge--success') %}
+      <section class="panel">
+        <div class="panelHeader">
+          <h3 class="panelTitle">Analyse integrite match (locale)</h3>
+          {% if ai %}
+            <span class="badge {{ aiBadge }}">{{ ai.integrityScore|default(0) }}/100 {{ aiRisk }}</span>
+          {% else %}
+            <span class="listMeta">N/A</span>
+          {% endif %}
+        </div>
+
+        {% if ai %}
+          <div class="list">
+            <div class="listItem"><span>Resume local</span><span class="listMeta">{{ ai.localSummary|default('-') }}</span></div>
+            <div class="listItem"><span>Scoreboard</span><span class="listMeta">{{ ai.scoreboardSummary|default('-') }}</span></div>
+            <div class="listItem"><span>Problemes detectes</span><span class="listMeta">{{ ai.issuesCount|default(0) }}</span></div>
+            <div class="listItem"><span>Penalites</span><span class="listMeta">{{ ai.penaltyPoints|default(0) }} pts</span></div>
+            <div class="listItem"><span>Resultat data</span><span class="listMeta">{{ ai.hasResultData|default(false) ? 'Oui' : 'Non' }}</span></div>
+          </div>
+
+          <div class="panel" style="margin-top:12px;">
+            <div class="panelHeader">
+              <h3 class="panelTitle">Anomalies detectees</h3>
+              <span class="listMeta">{{ ai.findings|default([])|length }} finding(s)</span>
+            </div>
+            <div class="list">
+              {% for finding in ai.findings|default([]) %}
+                <div class="listItem">
+                  <span>{{ loop.index }}.</span>
+                  <span class="listMeta">{{ finding }}</span>
+                </div>
+              {% else %}
+                <div class="listItem">
+                  <span>Aucune anomalie majeure</span>
+                  <span class="badge badge--success">LOW</span>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="panel" style="margin-top:12px;">
+            <div class="panelHeader">
+              <h3 class="panelTitle">Signaux litige (local)</h3>
+              <span class="listMeta">Pre-check</span>
+            </div>
+            <div class="list">
+              {% for signal in ai.disputeSignals|default([]) %}
+                <div class="listItem">
+                  <span>{{ signal }}</span>
+                  <span class="listMeta">Dispute</span>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+
+          {% if ai.ollamaAssistant is defined %}
+            {% set ollama = ai.ollamaAssistant %}
+            {% set ollamaStatus = ollama.status|default('ERROR') %}
+            {% set ollamaBadge = ollamaStatus == 'READY' ? 'badge--success' : (ollamaStatus == 'DISABLED' ? 'badge--warning' : 'badge--danger') %}
+            <div class="panel" style="margin-top:12px;">
+              <div class="panelHeader">
+                <h3 class="panelTitle">Assistant IA local (Ollama)</h3>
+                <span class="badge {{ ollamaBadge }}">{{ ollamaStatus }}</span>
+              </div>
+
+              <div class="list">
+                <div class="listItem"><span>Modele</span><span class="listMeta">{{ ollama.model|default('n/a') }}</span></div>
+                <div class="listItem"><span>API locale</span><span class="listMeta">{{ ollama.baseUrl|default('n/a') }}</span></div>
+                <div class="listItem"><span>Latence</span><span class="listMeta">{{ ollama.latencyMs|default(0) }} ms</span></div>
+                {% if ollama.disputeDecisionHint %}
+                  <div class="listItem"><span>Decision litige suggeree</span><span class="listMeta">{{ ollama.disputeDecisionHint }}</span></div>
+                {% endif %}
+                {% if ollama.matchSummary %}
+                  <div class="listItem"><span>Resume match</span><span class="listMeta">{{ ollama.matchSummary }}</span></div>
+                {% endif %}
+                {% if ollama.anomalySummary %}
+                  <div class="listItem"><span>Resume anomalies</span><span class="listMeta">{{ ollama.anomalySummary }}</span></div>
+                {% endif %}
+                {% if ollama.disputeHelper %}
+                  <div class="listItem"><span>Aide litige</span><span class="listMeta">{{ ollama.disputeHelper }}</span></div>
+                {% endif %}
+              </div>
+
+              <div class="dataTableWrap" style="margin-top:10px;">
+                <table class="dataTable">
+                  <thead>
+                    <tr>
+                      <th>Checklist litige</th>
+                      <th>Actions admin</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% set checklist = ollama.disputeChecklist|default([]) %}
+                    {% set actions = ollama.adminActions|default([]) %}
+                    {% set maxRows = [checklist|length, actions|length]|sort|last %}
+                    {% if maxRows and maxRows > 0 %}
+                      {% for i in 0..(maxRows - 1) %}
+                        <tr>
+                          <td>{{ checklist[i]|default('-') }}</td>
+                          <td>{{ actions[i]|default('-') }}</td>
+                        </tr>
+                      {% endfor %}
+                    {% else %}
+                      <tr>
+                        <td colspan="2" class="listMeta">Aucune suggestion detaillee retournee.</td>
+                      </tr>
+                    {% endif %}
+                  </tbody>
+                </table>
+              </div>
+
+              {% if ollama.error %}
+                <div class="listItem" style="margin-top:10px;">
+                  <span>Erreur</span>
+                  <span class="listMeta">{{ ollama.error }}</span>
+                </div>
+              {% endif %}
+            </div>
+          {% endif %}
+        {% endif %}
       </section>
     </div>
   </div>

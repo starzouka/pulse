@@ -16,6 +16,7 @@ use App\Repository\TournamentMatchRepository;
 use App\Repository\TournamentRepository;
 use App\Repository\TournamentTeamRepository;
 use App\Service\Admin\TableExportService;
+use App\Service\Ai\MatchAiAssistantService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormError;
@@ -38,6 +39,7 @@ final class MatchesController extends AbstractController
         TournamentTeamRepository $tournamentTeamRepository,
         GameRepository $gameRepository,
         EntityManagerInterface $entityManager,
+        MatchAiAssistantService $matchAiAssistantService,
     ): Response {
         $editId = $request->query->getInt('edit', 0);
         $editingMatch = $editId > 0 ? $tournamentMatchRepository->find($editId) : null;
@@ -243,6 +245,19 @@ final class MatchesController extends AbstractController
             $matchTeamsByMatchId[$matchId][] = $matchTeam;
         }
 
+        $matchAiLocalByMatchId = [];
+        foreach ($matches as $match) {
+            $matchId = $match->getMatchId();
+            if (!is_int($matchId) || $matchId <= 0) {
+                continue;
+            }
+
+            $matchAiLocalByMatchId[$matchId] = $matchAiAssistantService->analyzeMatchLocal(
+                $match,
+                $matchTeamsByMatchId[$matchId] ?? []
+            );
+        }
+
         $participantRows = $this->buildParticipantRows($request, $form, $existingEntriesByTeamId);
 
         return $this->render('admin/pages/matches.html.twig', [
@@ -252,6 +267,7 @@ final class MatchesController extends AbstractController
             'participantRows' => $participantRows,
             'matches' => $matches,
             'matchTeamsByMatchId' => $matchTeamsByMatchId,
+            'matchAiLocalByMatchId' => $matchAiLocalByMatchId,
             'availableTournaments' => $tournaments,
             'availableGames' => $gameRepository->findAllWithCategoryOrdered(),
             'filters' => $filters,

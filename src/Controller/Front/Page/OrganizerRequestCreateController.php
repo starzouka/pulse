@@ -67,11 +67,11 @@ final class OrganizerRequestCreateController extends AbstractController
                 $submittedPayload = [];
             }
 
-            $aiRequestAssessment = $organizerAiAssistantService->evaluateTournamentRequestDraft($submittedPayload, $user);
+            $aiRequestAssessment = $organizerAiAssistantService->evaluateTournamentRequestDraftWithAssistant($submittedPayload, $user);
         }
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $aiRequestAssessment = $organizerAiAssistantService->evaluateTournamentRequestEntity($tournamentRequest);
+            $aiRequestAssessment = $organizerAiAssistantService->evaluateTournamentRequestEntityWithAssistant($tournamentRequest);
 
             $uploadedFile = $form->get('photoFile')->getData();
             if ($uploadedFile instanceof UploadedFile) {

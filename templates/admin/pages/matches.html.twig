@@ -9,6 +9,7 @@
       <div class="pageSub">CRUD complet + recherche/tri backend.</div>
     </div>
     <div class="formActions">
+      <a class="btn btnGhost" href="{{ path('admin_ai_ollama_test') }}">Test Ollama</a>
       <a class="btn btnGhost" href="{{ path('admin_matches_export', {
         format: 'pdf',
         q: filters.q|default(''),
@@ -185,6 +186,7 @@
             <th>Participants</th>
             <th>Horaire</th>
             <th>Status</th>
+            <th>IA</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -192,6 +194,9 @@
           {% for match in matches %}
             {% set matchId = match.matchId ?? 0 %}
             {% set teams = matchTeamsByMatchId[matchId]|default([]) %}
+            {% set matchAi = matchAiLocalByMatchId[matchId]|default(null) %}
+            {% set aiRisk = matchAi.anomalyRisk|default('LOW') %}
+            {% set aiBadge = aiRisk == 'HIGH' ? 'badge--danger' : (aiRisk == 'MEDIUM' ? 'badge--warning' : 'badge--success') %}
             {% set statusClass = match.status == 'ONGOING'
               ? 'badge--success'
               : (match.status == 'SCHEDULED' ? 'badge--info' : (match.status == 'FINISHED' ? '' : 'badge--danger'))
@@ -216,6 +221,19 @@
               <td>{{ match.scheduledAt ? match.scheduledAt|date('d/m/Y H:i') : '-' }}</td>
               <td><span class="badge {{ statusClass }}">{{ match.status }}</span></td>
               <td>
+                {% if matchAi %}
+                  <div class="listMeta">
+                    <span class="badge {{ aiBadge }}">{{ matchAi.integrityScore|default(0) }}/100 {{ aiRisk }}</span>
+                  </div>
+                  <div class="listMeta">{{ matchAi.issuesCount|default(0) }} issue(s)</div>
+                  {% if matchAi.findings is defined and matchAi.findings is iterable and (matchAi.findings|length) > 0 %}
+                    <div class="listMeta">{{ matchAi.findings|first }}</div>
+                  {% endif %}
+                {% else %}
+                  <span class="listMeta">-</span>
+                {% endif %}
+              </td>
+              <td>
                 <div class="formActions">
                   <a class="btn btnTiny" href="{{ path('admin_match_detail', {id: matchId}) }}">Voir</a>
                   <a class="btn btnTiny" href="{{ path('admin_matches', {edit: matchId}) }}">Update</a>
@@ -228,7 +246,7 @@
             </tr>
           {% else %}
             <tr>
-              <td colspan="7" class="listMeta">Aucun match trouve.</td>
+              <td colspan="8" class="listMeta">Aucun match trouve.</td>
             </tr>
           {% endfor %}
         </tbody>

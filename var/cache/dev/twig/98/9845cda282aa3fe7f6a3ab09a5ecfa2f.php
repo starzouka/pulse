@@ -259,10 +259,128 @@ class __TwigTemplate_ae53dbbe7b0d74f9dac6ea8e3cb6cf26 extends Template
             $context = array_intersect_key($context, $_parent) + $_parent;
             // line 82
             yield "              </div>
-            </div>
+
+              ";
+            // line 84
+            if (CoreExtension::getAttribute($this->env, $this->source, ($context["aiRequestAssessment"] ?? null), "ollamaAssistant", [], "any", true, true, false, 84)) {
+                // line 85
+                yield "                ";
+                $context["ollama"] = CoreExtension::getAttribute($this->env, $this->source, (isset($context["aiRequestAssessment"]) || array_key_exists("aiRequestAssessment", $context) ? $context["aiRequestAssessment"] : (function () { throw new RuntimeError('Variable "aiRequestAssessment" does not exist.', 85, $this->source); })()), "ollamaAssistant", [], "any", false, false, false, 85);
+                // line 86
+                yield "                ";
+                $context["ollamaStatus"] = ((CoreExtension::getAttribute($this->env, $this->source, ($context["ollama"] ?? null), "status", [], "any", true, true, false, 86)) ? (Twig\Extension\CoreExtension::default(CoreExtension::getAttribute($this->env, $this->source, (isset($context["ollama"]) || array_key_exists("ollama", $context) ? $context["ollama"] : (function () { throw new RuntimeError('Variable "ollama" does not exist.', 86, $this->source); })()), "status", [], "any", false, false, false, 86), "ERROR")) : ("ERROR"));
+                // line 87
+                yield "                ";
+                $context["ollamaBadge"] = ((((isset($context["ollamaStatus"]) || array_key_exists("ollamaStatus", $context) ? $context["ollamaStatus"] : (function () { throw new RuntimeError('Variable "ollamaStatus" does not exist.', 87, $this->source); })()) == "READY")) ? ("badge--success") : ((((                // line 89
+(isset($context["ollamaStatus"]) || array_key_exists("ollamaStatus", $context) ? $context["ollamaStatus"] : (function () { throw new RuntimeError('Variable "ollamaStatus" does not exist.', 89, $this->source); })()) == "DISABLED")) ? ("badge--warning") : ("badge--danger"))));
+                // line 91
+                yield "                <div class=\"panel\" style=\"margin-top:12px;\">
+                  <div class=\"panel__head\">
+                    <div>
+                      <h3 class=\"panel__title\">ASSISTANT IA LOCAL (OLLAMA)</h3>
+                      <div class=\"panel__desc\">
+                        ";
+                // line 96
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(((CoreExtension::getAttribute($this->env, $this->source, ($context["ollama"] ?? null), "model", [], "any", true, true, false, 96)) ? (Twig\Extension\CoreExtension::default(CoreExtension::getAttribute($this->env, $this->source, (isset($context["ollama"]) || array_key_exists("ollama", $context) ? $context["ollama"] : (function () { throw new RuntimeError('Variable "ollama" does not exist.', 96, $this->source); })()), "model", [], "any", false, false, false, 96), "n/a")) : ("n/a")), "html", null, true);
+                yield " via ";
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(((CoreExtension::getAttribute($this->env, $this->source, ($context["ollama"] ?? null), "baseUrl", [], "any", true, true, false, 96)) ? (Twig\Extension\CoreExtension::default(CoreExtension::getAttribute($this->env, $this->source, (isset($context["ollama"]) || array_key_exists("ollama", $context) ? $context["ollama"] : (function () { throw new RuntimeError('Variable "ollama" does not exist.', 96, $this->source); })()), "baseUrl", [], "any", false, false, false, 96), "localhost")) : ("localhost")), "html", null, true);
+                yield "
+                      </div>
+                    </div>
+                    <div class=\"panel__actions\">
+                      <span class=\"badge ";
+                // line 100
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape((isset($context["ollamaBadge"]) || array_key_exists("ollamaBadge", $context) ? $context["ollamaBadge"] : (function () { throw new RuntimeError('Variable "ollamaBadge" does not exist.', 100, $this->source); })()), "html", null, true);
+                yield "\">";
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape((isset($context["ollamaStatus"]) || array_key_exists("ollamaStatus", $context) ? $context["ollamaStatus"] : (function () { throw new RuntimeError('Variable "ollamaStatus" does not exist.', 100, $this->source); })()), "html", null, true);
+                yield "</span>
+                      ";
+                // line 101
+                if ((CoreExtension::getAttribute($this->env, $this->source, ($context["ollama"] ?? null), "latencyMs", [], "any", true, true, false, 101) && CoreExtension::getAttribute($this->env, $this->source, (isset($context["ollama"]) || array_key_exists("ollama", $context) ? $context["ollama"] : (function () { throw new RuntimeError('Variable "ollama" does not exist.', 101, $this->source); })()), "latencyMs", [], "any", false, false, false, 101))) {
+                    // line 102
+                    yield "                        <span class=\"badge\">";
+                    yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, (isset($context["ollama"]) || array_key_exists("ollama", $context) ? $context["ollama"] : (function () { throw new RuntimeError('Variable "ollama" does not exist.', 102, $this->source); })()), "latencyMs", [], "any", false, false, false, 102), "html", null, true);
+                    yield " ms</span>
+                      ";
+                }
+                // line 104
+                yield "                    </div>
+                  </div>
+
+                  <div class=\"list\">
+                    ";
+                // line 108
+                if ((($tmp = CoreExtension::getAttribute($this->env, $this->source, (isset($context["ollama"]) || array_key_exists("ollama", $context) ? $context["ollama"] : (function () { throw new RuntimeError('Variable "ollama" does not exist.', 108, $this->source); })()), "summary", [], "any", false, false, false, 108)) && $tmp instanceof Markup ? (string) $tmp : $tmp)) {
+                    // line 109
+                    yield "                      <div class=\"listItem\">
+                        <span>";
+                    // line 110
+                    yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, (isset($context["ollama"]) || array_key_exists("ollama", $context) ? $context["ollama"] : (function () { throw new RuntimeError('Variable "ollama" does not exist.', 110, $this->source); })()), "summary", [], "any", false, false, false, 110), "html", null, true);
+                    yield "</span>
+                        <span class=\"listItem__meta\">Resume</span>
+                      </div>
+                    ";
+                }
+                // line 114
+                yield "
+                    ";
+                // line 115
+                if ((($tmp = CoreExtension::getAttribute($this->env, $this->source, (isset($context["ollama"]) || array_key_exists("ollama", $context) ? $context["ollama"] : (function () { throw new RuntimeError('Variable "ollama" does not exist.', 115, $this->source); })()), "adminDecisionHint", [], "any", false, false, false, 115)) && $tmp instanceof Markup ? (string) $tmp : $tmp)) {
+                    // line 116
+                    yield "                      <div class=\"listItem\">
+                        <span><b>Suggestion admin</b></span>
+                        <span class=\"listItem__meta\">";
+                    // line 118
+                    yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, (isset($context["ollama"]) || array_key_exists("ollama", $context) ? $context["ollama"] : (function () { throw new RuntimeError('Variable "ollama" does not exist.', 118, $this->source); })()), "adminDecisionHint", [], "any", false, false, false, 118), "html", null, true);
+                    yield "</span>
+                      </div>
+                    ";
+                }
+                // line 121
+                yield "
+                    ";
+                // line 122
+                $context['_parent'] = $context;
+                $context['_seq'] = CoreExtension::ensureTraversable(((CoreExtension::getAttribute($this->env, $this->source, ($context["ollama"] ?? null), "organizerSuggestions", [], "any", true, true, false, 122)) ? (Twig\Extension\CoreExtension::default(CoreExtension::getAttribute($this->env, $this->source, (isset($context["ollama"]) || array_key_exists("ollama", $context) ? $context["ollama"] : (function () { throw new RuntimeError('Variable "ollama" does not exist.', 122, $this->source); })()), "organizerSuggestions", [], "any", false, false, false, 122), [])) : ([])));
+                foreach ($context['_seq'] as $context["_key"] => $context["suggestion"]) {
+                    // line 123
+                    yield "                      <div class=\"listItem\">
+                        <span>";
+                    // line 124
+                    yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($context["suggestion"], "html", null, true);
+                    yield "</span>
+                        <span class=\"listItem__meta\">Suggestion</span>
+                      </div>
+                    ";
+                }
+                $_parent = $context['_parent'];
+                unset($context['_seq'], $context['_key'], $context['suggestion'], $context['_parent']);
+                $context = array_intersect_key($context, $_parent) + $_parent;
+                // line 128
+                yield "
+                    ";
+                // line 129
+                if ((($tmp = CoreExtension::getAttribute($this->env, $this->source, (isset($context["ollama"]) || array_key_exists("ollama", $context) ? $context["ollama"] : (function () { throw new RuntimeError('Variable "ollama" does not exist.', 129, $this->source); })()), "error", [], "any", false, false, false, 129)) && $tmp instanceof Markup ? (string) $tmp : $tmp)) {
+                    // line 130
+                    yield "                      <div class=\"listItem\">
+                        <span>";
+                    // line 131
+                    yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, (isset($context["ollama"]) || array_key_exists("ollama", $context) ? $context["ollama"] : (function () { throw new RuntimeError('Variable "ollama" does not exist.', 131, $this->source); })()), "error", [], "any", false, false, false, 131), "html", null, true);
+                    yield "</span>
+                        <span class=\"listItem__meta\">Erreur</span>
+                      </div>
+                    ";
+                }
+                // line 135
+                yield "                  </div>
+                </div>
+              ";
+            }
+            // line 138
+            yield "            </div>
           ";
         }
-        // line 85
+        // line 140
         yield "
           <div class=\"panel\">
             <div class=\"panel__head\">
@@ -279,15 +397,15 @@ class __TwigTemplate_ae53dbbe7b0d74f9dac6ea8e3cb6cf26 extends Template
       </div>
 
       ";
-        // line 100
-        yield from $this->load("front/partials/_footer.html.twig", 100)->unwrap()->yield($context);
-        // line 101
+        // line 155
+        yield from $this->load("front/partials/_footer.html.twig", 155)->unwrap()->yield($context);
+        // line 156
         yield "    </section>
   </main>
 
   ";
-        // line 104
-        yield from $this->load("front/partials/_auth_modal.html.twig", 104)->unwrap()->yield($context);
+        // line 159
+        yield from $this->load("front/partials/_auth_modal.html.twig", 159)->unwrap()->yield($context);
         
         $__internal_6f47bbe9983af81f1e7450e9a3e3768f->leave($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof);
 
@@ -297,7 +415,7 @@ class __TwigTemplate_ae53dbbe7b0d74f9dac6ea8e3cb6cf26 extends Template
         yield from [];
     }
 
-    // line 107
+    // line 162
     /**
      * @return iterable<null|scalar|\Stringable>
      */
@@ -310,14 +428,14 @@ class __TwigTemplate_ae53dbbe7b0d74f9dac6ea8e3cb6cf26 extends Template
         $__internal_6f47bbe9983af81f1e7450e9a3e3768f = $this->extensions["Symfony\\Bridge\\Twig\\Extension\\ProfilerExtension"];
         $__internal_6f47bbe9983af81f1e7450e9a3e3768f->enter($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof = new \Twig\Profiler\Profile($this->getTemplateName(), "block", "javascripts"));
 
-        // line 108
+        // line 163
         yield "  ";
         yield from $this->yieldParentBlock("javascripts", $context, $blocks);
         yield "
   ";
-        // line 109
-        if (((isset($context["recaptchaEnabled"]) || array_key_exists("recaptchaEnabled", $context) ? $context["recaptchaEnabled"] : (function () { throw new RuntimeError('Variable "recaptchaEnabled" does not exist.', 109, $this->source); })()) && (isset($context["recaptchaSiteKey"]) || array_key_exists("recaptchaSiteKey", $context) ? $context["recaptchaSiteKey"] : (function () { throw new RuntimeError('Variable "recaptchaSiteKey" does not exist.', 109, $this->source); })()))) {
-            // line 110
+        // line 164
+        if (((isset($context["recaptchaEnabled"]) || array_key_exists("recaptchaEnabled", $context) ? $context["recaptchaEnabled"] : (function () { throw new RuntimeError('Variable "recaptchaEnabled" does not exist.', 164, $this->source); })()) && (isset($context["recaptchaSiteKey"]) || array_key_exists("recaptchaSiteKey", $context) ? $context["recaptchaSiteKey"] : (function () { throw new RuntimeError('Variable "recaptchaSiteKey" does not exist.', 164, $this->source); })()))) {
+            // line 165
             yield "    <script>
       (function () {
         var form = document.getElementById('organizerRequestCreateForm');
@@ -328,8 +446,8 @@ class __TwigTemplate_ae53dbbe7b0d74f9dac6ea8e3cb6cf26 extends Template
 
         var widgetId = null;
         var recaptchaMode = '";
-            // line 119
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(((array_key_exists("recaptchaMode", $context)) ? (Twig\Extension\CoreExtension::default((isset($context["recaptchaMode"]) || array_key_exists("recaptchaMode", $context) ? $context["recaptchaMode"] : (function () { throw new RuntimeError('Variable "recaptchaMode" does not exist.', 119, $this->source); })()), "checkbox")) : ("checkbox")), "js"), "html", null, true);
+            // line 174
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(((array_key_exists("recaptchaMode", $context)) ? (Twig\Extension\CoreExtension::default((isset($context["recaptchaMode"]) || array_key_exists("recaptchaMode", $context) ? $context["recaptchaMode"] : (function () { throw new RuntimeError('Variable "recaptchaMode" does not exist.', 174, $this->source); })()), "checkbox")) : ("checkbox")), "js"), "html", null, true);
             yield "';
         var recaptchaPassed = false;
         var pendingSubmit = false;
@@ -356,8 +474,8 @@ class __TwigTemplate_ae53dbbe7b0d74f9dac6ea8e3cb6cf26 extends Template
           try {
             widgetId = grecaptcha.render('organizerRequestRecaptcha', {
               sitekey: '";
-            // line 144
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape((isset($context["recaptchaSiteKey"]) || array_key_exists("recaptchaSiteKey", $context) ? $context["recaptchaSiteKey"] : (function () { throw new RuntimeError('Variable "recaptchaSiteKey" does not exist.', 144, $this->source); })()), "js"), "html", null, true);
+            // line 199
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape((isset($context["recaptchaSiteKey"]) || array_key_exists("recaptchaSiteKey", $context) ? $context["recaptchaSiteKey"] : (function () { throw new RuntimeError('Variable "recaptchaSiteKey" does not exist.', 199, $this->source); })()), "js"), "html", null, true);
             yield "',
               size: recaptchaMode === 'invisible' ? 'invisible' : 'normal',
               callback: 'pulseOrganizerRequestRecaptchaCallback',
@@ -444,7 +562,7 @@ class __TwigTemplate_ae53dbbe7b0d74f9dac6ea8e3cb6cf26 extends Template
      */
     public function getDebugInfo(): array
     {
-        return array (  360 => 144,  332 => 119,  321 => 110,  319 => 109,  314 => 108,  301 => 107,  290 => 104,  285 => 101,  283 => 100,  266 => 85,  261 => 82,  251 => 78,  248 => 77,  244 => 76,  238 => 73,  234 => 72,  223 => 64,  217 => 63,  208 => 56,  206 => 54,  204 => 52,  201 => 51,  199 => 50,  193 => 47,  188 => 45,  183 => 43,  176 => 38,  170 => 35,  166 => 33,  163 => 32,  161 => 31,  157 => 30,  153 => 29,  149 => 27,  143 => 26,  132 => 23,  128 => 22,  125 => 21,  120 => 20,  116 => 19,  112 => 17,  110 => 16,  104 => 12,  101 => 6,  88 => 5,  65 => 3,  42 => 1,);
+        return array (  478 => 199,  450 => 174,  439 => 165,  437 => 164,  432 => 163,  419 => 162,  408 => 159,  403 => 156,  401 => 155,  384 => 140,  380 => 138,  375 => 135,  368 => 131,  365 => 130,  363 => 129,  360 => 128,  350 => 124,  347 => 123,  343 => 122,  340 => 121,  334 => 118,  330 => 116,  328 => 115,  325 => 114,  318 => 110,  315 => 109,  313 => 108,  307 => 104,  301 => 102,  299 => 101,  293 => 100,  284 => 96,  277 => 91,  275 => 89,  273 => 87,  270 => 86,  267 => 85,  265 => 84,  261 => 82,  251 => 78,  248 => 77,  244 => 76,  238 => 73,  234 => 72,  223 => 64,  217 => 63,  208 => 56,  206 => 54,  204 => 52,  201 => 51,  199 => 50,  193 => 47,  188 => 45,  183 => 43,  176 => 38,  170 => 35,  166 => 33,  163 => 32,  161 => 31,  157 => 30,  153 => 29,  149 => 27,  143 => 26,  132 => 23,  128 => 22,  125 => 21,  120 => 20,  116 => 19,  112 => 17,  110 => 16,  104 => 12,  101 => 6,  88 => 5,  65 => 3,  42 => 1,);
     }
 
     public function getSourceContext(): Source
@@ -531,6 +649,61 @@ class __TwigTemplate_ae53dbbe7b0d74f9dac6ea8e3cb6cf26 extends Template
                   </div>
                 {% endfor %}
               </div>
+
+              {% if aiRequestAssessment.ollamaAssistant is defined %}
+                {% set ollama = aiRequestAssessment.ollamaAssistant %}
+                {% set ollamaStatus = ollama.status|default('ERROR') %}
+                {% set ollamaBadge = ollamaStatus == 'READY'
+                  ? 'badge--success'
+                  : (ollamaStatus == 'DISABLED' ? 'badge--warning' : 'badge--danger')
+                %}
+                <div class=\"panel\" style=\"margin-top:12px;\">
+                  <div class=\"panel__head\">
+                    <div>
+                      <h3 class=\"panel__title\">ASSISTANT IA LOCAL (OLLAMA)</h3>
+                      <div class=\"panel__desc\">
+                        {{ ollama.model|default('n/a') }} via {{ ollama.baseUrl|default('localhost') }}
+                      </div>
+                    </div>
+                    <div class=\"panel__actions\">
+                      <span class=\"badge {{ ollamaBadge }}\">{{ ollamaStatus }}</span>
+                      {% if ollama.latencyMs is defined and ollama.latencyMs %}
+                        <span class=\"badge\">{{ ollama.latencyMs }} ms</span>
+                      {% endif %}
+                    </div>
+                  </div>
+
+                  <div class=\"list\">
+                    {% if ollama.summary %}
+                      <div class=\"listItem\">
+                        <span>{{ ollama.summary }}</span>
+                        <span class=\"listItem__meta\">Resume</span>
+                      </div>
+                    {% endif %}
+
+                    {% if ollama.adminDecisionHint %}
+                      <div class=\"listItem\">
+                        <span><b>Suggestion admin</b></span>
+                        <span class=\"listItem__meta\">{{ ollama.adminDecisionHint }}</span>
+                      </div>
+                    {% endif %}
+
+                    {% for suggestion in ollama.organizerSuggestions|default([]) %}
+                      <div class=\"listItem\">
+                        <span>{{ suggestion }}</span>
+                        <span class=\"listItem__meta\">Suggestion</span>
+                      </div>
+                    {% endfor %}
+
+                    {% if ollama.error %}
+                      <div class=\"listItem\">
+                        <span>{{ ollama.error }}</span>
+                        <span class=\"listItem__meta\">Erreur</span>
+                      </div>
+                    {% endif %}
+                  </div>
+                </div>
+              {% endif %}
             </div>
           {% endif %}
 

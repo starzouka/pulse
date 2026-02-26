@@ -459,12 +459,16 @@ final class SeedDemoDataCommand extends Command
         }
 
         for ($i = 1; $i <= 20; $i++) {
-            $teams = [$i, ($i % 20) + 1];
+            $teams = [];
+            for ($slot = 0; $slot < 5; $slot++) {
+                $teams[] = (($i + $slot - 1) % 20) + 1;
+            }
 
             foreach ($teams as $slot => $teamId) {
-                $status = $this->cyc(['PENDING', 'ACCEPTED', 'REFUSED', 'CANCELLED'], $i + $slot);
-                $accepted = $status === 'ACCEPTED';
-                $checked = $accepted && (($i + $slot) % 2 === 0);
+                // Garantit au moins 5 equipes utilisables par tournoi (ACCEPTED) pour les tests demo.
+                $status = 'ACCEPTED';
+                $accepted = true;
+                $checked = (($i + $slot) % 2 === 0);
 
                 $this->insert('tournament_teams', [
                     'status' => $status,
