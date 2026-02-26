@@ -11,6 +11,7 @@ use App\Repository\TeamMemberRepository;
 use App\Repository\UserRepository;
 use App\Service\Captain\CaptainTeamContextProvider;
 use App\Service\Captain\RosterManager;
+use App\Service\Pdf\CaptainRosterPdfExporter;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -63,6 +64,37 @@ final class CaptainMembersController extends AbstractController
             'roster_stats' => $rosterStats,
             'assignable_roster_roles' => $rosterManager->getAssignableRoles(),
         ]);
+    }
+
+    #[Route('/pages/captain-members/{teamId}/export/roster-pdf', name: 'front_captain_members_export_roster_pdf', requirements: ['teamId' => '\d+'], methods: ['GET'])]
+    public function exportRosterPdf(
+        int $teamId,
+        Request $request,
+        CaptainTeamContextProvider $captainTeamContextProvider,
+        TeamMemberRepository $teamMemberRepository,
+        RosterManager $rosterManager,
+        CaptainRosterPdfExporter $captainRosterPdfExporter,
+    ): Response {
+        $viewer = $this->getUser();
+        if (!$viewer instanceof User) {
+            return $this->redirectToRoute('front_login', [
+                '_target_path' => $request->getUri(),
+            ]);
+        }
+
+        $team = $captainTeamContextProvider->resolveManagedTeamById($viewer, $teamId);
+        if (!$team instanceof Team) {
+            throw $this->createAccessDeniedException('Equipe non autorisee.');
+        }
+
+        $activeMembers = $teamMemberRepository->findByTeamWithUser($team, true);
+        $inactiveMembers = $teamMemberRepository->findByTeamWithUser($team, false);
+        $inactiveMembers = array_values(array_filter(
+            $inactiveMembers,
+            static fn (TeamMember $teamMember): bool => !$teamMember->isActive(),
+        ));
+
+        return $captainRosterPdfExporter->export($team, $activeMembers, $inactiveMembers, $rosterManager->buildRosterStats($team));
     }
 
     #[Route('/pages/captain-members/{teamId}/{userId}/role', name: 'front_captain_members_role', requirements: ['teamId' => '\d+', 'userId' => '\d+'], methods: ['POST'])]

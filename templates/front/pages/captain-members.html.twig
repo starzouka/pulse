@@ -33,6 +33,9 @@
                   {{ active_team.name }} - {{ active_members|length }} membre(s) actif(s)
                 </div>
               </div>
+              <div>
+                <a class="btn btn--ghost" href="{{ path('front_captain_members_export_roster_pdf', {teamId: active_team.teamId}) }}">Exporter fiche roster (PDF)</a>
+              </div>
             </div>
             <div class="statsRow" style="margin-top:12px;">
               <div class="statCard"><div class="statCard__value">{{ roster_stats.total_active }}</div><div class="statCard__label">Actifs</div></div>

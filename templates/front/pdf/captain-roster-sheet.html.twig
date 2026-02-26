@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Fiche roster - {{ team.name }}</title>
+  <style>
+    body { font-family: DejaVu Sans, sans-serif; font-size: 12px; color: #172033; margin: 20px; }
+    .header { border: 1px solid #dbe4f1; background: #f7faff; padding: 14px; border-radius: 8px; }
+    .title { font-size: 20px; font-weight: 700; margin: 0 0 6px; }
+    .meta { color: #4f5d75; font-size: 11px; }
+    .grid { margin-top: 12px; }
+    .stat { display: inline-block; width: 18%; min-width: 90px; margin: 0 8px 8px 0; padding: 8px; border: 1px solid #dbe4f1; background: #fcfdff; }
+    .stat__value { font-size: 16px; font-weight: 700; }
+    .stat__label { font-size: 10px; color: #5b6880; text-transform: uppercase; }
+    .section { margin-top: 16px; }
+    .section h3 { margin: 0 0 8px; font-size: 14px; }
+    .desc { margin: 6px 0 0; color: #445065; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #dbe4f1; padding: 7px; vertical-align: top; }
+    th { background: #eef4ff; text-align: left; }
+    tr:nth-child(even) td { background: #fbfdff; }
+    .muted { color: #67758d; }
+    .badge { padding: 1px 6px; border: 1px solid #c7d6ec; background: #f1f6ff; border-radius: 999px; font-size: 10px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="title">Fiche Roster - {{ team.name ?: 'Equipe' }}</div>
+    <div class="meta">
+      Genere le {{ generated_at|date('d/m/Y H:i') }}
+      {% if team.region %} | Region: {{ team.region }}{% endif %}
+      {% if team.captainUserId %} | Capitaine: {{ team.captainUserId.displayName ?: team.captainUserId.username }}{% endif %}
+    </div>
+    {% if team.description %}
+      <p class="desc">{{ team.description }}</p>
+    {% endif %}
+  </div>
+
+  <div class="grid">
+    <div class="stat"><div class="stat__value">{{ roster_stats.total_active }}</div><div class="stat__label">Actifs</div></div>
+    <div class="stat"><div class="stat__value">{{ roster_stats.captains }}</div><div class="stat__label">Captain</div></div>
+    <div class="stat"><div class="stat__value">{{ roster_stats.co_captains }}</div><div class="stat__label">Co-captains</div></div>
+    <div class="stat"><div class="stat__value">{{ roster_stats.starters }}</div><div class="stat__label">Titulaires</div></div>
+    <div class="stat"><div class="stat__value">{{ roster_stats.substitutes }}</div><div class="stat__label">Remplacants</div></div>
+  </div>
+
+  <div class="section">
+    <h3>Membres actifs</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Joueur</th>
+          <th>Username</th>
+          <th>Role compte</th>
+          <th>Role roster</th>
+          <th>Date adhesion</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for membership in active_members %}
+        {% set member = membership.userId %}
+        <tr>
+          <td>{{ member.displayName ?: member.username }}</td>
+          <td class="muted">@{{ member.username }}</td>
+          <td>
+            {% if team.captainUserId and member.userId == team.captainUserId.userId %}
+              <span class="badge">CAPITAINE</span>
+            {% else %}
+              MEMBRE
+            {% endif %}
+          </td>
+          <td>{{ membership.rosterRole ?: 'STARTER' }}</td>
+          <td>{{ membership.joinedAt ? membership.joinedAt|date('d/m/Y H:i') : '-' }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="5">Aucun membre actif.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <h3>Historique des anciens membres</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Joueur</th>
+          <th>Dernier role roster</th>
+          <th>Date sortie</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for membership in inactive_members %}
+        {% set member = membership.userId %}
+        <tr>
+          <td>{{ member.displayName ?: member.username }}</td>
+          <td>{{ membership.rosterRole ?: 'STARTER' }}</td>
+          <td>{{ membership.leftAt ? membership.leftAt|date('d/m/Y H:i') : '-' }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="3">Aucun historique de sortie.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>
