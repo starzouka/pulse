@@ -26,3 +26,4 @@ final class Version20260226114500 extends AbstractMigration
         $this->addSql('ALTER TABLE orders ADD CONSTRAINT FK_E52FFDEE1AD5CDBF FOREIGN KEY (cart_id) REFERENCES carts (cart_id) ON DELETE RESTRICT');
     }
 }
+

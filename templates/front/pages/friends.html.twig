@@ -162,9 +162,73 @@
                 </section>
               </div>
             </section>
+
+            <section class="panel gadget">
+              <h3 class="panel__title">RECOMMANDATION D'AMIS (IA)</h3>
+              {% set reco = friend_recommendations|default({
+                provider: 'none',
+                model: '-',
+                mode: 'fallback',
+                status: 'no_candidates',
+                message: 'Aucune recommandation disponible.',
+                requirements: [],
+                recommendations: []
+              }) %}
+
+              <div class="listItem">
+                <span>Provider: {{ reco.provider|upper }}</span>
+                <span class="badge {{ reco.mode == 'ai' ? 'badge--success' : 'badge--info' }}">{{ reco.mode|upper }}</span>
+              </div>
+              <div class="listItem">
+                <span>Modele: {{ reco.model }}</span>
+                <span class="listItem__meta">Top 4</span>
+              </div>
+              <div class="listItem">
+                <span>{{ reco.message }}</span>
+              </div>
+
+              {% if reco.recommendations is empty %}
+                <div class="emptyState" style="margin-top:10px;">Aucune suggestion pour le moment.</div>
+              {% else %}
+                {% for recommendation in reco.recommendations %}
+                  {% set recommendedUser = recommendation.user %}
+                  {% set recommendedUserId = recommendedUser.userId ?? 0 %}
+                  <article class="panel profilePost" style="margin-top:10px;">
+                    <div class="postCard__head">
+                      <div class="postCard__author">
+                        <div>
+                          <div class="name">{{ recommendedUser.displayName ?? recommendedUser.username }} (@{{ recommendedUser.username }})</div>
+                          <div class="sub">{{ recommendedUser.role }}{% if recommendedUser.country %} - {{ recommendedUser.country|upper }}{% endif %}</div>
+                        </div>
+                      </div>
+                      <span class="badge">{{ recommendation.score }}/99</span>
+                    </div>
+                    <p class="postCard__body">{{ recommendation.reason }}</p>
+                    <div class="postCard__actions">
+                      <a class="btn btn--ghost" href="{{ path('front_player_profile', {id: recommendedUserId}) }}">Voir profil</a>
+                      <form method="post" action="{{ path('front_profile_add_friend', {id: recommendedUserId}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('profile_add_friend_' ~ recommendedUserId) }}">
+                        <button class="btn btn--primary" type="submit">Ajouter</button>
+                      </form>
+                    </div>
+                  </article>
+                {% endfor %}
+              {% endif %}
+
+              {% if reco.requirements is not empty %}
+                <div class="socialQuickList" style="margin-top:10px;">
+                  {% for requirement in reco.requirements %}
+                    <div class="listItem">
+                      <span>{{ requirement }}</span>
+                    </div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </section>
           </div>
 
           <aside class="socialStack">
+
             <section class="panel gadget">
               <h3 class="panel__title">SUGGESTIONS</h3>
               <div class="socialQuickList">

@@ -116,9 +116,19 @@ class TeamMemberRepository extends ServiceEntityRepository
             ->addSelect('user')
             ->leftJoin('user.profileImageId', 'profileImage')
             ->addSelect('profileImage')
+            ->addSelect(
+                "(CASE 
+                    WHEN teamMember.rosterRole = 'CAPTAIN' THEN 0
+                    WHEN teamMember.rosterRole = 'CO_CAPTAIN' THEN 1
+                    WHEN teamMember.rosterRole = 'STARTER' THEN 2
+                    WHEN teamMember.rosterRole = 'SUBSTITUTE' THEN 3
+                    ELSE 4
+                END) AS HIDDEN rosterPriority"
+            )
             ->andWhere('teamMember.teamId = :team')
             ->setParameter('team', $team)
-            ->orderBy('teamMember.joinedAt', 'ASC');
+            ->orderBy('rosterPriority', 'ASC')
+            ->addOrderBy('teamMember.joinedAt', 'ASC');
 
         if ($activeOnly) {
             $builder
@@ -265,5 +275,61 @@ class TeamMemberRepository extends ServiceEntityRepository
         }
 
         return $counts;
+    }
+
+    /**
+     * @return array{CAPTAIN:int,CO_CAPTAIN:int,STARTER:int,SUBSTITUTE:int}
+     */
+    public function countActiveByRosterRole(Team $team): array
+    {
+        $rows = $this->createQueryBuilder('teamMember')
+            ->select('teamMember.rosterRole AS rosterRole')
+            ->addSelect('COUNT(teamMember.userId) AS membersCount')
+            ->andWhere('teamMember.teamId = :team')
+            ->andWhere('teamMember.isActive = :active')
+            ->andWhere('teamMember.leftAt IS NULL')
+            ->setParameter('team', $team)
+            ->setParameter('active', true)
+            ->groupBy('teamMember.rosterRole')
+            ->getQuery()
+            ->getArrayResult();
+
+        $counts = [
+            TeamMember::ROSTER_ROLE_CAPTAIN => 0,
+            TeamMember::ROSTER_ROLE_CO_CAPTAIN => 0,
+            TeamMember::ROSTER_ROLE_STARTER => 0,
+            TeamMember::ROSTER_ROLE_SUBSTITUTE => 0,
+        ];
+
+        foreach ($rows as $row) {
+            $rosterRole = strtoupper(trim((string) ($row['rosterRole'] ?? '')));
+            if (!array_key_exists($rosterRole, $counts)) {
+                continue;
+            }
+
+            $counts[$rosterRole] = (int) ($row['membersCount'] ?? 0);
+        }
+
+        return $counts;
+    }
+
+    /**
+     * @return list<TeamMember>
+     */
+    public function findRosterHistoryWithUser(Team $team, int $limit = 300): array
+    {
+        return $this->createQueryBuilder('teamMember')
+            ->innerJoin('teamMember.userId', 'user')
+            ->addSelect('user')
+            ->leftJoin('user.profileImageId', 'profileImage')
+            ->addSelect('profileImage')
+            ->andWhere('teamMember.teamId = :team')
+            ->setParameter('team', $team)
+            ->orderBy('teamMember.joinedAt', 'DESC')
+            ->addOrderBy('teamMember.leftAt', 'DESC')
+            ->addOrderBy('user.displayName', 'ASC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
     }
 }

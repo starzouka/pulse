@@ -7,6 +7,7 @@ use App\Repository\GameRepository;
 use App\Repository\TournamentMatchRepository;
 use App\Repository\TournamentRepository;
 use App\Repository\TournamentTeamRepository;
+use App\Service\Admin\PdfImageResolver;
 use App\Service\Admin\TableExportService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -74,6 +75,7 @@ final class TournamentsController extends AbstractController
         TournamentRepository $tournamentRepository,
         TournamentTeamRepository $tournamentTeamRepository,
         TournamentMatchRepository $tournamentMatchRepository,
+        PdfImageResolver $pdfImageResolver,
         TableExportService $tableExportService,
     ): Response {
         $query = trim((string) $request->query->get('q', ''));
@@ -99,11 +101,8 @@ final class TournamentsController extends AbstractController
 
         $headers = ['ID', 'Titre', 'Jeu', 'Organisateur', 'Status', 'Start date', 'End date', 'Equipes', 'Matchs', 'Prize pool'];
         $rows = [];
-        $totalPrizePool = 0.0;
         foreach ($tournaments as $tournament) {
             $tournamentId = (int) ($tournament->getTournamentId() ?? 0);
-            $prizePool = (float) ($tournament->getPrizePool() ?? 0);
-            $totalPrizePool += $prizePool;
             $rows[] = [
                 $tournamentId,
                 (string) ($tournament->getTitle() ?? '-'),
@@ -123,41 +122,31 @@ final class TournamentsController extends AbstractController
             return $tableExportService->exportExcel('Tournois', $headers, $rows, sprintf('admin_tournaments_%s.xlsx', $timestamp));
         }
 
-        $acceptedTeamsTotal = 0;
-        foreach ($acceptedByTournamentId as $count) {
-            $acceptedTeamsTotal += (int) $count;
+        $pdfRows = [];
+        foreach ($tournaments as $tournament) {
+            $pdfRows[] = [
+                'tournament' => $tournament,
+                'photoSrc' => $pdfImageResolver->resolveFromPublicPath(
+                    $tournament->getPhotoPath(),
+                    'assets/template_bo/img/champions.jpg'
+                ),
+            ];
         }
 
-        $matchesTotal = 0;
-        foreach ($matchesByTournamentId as $count) {
-            $matchesTotal += (int) $count;
-        }
-
-        $html = $this->renderView('admin/pdf/tournaments_export.html.twig', [
-            'documentTitle' => 'Export Tournois',
-            'documentSubtitle' => 'Vue admin stylisee (HTML/CSS) des tournois filtres.',
-            'generatedAt' => new \DateTimeImmutable(),
-            'filters' => [
-                'q' => $query,
-                'status' => $status,
-                'game' => $gameId,
-                'sort' => $sort,
-            ],
-            'stats' => [
-                ['label' => 'Tournois', 'value' => count($tournaments)],
-                ['label' => 'Equipes acceptees', 'value' => $acceptedTeamsTotal],
-                ['label' => 'Matchs', 'value' => $matchesTotal],
-                ['label' => 'Prize pool total', 'value' => number_format($totalPrizePool, 2, '.', ' ') . ' DT'],
-            ],
-            'tournaments' => $tournaments,
-            'registrationsByTournamentId' => $tournamentTeamRepository->countByTournamentIds($tournamentIds, ['PENDING', 'ACCEPTED']),
+        $html = $this->renderView('admin/pdf/tournaments.html.twig', [
+            'title' => 'Tournois',
+            'tournamentRows' => $pdfRows,
             'acceptedByTournamentId' => $acceptedByTournamentId,
             'matchesByTournamentId' => $matchesByTournamentId,
-            'photoUris' => $this->buildTournamentPhotoUris($tournaments),
-            'counter' => count($tournaments),
+            'generatedAt' => new \DateTimeImmutable(),
         ]);
 
-        return $tableExportService->exportPdfHtml($html, sprintf('admin_tournaments_%s.pdf', $timestamp), 'A4', 'landscape');
+        return $tableExportService->exportPdfFromHtml(
+            $html,
+            sprintf('admin_tournaments_%s.pdf', $timestamp),
+            'A4',
+            'landscape'
+        );
     }
 
     #[Route('/admin/tournaments/{id}/delete', name: 'admin_tournament_delete', requirements: ['id' => '\d+'], methods: ['POST'])]
@@ -189,52 +178,5 @@ final class TournamentsController extends AbstractController
         }
 
         return $this->redirectToRoute('admin_tournaments');
-    }
-
-    /**
-     * @param list<Tournament> $tournaments
-     * @return array<int, string>
-     */
-    private function buildTournamentPhotoUris(array $tournaments): array
-    {
-        $photoUris = [];
-        foreach ($tournaments as $tournament) {
-            $tournamentId = $tournament->getTournamentId();
-            if (!is_int($tournamentId) || $tournamentId <= 0) {
-                continue;
-            }
-
-            $photoUri = $this->resolvePdfImageUri($tournament->getPhotoPath());
-            if ($photoUri !== null) {
-                $photoUris[$tournamentId] = $photoUri;
-            }
-        }
-
-        return $photoUris;
-    }
-
-    private function resolvePdfImageUri(?string $rawPath): ?string
-    {
-        $path = trim((string) $rawPath);
-        if ($path === '') {
-            return null;
-        }
-
-        if (preg_match('#^https?://#i', $path) === 1) {
-            return $path;
-        }
-
-        $projectDir = (string) $this->getParameter('kernel.project_dir');
-        $normalized = ltrim(str_replace('\\', '/', $path), '/');
-        $fullPath = str_starts_with($normalized, 'public/')
-            ? $projectDir . '/' . $normalized
-            : $projectDir . '/public/' . $normalized;
-
-        $realPath = realpath($fullPath);
-        if (!is_string($realPath) || !is_file($realPath)) {
-            return null;
-        }
-
-        return str_replace(' ', '%20', 'file:///' . ltrim(str_replace('\\', '/', $realPath), '/'));
     }
 }

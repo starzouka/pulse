@@ -6,7 +6,7 @@
   {% set is_current = current_sort == field %}
   {% set next_direction = is_current and current_direction == 'asc' ? 'desc' : 'asc' %}
   {% set marker = is_current ? (current_direction == 'asc' ? ' (ASC)' : ' (DESC)') : '' %}
-  <a href="{{ path(route_name, filters|merge({sort: field, direction: next_direction})) }}" style="color:inherit;text-decoration:none;">
+  <a href="{{ path(route_name, filters|merge({sort: field, direction: next_direction, page: 1})) }}" style="color:inherit;text-decoration:none;">
     {{ label }}{{ marker }}
   </a>
 {% endmacro %}
@@ -19,9 +19,10 @@
   <div class="pageHeader">
     <div>
       <h2>Gestion jeux</h2>
-      <div class="pageSub">CRUD + filtres DB + export.</div>
+      <div class="pageSub">CRUD + IA + slug SEO + score intelligent.</div>
     </div>
     <div class="formActions">
+      <a class="btn btnGhost" href="{{ path('admin_catalog_dashboard') }}">KPI Catalogue</a>
       <a class="btn btnGhost" href="{{ path('admin_games_export', filters|merge({format: 'pdf'})) }}">Exporter PDF</a>
       <a class="btn btnGhost" href="{{ path('admin_games_export', filters|merge({format: 'excel'})) }}">Exporter Excel</a>
     </div>
@@ -41,8 +42,9 @@
       <h3 class="panelTitle">{{ editingGame ? 'MODIFIER JEU #' ~ editingGame.gameId : 'NOUVEAU JEU' }}</h3>
     </div>
 
-    <form method="post" enctype="multipart/form-data">
+    <form method="post" enctype="multipart/form-data" id="adminGameForm">
       <input type="hidden" name="_token" value="{{ csrf_token('admin_game_form') }}" />
+      <input type="hidden" id="adminGameAiToken" value="{{ csrf_token('admin_game_ai') }}" />
       <input type="hidden" name="game_id" value="{{ editingGame ? editingGame.gameId : '' }}" />
 
       <div class="formGrid">
@@ -70,6 +72,22 @@
         </div>
 
         <div class="field">
+          <label for="game_status">Statut *</label>
+          <select id="game_status" name="status">
+            {% for status in statuses %}
+              <option value="{{ status }}" {{ (editingGame ? editingGame.status : 'DRAFT') == status ? 'selected' : '' }}>
+                {{ status }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="game_cover_name">Nom cover (métier)</label>
+          <input id="game_cover_name" type="text" name="cover_name" value="{{ editingGame ? editingGame.coverName : '' }}" placeholder="cover-free-fire-season-7" />
+        </div>
+
+        <div class="field">
           <label for="game_cover_file">Cover (fichier)</label>
           <input id="game_cover_file" type="file" name="cover_file" accept="image/png,image/jpeg,image/webp,image/gif" />
           {% if editingGame and editingGame.coverImageId %}
@@ -82,10 +100,13 @@
         <div class="field" style="grid-column: 1 / -1;">
           <label for="game_description">Description</label>
           <textarea id="game_description" name="description">{{ editingGame ? editingGame.description : '' }}</textarea>
+          <div id="gameAiMeta" class="listMeta" style="margin-top:8px;">IA: non utilisee</div>
         </div>
       </div>
 
       <div class="formActions" style="margin-top:12px;">
+        <button class="btn btnGhost" type="button" id="btnGameAiSuggest">AI Suggestion</button>
+        <button class="btn btnGhost" type="button" id="btnGameAiAutofill">AI AutoFill</button>
         <button class="btn btnPrimary" type="submit">{{ editingGame ? 'Mettre a jour' : 'Creer jeu' }}</button>
         {% if editingGame %}
           <a class="btn btnGhost" href="{{ path('admin_games') }}">Annuler edition</a>
@@ -100,7 +121,7 @@
 
     <div class="filterGroup">
       <label>Recherche</label>
-      <input type="search" name="q" value="{{ filters.q }}" placeholder="name, desc, publisher" />
+      <input type="search" name="q" value="{{ filters.q }}" placeholder="name, slug, desc, publisher" />
     </div>
 
     <div class="filterGroup">
@@ -121,6 +142,16 @@
       <input type="text" name="publisher" value="{{ filters.publisher }}" placeholder="Riot, Valve, ..." />
     </div>
 
+    <div class="filterGroup">
+      <label>Statut</label>
+      <select name="status">
+        <option value="" {{ filters.status == '' ? 'selected' : '' }}>ALL</option>
+        {% for status in statuses %}
+          <option value="{{ status }}" {{ filters.status == status ? 'selected' : '' }}>{{ status }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
     <div class="formActions">
       <button class="btn btnPrimary" type="submit">Filtrer</button>
       <a class="btn btnGhost" href="{{ path('admin_games') }}">Reset</a>
@@ -130,7 +161,7 @@
   <section class="panel">
     <div class="panelHeader">
       <h3 class="panelTitle">LISTE JEUX</h3>
-      <span class="listMeta">{{ games|length }} resultat(s)</span>
+      <span class="listMeta">{{ gamesPagination.getTotalItemCount|default(0) }} resultat(s)</span>
     </div>
 
     <div class="dataTableWrap">
@@ -140,14 +171,19 @@
             <th>Cover</th>
             <th>{{ sorter.sort_link('admin_games', filters, 'id', 'ID') }}</th>
             <th>{{ sorter.sort_link('admin_games', filters, 'name', 'Nom') }}</th>
+            <th>{{ sorter.sort_link('admin_games', filters, 'slug', 'Slug') }}</th>
             <th>{{ sorter.sort_link('admin_games', filters, 'category', 'Categorie') }}</th>
+            <th>{{ sorter.sort_link('admin_games', filters, 'status', 'Statut') }}</th>
             <th>{{ sorter.sort_link('admin_games', filters, 'publisher', 'Publisher') }}</th>
+            <th>{{ sorter.sort_link('admin_games', filters, 'views', 'Vues') }}</th>
+            <th>{{ sorter.sort_link('admin_games', filters, 'favorites', 'Favoris') }}</th>
+            <th>{{ sorter.sort_link('admin_games', filters, 'score', 'Score') }}</th>
             <th>{{ sorter.sort_link('admin_games', filters, 'created_at', 'Cree le') }}</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          {% for game in games %}
+          {% for game in gamesPagination %}
             {% set gameId = game.gameId ?? 0 %}
             <tr>
               <td>
@@ -160,8 +196,13 @@
               </td>
               <td>#{{ gameId }}</td>
               <td>{{ game.name }}</td>
+              <td><span class="listMeta">{{ game.slug }}</span></td>
               <td>{{ game.categoryId ? game.categoryId.name : '-' }}</td>
+              <td><span class="badge badge--info">{{ game.status }}</span></td>
               <td>{{ game.publisher ?: '-' }}</td>
+              <td>{{ game.viewsCount }}</td>
+              <td>{{ game.favoritesCount }}</td>
+              <td><b>{{ game.popularityScore }}</b></td>
               <td>{{ game.createdAt ? game.createdAt|date('d/m/Y H:i') : '-' }}</td>
               <td>
                 <div class="formActions">
@@ -175,11 +216,110 @@
             </tr>
           {% else %}
             <tr>
-              <td colspan="7" class="listMeta">Aucun jeu trouve.</td>
+              <td colspan="12" class="listMeta">Aucun jeu trouve.</td>
             </tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
+
+    <div style="margin-top:12px;">
+      {{ knp_pagination_render(gamesPagination) }}
+    </div>
   </section>
+{% endblock %}
+
+{% block javascripts %}
+  {{ parent() }}
+  <script>
+    (() => {
+      const suggestBtn = document.getElementById('btnGameAiSuggest');
+      const autofillBtn = document.getElementById('btnGameAiAutofill');
+      const aiMeta = document.getElementById('gameAiMeta');
+      const token = document.getElementById('adminGameAiToken')?.value || '';
+
+      const nameField = document.getElementById('game_name');
+      const descField = document.getElementById('game_description');
+      const publisherField = document.getElementById('game_publisher');
+      const statusField = document.getElementById('game_status');
+      const categoryField = document.getElementById('game_category_id');
+
+      const toBody = () => {
+        const categoryName = categoryField && categoryField.selectedOptions.length > 0
+          ? (categoryField.selectedOptions[0].textContent || '').trim()
+          : '';
+
+        return new URLSearchParams({
+          _token: token,
+          name: nameField?.value || '',
+          description: descField?.value || '',
+          publisher: publisherField?.value || '',
+          category: categoryName,
+        });
+      };
+
+      const callAi = async (url) => {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+          body: toBody().toString(),
+        });
+
+        return response.json();
+      };
+
+      suggestBtn?.addEventListener('click', async () => {
+        try {
+          suggestBtn.disabled = true;
+          const payload = await callAi('{{ path('admin_games_ai_suggest') }}');
+          if (!payload?.ok || !payload?.data) {
+            throw new Error('Suggestion IA impossible.');
+          }
+
+          const suggestion = String(payload.data.suggestion || '').trim();
+          if (suggestion !== '') {
+            descField.value = suggestion;
+          }
+
+          aiMeta.textContent = `IA Suggestion: ${payload.data.provider}/${payload.data.source}`;
+        } catch (error) {
+          aiMeta.textContent = 'IA Suggestion indisponible, fallback local applique.';
+        } finally {
+          suggestBtn.disabled = false;
+        }
+      });
+
+      autofillBtn?.addEventListener('click', async () => {
+        try {
+          autofillBtn.disabled = true;
+          const payload = await callAi('{{ path('admin_games_ai_autofill') }}');
+          if (!payload?.ok || !payload?.data) {
+            throw new Error('AutoFill IA impossible.');
+          }
+
+          if (String(payload.data.name || '').trim() !== '') {
+            nameField.value = payload.data.name;
+          }
+          if (String(payload.data.description || '').trim() !== '') {
+            descField.value = payload.data.description;
+          }
+          if (String(payload.data.publisher || '').trim() !== '') {
+            publisherField.value = payload.data.publisher;
+          }
+          if (statusField && String(payload.data.status || '') !== '') {
+            statusField.value = payload.data.status;
+          }
+
+          aiMeta.textContent = `IA AutoFill: ${payload.data.provider}/${payload.data.source}`;
+        } catch (error) {
+          aiMeta.textContent = 'IA AutoFill indisponible, fallback local applique.';
+        } finally {
+          autofillBtn.disabled = false;
+        }
+      });
+    })();
+  </script>
 {% endblock %}

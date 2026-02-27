@@ -18,13 +18,19 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 final class TableExportService
 {
+    private const EXCEL_ACCENT = 'FF9D2E';
+    private const EXCEL_HEADER_BG = '1F172A';
+    private const EXCEL_HEADER_TEXT = 'F8FAFC';
+    private const EXCEL_ALT_ROW_BG = 'F8FAFC';
+    private const EXCEL_BORDER = 'D9E2EF';
+
     /**
      * @param list<string> $headers
      * @param list<list<scalar|null>> $rows
      */
     public function exportPdf(string $title, array $headers, array $rows, string $fileName): Response
     {
-        return $this->exportPdfHtml(
+        return $this->exportPdfFromHtml(
             $this->buildPdfHtml($title, $headers, $rows),
             $fileName,
             'A4',
@@ -32,13 +38,17 @@ final class TableExportService
         );
     }
 
-    public function exportPdfHtml(
+    public function exportPdfFromHtml(
         string $html,
         string $fileName,
         string $paper = 'A4',
-        string $orientation = 'portrait',
+        string $orientation = 'landscape',
     ): Response {
-        $dompdf = $this->createDompdf();
+        $options = new Options();
+        $options->set('defaultFont', 'DejaVu Sans');
+        $options->set('isRemoteEnabled', true);
+
+        $dompdf = new Dompdf($options);
         $dompdf->loadHtml($html);
         $dompdf->setPaper($paper, $orientation);
         $dompdf->render();
@@ -57,14 +67,6 @@ final class TableExportService
     public function exportExcel(string $sheetTitle, array $headers, array $rows, string $fileName): StreamedResponse
     {
         $spreadsheet = new Spreadsheet();
-        $spreadsheet->getProperties()
-            ->setCreator('PULSE')
-            ->setLastModifiedBy('PULSE')
-            ->setTitle(sprintf('%s - Export', $sheetTitle))
-            ->setSubject($sheetTitle)
-            ->setDescription('Export admin PULSE');
-        $spreadsheet->getDefaultStyle()->getFont()->setName('Segoe UI')->setSize(10);
-
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle(mb_substr($sheetTitle, 0, 31));
 
@@ -101,7 +103,6 @@ final class TableExportService
      */
     private function buildPdfHtml(string $title, array $headers, array $rows): string
     {
-        $columnCount = max(1, count($headers));
         $headerHtml = '';
         foreach ($headers as $header) {
             $headerHtml .= sprintf('<th>%s</th>', $this->escape((string) $header));
@@ -117,23 +118,26 @@ final class TableExportService
             $rowsHtml .= sprintf('<tr>%s</tr>', $cellsHtml);
         }
 
+        $columnCount = max(1, count($headers));
         if ($rowsHtml === '') {
             $rowsHtml = sprintf(
-                '<tr><td colspan="%d" class="emptyCell">Aucune donnee a exporter.</td></tr>',
+                '<tr><td class="emptyCell" colspan="%d">Aucune donnee disponible.</td></tr>',
                 $columnCount
             );
         }
 
-        $generatedAt = (new \DateTimeImmutable())->format('d/m/Y H:i');
-        $rowCount = count($rows);
+        $generatedAt = (new \DateTimeImmutable())->format('Y-m-d H:i');
+        $metaHtml = sprintf(
+            '<div class="metaRow"><span>Lignes: %d</span><span>Genere le %s</span></div>',
+            count($rows),
+            $this->escape($generatedAt)
+        );
 
         return sprintf(
-            '<html><head><meta charset="utf-8"><style>%s</style></head><body><div class="docShell"><div class="docHeader"><div class="docKicker">PULSE ADMIN EXPORT</div><h2 class="docTitle">%s</h2><div class="docMeta"><span class="metaPill">%d colonnes</span><span class="metaPill">%d lignes</span><span class="metaText">Genere le %s</span></div></div><div class="tableCard"><table class="dataTable"><thead><tr>%s</tr></thead><tbody>%s</tbody></table></div><div class="docFooter">PULSE • Export automatique</div></div></body></html>',
+            '<html><head><meta charset="utf-8"><style>%s</style></head><body><section class="report"><div class="reportHeader"><div class="brand">PULSE</div><h2>%s</h2>%s</div><table><thead><tr>%s</tr></thead><tbody>%s</tbody></table></section></body></html>',
             $this->getPdfStyles(),
             $this->escape($title),
-            $columnCount,
-            $rowCount,
-            $this->escape($generatedAt),
+            $metaHtml,
             $headerHtml,
             $rowsHtml
         );
@@ -141,142 +145,22 @@ final class TableExportService
 
     private function getPdfStyles(): string
     {
-        return <<<'CSS'
-            @page {
-                margin: 18px 20px;
-            }
-
-            * {
-                box-sizing: border-box;
-            }
-
-            body {
-                margin: 0;
-                font-family: DejaVu Sans, sans-serif;
-                font-size: 10px;
-                color: #f7f5ff;
-                background: #080712;
-            }
-
-            .docShell {
-                width: 100%;
-            }
-
-            .docHeader {
-                background: #110f20;
-                border: 1px solid #2d2642;
-                border-radius: 14px;
-                padding: 14px 16px;
-                margin-bottom: 10px;
-            }
-
-            .docKicker {
-                font-size: 8px;
-                letter-spacing: 1.2px;
-                text-transform: uppercase;
-                color: #ffbe62;
-                margin-bottom: 5px;
-            }
-
-            .docTitle {
-                margin: 0;
-                font-size: 18px;
-                line-height: 1.2;
-                color: #ffffff;
-            }
-
-            .docMeta {
-                margin-top: 8px;
-                font-size: 8.5px;
-                color: #b8b2cf;
-            }
-
-            .metaPill {
-                display: inline-block;
-                margin-right: 6px;
-                margin-bottom: 4px;
-                padding: 3px 7px;
-                border-radius: 999px;
-                border: 1px solid #3b3158;
-                background: #1a1530;
-                color: #f4f1ff;
-            }
-
-            .metaText {
-                color: #a49dbf;
-            }
-
-            .tableCard {
-                background: #100d1d;
-                border: 1px solid #2d2642;
-                border-radius: 14px;
-                padding: 8px;
-            }
-
-            table.dataTable {
-                width: 100%;
-                border-collapse: collapse;
-                table-layout: fixed;
-                border: 1px solid #2b2440;
-                border-radius: 10px;
-                overflow: hidden;
-            }
-
-            .dataTable thead th {
-                background: #1b1630;
-                color: #ffd8a3;
-                font-size: 8px;
-                font-weight: 700;
-                letter-spacing: 0.6px;
-                text-transform: uppercase;
-                text-align: left;
-                padding: 7px 6px;
-                border-right: 1px solid #2b2440;
-                border-bottom: 1px solid #ff9d2e;
-            }
-
-            .dataTable thead th:last-child {
-                border-right: none;
-            }
-
-            .dataTable tbody td {
-                padding: 7px 6px;
-                color: #f4f1ff;
-                border-right: 1px solid #2b2440;
-                border-bottom: 1px solid #24203a;
-                vertical-align: top;
-                word-wrap: break-word;
-            }
-
-            .dataTable tbody td:last-child {
-                border-right: none;
-            }
-
-            .dataTable tbody tr:nth-child(odd) td {
-                background: #120f22;
-            }
-
-            .dataTable tbody tr:nth-child(even) td {
-                background: #16112a;
-            }
-
-            .dataTable tbody tr:last-child td {
-                border-bottom: none;
-            }
-
-            .emptyCell {
-                text-align: center;
-                color: #b8b2cf;
-                padding: 12px 8px;
-            }
-
-            .docFooter {
-                margin-top: 8px;
-                text-align: right;
-                color: #9c95b7;
-                font-size: 8px;
-            }
-        CSS;
+        return '
+            @page { margin: 20px; }
+            body { font-family: DejaVu Sans, sans-serif; font-size: 11px; color: #0f172a; background: #f4f6fb; }
+            .report { width: 100%; }
+            .reportHeader { margin-bottom: 12px; padding: 12px 14px; border: 1px solid #d9e2ef; border-top: 4px solid #ff9d2e; background: #ffffff; border-radius: 8px; }
+            .brand { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 1px; color: #ff9d2e; margin-bottom: 4px; }
+            h2 { margin: 0; font-size: 18px; color: #0b1220; }
+            .metaRow { margin-top: 8px; font-size: 10px; color: #475569; }
+            .metaRow span { display: inline-block; margin-right: 14px; }
+            table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+            thead { display: table-header-group; }
+            th, td { border: 1px solid #d9e2ef; padding: 7px; text-align: left; vertical-align: top; word-wrap: break-word; }
+            th { background: #1f2937; color: #f8fafc; font-weight: 700; }
+            tbody tr:nth-child(even) td { background: #f8fafc; }
+            .emptyCell { text-align: center; color: #64748b; font-style: italic; }
+        ';
     }
 
     /**
@@ -291,109 +175,80 @@ final class TableExportService
         $fullRange = sprintf('A1:%s%d', $lastColumn, $lastRow);
         $headerRange = sprintf('A1:%s1', $lastColumn);
 
-        $sheet->setShowGridlines(false);
+        if (method_exists($sheet, 'setShowGridlines')) {
+            $sheet->setShowGridlines(false);
+        }
+
         $sheet->freezePane('A2');
         $sheet->setAutoFilter($fullRange);
         $sheet->getDefaultRowDimension()->setRowHeight(20);
         $sheet->getRowDimension(1)->setRowHeight(26);
-        $sheet->getTabColor()->setRGB('FF9D2E');
-
-        $sheet->getStyle($fullRange)->getAlignment()
-            ->setVertical(Alignment::VERTICAL_TOP)
-            ->setWrapText(true);
+        $sheet->getTabColor()->setRGB(self::EXCEL_ACCENT);
 
         $sheet->getStyle($headerRange)->applyFromArray([
             'font' => [
                 'bold' => true,
-                'size' => 10,
-                'color' => ['rgb' => 'FFF5E7'],
+                'size' => 11,
+                'color' => ['rgb' => self::EXCEL_HEADER_TEXT],
             ],
             'fill' => [
                 'fillType' => Fill::FILL_SOLID,
-                'startColor' => ['rgb' => '1C1630'],
-            ],
-            'borders' => [
-                'allBorders' => [
-                    'borderStyle' => Border::BORDER_THIN,
-                    'color' => ['rgb' => '332B4D'],
-                ],
-                'bottom' => [
-                    'borderStyle' => Border::BORDER_MEDIUM,
-                    'color' => ['rgb' => 'FF9D2E'],
-                ],
+                'startColor' => ['rgb' => self::EXCEL_HEADER_BG],
             ],
             'alignment' => [
+                'horizontal' => Alignment::HORIZONTAL_LEFT,
                 'vertical' => Alignment::VERTICAL_CENTER,
             ],
         ]);
 
-        if ($lastRow >= 2) {
-            $dataRange = sprintf('A2:%s%d', $lastColumn, $lastRow);
-
-            $sheet->getStyle($dataRange)->applyFromArray([
-                'font' => [
-                    'color' => ['rgb' => 'F3F0FF'],
+        $sheet->getStyle($fullRange)->applyFromArray([
+            'alignment' => [
+                'vertical' => Alignment::VERTICAL_CENTER,
+                'wrapText' => true,
+            ],
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => Border::BORDER_THIN,
+                    'color' => ['rgb' => self::EXCEL_BORDER],
                 ],
-                'borders' => [
-                    'allBorders' => [
-                        'borderStyle' => Border::BORDER_THIN,
-                        'color' => ['rgb' => '2A2440'],
-                    ],
-                ],
-            ]);
+            ],
+        ]);
 
-            for ($row = 2; $row <= $lastRow; ++$row) {
-                $rowRange = sprintf('A%d:%s%d', $row, $lastColumn, $row);
-                $fillColor = $row % 2 === 0 ? '151127' : '110D1F';
-
-                $sheet->getStyle($rowRange)->getFill()
+        for ($rowNumber = 2; $rowNumber <= $lastRow; ++$rowNumber) {
+            if ($rowNumber % 2 === 0) {
+                $sheet->getStyle(sprintf('A%d:%s%d', $rowNumber, $lastColumn, $rowNumber))
+                    ->getFill()
                     ->setFillType(Fill::FILL_SOLID)
                     ->getStartColor()
-                    ->setRGB($fillColor);
+                    ->setRGB(self::EXCEL_ALT_ROW_BG);
             }
         }
 
-        for ($index = 1; $index <= $columnCount; ++$index) {
-            $columnLetter = Coordinate::stringFromColumnIndex($index);
-            $sheet->getColumnDimension($columnLetter)
-                ->setWidth($this->computeExcelColumnWidth($headers, $rows, $index - 1));
-        }
+        $this->autoSizeExcelColumns($sheet, $headers, $rows);
     }
 
     /**
      * @param list<string> $headers
      * @param list<list<scalar|null>> $rows
      */
-    private function computeExcelColumnWidth(array $headers, array $rows, int $columnIndex): float
+    private function autoSizeExcelColumns(Worksheet $sheet, array $headers, array $rows): void
     {
-        $maxLength = $this->excelTextLength((string) ($headers[$columnIndex] ?? ''));
+        $columnCount = max(1, count($headers));
 
-        foreach ($rows as $row) {
-            $value = $row[$columnIndex] ?? null;
-            $text = (string) $this->normalizeCellValue($value);
-            $text = str_replace(["\r\n", "\r", "\n", "\t"], ' ', $text);
-            $maxLength = max($maxLength, $this->excelTextLength($text));
+        for ($columnIndex = 1; $columnIndex <= $columnCount; ++$columnIndex) {
+            $maxLength = mb_strlen((string) ($headers[$columnIndex - 1] ?? ''), 'UTF-8');
+            foreach ($rows as $row) {
+                $cellValue = $this->normalizeCellValue($row[$columnIndex - 1] ?? null);
+                $cellLength = mb_strlen((string) $cellValue, 'UTF-8');
+                if ($cellLength > $maxLength) {
+                    $maxLength = $cellLength;
+                }
+            }
+
+            $columnLetter = Coordinate::stringFromColumnIndex($columnIndex);
+            $columnWidth = (float) min(46, max(10, $maxLength + 3));
+            $sheet->getColumnDimension($columnLetter)->setWidth($columnWidth);
         }
-
-        $width = max(10, min(42, $maxLength + 2));
-
-        return (float) $width;
-    }
-
-    private function excelTextLength(string $value): int
-    {
-        $normalized = trim(preg_replace('/\s+/', ' ', $value) ?? '');
-
-        return function_exists('mb_strlen') ? mb_strlen($normalized) : strlen($normalized);
-    }
-
-    private function createDompdf(): Dompdf
-    {
-        $options = new Options();
-        $options->set('defaultFont', 'DejaVu Sans');
-        $options->set('isRemoteEnabled', true);
-
-        return new Dompdf($options);
     }
 
     private function escape(string $value): string

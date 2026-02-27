@@ -25,24 +25,19 @@
             {% endfor %}
           {% endfor %}
 
-          {% if recaptcha_site_key is empty %}
-            <div class="listItem">
-              <span>reCAPTCHA n'est pas configuree. Ajoutez vos cles Google dans <code>.env.local</code>.</span>
-              <span class="badge badge--warning">CONFIG</span>
-            </div>
-          {% endif %}
-
           <section class="panel">
-            {{ form_start(tournamentRequestForm, {attr: {novalidate: 'novalidate', 'data-organizer-request-form': '1'}}) }}
+            {{ form_start(tournamentRequestForm, {attr: {novalidate: 'novalidate'}}) }}
               {{ form_errors(tournamentRequestForm) }}
               {% include 'shared/_tournament_form_fields.html.twig' with {form: tournamentRequestForm} %}
-              <input type="hidden" name="g_recaptcha_token" value="">
-              {% if recaptcha_site_key %}
-                <div class="js-recaptcha-container" style="display:none; margin-top:8px;"></div>
-                <div class="muted js-recaptcha-status" style="display:none; margin-top:6px;"></div>
+
+              {% if recaptcha_site_key is defined and recaptcha_site_key %}
+                <div style="margin-top:12px;">
+                  <div class="g-recaptcha" data-sitekey="{{ recaptcha_site_key }}"></div>
+                </div>
               {% endif %}
+
               <div class="formActions" style="margin-top:12px;">
-                <button class="btn btn--primary js-organizer-request-submit" type="submit" {% if recaptcha_site_key %}data-sitekey="{{ recaptcha_site_key }}"{% endif %}>Envoyer</button>
+                <button class="btn btn--primary" type="submit">Envoyer</button>
                 <a class="btn btn--ghost" href="{{ path('front_organizer_requests') }}">Annuler</a>
               </div>
             {{ form_end(tournamentRequestForm) }}
@@ -67,109 +62,11 @@
   </main>
 
   {% include 'front/partials/_auth_modal.html.twig' %}
+{% endblock %}
 
-  {% if recaptcha_site_key %}
-    <script src="https://www.google.com/recaptcha/api.js?render=explicit" async defer></script>
-    <script>
-      (function () {
-        const form = document.querySelector('form[data-organizer-request-form="1"]');
-        if (!form) {
-          return;
-        }
-
-        const tokenInput = form.querySelector('input[name="g_recaptcha_token"]');
-        const container = form.querySelector('.js-recaptcha-container');
-        const statusNode = form.querySelector('.js-recaptcha-status');
-        const submitButton = form.querySelector('.js-organizer-request-submit');
-        const defaultLabel = submitButton ? submitButton.textContent : 'Envoyer';
-        let widgetId = null;
-        let bypassNextSubmit = false;
-
-        const setStatus = function (text) {
-          if (!statusNode) {
-            return;
-          }
-
-          statusNode.textContent = text;
-          statusNode.style.display = text ? 'block' : 'none';
-        };
-
-        const ensureWidget = function () {
-          if (!container || !submitButton) {
-            return null;
-          }
-
-          container.style.display = 'block';
-
-          if (widgetId !== null) {
-            return widgetId;
-          }
-
-          if (typeof grecaptcha === 'undefined' || typeof grecaptcha.render !== 'function') {
-            setStatus('reCAPTCHA est en cours de chargement. Reessayez dans 1 seconde.');
-            return null;
-          }
-
-          const siteKey = submitButton.getAttribute('data-sitekey') || '';
-          widgetId = grecaptcha.render(container, {
-            sitekey: siteKey,
-            callback: function (token) {
-              if (tokenInput) {
-                tokenInput.value = token;
-              }
-              setStatus('');
-              bypassNextSubmit = true;
-              form.submit();
-            },
-            'expired-callback': function () {
-              if (tokenInput) {
-                tokenInput.value = '';
-              }
-              if (submitButton) {
-                submitButton.disabled = false;
-                submitButton.textContent = defaultLabel;
-              }
-              setStatus('Le captcha a expire. Validez-le de nouveau.');
-            },
-            'error-callback': function () {
-              if (tokenInput) {
-                tokenInput.value = '';
-              }
-              if (submitButton) {
-                submitButton.disabled = false;
-                submitButton.textContent = defaultLabel;
-              }
-              setStatus('Erreur reCAPTCHA. Reessayez.');
-            }
-          });
-
-          return widgetId;
-        };
-
-        form.addEventListener('submit', function (event) {
-          if (bypassNextSubmit) {
-            bypassNextSubmit = false;
-            return;
-          }
-
-          if (tokenInput && tokenInput.value) {
-            return;
-          }
-
-          event.preventDefault();
-
-          const renderedWidgetId = ensureWidget();
-          if (renderedWidgetId === null) {
-            return;
-          }
-
-          if (submitButton) {
-            submitButton.disabled = true;
-            submitButton.textContent = 'Confirmez reCAPTCHA';
-          }
-          setStatus('Cochez la case reCAPTCHA pour confirmer l envoi.');
-        });
-      })();
-    </script>
+{% block javascripts %}
+  {{ parent() }}
+  {% if recaptcha_site_key is defined and recaptcha_site_key %}
+    <script src="https://www.google.com/recaptcha/api.js?hl=fr" async defer></script>
   {% endif %}
 {% endblock %}

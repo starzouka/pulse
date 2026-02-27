@@ -44,3 +44,4 @@ final class Version20260226103000 extends AbstractMigration
         $this->addSql('ALTER TABLE tournaments ADD CONSTRAINT FK_E4BCFAC3EE5F645C FOREIGN KEY (organizer_user_id) REFERENCES users (user_id) ON DELETE RESTRICT');
     }
 }
+

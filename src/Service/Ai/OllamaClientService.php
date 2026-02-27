@@ -4,164 +4,198 @@ declare(strict_types=1);
 
 namespace App\Service\Ai;
 
+use Psr\Log\LoggerInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final class OllamaClientService
 {
     public function __construct(
         private readonly HttpClientInterface $httpClient,
+        private readonly LoggerInterface $logger,
     ) {
-    }
-
-    public function getBaseUrl(): string
-    {
-        $configured = $this->getEnvString('OLLAMA_BASE_URL');
-
-        return $configured !== '' ? rtrim($configured, '/') : 'http://127.0.0.1:11434';
-    }
-
-    public function getDefaultChatModel(): string
-    {
-        $configured = $this->getEnvString('OLLAMA_CHAT_MODEL');
-
-        return $configured !== '' ? $configured : 'gemma3:4b';
-    }
-
-    public function getDefaultEmbeddingModel(): string
-    {
-        $configured = $this->getEnvString('OLLAMA_EMBEDDING_MODEL');
-
-        return $configured !== '' ? $configured : 'nomic-embed-text';
     }
 
     /**
      * @return array{
-     *   ok: bool,
-     *   base_url: string,
-     *   chat_model: string,
-     *   embedding_model: string,
-     *   models: list<string>,
-     *   error: ?string
+     *   provider:string,
+     *   base_url:string,
+     *   model:string,
+     *   ok:bool,
+     *   model_installed:bool,
+     *   installed_models:list<string>,
+     *   message:string
      * }
      */
-    public function status(): array
+    public function health(): array
     {
-        $result = $this->requestJson('GET', '/api/tags', null, 8);
+        $baseUrl = $this->getBaseUrl();
+        $model = $this->getModel();
 
-        if (!$result['ok']) {
-            return [
-                'ok' => false,
-                'base_url' => $this->getBaseUrl(),
-                'chat_model' => $this->getDefaultChatModel(),
-                'embedding_model' => $this->getDefaultEmbeddingModel(),
-                'models' => [],
-                'error' => $result['error'],
-            ];
-        }
+        try {
+            $response = $this->httpClient->request('GET', $baseUrl . '/api/tags', [
+                'timeout' => 6,
+            ]);
 
-        $data = $result['data'];
-        $models = [];
-        $rawModels = $data['models'] ?? [];
-        if (is_array($rawModels)) {
-            foreach ($rawModels as $rawModel) {
-                if (!is_array($rawModel)) {
-                    continue;
-                }
+            $payload = $response->toArray(false);
+            $models = [];
 
-                $name = trim((string) ($rawModel['name'] ?? ''));
-                if ($name !== '') {
-                    $models[] = $name;
+            $rows = $payload['models'] ?? [];
+            if (is_array($rows)) {
+                foreach ($rows as $row) {
+                    if (!is_array($row)) {
+                        continue;
+                    }
+
+                    $name = trim((string) ($row['name'] ?? $row['model'] ?? ''));
+                    if ($name !== '') {
+                        $models[] = $name;
+                    }
                 }
             }
-        }
 
-        return [
-            'ok' => true,
-            'base_url' => $this->getBaseUrl(),
-            'chat_model' => $this->getDefaultChatModel(),
-            'embedding_model' => $this->getDefaultEmbeddingModel(),
-            'models' => $models,
-            'error' => null,
-        ];
+            $models = array_values(array_unique($models));
+            $modelInstalled = in_array($model, $models, true);
+
+            return [
+                'provider' => 'ollama',
+                'base_url' => $baseUrl,
+                'model' => $model,
+                'ok' => true,
+                'model_installed' => $modelInstalled,
+                'installed_models' => $models,
+                'message' => $modelInstalled
+                    ? 'Ollama reachable et modele present.'
+                    : 'Ollama reachable mais modele non trouve. Lance: ollama pull ' . $model,
+            ];
+        } catch (\Throwable $exception) {
+            $this->logger->warning('Ollama health check failed.', [
+                'error' => $exception->getMessage(),
+            ]);
+
+            return [
+                'provider' => 'ollama',
+                'base_url' => $baseUrl,
+                'model' => $model,
+                'ok' => false,
+                'model_installed' => false,
+                'installed_models' => [],
+                'message' => 'Ollama indisponible: ' . $exception->getMessage(),
+            ];
+        }
     }
 
     /**
-     * @param list<array{role:string, content:string}> $messages
-     * @return array{ok: bool, data: array<string, mixed>, error: ?string}
+     * @return array<string, mixed>|null
      */
-    public function chat(array $messages, ?string $model = null, bool $jsonMode = false): array
-    {
-        $payload = [
-            'model' => $model !== null && trim($model) !== '' ? trim($model) : $this->getDefaultChatModel(),
-            'messages' => $messages,
-            'stream' => false,
-        ];
-
-        if ($jsonMode) {
-            $payload['format'] = 'json';
-        }
-
-        return $this->requestJson('POST', '/api/chat', $payload, 90);
-    }
-
-    /**
-     * @return array{ok: bool, data: array<string, mixed>, error: ?string}
-     */
-    private function requestJson(string $method, string $path, ?array $jsonPayload, int $timeoutSeconds): array
-    {
-        $options = [
-            'timeout' => $timeoutSeconds,
-            'max_duration' => $timeoutSeconds,
-        ];
-
-        if (is_array($jsonPayload)) {
-            $options['json'] = $jsonPayload;
+    public function chatJson(
+        string $systemPrompt,
+        string $userPrompt,
+        ?string $model = null,
+        float $temperature = 0.2,
+        int $timeout = 35,
+    ): ?array {
+        $baseUrl = $this->getBaseUrl();
+        $targetModel = trim((string) ($model ?? $this->getModel()));
+        if ($targetModel === '') {
+            return null;
         }
 
         try {
-            $response = $this->httpClient->request(
-                strtoupper($method),
-                $this->getBaseUrl() . $path,
-                $options,
-            );
+            $response = $this->httpClient->request('POST', $baseUrl . '/api/chat', [
+                'json' => [
+                    'model' => $targetModel,
+                    'stream' => false,
+                    'format' => 'json',
+                    'options' => [
+                        'temperature' => $temperature,
+                    ],
+                    'messages' => [
+                        [
+                            'role' => 'system',
+                            'content' => $systemPrompt,
+                        ],
+                        [
+                            'role' => 'user',
+                            'content' => $userPrompt,
+                        ],
+                    ],
+                ],
+                'timeout' => max(5, $timeout),
+            ]);
 
-            $statusCode = $response->getStatusCode();
-            $data = $response->toArray(false);
-
-            if ($statusCode < 200 || $statusCode >= 300) {
-                return [
-                    'ok' => false,
-                    'data' => is_array($data) ? $data : [],
-                    'error' => sprintf('HTTP %d from Ollama.', $statusCode),
-                ];
+            $payload = $response->toArray(false);
+            $content = trim((string) ($payload['message']['content'] ?? ''));
+            if ($content === '') {
+                return null;
             }
 
-            if (!is_array($data)) {
-                return [
-                    'ok' => false,
-                    'data' => [],
-                    'error' => 'Unexpected Ollama response format.',
-                ];
-            }
-
-            return [
-                'ok' => true,
-                'data' => $data,
-                'error' => null,
-            ];
+            return $this->decodeJsonPayload($content);
         } catch (\Throwable $exception) {
-            return [
-                'ok' => false,
-                'data' => [],
+            $this->logger->warning('Ollama chat request failed.', [
+                'model' => $targetModel,
                 'error' => $exception->getMessage(),
-            ];
+            ]);
+
+            return null;
         }
     }
 
-    private function getEnvString(string $key): string
+    public function getBaseUrl(): string
     {
-        $value = $_ENV[$key] ?? $_SERVER[$key] ?? getenv($key) ?: '';
+        return rtrim($this->readEnv('TOURNAMENT_AI_OLLAMA_BASE_URL', $this->readEnv('FRIEND_RECO_OLLAMA_BASE_URL', 'http://127.0.0.1:11434')), '/');
+    }
 
-        return is_string($value) ? trim($value) : '';
+    public function getModel(): string
+    {
+        return $this->readEnv('TOURNAMENT_AI_MODEL', 'qwen3:8b');
+    }
+
+    private function readEnv(string $key, string $default): string
+    {
+        $value = $_ENV[$key] ?? $_SERVER[$key] ?? getenv($key);
+        if (!is_string($value)) {
+            return $default;
+        }
+
+        $trimmed = trim($value);
+
+        return $trimmed !== '' ? $trimmed : $default;
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function decodeJsonPayload(string $rawContent): ?array
+    {
+        $trimmed = trim($rawContent);
+        if ($trimmed === '') {
+            return null;
+        }
+
+        if (str_starts_with($trimmed, '```')) {
+            $trimmed = preg_replace('/^```(?:json)?\s*|\s*```$/i', '', $trimmed) ?? $trimmed;
+            $trimmed = trim($trimmed);
+        }
+
+        $decoded = json_decode($trimmed, true);
+        if (is_array($decoded)) {
+            return $decoded;
+        }
+
+        $start = strpos($trimmed, '{');
+        $end = strrpos($trimmed, '}');
+        if ($start === false || $end === false || $end <= $start) {
+            return null;
+        }
+
+        $slice = substr($trimmed, $start, $end - $start + 1);
+        if (!is_string($slice) || trim($slice) === '') {
+            return null;
+        }
+
+        $decodedSlice = json_decode($slice, true);
+
+        return is_array($decodedSlice) ? $decodedSlice : null;
     }
 }
+

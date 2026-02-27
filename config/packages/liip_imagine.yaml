@@ -1,0 +1,21 @@
+liip_imagine:
+    driver: "gd"
+    resolvers:
+        default:
+            web_path:
+                web_root: "%kernel.project_dir%/public"
+                cache_prefix: "media/cache"
+    filter_sets:
+        cache: ~
+        team_logo:
+            quality: 88
+            filters:
+                thumbnail: { size: [320, 320], mode: outbound }
+        team_banner:
+            quality: 82
+            filters:
+                thumbnail: { size: [1400, 420], mode: outbound }
+        team_thumbnail:
+            quality: 85
+            filters:
+                thumbnail: { size: [96, 96], mode: outbound }

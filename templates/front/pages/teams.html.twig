@@ -78,8 +78,19 @@
           {% for team in teams %}
             {% set teamId = team.teamId ?? 0 %}
             {% set logoPath = team.logoImageId ? team.logoImageId.fileUrl : '' %}
-            {% set logoUrl = logoPath ? (logoPath starts with 'http' ? logoPath : asset(logoPath)) : 'https://picsum.photos/seed/pulse_team_logo_' ~ teamId ~ '/600/600' %}
-            {% set bannerUrl = logoPath ? (logoPath starts with 'http' ? logoPath : asset(logoPath)) : 'https://picsum.photos/seed/pulse_team_banner_' ~ teamId ~ '/1200/800' %}
+            {% if logoPath and (logoPath starts with 'http') %}
+              {% set logoUrl = logoPath %}
+              {% set bannerUrl = logoPath %}
+              {% set thumbnailUrl = logoPath %}
+            {% elseif logoPath %}
+              {% set logoUrl = asset(logoPath)|imagine_filter('team_logo') %}
+              {% set bannerUrl = asset(logoPath)|imagine_filter('team_banner') %}
+              {% set thumbnailUrl = asset(logoPath)|imagine_filter('team_thumbnail') %}
+            {% else %}
+              {% set logoUrl = 'https://picsum.photos/seed/pulse_team_logo_' ~ teamId ~ '/600/600' %}
+              {% set bannerUrl = 'https://picsum.photos/seed/pulse_team_banner_' ~ teamId ~ '/1200/800' %}
+              {% set thumbnailUrl = 'https://picsum.photos/seed/pulse_team_thumb_' ~ teamId ~ '/96/96' %}
+            {% endif %}
             {% set membersCount = members_count_by_team_id[teamId]|default(0) %}
             {% set productsCount = products_count_by_team_id[teamId]|default(0) %}
             {% set tournamentsCount = active_tournaments_count_by_team_id[teamId]|default(0) %}
@@ -101,7 +112,7 @@
                 </p>
 
                 <div class="avatarRow">
-                  <div class="avatar" data-avatar="{{ logoUrl }}" aria-hidden="true"></div>
+                  <div class="avatar" data-avatar="{{ thumbnailUrl }}" aria-hidden="true"></div>
                   <div class="avatarText">
                     <div class="name">{{ team.name }}</div>
                     <div class="sub">
