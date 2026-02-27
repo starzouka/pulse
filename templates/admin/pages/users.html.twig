@@ -16,6 +16,9 @@
 {% block title %}PULSE - Gestion utilisateurs{% endblock %}
 
 {% block admin_content %}
+  {% set stats = userStats|default({}) %}
+  {% set charts = userCharts|default({}) %}
+
   <div class="pageHeader">
     <div>
       <h2>Gestion utilisateurs</h2>
@@ -26,6 +29,115 @@
       <a class="btn btnGhost" href="{{ path('admin_users_export', filters|merge({format: 'pdf'})) }}">Exporter PDF</a>
       <a class="btn btnGhost" href="{{ path('admin_users_export', filters|merge({format: 'excel'})) }}">Exporter Excel</a>
     </div>
+  </div>
+
+  <div class="kpiRow">
+    <div class="kpiCard">
+      <div class="kpiLabel">Utilisateurs affiches</div>
+      <div class="kpiValue">{{ stats.total|default(users|length) }}</div>
+      <div class="listMeta">Apres filtres en cours</div>
+    </div>
+    <div class="kpiCard">
+      <div class="kpiLabel">Actifs</div>
+      <div class="kpiValue">{{ stats.active|default(0) }}</div>
+      <div class="listMeta">Inactifs: {{ stats.inactive|default(0) }}</div>
+    </div>
+    <div class="kpiCard">
+      <div class="kpiLabel">Emails verifies</div>
+      <div class="kpiValue">{{ stats.verified|default(0) }}</div>
+      <div class="listMeta">Non verifies: {{ stats.unverified|default(0) }}</div>
+    </div>
+    <div class="kpiCard">
+      <div class="kpiLabel">Nouveaux comptes</div>
+      <div class="kpiValue">{{ stats.newLast30d|default(0) }}</div>
+      <div class="listMeta">Derniers 30 jours: {{ stats.newLast7d|default(0) }} sur 7 jours</div>
+    </div>
+    <div class="kpiCard">
+      <div class="kpiLabel">Connexions recentes</div>
+      <div class="kpiValue">{{ stats.loggedLast7d|default(0) }}</div>
+      <div class="listMeta">Jamais connectes: {{ stats.neverLoggedIn|default(0) }}</div>
+    </div>
+    <div class="kpiCard">
+      <div class="kpiLabel">Pays distincts</div>
+      <div class="kpiValue">{{ stats.countriesCount|default(0) }}</div>
+      <div class="listMeta">Sur la selection affichee</div>
+    </div>
+  </div>
+
+  <div class="chartGrid">
+    <section class="panel">
+      <div class="panelHeader">
+        <h3 class="panelTitle">Inscriptions utilisateurs</h3>
+        <span class="listMeta">Evolution sur 6 mois</span>
+      </div>
+      <div class="chartWrap">
+        <canvas id="usersRegistrationsChart"></canvas>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panelHeader">
+        <h3 class="panelTitle">Repartition des roles</h3>
+        <span class="listMeta">Selection courante</span>
+      </div>
+      <div class="chartWrap chartWrap--sm">
+        <canvas id="usersRolesChart"></canvas>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panelHeader">
+        <h3 class="panelTitle">Comportement de connexion</h3>
+        <span class="listMeta">Delai depuis la derniere connexion</span>
+      </div>
+      <div class="split">
+        <div class="chartWrap chartWrap--sm">
+          <canvas id="usersLoginsChart"></canvas>
+        </div>
+        <div>
+          <div class="panelHeader">
+            <h4 class="panelTitle">Top pays</h4>
+          </div>
+          <div class="list">
+            {% for country in stats.topCountries|default([]) %}
+              {% set topCount = (stats.topCountries|default([])|first).count|default(0) %}
+              {% set percent = topCount > 0 ? (country.count / topCount * 100)|round(0, 'floor') : 0 %}
+              <div class="listItem">
+                <span>{{ country.name }}</span>
+                <span class="listMeta">{{ country.count }}</span>
+              </div>
+              <div class="progressBar" style="margin-top:-4px; margin-bottom:8px;">
+                <div class="progressFill" style="width:{{ percent }}%;"></div>
+              </div>
+            {% else %}
+              <div class="listItem">
+                <span>Aucune donnee pays</span>
+                <span class="listMeta">--</span>
+              </div>
+            {% endfor %}
+          </div>
+
+          <div class="progressWrap">
+            <div class="progressLabel">
+              <span>Taux actifs</span>
+              <strong>{{ stats.activeRate|default(0) }}%</strong>
+            </div>
+            <div class="progressBar">
+              <div class="progressFill" style="width:{{ stats.activeRate|default(0) }}%;"></div>
+            </div>
+          </div>
+          <div class="progressWrap">
+            <div class="progressLabel">
+              <span>Taux verifies</span>
+              <strong>{{ stats.verifiedRate|default(0) }}%</strong>
+            </div>
+            <div class="progressBar">
+              <div class="progressFill" style="width:{{ stats.verifiedRate|default(0) }}%; background: linear-gradient(90deg, rgba(48, 216, 135, 1), rgba(24, 178, 110, 1)); box-shadow: 0 0 16px rgba(48, 216, 135, .35);"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   </div>
 
   {% for label, messages in app.flashes %}
@@ -142,4 +254,106 @@
       </table>
     </div>
   </section>
+{% endblock %}
+
+{% block javascripts %}
+  {{ parent() }}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script>
+    (() => {
+      if (typeof Chart === 'undefined') {
+        return;
+      }
+
+      const charts = {{ userCharts|default({})|json_encode|raw }};
+      const textColor = 'rgba(255,255,255,.78)';
+      const gridColor = 'rgba(255,255,255,.10)';
+
+      const registrationsCtx = document.getElementById('usersRegistrationsChart');
+      if (registrationsCtx && charts.registrationsByMonth) {
+        new Chart(registrationsCtx, {
+          type: 'line',
+          data: {
+            labels: charts.registrationsByMonth.labels || [],
+            datasets: [{
+              label: 'Nouveaux utilisateurs',
+              data: charts.registrationsByMonth.data || [],
+              borderColor: '#ff9d2e',
+              backgroundColor: 'rgba(255,157,46,.22)',
+              tension: 0.35,
+              fill: true,
+              pointRadius: 3,
+              pointHoverRadius: 5,
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { labels: { color: textColor } }
+            },
+            scales: {
+              x: { ticks: { color: textColor }, grid: { color: gridColor } },
+              y: { ticks: { color: textColor, precision: 0 }, grid: { color: gridColor } }
+            }
+          }
+        });
+      }
+
+      const rolesCtx = document.getElementById('usersRolesChart');
+      if (rolesCtx && charts.roles) {
+        new Chart(rolesCtx, {
+          type: 'doughnut',
+          data: {
+            labels: charts.roles.labels || [],
+            datasets: [{
+              data: charts.roles.data || [],
+              backgroundColor: ['#20d4a8', '#4da3ff', '#ffd166', '#ff6b6b'],
+              borderColor: 'rgba(16,14,24,.95)',
+              borderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: { color: textColor, boxWidth: 10, boxHeight: 10 }
+              }
+            }
+          }
+        });
+      }
+
+      const loginsCtx = document.getElementById('usersLoginsChart');
+      if (loginsCtx && charts.lastLoginBuckets) {
+        new Chart(loginsCtx, {
+          type: 'bar',
+          data: {
+            labels: charts.lastLoginBuckets.labels || [],
+            datasets: [{
+              label: 'Utilisateurs',
+              data: charts.lastLoginBuckets.data || [],
+              backgroundColor: ['rgba(32,212,168,.45)', 'rgba(77,163,255,.45)', 'rgba(255,209,102,.45)', 'rgba(255,107,107,.45)'],
+              borderColor: ['#20d4a8', '#4da3ff', '#ffd166', '#ff6b6b'],
+              borderWidth: 1.5,
+              borderRadius: 8
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { labels: { color: textColor } }
+            },
+            scales: {
+              x: { ticks: { color: textColor }, grid: { color: gridColor } },
+              y: { ticks: { color: textColor, precision: 0 }, grid: { color: gridColor } }
+            }
+          }
+        });
+      }
+    })();
+  </script>
 {% endblock %}
