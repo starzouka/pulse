@@ -52,6 +52,10 @@
       <svg class="icon"><use href="#i-game"></use></svg>
       <span>Jeux</span>
     </a>
+    <a class="navItem {{ currentRoute == 'admin_catalog_dashboard' ? 'active' : '' }}" href="{{ path('admin_catalog_dashboard') }}">
+      <svg class="icon"><use href="#i-home"></use></svg>
+      <span>KPI Catalogue</span>
+    </a>
     <a class="navItem {{ currentRoute in ['admin_products', 'admin_product_detail', 'admin_product_form'] ? 'active' : '' }}" href="{{ path('admin_products') }}">
       <svg class="icon"><use href="#i-cart"></use></svg>
       <span>Produits</span>

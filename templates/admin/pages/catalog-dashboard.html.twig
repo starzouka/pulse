@@ -1,0 +1,112 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}PULSE - KPI catalogue{% endblock %}
+
+{% block admin_content %}
+  <div class="pageHeader">
+    <div>
+      <h2>Catalog Dashboard</h2>
+      <div class="pageSub">KPI catalogue: publication, review, categories mensuelles et jeux tendance.</div>
+    </div>
+    <div class="formActions">
+      <a class="btn btnGhost" href="{{ path('admin_games') }}">Gestion jeux</a>
+      <a class="btn btnPrimary" href="{{ path('admin_catalog_dashboard') }}">Actualiser</a>
+    </div>
+  </div>
+
+  <div class="kpiRow">
+    <div class="kpiCard">
+      <div class="kpiLabel">Jeux total</div>
+      <div class="kpiValue">{{ kpi.total_games|default(0) }}</div>
+      <div class="listMeta">Catalogue actuel</div>
+    </div>
+    <div class="kpiCard">
+      <div class="kpiLabel">Taux publication</div>
+      <div class="kpiValue">{{ kpi.publication_rate|default(0)|number_format(2, '.', ' ') }}%</div>
+      <div class="listMeta">{{ kpi.published_games|default(0) }} publies / {{ kpi.total_games|default(0) }}</div>
+    </div>
+    <div class="kpiCard">
+      <div class="kpiLabel">Delai moyen review</div>
+      <div class="kpiValue">{{ kpi.average_review_delay_hours|default(0)|number_format(1, '.', ' ') }}h</div>
+      <div class="listMeta">PENDING + PUBLISHED + ARCHIVED</div>
+    </div>
+    <div class="kpiCard">
+      <div class="kpiLabel">Pipeline</div>
+      <div class="kpiValue">{{ kpi.pending_games|default(0) }} pending</div>
+      <div class="listMeta">Draft: {{ kpi.draft_games|default(0) }} · Archived: {{ kpi.archived_games|default(0) }}</div>
+    </div>
+  </div>
+
+  <div class="split">
+    <section class="panel">
+      <div class="panelHeader">
+        <h3 class="panelTitle">Top categories mensuelles</h3>
+        <span class="listMeta">Mois {{ month_label }}</span>
+      </div>
+      <div class="dataTableWrap">
+        <table class="dataTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Categorie</th>
+              <th>Volume</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in top_categories_monthly %}
+              <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ row.category_name }}</td>
+                <td>{{ row.total }}</td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="3" class="listMeta">Aucune donnee mensuelle.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panelHeader">
+        <h3 class="panelTitle">Trending games</h3>
+        <span class="listMeta">Score intelligent</span>
+      </div>
+      <div class="dataTableWrap">
+        <table class="dataTable">
+          <thead>
+            <tr>
+              <th>Jeu</th>
+              <th>Statut</th>
+              <th>Vues</th>
+              <th>Favoris</th>
+              <th>Score</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for game in trending_games %}
+              <tr>
+                <td>
+                  <div style="display:flex;flex-direction:column;">
+                    <span>{{ game.name }}</span>
+                    <span class="listMeta">{{ game.slug }}</span>
+                  </div>
+                </td>
+                <td><span class="badge badge--info">{{ game.status }}</span></td>
+                <td>{{ game.viewsCount }}</td>
+                <td>{{ game.favoritesCount }}</td>
+                <td><b>{{ game.popularityScore }}</b></td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="5" class="listMeta">Aucun jeu tendance.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+{% endblock %}

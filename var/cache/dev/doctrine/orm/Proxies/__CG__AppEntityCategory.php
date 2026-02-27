@@ -26,10 +26,12 @@ class Category extends \App\Entity\Category implements \Doctrine\ORM\Proxy\Inter
         "\0".parent::class."\0".'createdAt' => [parent::class, 'createdAt', null, 16],
         "\0".parent::class."\0".'description' => [parent::class, 'description', null, 16],
         "\0".parent::class."\0".'name' => [parent::class, 'name', null, 16],
+        "\0".parent::class."\0".'slug' => [parent::class, 'slug', null, 16],
         'categoryId' => [parent::class, 'categoryId', null, 16],
         'createdAt' => [parent::class, 'createdAt', null, 16],
         'description' => [parent::class, 'description', null, 16],
         'name' => [parent::class, 'name', null, 16],
+        'slug' => [parent::class, 'slug', null, 16],
     ];
 
     public function __isInitialized(): bool

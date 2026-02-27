@@ -228,7 +228,7 @@
                   <h4 class="card__title">{{ game.name }}</h4>
                   <p class="card__desc">Tournois total: <b>{{ row.total_tournaments_count }}</b> | Actifs: <b>{{ row.active_tournaments_count }}</b></p>
                   <div class="card__actions">
-                    <a class="btn btn--ghost" href="{{ gameId > 0 ? path('front_game_detail', {id: gameId}) : path('front_games') }}">Detail</a>
+                    <a class="btn btn--ghost" href="{{ gameId > 0 ? path('front_game_detail', {slug: game.slug}) : path('front_games') }}">Detail</a>
                   </div>
                 </div>
               </article>

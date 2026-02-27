@@ -12,6 +12,15 @@
 
   <main class="page">
     <section class="belowHero">
+      {% for label, messages in app.flashes %}
+        {% for message in messages %}
+          <div class="listItem">
+            <span>{{ message }}</span>
+            <span class="badge {{ label == 'error' ? 'badge--danger' : (label == 'warning' ? 'badge--warning' : (label == 'info' ? 'badge--info' : 'badge--success')) }}">{{ label|upper }}</span>
+          </div>
+        {% endfor %}
+      {% endfor %}
+
       <div class="layout">
         {% include 'front/partials/_captain_side_nav.html.twig' with {
           active: 'members',
@@ -123,19 +132,43 @@
                 <thead>
                   <tr>
                     <th>Joueur</th>
+                    <th>Dernier role roster</th>
                     <th>Date sortie</th>
+                    <th>Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   {% for membership in inactive_members %}
                     {% set member = membership.userId %}
+                    {% set memberIsCaptain = active_team.captainUserId and member.userId == active_team.captainUserId.userId %}
                     <tr>
-                      <td>{{ member.displayName ?: member.username }}</td>
+                      <td>
+                        {{ member.displayName ?: member.username }}
+                        <div class="muted">@{{ member.username }}</div>
+                      </td>
+                      <td><span class="badge">{{ membership.rosterRole ?: 'STARTER' }}</span></td>
                       <td>{{ membership.leftAt ? membership.leftAt|date('d/m/Y H:i') : '-' }}</td>
+                      <td>
+                        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                          <form method="post" action="{{ path('front_captain_members_reactivate', {teamId: active_team.teamId, userId: member.userId}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('captain_member_reactivate_' ~ active_team.teamId ~ '_' ~ member.userId) }}">
+                            <button class="btn btn--ghost" type="submit">Reactiver</button>
+                          </form>
+
+                          {% if memberIsCaptain %}
+                            <span class="muted">-</span>
+                          {% else %}
+                            <form method="post" action="{{ path('front_captain_members_remove_inactive', {teamId: active_team.teamId, userId: member.userId}) }}">
+                              <input type="hidden" name="_token" value="{{ csrf_token('captain_member_remove_inactive_' ~ active_team.teamId ~ '_' ~ member.userId) }}">
+                              <button class="btn btn--ghost" type="submit">Retirer</button>
+                            </form>
+                          {% endif %}
+                        </div>
+                      </td>
                     </tr>
                   {% else %}
                     <tr>
-                      <td colspan="2">Aucun historique de sortie.</td>
+                      <td colspan="4">Aucun historique de sortie.</td>
                     </tr>
                   {% endfor %}
                 </tbody>

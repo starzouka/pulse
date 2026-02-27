@@ -10,6 +10,7 @@ use App\Entity\User;
 use App\Repository\TeamMemberRepository;
 use App\Repository\UserRepository;
 use App\Service\Captain\CaptainTeamContextProvider;
+use App\Service\Captain\RosterManager;
 use App\Service\Captain\TeamRosterPdfService;
 use CMEN\GoogleChartsBundle\GoogleCharts\Charts\PieChart;
 use Doctrine\ORM\EntityManagerInterface;
@@ -125,12 +126,134 @@ final class CaptainMembersController extends AbstractController
         return $this->redirectToRoute('front_captain_members', ['team' => $teamId]);
     }
 
+    #[Route('/pages/captain-members/{teamId}/{userId}/reactivate', name: 'front_captain_members_reactivate', requirements: ['teamId' => '\d+', 'userId' => '\d+'], methods: ['POST'])]
+    public function reactivate(
+        int $teamId,
+        int $userId,
+        Request $request,
+        CaptainTeamContextProvider $captainTeamContextProvider,
+        UserRepository $userRepository,
+        TeamMemberRepository $teamMemberRepository,
+        EntityManagerInterface $entityManager,
+    ): Response {
+        $viewer = $this->getUser();
+        if (!$viewer instanceof User) {
+            return $this->redirectToRoute('front_login');
+        }
+
+        if (!$this->isCsrfTokenValid('captain_member_reactivate_' . $teamId . '_' . $userId, (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Jeton CSRF invalide.');
+
+            return $this->redirectToRoute('front_captain_members', ['team' => $teamId]);
+        }
+
+        $team = $captainTeamContextProvider->resolveManagedTeamById($viewer, $teamId);
+        if (!$team instanceof Team) {
+            throw $this->createAccessDeniedException('Equipe non autorisee.');
+        }
+
+        $memberUser = $userRepository->find($userId);
+        if (!$memberUser instanceof User) {
+            $this->addFlash('error', 'Membre introuvable.');
+
+            return $this->redirectToRoute('front_captain_members', ['team' => $teamId]);
+        }
+
+        $membership = $teamMemberRepository->findOneByTeamAndUser($team, $memberUser);
+        if (!$membership instanceof TeamMember) {
+            $this->addFlash('error', "Ce joueur n'est pas membre de cette equipe.");
+
+            return $this->redirectToRoute('front_captain_members', ['team' => $teamId]);
+        }
+
+        if ($membership->isActive() === true && $membership->getLeftAt() === null) {
+            $this->addFlash('info', 'Ce membre est deja actif.');
+
+            return $this->redirectToRoute('front_captain_members', ['team' => $teamId]);
+        }
+
+        $membership
+            ->setIsActive(true)
+            ->setLeftAt(null);
+
+        if ($team->getCaptainUserId()?->getUserId() === $userId) {
+            $membership->setRosterRole(TeamMember::ROSTER_ROLE_CAPTAIN);
+        }
+
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Le membre a ete reactive.');
+
+        return $this->redirectToRoute('front_captain_members', ['team' => $teamId]);
+    }
+
+    #[Route('/pages/captain-members/{teamId}/{userId}/remove-inactive', name: 'front_captain_members_remove_inactive', requirements: ['teamId' => '\d+', 'userId' => '\d+'], methods: ['POST'])]
+    public function removeInactive(
+        int $teamId,
+        int $userId,
+        Request $request,
+        CaptainTeamContextProvider $captainTeamContextProvider,
+        UserRepository $userRepository,
+        TeamMemberRepository $teamMemberRepository,
+        EntityManagerInterface $entityManager,
+    ): Response {
+        $viewer = $this->getUser();
+        if (!$viewer instanceof User) {
+            return $this->redirectToRoute('front_login');
+        }
+
+        if (!$this->isCsrfTokenValid('captain_member_remove_inactive_' . $teamId . '_' . $userId, (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Jeton CSRF invalide.');
+
+            return $this->redirectToRoute('front_captain_members', ['team' => $teamId]);
+        }
+
+        $team = $captainTeamContextProvider->resolveManagedTeamById($viewer, $teamId);
+        if (!$team instanceof Team) {
+            throw $this->createAccessDeniedException('Equipe non autorisee.');
+        }
+
+        if ($team->getCaptainUserId()?->getUserId() === $userId) {
+            $this->addFlash('error', "Le capitaine ne peut pas etre retire de l'historique.");
+
+            return $this->redirectToRoute('front_captain_members', ['team' => $teamId]);
+        }
+
+        $memberUser = $userRepository->find($userId);
+        if (!$memberUser instanceof User) {
+            $this->addFlash('error', 'Membre introuvable.');
+
+            return $this->redirectToRoute('front_captain_members', ['team' => $teamId]);
+        }
+
+        $membership = $teamMemberRepository->findOneByTeamAndUser($team, $memberUser);
+        if (!$membership instanceof TeamMember) {
+            $this->addFlash('error', "Ce joueur n'est pas membre de cette equipe.");
+
+            return $this->redirectToRoute('front_captain_members', ['team' => $teamId]);
+        }
+
+        if ($membership->isActive() === true || $membership->getLeftAt() === null) {
+            $this->addFlash('error', 'Ce membre est actif. Utilisez Retirer dans la liste des membres actifs.');
+
+            return $this->redirectToRoute('front_captain_members', ['team' => $teamId]);
+        }
+
+        $entityManager->remove($membership);
+        $entityManager->flush();
+
+        $this->addFlash('success', "L'ancien membre a ete retire de l'historique.");
+
+        return $this->redirectToRoute('front_captain_members', ['team' => $teamId]);
+    }
+
     #[Route('/pages/captain-members/{teamId}/{userId}/roster-role', name: 'front_captain_members_roster_role', requirements: ['teamId' => '\d+', 'userId' => '\d+'], methods: ['POST'])]
     public function updateRosterRole(
         int $teamId,
         int $userId,
         Request $request,
         CaptainTeamContextProvider $captainTeamContextProvider,
+        RosterManager $rosterManager,
         UserRepository $userRepository,
         TeamMemberRepository $teamMemberRepository,
         EntityManagerInterface $entityManager,
@@ -180,6 +303,18 @@ final class CaptainMembersController extends AbstractController
 
             return $this->redirectToRoute('front_captain_members', ['team' => $teamId]);
         } else {
+            $validation = $rosterManager->validateRoleChange(
+                $team,
+                $membership,
+                $requestedRole,
+                $teamMemberRepository,
+            );
+            if ($validation['allowed'] !== true) {
+                $this->addFlash('error', $validation['reason']);
+
+                return $this->redirectToRoute('front_captain_members', ['team' => $teamId]);
+            }
+
             $membership->setRosterRole($requestedRole);
         }
 
