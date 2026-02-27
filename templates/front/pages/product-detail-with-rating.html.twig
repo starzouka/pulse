@@ -1,0 +1,143 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}PULSE - {{ product.name }}{% endblock %}
+
+{% block body %}
+  {% include 'front/partials/_hero_mini.html.twig' with {
+    hero_kicker: 'PRODUIT',
+    hero_title: product.name,
+    hero_sub: product.teamId ? product.teamId.name : 'Equipe',
+    breadcrumb_current: product.name
+  } %}
+
+  <main class="page">
+    <section class="belowHero">
+      {% for label, messages in app.flashes %}
+        {% for message in messages %}
+          <div class="listItem">
+            <span>{{ message }}</span>
+            <span class="badge {{ label == 'error' ? 'badge--danger' : (label == 'info' ? 'badge--info' : 'badge--success') }}">{{ label|upper }}</span>
+          </div>
+        {% endfor %}
+      {% endfor %}
+
+      <div class="product-detail">
+        <div class="product-detail__gallery">
+          {% if product_images is not empty %}
+            {% for image in product_images %}
+              <div class="product-image">
+                {% set imagePath = image.fileUrl %}
+                {% set imageUrl = imagePath starts with 'http' ? imagePath : asset(imagePath) %}
+                <img src="{{ imageUrl }}" alt="{{ product.name }}">
+              </div>
+            {% endfor %}
+          {% else %}
+            <div class="product-image">
+              <img src="https://picsum.photos/seed/pulse_product_{{ product.productId }}/1200/800" alt="{{ product.name }}">
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="product-detail__info">
+          <h1>{{ product.name }}</h1>
+          <div class="product-detail__price">{{ product.price|number_format(2, '.', ' ') }} DT</div>
+
+          <div class="product-detail__rating">
+            {% set productId = product.productId %}
+            {% set ratingStats = product_rating_stats|default({'averageRating': null, 'ratingCount': 0}) %}
+            {% set avgRating = ratingStats.averageRating %}
+            {% set ratingCount = ratingStats.ratingCount %}
+            <div class="stars">
+              {% for i in 1..5 %}
+                <span class="star {{ avgRating >= i ? 'star--filled' : 'star--empty' }}">★</span>
+              {% endfor %}
+            </div>
+            <span class="rating-count">({{ ratingCount }} vote{{ ratingCount > 1 ? 's' : '' }})</span>
+            {% if app.user %}
+              <form method="post" action="{{ path('front_product_rate', {id: product.productId}) }}" class="rating-form">
+                <input type="hidden" name="_token" value="{{ csrf_token('product_rate_' ~ product.productId) }}">
+                <div class="rating-buttons">
+                  {% for i in 1..5 %}
+                    <button type="submit" name="rating" value="{{ i }}" class="rating-btn" title="Noter {{ i }}/5">{{ i }}</button>
+                  {% endfor %}
+                </div>
+              </form>
+            {% else %}
+              <a href="{{ path('front_login', {'_target_path': app.request.uri}) }}" class="login-to-rate">Connectez-vous pour noter</a>
+            {% endif %}
+          </div>
+
+          <div class="product-detail__stock">
+            <span class="chip">Stock: {{ product.stockQty }}</span>
+            {% if product.teamId %}
+              <span class="chip">Vendu par: <a href="{{ path('front_team_detail', {id: product.teamId.teamId}) }}">{{ product.teamId.name }}</a></span>
+            {% endif %}
+          </div>
+
+          <div class="product-detail__description">
+            <h3>Description</h3>
+            <p>{{ product.description ?: 'Aucune description disponible.' }}</p>
+          </div>
+
+          <div class="product-detail__actions">
+            {% if app.user %}
+              <form method="post" action="{{ path('front_cart_add', {id: product.productId}) }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('cart_add_' ~ product.productId) }}">
+                <input type="hidden" name="quantity" value="1">
+                <button class="btn btn--primary" type="submit" {{ product.stockQty <= 0 ? 'disabled' : '' }}>
+                  {{ product.stockQty <= 0 ? 'Rupture de stock' : 'Ajouter au panier' }}
+                </button>
+              </form>
+            {% else %}
+              <a class="btn btn--primary" href="{{ path('front_login', {'_target_path': app.request.uri}) }}">Connectez-vous pour acheter</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      {% if related_products is not empty %}
+        <section class="related-products">
+          <h2>Produits similaires</h2>
+          <div class="cardsGrid">
+            {% for relatedProduct in related_products %}
+              {% set relatedProductId = relatedProduct.productId ?? 0 %}
+              {% set primaryImage = related_primary_images_by_product_id[relatedProductId]|default(null) %}
+              {% set imagePath = primaryImage ? primaryImage.fileUrl : '' %}
+              {% set imageUrl = imagePath ? (imagePath starts with 'http' ? imagePath : asset(imagePath)) : 'https://picsum.photos/seed/pulse_shop_' ~ relatedProductId ~ '/1200/800' %}
+
+              <article class="card card--product">
+                <div class="card__media" data-bg="{{ imageUrl }}">
+                  <div class="card__chips">
+                    <span class="chip chip--price">{{ relatedProduct.price|number_format(2, '.', ' ') }} DT</span>
+                    <span class="chip">Stock: {{ relatedProduct.stockQty }}</span>
+                  </div>
+                </div>
+
+                <div class="card__body">
+                  <h4 class="card__title">{{ relatedProduct.name }}</h4>
+                  {% set relatedProductId = relatedProduct.productId %}
+                  {% set relatedRatingStats = related_ratings_stats_by_product_id[relatedProductId]|default({'averageRating': null, 'ratingCount': 0}) %}
+                  {% set avgRating = relatedRatingStats.averageRating %}
+                  {% set ratingCount = relatedRatingStats.ratingCount %}
+                  <div class="stars">
+                    {% for i in 1..5 %}
+                      <span class="star {{ avgRating >= i ? 'star--filled' : 'star--empty' }}">★</span>
+                    {% endfor %}
+                  </div>
+                  <span class="rating-count">({{ ratingCount }} vote{{ ratingCount > 1 ? 's' : '' }})</span>
+                  <div class="card__actions">
+                    <a class="btn btn--ghost" href="{{ path('front_product_detail', {id: relatedProductId}) }}">Détail</a>
+                  </div>
+                </div>
+              </article>
+            {% endfor %}
+          </div>
+        </section>
+      {% endif %}
+
+      {% include 'front/partials/_footer.html.twig' %}
+    </section>
+  </main>
+
+  {% include 'front/partials/_auth_modal.html.twig' %}
+{% endblock %}

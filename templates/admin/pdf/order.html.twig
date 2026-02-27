@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  {# include admin stylesheet via absolute URL so Dompdf can fetch it when remote is enabled #}
+  {% set css1 = base_url ~ asset('assets/template_bo/css/styles.css') %}
+  <link rel="stylesheet" href="{{ css1 }}" />
+
+  <style>
+    body { font-family: DejaVu Sans, sans-serif; color: #0f172a; font-size: 12px; }
+    .header { display:flex; justify-content:space-between; margin-bottom:20px; }
+    .title { font-size:18px; font-weight:700; }
+    table { width:100%; border-collapse:collapse; margin-top:10px; }
+    th, td { border: 1px solid #ddd; padding:8px; text-align:left; }
+    th { background:#f4f7fb; }
+    .totals { margin-top:12px; text-align:right; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <div class="title">Commande - {{ order.orderNumber }}</div>
+      <div>Client: {{ order.userId.username ?? '-' }}</div>
+      <div>Date: {{ order.createdAt ? order.createdAt|date('Y-m-d H:i') : '-' }}</div>
+    </div>
+    <div>
+      <div>Statut: {{ order.status }}</div>
+      <div>Moyen: {{ order.paymentMethod ?: '-' }}</div>
+      <div>Payment: {{ order.paymentStatus }}</div>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Produit</th>
+        <th>Quantité</th>
+        <th>Prix unitaire</th>
+        <th>Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% set subtotal = 0 %}
+      {% for item in items %}
+        {% set product = item.getProductId() %}
+        {% set qty = item.getQuantity() %}
+        {% set unit = (item.getUnitPriceAtAdd() is not null ? item.getUnitPriceAtAdd() : '0.00')|float %}
+        {% set line = (qty * unit)|number_format(2, '.', ' ') %}
+        {% set subtotal = subtotal + (qty * unit) %}
+        <tr>
+          <td>{{ product ? product.getName() : '—' }}</td>
+          <td>{{ qty }}</td>
+          <td>{{ unit|number_format(2, '.', ' ') }}</td>
+          <td>{{ line }} DT</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="totals">
+    <div>Sous-total: {{ subtotal|number_format(2, '.', ' ') }} DT</div>
+    <div>Total commande: {{ order.totalAmount ? order.totalAmount : subtotal|number_format(2, '.', ' ') }} DT</div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>Liste des paniers - PULSE</title>
+  <style>
+    body { 
+      font-family: DejaVu Sans, sans-serif; 
+      color: #0f172a; 
+      font-size: 12px; 
+      margin: 0; 
+      padding: 20px; 
+      background-color: #f8fafc;
+    }
+    .container {
+      max-width: 210mm;
+      margin: 0 auto;
+      background-color: #ffffff;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #ff9d2e;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .logo img {
+      height: 50px;
+      width: auto;
+    }
+    .logo-text {
+      font-size: 24px;
+      font-weight: 800;
+      color: #ff9d2e;
+    }
+    .report-info {
+      text-align: right;
+      color: #6b7280;
+    }
+    .cart-block { 
+      page-break-after: always; 
+      margin-bottom: 30px;
+      padding: 15px;
+      border: 1px solid #e6eef8;
+      border-radius: 8px;
+    }
+    .cart-title { 
+      font-weight: 700; 
+      font-size: 16px;
+      margin-bottom: 15px;
+      color: #0f172a;
+      display: flex;
+      justify-content: space-between;
+    }
+    .cart-info {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 15px;
+      padding: 10px;
+      background-color: #f8fafc;
+      border-radius: 5px;
+    }
+    .info-block {
+      width: 48%;
+    }
+    .info-label {
+      font-weight: 700;
+      color: #6b7280;
+      margin-bottom: 5px;
+    }
+    table { 
+      width: 100%; 
+      border-collapse: collapse; 
+      margin-top: 10px; 
+    }
+    th, td { 
+      border: 1px solid #e6eef8; 
+      padding: 10px; 
+      text-align: left; 
+    }
+    th { 
+      background-color: #ff9d2e; 
+      color: #ffffff;
+      font-weight: 700;
+    }
+    tr:nth-child(even) {
+      background-color: #f8fafc;
+    }
+    .muted { 
+      color: #6b7280; 
+      font-size: 11px; 
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .status-open {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    .status-locked {
+      background-color: #fff3cd;
+      color: #856404;
+    }
+    .status-ordered {
+      background-color: #cce5ff;
+      color: #004085;
+    }
+    .footer {
+      margin-top: 30px;
+      text-align: center;
+      color: #6b7280;
+      font-size: 10px;
+      border-top: 1px solid #e6eef8;
+      padding-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">
+        <img src="{{ base_url }}/assets/template_fo/img/logo.jpeg" alt="PULSE Logo" />
+        <div class="logo-text">PULSE E-SPORTS</div>
+      </div>
+      <div class="report-info">
+        <div>Rapport des paniers</div>
+        <div>Generated: {{ "now"|date("d/m/Y H:i") }}</div>
+      </div>
+    </div>
+
+    {% for cart in carts %}
+      <div class="cart-block">
+        <div class="cart-title">
+          <span>Panier #{{ cart.cartId }}</span>
+          <span class="status-badge status-{{ cart.status|lower }}">{{ cart.status }}</span>
+        </div>
+
+        <div class="cart-info">
+          <div class="info-block">
+            <div class="info-label">Utilisateur</div>
+            <div>{{ cart.userId.username ?? '-' }}</div>
+            <div class="muted">{{ cart.userId.email ?? '' }}</div>
+          </div>
+          <div class="info-block">
+            <div class="info-label">Détails du panier</div>
+            <div>Créé le: {{ cart.createdAt ? cart.createdAt|date('d/m/Y H:i') : '-' }}</div>
+            <div>Mis à jour le: {{ cart.updatedAt ? cart.updatedAt|date('d/m/Y H:i') : '-' }}</div>
+            {% if cart.lockedAt %}
+            <div>Verrouillé le: {{ cart.lockedAt|date('d/m/Y H:i') }}</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Produit</th>
+              <th style="width:60px;">Qté</th>
+              <th style="width:120px;">Prix unitaire</th>
+              <th style="width:120px;">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% set items = itemsByCartId[cart.cartId] ?? [] %}
+            {% set subtotal = 0 %}
+            {% for item in items %}
+              {% set product = item.getProductId() %}
+              {% set qty = item.getQuantity() %}
+              {% set unit = (item.getUnitPriceAtAdd() is not null ? item.getUnitPriceAtAdd() : '0.00') %}
+              {% set line = qty * unit %}
+              {% set subtotal = subtotal + line %}
+              <tr>
+                <td>
+                  <div style="font-weight:700;">{{ product ? product.getName() : '—' }}</div>
+                  <div class="muted">{{ product ? product.getDescription()|striptags|slice(0,120) : '' }}</div>
+                </td>
+                <td>{{ qty }}</td>
+                <td>{{ unit|number_format(2, '.', ' ') }} DT</td>
+                <td>{{ line|number_format(2, '.', ' ') }} DT</td>
+              </tr>
+            {% else %}
+              <tr><td colspan="4" class="muted">Aucun article</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <div class="totals">
+          <div class="muted">Nombre d'articles: {{ items|length }}</div>
+          <div style="font-weight:700; font-size:16px; margin-top: 5px;">Sous-total: {{ subtotal|number_format(2, '.', ' ') }} DT</div>
+        </div>
+      </div>
+    {% else %}
+      <div class="cart-block">
+        <div class="muted">Aucun panier trouvé.</div>
+      </div>
+    {% endfor %}
+
+    <div class="footer">
+      <div>PULSE E-SPORTS - Plateforme de tournois e-sports et boutique en ligne</div>
+      <div>Généré automatiquement le {{ "now"|date("d/m/Y H:i") }}</div>
+    </div>
+  </div>
+</body>
+</html>
