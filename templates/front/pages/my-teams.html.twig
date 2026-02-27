@@ -54,7 +54,13 @@
                   {% set teamId = team ? (team.teamId ?? 0) : 0 %}
                   {% set captain = team ? team.captainUserId : null %}
                   {% set logoPath = team and team.logoImageId ? team.logoImageId.fileUrl : '' %}
-                  {% set logoUrl = logoPath ? (logoPath starts with 'http' ? logoPath : asset(logoPath)) : 'https://picsum.photos/seed/pulse_team_' ~ teamId ~ '/200/200' %}
+                  {% if logoPath and (logoPath starts with 'http') %}
+                    {% set logoUrl = logoPath %}
+                  {% elseif logoPath %}
+                    {% set logoUrl = asset(logoPath)|imagine_filter('team_thumbnail') %}
+                  {% else %}
+                    {% set logoUrl = 'https://picsum.photos/seed/pulse_team_' ~ teamId ~ '/200/200' %}
+                  {% endif %}
 
                   <article class="panel">
                     <div class="postCard__head">

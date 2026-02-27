@@ -224,7 +224,13 @@
                   {% set team = participant.teamId %}
                   {% set teamId = team ? (team.teamId ?? 0) : 0 %}
                   {% set logoPath = team and team.logoImageId ? team.logoImageId.fileUrl : '' %}
-                  {% set logoUrl = logoPath ? (logoPath starts with 'http' ? logoPath : asset(logoPath)) : 'https://picsum.photos/seed/pulse_team_detail_' ~ teamId ~ '/800/600' %}
+                  {% if logoPath and (logoPath starts with 'http') %}
+                    {% set logoUrl = logoPath %}
+                  {% elseif logoPath %}
+                    {% set logoUrl = asset(logoPath)|imagine_filter('team_banner') %}
+                  {% else %}
+                    {% set logoUrl = 'https://picsum.photos/seed/pulse_team_detail_' ~ teamId ~ '/800/600' %}
+                  {% endif %}
                   <article class="card card--team">
                     <div class="card__media" data-bg="{{ logoUrl }}">
                       <div class="card__chips">

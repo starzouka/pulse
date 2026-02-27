@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    @page { margin: 18px; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: DejaVu Sans, sans-serif; font-size: 10px; color: #0f172a; background: #eef2f8; }
+    .header { margin-bottom: 12px; padding: 12px 14px; border: 1px solid #d9e2ef; border-top: 4px solid #ff9d2e; background: #ffffff; }
+    .brand { display: inline-block; font-size: 9px; font-weight: 700; letter-spacing: 1px; color: #ff9d2e; margin-bottom: 4px; }
+    h1 { margin: 0; font-size: 18px; color: #0b1220; }
+    .meta { margin-top: 6px; font-size: 9px; color: #475569; }
+    .teamRow { margin-top: 10px; }
+    .teamLogo { width: 68px; height: 68px; border: 1px solid #d9e2ef; border-radius: 8px; object-fit: cover; float: left; margin-right: 10px; }
+    .teamInfo { overflow: hidden; }
+    .teamInfo h2 { margin: 0; font-size: 14px; color: #0b1220; }
+    .teamInfo p { margin: 4px 0 0; color: #334155; }
+    .stats { margin-top: 10px; width: 100%; border-collapse: separate; border-spacing: 8px 0; }
+    .stats td { padding: 8px; border: 1px solid #d9e2ef; background: #f8fafc; border-radius: 8px; vertical-align: top; }
+    .statValue { display: block; font-size: 14px; font-weight: 700; color: #0f172a; }
+    .statLabel { display: block; margin-top: 2px; color: #475569; font-size: 9px; }
+    .section { margin-top: 12px; border: 1px solid #d9e2ef; background: #ffffff; }
+    .section h3 { margin: 0; padding: 8px 10px; font-size: 11px; background: #1f2937; color: #f8fafc; }
+    table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    th, td { border: 1px solid #d9e2ef; padding: 6px; text-align: left; vertical-align: top; word-wrap: break-word; }
+    th { background: #f1f5f9; color: #0f172a; font-size: 9px; }
+    tbody tr:nth-child(even) td { background: #f8fafc; }
+    .badge { display: inline-block; padding: 2px 6px; font-size: 9px; font-weight: 700; border-radius: 999px; border: 1px solid #d9e2ef; background: #f8fafc; color: #0f172a; }
+    .status-active { background: #e6f8ee; color: #065f46; border-color: #a7f3d0; }
+    .status-inactive { background: #fee2e2; color: #991b1b; border-color: #fecaca; }
+    .muted { color: #64748b; font-style: italic; text-align: center; }
+  </style>
+</head>
+<body>
+  <section class="header">
+    <div class="brand">PULSE ROSTER REPORT</div>
+    <h1>Fiche roster equipe</h1>
+    <div class="meta">
+      Genere le: {{ generated_at|date('Y-m-d H:i') }} · Equipe ID: #{{ team.teamId ?? 0 }}
+    </div>
+
+    <div class="teamRow">
+      {% if logo_src %}
+        <img class="teamLogo" src="{{ logo_src }}" alt="logo equipe">
+      {% endif %}
+      <div class="teamInfo">
+        <h2>{{ team.name }}</h2>
+        <p>Region: {{ team.region ?: 'Non definie' }}</p>
+        <p>Capitaine: {{ team.captainUserId ? (team.captainUserId.displayName ?: team.captainUserId.username) : '-' }}</p>
+        <p>Description: {{ team.description ?: 'Aucune description.' }}</p>
+      </div>
+    </div>
+
+    <table class="stats">
+      <tr>
+        <td>
+          <span class="statValue">{{ stats.active_members|default(0) }}</span>
+          <span class="statLabel">Membres actifs</span>
+        </td>
+        <td>
+          <span class="statValue">{{ stats.inactive_members|default(0) }}</span>
+          <span class="statLabel">Membres inactifs (historique)</span>
+        </td>
+        <td>
+          <span class="statValue">{{ stats.average_seniority_days|default(0) }}</span>
+          <span class="statLabel">Anciennete moyenne (jours)</span>
+        </td>
+        <td>
+          <span class="statValue">{{ stats.join_requests.accepted|default(0) }}</span>
+          <span class="statLabel">Demandes acceptees</span>
+        </td>
+      </tr>
+    </table>
+  </section>
+
+  <section class="section">
+    <h3>Repartition roster actif</h3>
+    <table>
+      <thead>
+      <tr>
+        <th>Role roster</th>
+        <th>Effectif</th>
+        <th>Part</th>
+      </tr>
+      </thead>
+      <tbody>
+      {% set total_active = stats.active_members|default(0) %}
+      {% for roster_role in ['CAPTAIN', 'CO_CAPTAIN', 'STARTER', 'SUBSTITUTE'] %}
+        {% set count = role_distribution[roster_role]|default(0) %}
+        <tr>
+          <td>{{ roster_role }}</td>
+          <td>{{ count }}</td>
+          <td>
+            {% if total_active > 0 %}
+              {{ ((count / total_active) * 100)|number_format(1, '.', ' ') }}%
+            {% else %}
+              0%
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="section">
+    <h3>Membres actifs</h3>
+    <table>
+      <thead>
+      <tr>
+        <th>Joueur</th>
+        <th>Username</th>
+        <th>Role roster</th>
+        <th>Role compte</th>
+        <th>Rejoint le</th>
+      </tr>
+      </thead>
+      <tbody>
+      {% for membership in active_members %}
+        {% set member = membership.userId %}
+        <tr>
+          <td>{{ member ? (member.displayName ?: member.username) : '-' }}</td>
+          <td>{{ member ? ('@' ~ member.username) : '-' }}</td>
+          <td><span class="badge">{{ membership.rosterRole }}</span></td>
+          <td>{{ member ? member.role : '-' }}</td>
+          <td>{{ membership.joinedAt ? membership.joinedAt|date('d/m/Y H:i') : '-' }}</td>
+        </tr>
+      {% else %}
+        <tr>
+          <td class="muted" colspan="5">Aucun membre actif.</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="section">
+    <h3>Historique roster</h3>
+    <table>
+      <thead>
+      <tr>
+        <th>Joueur</th>
+        <th>Role roster</th>
+        <th>Date entree</th>
+        <th>Date sortie</th>
+        <th>Etat</th>
+      </tr>
+      </thead>
+      <tbody>
+      {% for membership in roster_history %}
+        {% set member = membership.userId %}
+        {% set is_active = membership.isActive and membership.leftAt is null %}
+        <tr>
+          <td>{{ member ? (member.displayName ?: member.username) : '-' }}</td>
+          <td>{{ membership.rosterRole }}</td>
+          <td>{{ membership.joinedAt ? membership.joinedAt|date('d/m/Y H:i') : '-' }}</td>
+          <td>{{ membership.leftAt ? membership.leftAt|date('d/m/Y H:i') : '-' }}</td>
+          <td>
+            <span class="badge {{ is_active ? 'status-active' : 'status-inactive' }}">
+              {{ is_active ? 'ACTIF' : 'INACTIF' }}
+            </span>
+          </td>
+        </tr>
+      {% else %}
+        <tr>
+          <td class="muted" colspan="5">Aucun historique roster.</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="section">
+    <h3>Historique des demandes d adhesion</h3>
+    <table>
+      <thead>
+      <tr>
+        <th>Joueur</th>
+        <th>Date demande</th>
+        <th>Statut</th>
+        <th>Repondu le</th>
+        <th>Note</th>
+      </tr>
+      </thead>
+      <tbody>
+      {% for join_request in join_requests %}
+        {% set applicant = join_request.userId %}
+        <tr>
+          <td>{{ applicant ? (applicant.displayName ?: applicant.username) : '-' }}</td>
+          <td>{{ join_request.createdAt ? join_request.createdAt|date('d/m/Y H:i') : '-' }}</td>
+          <td><span class="badge">{{ join_request.status ?: 'PENDING' }}</span></td>
+          <td>{{ join_request.respondedAt ? join_request.respondedAt|date('d/m/Y H:i') : '-' }}</td>
+          <td>{{ join_request.note ?: '-' }}</td>
+        </tr>
+      {% else %}
+        <tr>
+          <td class="muted" colspan="5">Aucune demande de roster enregistree.</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </section>
+</body>
+</html>

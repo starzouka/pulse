@@ -259,20 +259,21 @@ class TournamentTeamRepository extends ServiceEntityRepository
      * @param list<string>|null $statuses
      * @return array<int, int>
      */
-    public function countRegistrationsByGameIds(array $gameIds, ?array $statuses = null): array
+    public function countByGameIds(array $gameIds, ?array $statuses = null): array
     {
         $filteredIds = array_values(array_unique(array_filter(
             $gameIds,
             static fn (mixed $id): bool => is_int($id) && $id > 0
         )));
+
         if ($filteredIds === []) {
             return [];
         }
 
         $builder = $this->createQueryBuilder('tournamentTeam')
-            ->innerJoin('tournamentTeam.tournamentId', 'tournament')
             ->select('IDENTITY(tournament.gameId) AS gameId')
             ->addSelect('COUNT(tournamentTeam.teamId) AS registrationsCount')
+            ->innerJoin('tournamentTeam.tournamentId', 'tournament')
             ->andWhere('IDENTITY(tournament.gameId) IN (:gameIds)')
             ->setParameter('gameIds', $filteredIds)
             ->groupBy('tournament.gameId');
@@ -286,7 +287,12 @@ class TournamentTeamRepository extends ServiceEntityRepository
         $rows = $builder->getQuery()->getArrayResult();
         $counts = [];
         foreach ($rows as $row) {
-            $counts[(int) ($row['gameId'] ?? 0)] = (int) ($row['registrationsCount'] ?? 0);
+            $gameId = (int) ($row['gameId'] ?? 0);
+            if ($gameId <= 0) {
+                continue;
+            }
+
+            $counts[$gameId] = (int) ($row['registrationsCount'] ?? 0);
         }
 
         return $counts;

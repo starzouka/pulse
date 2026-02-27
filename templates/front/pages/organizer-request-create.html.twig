@@ -29,6 +29,13 @@
             {{ form_start(tournamentRequestForm, {attr: {novalidate: 'novalidate'}}) }}
               {{ form_errors(tournamentRequestForm) }}
               {% include 'shared/_tournament_form_fields.html.twig' with {form: tournamentRequestForm} %}
+
+              {% if recaptcha_site_key is defined and recaptcha_site_key %}
+                <div style="margin-top:12px;">
+                  <div class="g-recaptcha" data-sitekey="{{ recaptcha_site_key }}"></div>
+                </div>
+              {% endif %}
+
               <div class="formActions" style="margin-top:12px;">
                 <button class="btn btn--primary" type="submit">Envoyer</button>
                 <a class="btn btn--ghost" href="{{ path('front_organizer_requests') }}">Annuler</a>
@@ -55,4 +62,11 @@
   </main>
 
   {% include 'front/partials/_auth_modal.html.twig' %}
+{% endblock %}
+
+{% block javascripts %}
+  {{ parent() }}
+  {% if recaptcha_site_key is defined and recaptcha_site_key %}
+    <script src="https://www.google.com/recaptcha/api.js?hl=fr" async defer></script>
+  {% endif %}
 {% endblock %}

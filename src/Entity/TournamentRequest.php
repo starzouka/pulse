@@ -28,7 +28,7 @@ class TournamentRequest
     private ?int $requestId = null;
     
     #[ORM\ManyToOne(targetEntity: User::class)]
-    #[ORM\JoinColumn(name: 'organizer_user_id', referencedColumnName: 'user_id', nullable: false, onDelete: 'RESTRICT')]
+    #[ORM\JoinColumn(name: 'organizer_user_id', referencedColumnName: 'user_id', nullable: false, onDelete: 'CASCADE')]
     #[Assert\NotNull(message: "L'organisateur est obligatoire.")]
     private User $organizerUserId;
     

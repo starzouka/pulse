@@ -6,7 +6,7 @@
   {% set is_current = current_sort == field %}
   {% set next_direction = is_current and current_direction == 'asc' ? 'desc' : 'asc' %}
   {% set marker = is_current ? (current_direction == 'asc' ? ' (ASC)' : ' (DESC)') : '' %}
-  <a href="{{ path(route_name, filters|merge({sort: field, direction: next_direction})) }}" style="color:inherit;text-decoration:none;">
+  <a href="{{ path(route_name, filters|merge({sort: field, direction: next_direction, page: 1})) }}" style="color:inherit;text-decoration:none;">
     {{ label }}{{ marker }}
   </a>
 {% endmacro %}
@@ -19,7 +19,7 @@
   <div class="pageHeader">
     <div>
       <h2>Gestion categories</h2>
-      <div class="pageSub">CRUD complet + filtres DB + export.</div>
+      <div class="pageSub">CRUD + slug SEO + filtres DB + export.</div>
     </div>
     <div class="formActions">
       <a class="btn btnGhost" href="{{ path('admin_categories_export', filters|merge({format: 'pdf'})) }}">Exporter PDF</a>
@@ -49,6 +49,9 @@
         <div class="field">
           <label for="category_name">Nom categorie *</label>
           <input id="category_name" type="text" name="name" required value="{{ editingCategory ? editingCategory.name : '' }}" />
+          {% if editingCategory and editingCategory.slug %}
+            <div class="listMeta" style="margin-top:6px;">Slug SEO: {{ editingCategory.slug }}</div>
+          {% endif %}
         </div>
 
         <div class="field" style="grid-column: 1 / -1;">
@@ -72,7 +75,7 @@
 
     <div class="filterGroup">
       <label>Recherche</label>
-      <input type="search" name="q" value="{{ filters.q }}" placeholder="name, description" />
+      <input type="search" name="q" value="{{ filters.q }}" placeholder="name, slug, description" />
     </div>
 
     <div class="formActions">
@@ -84,7 +87,7 @@
   <section class="panel">
     <div class="panelHeader">
       <h3 class="panelTitle">LISTE</h3>
-      <span class="listMeta">{{ categories_pagination.getTotalItemCount }} resultat(s)</span>
+      <span class="listMeta">{{ categoriesPagination.getTotalItemCount|default(0) }} resultat(s)</span>
     </div>
 
     <div class="dataTableWrap">
@@ -93,6 +96,7 @@
           <tr>
             <th>{{ sorter.sort_link('admin_categories', filters, 'id', 'ID') }}</th>
             <th>{{ sorter.sort_link('admin_categories', filters, 'name', 'Nom') }}</th>
+            <th>{{ sorter.sort_link('admin_categories', filters, 'slug', 'Slug') }}</th>
             <th>Description</th>
             <th>{{ sorter.sort_link('admin_categories', filters, 'games', 'Nb jeux') }}</th>
             <th>{{ sorter.sort_link('admin_categories', filters, 'created_at', 'Cree le') }}</th>
@@ -100,11 +104,12 @@
           </tr>
         </thead>
         <tbody>
-          {% for category in categories %}
+          {% for category in categoriesPagination %}
             {% set categoryId = category.categoryId ?? 0 %}
             <tr>
               <td>#{{ categoryId }}</td>
               <td>{{ category.name }}</td>
+              <td><span class="listMeta">{{ category.slug }}</span></td>
               <td>{{ category.description ? category.description|slice(0, 80) : '-' }}</td>
               <td>{{ gamesByCategoryId[categoryId]|default(0) }}</td>
               <td>{{ category.createdAt ? category.createdAt|date('d/m/Y H:i') : '-' }}</td>
@@ -120,14 +125,15 @@
             </tr>
           {% else %}
             <tr>
-              <td colspan="6" class="listMeta">Aucune categorie trouvee.</td>
+              <td colspan="7" class="listMeta">Aucune categorie trouvee.</td>
             </tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
+
+    <div style="margin-top:12px;">
+      {{ knp_pagination_render(categoriesPagination) }}
+    </div>
   </section>
-  <div style="margin-top: 12px;">
-    {{ knp_pagination_render(categories_pagination) }}
-  </div>
 {% endblock %}

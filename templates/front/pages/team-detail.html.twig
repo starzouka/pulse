@@ -8,7 +8,16 @@
   {% set captainId = captain ? captain.userId : null %}
   {% set viewerId = viewer_user ? viewer_user.userId : null %}
   {% set logoPath = team.logoImageId ? team.logoImageId.fileUrl : '' %}
-  {% set logoUrl = logoPath ? (logoPath starts with 'http' ? logoPath : asset(logoPath)) : 'https://picsum.photos/seed/pulse_team_logo_detail_' ~ teamId ~ '/600/600' %}
+  {% if logoPath and (logoPath starts with 'http') %}
+    {% set logoUrl = logoPath %}
+    {% set bannerUrl = logoPath %}
+  {% elseif logoPath %}
+    {% set logoUrl = asset(logoPath)|imagine_filter('team_logo') %}
+    {% set bannerUrl = asset(logoPath)|imagine_filter('team_banner') %}
+  {% else %}
+    {% set logoUrl = 'https://picsum.photos/seed/pulse_team_logo_detail_' ~ teamId ~ '/600/600' %}
+    {% set bannerUrl = 'https://picsum.photos/seed/pulse_team_banner_detail_' ~ teamId ~ '/1400/420' %}
+  {% endif %}
 
   {% include 'front/partials/_hero_mini.html.twig' with {
     hero_kicker: 'EQUIPE',
@@ -30,6 +39,7 @@
 
       <div class="layout">
         <section class="panel">
+          <div class="coverBlock" data-bg="{{ bannerUrl }}"></div>
           <div style="display:flex; gap:14px; align-items:flex-start; flex-wrap:wrap;">
             <div class="avatarLg" data-avatar="{{ logoUrl }}"></div>
             <div style="flex:1; min-width:260px;">

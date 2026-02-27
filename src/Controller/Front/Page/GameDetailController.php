@@ -12,23 +12,17 @@ use App\Repository\GameRepository;
 use App\Repository\TournamentMatchRepository;
 use App\Repository\TournamentRepository;
 use App\Repository\TournamentTeamRepository;
-use App\Service\Game\GamePopularityService;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use App\Service\Catalog\GamePopularityService;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 final class GameDetailController extends AbstractController
 {
-    /** @var list<string> */
-    private const FRONT_VISIBLE_STATUSES = [
-        Game::STATUS_DRAFT,
-        Game::STATUS_PENDING,
-        Game::STATUS_PUBLISHED,
-    ];
-
-    #[Route('/pages/game-detail/{slug}', name: 'front_game_detail', defaults: ['slug' => null], methods: ['GET'])]
+    #[Route('/pages/game-detail/{slug}', name: 'front_game_detail', requirements: ['slug' => '[a-z0-9]+(?:-[a-z0-9]+)*-[0-9]+'], defaults: ['slug' => null], methods: ['GET'])]
     public function index(
         ?string $slug,
         Request $request,
@@ -37,32 +31,24 @@ final class GameDetailController extends AbstractController
         TournamentRepository $tournamentRepository,
         TournamentTeamRepository $tournamentTeamRepository,
         TournamentMatchRepository $tournamentMatchRepository,
-        EntityManagerInterface $entityManager,
         GamePopularityService $gamePopularityService,
+        EntityManagerInterface $entityManager,
     ): Response {
-        $identifier = $slug !== null ? trim($slug) : null;
-        $queryId = $request->query->getInt('id', 0);
-        if (($identifier === null || $identifier === '') && $queryId > 0) {
-            $identifier = (string) $queryId;
-        }
-
-        $game = $this->resolveGame($identifier, $gameRepository);
+        $game = $this->resolveGame($slug, $gameRepository);
         if (!$game instanceof Game) {
             throw $this->createNotFoundException('Jeu introuvable.');
         }
-        if (!in_array($game->getStatus(), self::FRONT_VISIBLE_STATUSES, true)) {
-            throw $this->createNotFoundException('Jeu indisponible.');
+
+        if ($slug !== null && $slug !== '' && $game->getSlug() !== $slug) {
+            return $this->redirectToRoute('front_game_detail', ['slug' => $game->getSlug()]);
         }
 
-        $viewer = $this->getUser();
-        $viewerUser = $viewer instanceof User ? $viewer : null;
-        $isFavorited = $viewerUser instanceof User
-            ? $gameFavoriteRepository->existsForUserAndGame($viewerUser, $game)
-            : false;
+        $this->trackViewOncePerSession($request, $game, $entityManager, $gamePopularityService);
 
-        if ($this->registerGameView($request, $game)) {
-            $gamePopularityService->recompute($game);
-            $entityManager->flush();
+        $viewer = $this->getUser();
+        $isFavorite = false;
+        if ($viewer instanceof User) {
+            $isFavorite = $gameFavoriteRepository->existsForUserAndGame($viewer, $game);
         }
 
         $tournamentQuery = trim((string) $request->query->get('tq', ''));
@@ -153,12 +139,16 @@ final class GameDetailController extends AbstractController
 
         return $this->render('front/pages/game-detail.html.twig', [
             'game' => $game,
+            'is_favorite' => $isFavorite,
             'tournaments_by_status' => $groupedTournaments,
             'active_tab' => $activeTab,
             'stats' => [
                 'total_tournaments' => $totalTournamentsCount,
                 'active_tournaments' => $activeTournamentsCount,
                 'participants' => $totalParticipantsCount,
+                'views' => $game->getViewsCount(),
+                'favorites' => $game->getFavoritesCount(),
+                'score' => $game->getPopularityScore(),
             ],
             'filters' => [
                 'tq' => $tournamentQuery,
@@ -166,91 +156,75 @@ final class GameDetailController extends AbstractController
                 'format' => $format,
                 'sort' => $sort,
             ],
-            'is_favorited' => $isFavorited,
         ]);
     }
 
-    #[Route('/pages/game-detail/{slug}/favorite', name: 'front_game_favorite_toggle', methods: ['POST'])]
+    #[Route('/pages/game-detail/{id}', name: 'front_game_detail_legacy', requirements: ['id' => '\\d+'], methods: ['GET'])]
+    public function legacyById(int $id, GameRepository $gameRepository): RedirectResponse
+    {
+        $game = $gameRepository->findOneWithRelationsById($id);
+        if (!$game instanceof Game) {
+            throw $this->createNotFoundException('Jeu introuvable.');
+        }
+
+        return $this->redirectToRoute('front_game_detail', ['slug' => $game->getSlug()]);
+    }
+
+    #[Route('/pages/game-detail/{slug}/favorite-toggle', name: 'front_game_detail_favorite_toggle', requirements: ['slug' => '[a-z0-9]+(?:-[a-z0-9]+)*-[0-9]+'], methods: ['POST'])]
     public function toggleFavorite(
         string $slug,
         Request $request,
         GameRepository $gameRepository,
         GameFavoriteRepository $gameFavoriteRepository,
-        GamePopularityService $gamePopularityService,
         EntityManagerInterface $entityManager,
-    ): Response {
+        GamePopularityService $gamePopularityService,
+    ): RedirectResponse {
         $viewer = $this->getUser();
         if (!$viewer instanceof User) {
-            $this->addFlash('error', 'Connexion requise pour ajouter un favori.');
-
-            return $this->redirectToRoute('front_login');
+            return $this->redirectToRoute('front_login', [
+                '_target_path' => $request->headers->get('referer') ?: $this->generateUrl('front_game_detail', ['slug' => $slug]),
+            ]);
         }
 
-        $game = $this->resolveGame($slug, $gameRepository);
+        $game = $gameRepository->findOneWithRelationsBySlug($slug);
         if (!$game instanceof Game) {
             throw $this->createNotFoundException('Jeu introuvable.');
         }
 
-        if (!$this->isCsrfTokenValid('favorite_game_' . $game->getGameId(), (string) $request->request->get('_token'))) {
+        $gameId = (int) ($game->getGameId() ?? 0);
+        if (!$this->isCsrfTokenValid('toggle_game_favorite_' . $gameId, (string) $request->request->get('_token'))) {
             $this->addFlash('error', 'Jeton CSRF invalide.');
 
-            return $this->redirectToRoute('front_game_detail', ['slug' => $game->getSeoIdentifier()]);
+            return $this->redirectToRoute('front_game_detail', ['slug' => $game->getSlug()]);
         }
 
         $existingFavorite = $gameFavoriteRepository->findOneByUserAndGame($viewer, $game);
         if ($existingFavorite instanceof GameFavorite) {
             $entityManager->remove($existingFavorite);
+            $game->decrementFavoritesCount();
             $this->addFlash('success', 'Jeu retire des favoris.');
         } else {
-            $favorite = (new GameFavorite())
-                ->setUserId($viewer)
-                ->setGameId($game)
-                ->setCreatedAt(new \DateTime());
-            $entityManager->persist($favorite);
+            $entityManager->persist(
+                (new GameFavorite())
+                    ->setUserId($viewer)
+                    ->setGameId($game)
+                    ->setCreatedAt(new \DateTime())
+            );
+            $game->incrementFavoritesCount();
             $this->addFlash('success', 'Jeu ajoute aux favoris.');
         }
 
         $entityManager->flush();
-        $gamePopularityService->recompute($game);
-        $entityManager->flush();
+        $gamePopularityService->refreshAndFlushSingleGame($game);
 
-        return $this->redirectToRoute('front_game_detail', ['slug' => $game->getSeoIdentifier()]);
+        return $this->redirectToRoute('front_game_detail', ['slug' => $game->getSlug()]);
     }
 
-    private function resolveGame(?string $identifier, GameRepository $gameRepository): ?Game
+    private function resolveGame(?string $slug, GameRepository $gameRepository): ?Game
     {
-        $normalizedIdentifier = trim((string) $identifier);
-        if ($normalizedIdentifier !== '') {
-            if (preg_match('/-(\d+)$/', $normalizedIdentifier, $matches) === 1) {
-                $bySuffixId = $gameRepository->findOneWithRelationsById((int) $matches[1]);
-                if ($bySuffixId instanceof Game) {
-                    return $bySuffixId;
-                }
-            }
-
-            if (ctype_digit($normalizedIdentifier)) {
-                $byId = $gameRepository->findOneWithRelationsById((int) $normalizedIdentifier);
-                if ($byId instanceof Game) {
-                    return $byId;
-                }
-            }
-
-            $bySlug = $gameRepository->findOneWithRelationsBySlug($normalizedIdentifier);
-            if ($bySlug instanceof Game) {
-                return $bySlug;
-            }
-
-            if (preg_match('/^(.*)-\d+$/', $normalizedIdentifier, $matches) === 1) {
-                $withoutNumericSuffix = trim((string) ($matches[1] ?? ''));
-                if ($withoutNumericSuffix !== '') {
-                    $byBaseSlug = $gameRepository->findOneWithRelationsBySlugLoose($withoutNumericSuffix);
-                    if ($byBaseSlug instanceof Game) {
-                        return $byBaseSlug;
-                    }
-                }
-            }
-
-            return $gameRepository->findOneWithRelationsBySlugLoose($normalizedIdentifier);
+        $slugValue = trim((string) $slug);
+        if ($slugValue !== '') {
+            return $gameRepository->findOneWithRelationsBySlug($slugValue);
         }
 
         $latestGames = $gameRepository->searchCatalog(
@@ -259,35 +233,42 @@ final class GameDetailController extends AbstractController
             publisher: null,
             withActiveTournamentsOnly: false,
             sort: 'latest',
-            limit: 1,
-            statuses: self::FRONT_VISIBLE_STATUSES
+            limit: 1
         );
 
         return $latestGames[0] ?? null;
     }
 
-    private function registerGameView(Request $request, Game $game): bool
-    {
-        if (!$request->hasSession()) {
-            $game->incrementViewsCount();
-
-            return true;
-        }
-
-        $session = $request->getSession();
+    private function trackViewOncePerSession(
+        Request $request,
+        Game $game,
+        EntityManagerInterface $entityManager,
+        GamePopularityService $gamePopularityService,
+    ): void {
         $gameId = $game->getGameId();
         if (!is_int($gameId) || $gameId <= 0) {
-            return false;
+            return;
         }
 
-        $sessionKey = sprintf('game_viewed_%d', $gameId);
-        if ($session->get($sessionKey, false) === true) {
-            return false;
+        $session = $request->hasSession() ? $request->getSession() : null;
+        if ($session === null) {
+            return;
         }
 
-        $session->set($sessionKey, true);
+        $viewedGameIds = $session->get('front_game_detail_viewed_ids', []);
+        if (!is_array($viewedGameIds)) {
+            $viewedGameIds = [];
+        }
+
+        if (in_array($gameId, $viewedGameIds, true)) {
+            return;
+        }
+
+        $viewedGameIds[] = $gameId;
+        $session->set('front_game_detail_viewed_ids', array_values(array_unique($viewedGameIds)));
+
         $game->incrementViewsCount();
-
-        return true;
+        $entityManager->flush();
+        $gamePopularityService->refreshAndFlushSingleGame($game);
     }
 }

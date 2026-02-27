@@ -6,7 +6,7 @@
   {% set is_current = current_sort == field %}
   {% set next_direction = is_current and current_direction == 'asc' ? 'desc' : 'asc' %}
   {% set marker = is_current ? (current_direction == 'asc' ? ' (ASC)' : ' (DESC)') : '' %}
-  <a href="{{ path(route_name, filters|merge({sort: field, direction: next_direction})) }}" style="color:inherit;text-decoration:none;">
+  <a href="{{ path(route_name, filters|merge({sort: field, direction: next_direction, page: 1})) }}" style="color:inherit;text-decoration:none;">
     {{ label }}{{ marker }}
   </a>
 {% endmacro %}
@@ -19,9 +19,10 @@
   <div class="pageHeader">
     <div>
       <h2>Gestion jeux</h2>
-      <div class="pageSub">CRUD + filtres DB + export.</div>
+      <div class="pageSub">CRUD + IA + slug SEO + score intelligent.</div>
     </div>
     <div class="formActions">
+      <a class="btn btnGhost" href="{{ path('admin_catalog_dashboard') }}">KPI Catalogue</a>
       <a class="btn btnGhost" href="{{ path('admin_games_export', filters|merge({format: 'pdf'})) }}">Exporter PDF</a>
       <a class="btn btnGhost" href="{{ path('admin_games_export', filters|merge({format: 'excel'})) }}">Exporter Excel</a>
     </div>
@@ -41,8 +42,9 @@
       <h3 class="panelTitle">{{ editingGame ? 'MODIFIER JEU #' ~ editingGame.gameId : 'NOUVEAU JEU' }}</h3>
     </div>
 
-    <form method="post" enctype="multipart/form-data">
+    <form method="post" enctype="multipart/form-data" id="adminGameForm">
       <input type="hidden" name="_token" value="{{ csrf_token('admin_game_form') }}" />
+      <input type="hidden" id="adminGameAiToken" value="{{ csrf_token('admin_game_ai') }}" />
       <input type="hidden" name="game_id" value="{{ editingGame ? editingGame.gameId : '' }}" />
 
       <div class="formGrid">
@@ -70,57 +72,42 @@
         </div>
 
         <div class="field">
-          <label for="game_status">Statut metier *</label>
-          <select id="game_status" name="status" required>
-            {% set selectedStatus = editingGame ? editingGame.status : 'DRAFT' %}
-            {% for statusValue in allowed_statuses %}
-              <option value="{{ statusValue }}" {{ selectedStatus == statusValue ? 'selected' : '' }}>{{ statusValue }}</option>
+          <label for="game_status">Statut *</label>
+          <select id="game_status" name="status">
+            {% for status in statuses %}
+              <option value="{{ status }}" {{ (editingGame ? editingGame.status : 'DRAFT') == status ? 'selected' : '' }}>
+                {{ status }}
+              </option>
             {% endfor %}
           </select>
         </div>
 
         <div class="field">
+          <label for="game_cover_name">Nom cover (métier)</label>
+          <input id="game_cover_name" type="text" name="cover_name" value="{{ editingGame ? editingGame.coverName : '' }}" placeholder="cover-free-fire-season-7" />
+        </div>
+
+        <div class="field">
           <label for="game_cover_file">Cover (fichier)</label>
           <input id="game_cover_file" type="file" name="cover_file" accept="image/png,image/jpeg,image/webp,image/gif" />
-          {% if editingGame and (editingGame.coverPublicPath or editingGame.coverImageId) %}
-            {% set currentCoverUrl = editingGame.coverPublicPath ?: editingGame.coverImageId.fileUrl %}
+          {% if editingGame and editingGame.coverImageId %}
+            {% set currentCoverUrl = editingGame.coverImageId.fileUrl %}
             <div class="listMeta">Cover actuelle</div>
             <img src="{{ currentCoverUrl starts with 'http' ? currentCoverUrl : asset(currentCoverUrl) }}" alt="cover actuelle" style="width:56px;height:56px;border-radius:12px;object-fit:cover;border:1px solid rgba(255,255,255,.12);" />
           {% endif %}
         </div>
 
         <div class="field" style="grid-column: 1 / -1;">
-          <label for="game_ai_brief">Brief IA (optionnel)</label>
-          <input id="game_ai_brief" type="text" placeholder="Ex: jeu mobile FPS 5v5 avec progression saisonniere, publisher Garena" />
-        </div>
-
-        <div class="field" style="grid-column: 1 / -1;">
           <label for="game_description">Description</label>
           <textarea id="game_description" name="description">{{ editingGame ? editingGame.description : '' }}</textarea>
-          <div class="listMeta" id="ai-source-hint" style="margin-top:6px;"></div>
+          <div id="gameAiMeta" class="listMeta" style="margin-top:8px;">IA: non utilisee</div>
         </div>
       </div>
 
       <div class="formActions" style="margin-top:12px;">
+        <button class="btn btnGhost" type="button" id="btnGameAiSuggest">AI Suggestion</button>
+        <button class="btn btnGhost" type="button" id="btnGameAiAutofill">AI AutoFill</button>
         <button class="btn btnPrimary" type="submit">{{ editingGame ? 'Mettre a jour' : 'Creer jeu' }}</button>
-        <button
-          class="btn btnGhost"
-          type="button"
-          id="btn-game-ai"
-          data-url="{{ path('admin_games_ai_suggest') }}"
-          data-token="{{ csrf_token('admin_game_ai') }}"
-        >
-          Suggestion IA
-        </button>
-        <button
-          class="btn btnGhost"
-          type="button"
-          id="btn-game-ai-autofill"
-          data-url="{{ path('admin_games_ai_autofill') }}"
-          data-token="{{ csrf_token('admin_game_ai_autofill') }}"
-        >
-          Remplir formulaire IA 2
-        </button>
         {% if editingGame %}
           <a class="btn btnGhost" href="{{ path('admin_games') }}">Annuler edition</a>
         {% endif %}
@@ -134,7 +121,7 @@
 
     <div class="filterGroup">
       <label>Recherche</label>
-      <input type="search" name="q" value="{{ filters.q }}" placeholder="name, desc, publisher" />
+      <input type="search" name="q" value="{{ filters.q }}" placeholder="name, slug, desc, publisher" />
     </div>
 
     <div class="filterGroup">
@@ -159,8 +146,8 @@
       <label>Statut</label>
       <select name="status">
         <option value="" {{ filters.status == '' ? 'selected' : '' }}>ALL</option>
-        {% for statusValue in allowed_statuses %}
-          <option value="{{ statusValue }}" {{ filters.status == statusValue ? 'selected' : '' }}>{{ statusValue }}</option>
+        {% for status in statuses %}
+          <option value="{{ status }}" {{ filters.status == status ? 'selected' : '' }}>{{ status }}</option>
         {% endfor %}
       </select>
     </div>
@@ -174,7 +161,7 @@
   <section class="panel">
     <div class="panelHeader">
       <h3 class="panelTitle">LISTE JEUX</h3>
-      <span class="listMeta">{{ games_pagination.getTotalItemCount }} resultat(s)</span>
+      <span class="listMeta">{{ gamesPagination.getTotalItemCount|default(0) }} resultat(s)</span>
     </div>
 
     <div class="dataTableWrap">
@@ -184,23 +171,24 @@
             <th>Cover</th>
             <th>{{ sorter.sort_link('admin_games', filters, 'id', 'ID') }}</th>
             <th>{{ sorter.sort_link('admin_games', filters, 'name', 'Nom') }}</th>
+            <th>{{ sorter.sort_link('admin_games', filters, 'slug', 'Slug') }}</th>
             <th>{{ sorter.sort_link('admin_games', filters, 'category', 'Categorie') }}</th>
+            <th>{{ sorter.sort_link('admin_games', filters, 'status', 'Statut') }}</th>
             <th>{{ sorter.sort_link('admin_games', filters, 'publisher', 'Publisher') }}</th>
-            <th>{{ sorter.sort_link('admin_games', filters, 'status', 'Status') }}</th>
             <th>{{ sorter.sort_link('admin_games', filters, 'views', 'Vues') }}</th>
             <th>{{ sorter.sort_link('admin_games', filters, 'favorites', 'Favoris') }}</th>
-            <th>{{ sorter.sort_link('admin_games', filters, 'popularity', 'Popularite') }}</th>
+            <th>{{ sorter.sort_link('admin_games', filters, 'score', 'Score') }}</th>
             <th>{{ sorter.sort_link('admin_games', filters, 'created_at', 'Cree le') }}</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          {% for game in games %}
+          {% for game in gamesPagination %}
             {% set gameId = game.gameId ?? 0 %}
             <tr>
               <td>
-                {% set coverUrl = game.coverPublicPath ?: (game.coverImageId ? game.coverImageId.fileUrl : '') %}
-                {% if coverUrl %}
+                {% if game.coverImageId %}
+                  {% set coverUrl = game.coverImageId.fileUrl %}
                   <img src="{{ coverUrl starts with 'http' ? coverUrl : asset(coverUrl) }}" alt="cover" style="width:34px;height:34px;border-radius:8px;object-fit:cover;" />
                 {% else %}
                   <span class="avatarSmall">{{ game.name|slice(0, 1)|upper }}</span>
@@ -208,12 +196,13 @@
               </td>
               <td>#{{ gameId }}</td>
               <td>{{ game.name }}</td>
+              <td><span class="listMeta">{{ game.slug }}</span></td>
               <td>{{ game.categoryId ? game.categoryId.name : '-' }}</td>
+              <td><span class="badge badge--info">{{ game.status }}</span></td>
               <td>{{ game.publisher ?: '-' }}</td>
-              <td><span class="badge">{{ game.status }}</span></td>
               <td>{{ game.viewsCount }}</td>
               <td>{{ game.favoritesCount }}</td>
-              <td>{{ game.popularityScore }}</td>
+              <td><b>{{ game.popularityScore }}</b></td>
               <td>{{ game.createdAt ? game.createdAt|date('d/m/Y H:i') : '-' }}</td>
               <td>
                 <div class="formActions">
@@ -227,108 +216,108 @@
             </tr>
           {% else %}
             <tr>
-              <td colspan="11" class="listMeta">Aucun jeu trouve.</td>
+              <td colspan="12" class="listMeta">Aucun jeu trouve.</td>
             </tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
-    <div style="margin-top: 12px;">
-      {{ knp_pagination_render(games_pagination) }}
+
+    <div style="margin-top:12px;">
+      {{ knp_pagination_render(gamesPagination) }}
     </div>
   </section>
+{% endblock %}
+
+{% block javascripts %}
+  {{ parent() }}
   <script>
-    (function () {
-      const button = document.getElementById('btn-game-ai');
-      const autoFillButton = document.getElementById('btn-game-ai-autofill');
-      if (!button) return;
+    (() => {
+      const suggestBtn = document.getElementById('btnGameAiSuggest');
+      const autofillBtn = document.getElementById('btnGameAiAutofill');
+      const aiMeta = document.getElementById('gameAiMeta');
+      const token = document.getElementById('adminGameAiToken')?.value || '';
 
-      button.addEventListener('click', async function () {
-        const nameInput = document.getElementById('game_name');
-        const publisherInput = document.getElementById('game_publisher');
-        const descriptionInput = document.getElementById('game_description');
-        const categorySelect = document.getElementById('game_category_id');
-        const statusSelect = document.getElementById('game_status');
-        const hint = document.getElementById('ai-source-hint');
+      const nameField = document.getElementById('game_name');
+      const descField = document.getElementById('game_description');
+      const publisherField = document.getElementById('game_publisher');
+      const statusField = document.getElementById('game_status');
+      const categoryField = document.getElementById('game_category_id');
 
-        if (!nameInput || nameInput.value.trim() === '') {
-          alert('Saisis le nom du jeu avant la suggestion IA.');
-          return;
-        }
+      const toBody = () => {
+        const categoryName = categoryField && categoryField.selectedOptions.length > 0
+          ? (categoryField.selectedOptions[0].textContent || '').trim()
+          : '';
 
-        const body = new URLSearchParams({
-          _token: button.dataset.token || '',
-          name: nameInput.value,
-          publisher: publisherInput ? publisherInput.value : '',
-          description: descriptionInput ? descriptionInput.value : ''
+        return new URLSearchParams({
+          _token: token,
+          name: nameField?.value || '',
+          description: descField?.value || '',
+          publisher: publisherField?.value || '',
+          category: categoryName,
+        });
+      };
+
+      const callAi = async (url) => {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+          body: toBody().toString(),
         });
 
-        button.disabled = true;
-        button.textContent = 'IA...';
+        return response.json();
+      };
+
+      suggestBtn?.addEventListener('click', async () => {
         try {
-          const response = await fetch(button.dataset.url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: body.toString()
-          });
-          const payload = await response.json();
-          if (!response.ok) {
-            throw new Error(payload.error || 'Suggestion IA indisponible.');
+          suggestBtn.disabled = true;
+          const payload = await callAi('{{ path('admin_games_ai_suggest') }}');
+          if (!payload?.ok || !payload?.data) {
+            throw new Error('Suggestion IA impossible.');
           }
 
-          if (descriptionInput && payload.description) descriptionInput.value = payload.description;
-          if (categorySelect && payload.category_id) categorySelect.value = String(payload.category_id);
-          if (statusSelect && payload.status) statusSelect.value = payload.status;
-          if (hint) hint.textContent = 'Suggestion source: ' + (payload.source || 'unknown');
+          const suggestion = String(payload.data.suggestion || '').trim();
+          if (suggestion !== '') {
+            descField.value = suggestion;
+          }
+
+          aiMeta.textContent = `IA Suggestion: ${payload.data.provider}/${payload.data.source}`;
         } catch (error) {
-          alert(error.message || 'Erreur IA');
+          aiMeta.textContent = 'IA Suggestion indisponible, fallback local applique.';
         } finally {
-          button.disabled = false;
-          button.textContent = 'Suggestion IA';
+          suggestBtn.disabled = false;
         }
       });
 
-      if (!autoFillButton) return;
-      autoFillButton.addEventListener('click', async function () {
-        const nameInput = document.getElementById('game_name');
-        const publisherInput = document.getElementById('game_publisher');
-        const descriptionInput = document.getElementById('game_description');
-        const categorySelect = document.getElementById('game_category_id');
-        const statusSelect = document.getElementById('game_status');
-        const briefInput = document.getElementById('game_ai_brief');
-        const hint = document.getElementById('ai-source-hint');
-
-        const body = new URLSearchParams({
-          _token: autoFillButton.dataset.token || '',
-          brief: briefInput ? briefInput.value : '',
-          name: nameInput ? nameInput.value : '',
-          publisher: publisherInput ? publisherInput.value : ''
-        });
-
-        autoFillButton.disabled = true;
-        autoFillButton.textContent = 'IA 2...';
+      autofillBtn?.addEventListener('click', async () => {
         try {
-          const response = await fetch(autoFillButton.dataset.url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: body.toString()
-          });
-          const payload = await response.json();
-          if (!response.ok) {
-            throw new Error(payload.error || 'Auto-fill IA indisponible.');
+          autofillBtn.disabled = true;
+          const payload = await callAi('{{ path('admin_games_ai_autofill') }}');
+          if (!payload?.ok || !payload?.data) {
+            throw new Error('AutoFill IA impossible.');
           }
 
-          if (nameInput && payload.name) nameInput.value = payload.name;
-          if (publisherInput && payload.publisher) publisherInput.value = payload.publisher;
-          if (descriptionInput && payload.description) descriptionInput.value = payload.description;
-          if (categorySelect && payload.category_id) categorySelect.value = String(payload.category_id);
-          if (statusSelect && payload.status) statusSelect.value = payload.status;
-          if (hint) hint.textContent = 'Auto-fill source: ' + (payload.source || 'unknown');
+          if (String(payload.data.name || '').trim() !== '') {
+            nameField.value = payload.data.name;
+          }
+          if (String(payload.data.description || '').trim() !== '') {
+            descField.value = payload.data.description;
+          }
+          if (String(payload.data.publisher || '').trim() !== '') {
+            publisherField.value = payload.data.publisher;
+          }
+          if (statusField && String(payload.data.status || '') !== '') {
+            statusField.value = payload.data.status;
+          }
+
+          aiMeta.textContent = `IA AutoFill: ${payload.data.provider}/${payload.data.source}`;
         } catch (error) {
-          alert(error.message || 'Erreur IA 2');
+          aiMeta.textContent = 'IA AutoFill indisponible, fallback local applique.';
         } finally {
-          autoFillButton.disabled = false;
-          autoFillButton.textContent = 'Remplir formulaire IA 2';
+          autofillBtn.disabled = false;
         }
       });
     })();

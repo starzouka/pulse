@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controller\Admin\Page;
 
-use App\Entity\Game;
 use App\Repository\GameRepository;
+use App\Service\Catalog\GamePopularityService;
 use Doctrine\DBAL\Connection;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -13,62 +13,80 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class CatalogDashboardController extends AbstractController
 {
-    #[Route('/admin/catalog-dashboard', name: 'admin_catalog_dashboard', methods: ['GET'])]
-    public function index(Connection $connection, GameRepository $gameRepository): Response
-    {
-        $firstDayOfMonth = (new \DateTimeImmutable('first day of this month'))->setTime(0, 0, 0);
-        $lastDayOfMonth = (new \DateTimeImmutable('last day of this month'))->setTime(23, 59, 59);
+    public function __construct(
+        private readonly Connection $connection,
+    ) {
+    }
 
-        $totalGames = (int) $connection->fetchOne('SELECT COUNT(*) FROM games');
-        $publishedGames = (int) $connection->fetchOne(
-            'SELECT COUNT(*) FROM games WHERE status = :status',
-            ['status' => Game::STATUS_PUBLISHED]
-        );
+    #[Route('/admin/catalog-dashboard', name: 'admin_catalog_dashboard', methods: ['GET'])]
+    public function index(GameRepository $gameRepository, GamePopularityService $gamePopularityService): Response
+    {
+        $gamePopularityService->refreshScoresForAllGames(true);
+
+        $statusCounts = $gameRepository->countByStatus();
+        $totalGames = array_sum($statusCounts);
+        $publishedGames = (int) ($statusCounts['PUBLISHED'] ?? 0);
+        $pendingGames = (int) ($statusCounts['PENDING'] ?? 0);
+        $draftGames = (int) ($statusCounts['DRAFT'] ?? 0);
+        $archivedGames = (int) ($statusCounts['ARCHIVED'] ?? 0);
 
         $publicationRate = $totalGames > 0
             ? round(($publishedGames / $totalGames) * 100, 2)
             : 0.0;
 
-        $avgReviewDelayHours = (float) $connection->fetchOne(
-            "SELECT COALESCE(AVG(TIMESTAMPDIFF(HOUR, created_at, updated_at)), 0)
-             FROM games
-             WHERE status = :status
-               AND updated_at IS NOT NULL
-               AND updated_at >= created_at",
-            ['status' => Game::STATUS_PUBLISHED]
+        $avgReviewDelayHours = (float) ($this->connection->fetchOne(
+            <<<SQL
+            SELECT COALESCE(AVG(TIMESTAMPDIFF(HOUR, g.created_at, COALESCE(g.reviewed_at, NOW()))), 0)
+            FROM games g
+            WHERE g.status IN ('PENDING', 'PUBLISHED', 'ARCHIVED')
+            SQL
+        ) ?? 0.0);
+
+        $monthStart = (new \DateTimeImmutable('first day of this month'))->setTime(0, 0, 0);
+        $topCategoriesMonthly = $this->connection->fetchAllAssociative(
+            <<<SQL
+            SELECT c.name AS category_name, COUNT(gf.user_id) AS total
+            FROM game_favorites gf
+            INNER JOIN games g ON g.game_id = gf.game_id
+            INNER JOIN categories c ON c.category_id = g.category_id
+            WHERE gf.created_at >= :monthStart
+            GROUP BY c.category_id, c.name
+            ORDER BY total DESC, c.name ASC
+            LIMIT 6
+            SQL,
+            ['monthStart' => $monthStart->format('Y-m-d H:i:s')]
         );
 
-        $topCategoriesMonthly = $connection->fetchAllAssociative(
-            "SELECT c.name AS category_name, COUNT(g.game_id) AS games_count
-             FROM categories c
-             LEFT JOIN games g
-               ON g.category_id = c.category_id
-              AND g.created_at BETWEEN :fromDate AND :toDate
-             GROUP BY c.category_id, c.name
-             ORDER BY games_count DESC, c.name ASC
-             LIMIT 6",
-            [
-                'fromDate' => $firstDayOfMonth->format('Y-m-d H:i:s'),
-                'toDate' => $lastDayOfMonth->format('Y-m-d H:i:s'),
-            ]
-        );
+        if ($topCategoriesMonthly === []) {
+            $topCategoriesMonthly = $this->connection->fetchAllAssociative(
+                <<<SQL
+                SELECT c.name AS category_name, COUNT(g.game_id) AS total
+                FROM games g
+                INNER JOIN categories c ON c.category_id = g.category_id
+                WHERE g.created_at >= :monthStart
+                GROUP BY c.category_id, c.name
+                ORDER BY total DESC, c.name ASC
+                LIMIT 6
+                SQL,
+                ['monthStart' => $monthStart->format('Y-m-d H:i:s')]
+            );
+        }
 
-        $trendingGames = $gameRepository->findTrending(10, [
-            Game::STATUS_DRAFT,
-            Game::STATUS_PENDING,
-            Game::STATUS_PUBLISHED,
-        ]);
+        $trendingGames = $gameRepository->findTrending(8);
 
-        return $this->render('admin/pages/catalog_dashboard.html.twig', [
+        return $this->render('admin/pages/catalog-dashboard.html.twig', [
             'kpi' => [
                 'total_games' => $totalGames,
                 'published_games' => $publishedGames,
+                'pending_games' => $pendingGames,
+                'draft_games' => $draftGames,
+                'archived_games' => $archivedGames,
                 'publication_rate' => $publicationRate,
-                'avg_review_delay_hours' => round($avgReviewDelayHours, 2),
-                'month_label' => $firstDayOfMonth->format('m/Y'),
+                'average_review_delay_hours' => round($avgReviewDelayHours, 1),
             ],
             'top_categories_monthly' => $topCategoriesMonthly,
             'trending_games' => $trendingGames,
+            'month_label' => $monthStart->format('m/Y'),
         ]);
     }
 }

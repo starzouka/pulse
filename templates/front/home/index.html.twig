@@ -228,7 +228,7 @@
                   <h4 class="card__title">{{ game.name }}</h4>
                   <p class="card__desc">Tournois total: <b>{{ row.total_tournaments_count }}</b> | Actifs: <b>{{ row.active_tournaments_count }}</b></p>
                   <div class="card__actions">
-                    <a class="btn btn--ghost" href="{{ gameId > 0 ? path('front_game_detail', {slug: game.seoIdentifier}) : path('front_games') }}">Detail</a>
+                    <a class="btn btn--ghost" href="{{ gameId > 0 ? path('front_game_detail', {slug: game.slug}) : path('front_games') }}">Detail</a>
                   </div>
                 </div>
               </article>
@@ -258,7 +258,13 @@
               {% set team = row.team %}
               {% set teamId = team.teamId ?? 0 %}
               {% set logoPath = team.logoImageId ? team.logoImageId.fileUrl : '' %}
-              {% set logoUrl = logoPath ? (logoPath starts with 'http' ? logoPath : asset(logoPath)) : 'https://picsum.photos/seed/pulse_home_team_' ~ teamId ~ '/1200/800' %}
+              {% if logoPath and (logoPath starts with 'http') %}
+                {% set logoUrl = logoPath %}
+              {% elseif logoPath %}
+                {% set logoUrl = asset(logoPath)|imagine_filter('team_banner') %}
+              {% else %}
+                {% set logoUrl = 'https://picsum.photos/seed/pulse_home_team_' ~ teamId ~ '/1200/800' %}
+              {% endif %}
               {% set captain = team.captainUserId %}
 
               <article class="card card--team">

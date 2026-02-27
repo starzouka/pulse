@@ -31,17 +31,16 @@ class GameFavoriteRepository extends ServiceEntityRepository
 
     public function existsForUserAndGame(User $user, Game $game): bool
     {
-        return $this->findOneByUserAndGame($user, $game) instanceof GameFavorite;
-    }
-
-    public function countByGame(Game $game): int
-    {
-        return (int) $this->createQueryBuilder('favorite')
-            ->select('COUNT(favorite.favoriteId)')
+        $count = $this->createQueryBuilder('favorite')
+            ->select('COUNT(favorite.gameId)')
+            ->andWhere('favorite.userId = :user')
             ->andWhere('favorite.gameId = :game')
+            ->setParameter('user', $user)
             ->setParameter('game', $game)
             ->getQuery()
             ->getSingleScalarResult();
+
+        return (int) $count > 0;
     }
 
     /**
@@ -52,7 +51,7 @@ class GameFavoriteRepository extends ServiceEntityRepository
     {
         $filteredIds = array_values(array_unique(array_filter(
             $gameIds,
-            static fn (mixed $id): bool => is_int($id) && $id > 0
+            static fn (mixed $id): bool => is_int($id) && $id > 0,
         )));
 
         if ($filteredIds === []) {
@@ -61,7 +60,7 @@ class GameFavoriteRepository extends ServiceEntityRepository
 
         $rows = $this->createQueryBuilder('favorite')
             ->select('IDENTITY(favorite.gameId) AS gameId')
-            ->addSelect('COUNT(favorite.favoriteId) AS favoritesCount')
+            ->addSelect('COUNT(favorite.userId) AS favoritesCount')
             ->andWhere('IDENTITY(favorite.gameId) IN (:gameIds)')
             ->setParameter('gameIds', $filteredIds)
             ->groupBy('favorite.gameId')
@@ -70,7 +69,40 @@ class GameFavoriteRepository extends ServiceEntityRepository
 
         $counts = [];
         foreach ($rows as $row) {
-            $counts[(int) ($row['gameId'] ?? 0)] = (int) ($row['favoritesCount'] ?? 0);
+            $gameId = (int) ($row['gameId'] ?? 0);
+            if ($gameId <= 0) {
+                continue;
+            }
+
+            $counts[$gameId] = (int) ($row['favoritesCount'] ?? 0);
+        }
+
+        return $counts;
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    public function countMonthlyByCategory(\DateTimeInterface $monthStart): array
+    {
+        $rows = $this->createQueryBuilder('favorite')
+            ->select('IDENTITY(game.categoryId) AS categoryId')
+            ->addSelect('COUNT(favorite.userId) AS favoritesCount')
+            ->innerJoin('favorite.gameId', 'game')
+            ->andWhere('favorite.createdAt >= :monthStart')
+            ->setParameter('monthStart', $monthStart)
+            ->groupBy('game.categoryId')
+            ->getQuery()
+            ->getArrayResult();
+
+        $counts = [];
+        foreach ($rows as $row) {
+            $categoryId = (int) ($row['categoryId'] ?? 0);
+            if ($categoryId <= 0) {
+                continue;
+            }
+
+            $counts[$categoryId] = (int) ($row['favoritesCount'] ?? 0);
         }
 
         return $counts;

@@ -98,6 +98,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(name: 'reset_password_expires_at', type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $resetPasswordExpiresAt = null;
 
+    #[ORM\Column(name: 'two_factor_enabled', type: Types::BOOLEAN, options: ['default' => false])]
+    private bool $twoFactorEnabled = false;
+
+    #[ORM\Column(name: 'two_factor_secret', type: Types::STRING, length: 64, nullable: true)]
+    private ?string $twoFactorSecret = null;
+
+    #[ORM\Column(name: 'two_factor_enabled_at', type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $twoFactorEnabledAt = null;
+
     public function getUserId(): ?int
     {
         return $this->userId;
@@ -344,6 +353,42 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setResetPasswordExpiresAt(?\DateTimeInterface $resetPasswordExpiresAt): static
     {
         $this->resetPasswordExpiresAt = $resetPasswordExpiresAt;
+
+        return $this;
+    }
+
+    public function isTwoFactorEnabled(): bool
+    {
+        return $this->twoFactorEnabled;
+    }
+
+    public function setTwoFactorEnabled(bool $twoFactorEnabled): static
+    {
+        $this->twoFactorEnabled = $twoFactorEnabled;
+
+        return $this;
+    }
+
+    public function getTwoFactorSecret(): ?string
+    {
+        return $this->twoFactorSecret;
+    }
+
+    public function setTwoFactorSecret(?string $twoFactorSecret): static
+    {
+        $this->twoFactorSecret = $twoFactorSecret;
+
+        return $this;
+    }
+
+    public function getTwoFactorEnabledAt(): ?\DateTimeInterface
+    {
+        return $this->twoFactorEnabledAt;
+    }
+
+    public function setTwoFactorEnabledAt(?\DateTimeInterface $twoFactorEnabledAt): static
+    {
+        $this->twoFactorEnabledAt = $twoFactorEnabledAt;
 
         return $this;
     }

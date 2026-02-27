@@ -6,6 +6,7 @@ namespace App\Repository;
 
 use App\Entity\Category;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 class CategoryRepository extends ServiceEntityRepository
@@ -26,23 +27,24 @@ class CategoryRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    /**
-     * @return list<Category>
-     */
-    public function searchForAdmin(
+    public function createAdminSearchQueryBuilder(
         ?string $query,
         string $sortBy = 'name',
         string $direction = 'asc',
-        int $limit = 500
-    ): array {
-        $builder = $this->createQueryBuilder('category')
-            ->setMaxResults($limit);
+        ?int $limit = null,
+    ): QueryBuilder {
+        $builder = $this->createQueryBuilder('category');
+
+        if (is_int($limit) && $limit > 0) {
+            $builder->setMaxResults($limit);
+        }
 
         $search = trim((string) $query);
         if ($search !== '') {
             $builder
                 ->andWhere(
                     'LOWER(category.name) LIKE :query
+                    OR LOWER(COALESCE(category.slug, \'\')) LIKE :query
                     OR LOWER(COALESCE(category.description, \'\')) LIKE :query'
                 )
                 ->setParameter('query', '%' . mb_strtolower($search) . '%');
@@ -55,6 +57,12 @@ class CategoryRepository extends ServiceEntityRepository
                 $builder->orderBy('category.categoryId', $sortDirection);
                 break;
 
+            case 'slug':
+                $builder
+                    ->orderBy('category.slug', $sortDirection)
+                    ->addOrderBy('category.categoryId', 'ASC');
+                break;
+
             case 'name':
                 $builder
                     ->orderBy('category.name', $sortDirection)
@@ -63,7 +71,7 @@ class CategoryRepository extends ServiceEntityRepository
 
             case 'games':
                 $builder
-                    ->addSelect('(SELECT COUNT(gameSub.gameId) FROM App\Entity\Game gameSub WHERE gameSub.categoryId = category) AS HIDDEN gamesCount')
+                    ->addSelect('(SELECT COUNT(gameSub.gameId) FROM App\\Entity\\Game gameSub WHERE gameSub.categoryId = category) AS HIDDEN gamesCount')
                     ->orderBy('gamesCount', $sortDirection)
                     ->addOrderBy('category.name', 'ASC');
                 break;
@@ -76,6 +84,20 @@ class CategoryRepository extends ServiceEntityRepository
                 break;
         }
 
-        return $builder->getQuery()->getResult();
+        return $builder;
+    }
+
+    /**
+     * @return list<Category>
+     */
+    public function searchForAdmin(
+        ?string $query,
+        string $sortBy = 'name',
+        string $direction = 'asc',
+        int $limit = 500
+    ): array {
+        return $this->createAdminSearchQueryBuilder($query, $sortBy, $direction, $limit)
+            ->getQuery()
+            ->getResult();
     }
 }

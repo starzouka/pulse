@@ -1,4 +1,5 @@
 {% set current_route = app.request.attributes.get('_route')|default('') %}
+{% set two_factor_pending = app.user and app.request.hasSession() and app.session.get('_2fa_verified', false) != true %}
 
 {% set is_home = current_route in [
     'front_root', 'front_home', 'front_about', 'front_contact', 'front_faq',
@@ -79,8 +80,11 @@
   </nav>
 
   <div class="heroTop__right">
-    {% if app.user %}
+    {% if app.user and not two_factor_pending %}
       <a class="btn btn--ghost" href="{{ path('front_profile') }}">Mon compte</a>
+      <a class="btn btn--ghost" href="{{ path('app_logout') }}">Logout</a>
+    {% elseif app.user and two_factor_pending %}
+      <span class="btn btn--ghost" role="status">2FA requise</span>
       <a class="btn btn--ghost" href="{{ path('app_logout') }}">Logout</a>
     {% else %}
       <a class="btn btn--ghost" href="{{ path('front_register') }}">S'inscrire</a>
@@ -94,8 +98,10 @@
       </button>
     {% endif %}
 
-    <button class="menuBtn" type="button" aria-label="Menu">
-      <span></span><span></span><span></span>
-    </button>
+    {% if not two_factor_pending %}
+      <button class="menuBtn" type="button" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    {% endif %}
   </div>
 </div>

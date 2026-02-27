@@ -12,7 +12,7 @@
 
   <main class="page">
     <section class="belowHero">
-      <form class="panel" method="post" action="{{ path('front_login') }}">
+      <form class="panel" method="post" action="{{ path('front_login') }}" novalidate="novalidate">
         {% for label, messages in app.flashes %}
           {% for message in messages %}
             <div class="listItem">
@@ -39,11 +39,11 @@
         <div class="formGrid">
           <label class="field">
             <span class="field__label">Email</span>
-            <input class="input" type="email" name="_username" value="{{ last_username }}" autocomplete="email" required />
+            <input class="input" type="text" name="_username" value="{{ last_username }}" autocomplete="email" />
           </label>
           <label class="field">
             <span class="field__label">Mot de passe</span>
-            <input class="input" type="password" name="_password" autocomplete="current-password" required />
+            <input class="input" type="password" name="_password" autocomplete="current-password" />
           </label>
           <label class="field">
             <span class="field__label">Se souvenir de moi</span>

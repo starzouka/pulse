@@ -6,7 +6,7 @@
   {% include 'front/partials/_hero_mini.html.twig' with {
     hero_kicker: 'JEUX',
     hero_title: 'Catalogue des jeux',
-    hero_sub: 'Recherche, filtres et tri alimentes depuis la base de donnees.',
+    hero_sub: 'Recherche, filtres, score intelligent et tendances.',
     breadcrumb_current: 'Catalogue des jeux'
   } %}
 
@@ -69,35 +69,44 @@
         </form>
       </section>
 
-      <section class="panel" style="margin-top:12px;">
-        <div class="panelHeader">
-          <h3 class="panelTitle">TRENDING GAMES</h3>
+      <section class="panel" style="margin-top:14px;">
+        <div class="panel__header" style="display:flex;justify-content:space-between;align-items:center;">
+          <h3 style="margin:0;">Trending Games</h3>
           <span class="listMeta">Classement par score intelligent</span>
         </div>
-        <div class="cardsGrid">
-          {% for trendingGame in trending_games|default([]) %}
-            {% set trendingGameId = trendingGame.gameId ?? 0 %}
+        <div class="cardsGrid" style="margin-top:10px;">
+          {% for game in trending_games %}
+            {% set gameId = game.gameId ?? 0 %}
+            {% set imagePath = game.coverImageId ? game.coverImageId.fileUrl : '' %}
+            {% set imageUrl = imagePath ? (imagePath starts with 'http' ? imagePath : asset(imagePath)) : 'https://picsum.photos/seed/pulse_game_trending_' ~ gameId ~ '/1200/800' %}
+            {% set activeCount = trending_active_tournaments_count_by_game_id[gameId]|default(0) %}
+
             <article class="card card--game">
+              <div class="card__media" data-bg="{{ imageUrl }}">
+                <div class="card__chips">
+                  <span class="chip chip--category">{{ game.categoryId ? game.categoryId.name : 'Categorie' }}</span>
+                  <span class="chip">Score: {{ game.popularityScore }}</span>
+                  <span class="chip">Actifs: {{ activeCount }}</span>
+                </div>
+              </div>
               <div class="card__body">
-                <h4 class="card__title">{{ loop.index }}. {{ trendingGame.name }}</h4>
+                <h4 class="card__title">{{ game.name }}</h4>
                 <div class="card__metaRow">
-                  <span class="metaPill">Score: <b>{{ trendingGame.popularityScore }}</b></span>
-                  <span class="metaPill">Vues: <b>{{ trendingGame.viewsCount }}</b></span>
-                  <span class="metaPill">Favoris: <b>{{ trendingGame.favoritesCount }}</b></span>
+                  <span class="metaPill">Vues: <b>{{ game.viewsCount }}</b></span>
+                  <span class="metaPill">Favoris: <b>{{ game.favoritesCount }}</b></span>
                 </div>
                 <div class="card__actions">
-                  <a class="btn btn--ghost" href="{{ path('front_game_detail', {slug: trendingGame.seoIdentifier}) }}">Detail</a>
-                  <a class="btn btn--primary" href="{{ trendingGameId > 0 ? path('front_tournaments', {game: trendingGameId}) : path('front_tournaments') }}">Tournois</a>
+                  <a class="btn btn--primary" href="{{ path('front_game_detail', {slug: game.slug}) }}">Detail</a>
                 </div>
               </div>
             </article>
           {% else %}
-            <div class="panel emptyState" style="grid-column: 1 / -1;">Aucun jeu trending disponible.</div>
+            <div class="panel emptyState" style="grid-column:1 / -1;">Aucun jeu tendance pour le moment.</div>
           {% endfor %}
         </div>
       </section>
 
-      <section class="cardsGrid">
+      <section class="cardsGrid" style="margin-top:14px;">
         {% if games is empty %}
           <div class="panel emptyState" style="grid-column: 1 / -1;">
             Aucun jeu ne correspond aux filtres.
@@ -105,7 +114,7 @@
         {% else %}
           {% for game in games %}
             {% set gameId = game.gameId ?? 0 %}
-            {% set imagePath = game.coverPublicPath ?: (game.coverImageId ? game.coverImageId.fileUrl : '') %}
+            {% set imagePath = game.coverImageId ? game.coverImageId.fileUrl : '' %}
             {% set imageUrl = imagePath ? (imagePath starts with 'http' ? imagePath : asset(imagePath)) : 'https://picsum.photos/seed/pulse_game_' ~ gameId ~ '/1200/800' %}
             {% set activeCount = active_tournaments_count_by_game_id[gameId]|default(0) %}
             {% set totalCount = tournaments_count_by_game_id[gameId]|default(0) %}
@@ -128,11 +137,12 @@
                   <span class="metaPill">Actifs: <b>{{ activeCount }}</b></span>
                 </div>
                 <div class="card__metaRow">
+                  <span class="metaPill">Vues: <b>{{ game.viewsCount }}</b></span>
+                  <span class="metaPill">Favoris: <b>{{ game.favoritesCount }}</b></span>
                   <span class="metaPill">Score: <b>{{ game.popularityScore }}</b></span>
-                  <span class="metaPill">Statut: <b>{{ game.status }}</b></span>
                 </div>
                 <div class="card__actions">
-                  <a class="btn btn--ghost" href="{{ path('front_game_detail', {slug: game.seoIdentifier}) }}">Detail</a>
+                  <a class="btn btn--ghost" href="{{ path('front_game_detail', {slug: game.slug}) }}">Detail</a>
                   <a class="btn btn--primary" href="{{ gameId > 0 ? path('front_tournaments', {game: gameId}) : path('front_tournaments') }}">Tournois</a>
                 </div>
               </div>
@@ -141,9 +151,10 @@
         {% endif %}
       </section>
 
-      <div style="margin-top:12px;">
-        {{ knp_pagination_render(games_pagination) }}
-      </div>
+      {% include 'front/partials/_pagination.html.twig' with {
+        pagination: pagination,
+        route_name: 'front_games'
+      } %}
 
       {% include 'front/partials/_footer.html.twig' %}
     </section>
