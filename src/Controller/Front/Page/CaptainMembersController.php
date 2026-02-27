@@ -11,7 +11,7 @@ use App\Repository\TeamMemberRepository;
 use App\Repository\UserRepository;
 use App\Service\Captain\CaptainTeamContextProvider;
 use App\Service\Captain\RosterManager;
-use App\Service\Pdf\CaptainRosterPdfExporter;
+use App\Service\Captain\TeamRosterPdfService;
 use CMEN\GoogleChartsBundle\GoogleCharts\Charts\PieChart;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -26,7 +26,6 @@ final class CaptainMembersController extends AbstractController
         Request $request,
         CaptainTeamContextProvider $captainTeamContextProvider,
         TeamMemberRepository $teamMemberRepository,
-        RosterManager $rosterManager,
     ): Response {
         $viewer = $this->getUser();
         if (!$viewer instanceof User) {
@@ -54,21 +53,9 @@ final class CaptainMembersController extends AbstractController
             $inactiveMembers,
             static fn (TeamMember $teamMember): bool => !$teamMember->isActive(),
         ));
-        $rosterStats = $rosterManager->buildRosterStats($activeTeam);
-        $rosterDistributionChart = new PieChart();
-        $rosterDistributionChart->getData()->setArrayToDataTable([
-            ['Role', 'Count'],
-            ['Captain', (int) ($rosterStats['captains'] ?? 0)],
-            ['Co-captains', (int) ($rosterStats['co_captains'] ?? 0)],
-            ['Titulaires', (int) ($rosterStats['starters'] ?? 0)],
-            ['Remplacants', (int) ($rosterStats['substitutes'] ?? 0)],
-        ]);
-        $rosterDistributionChart->getOptions()
-            ->setTitle('Repartition du roster')
-            ->setHeight(300)
-            ->setWidth(560)
-            ->setPieSliceText('value');
-        $rosterDistributionChart->getOptions()->getLegend()->setPosition('right');
+
+        $roleDistribution = $teamMemberRepository->countActiveByRosterRole($activeTeam);
+        $rosterChart = $this->buildRosterDistributionChart($roleDistribution);
 
         return $this->render('front/pages/captain-members.html.twig', [
             'viewer_user' => $viewer,
@@ -76,98 +63,10 @@ final class CaptainMembersController extends AbstractController
             'active_team' => $activeTeam,
             'active_members' => $activeMembers,
             'inactive_members' => $inactiveMembers,
-            'roster_stats' => $rosterStats,
-            'assignable_roster_roles' => $rosterManager->getAssignableRoles(),
-            'roster_distribution_chart' => $rosterDistributionChart,
+            'roster_roles' => TeamMember::getRosterRoles(),
+            'roster_distribution' => $roleDistribution,
+            'roster_chart' => $rosterChart,
         ]);
-    }
-
-    #[Route('/pages/captain-members/{teamId}/export/roster-pdf', name: 'front_captain_members_export_roster_pdf', requirements: ['teamId' => '\d+'], methods: ['GET'])]
-    public function exportRosterPdf(
-        int $teamId,
-        Request $request,
-        CaptainTeamContextProvider $captainTeamContextProvider,
-        TeamMemberRepository $teamMemberRepository,
-        RosterManager $rosterManager,
-        CaptainRosterPdfExporter $captainRosterPdfExporter,
-    ): Response {
-        $viewer = $this->getUser();
-        if (!$viewer instanceof User) {
-            return $this->redirectToRoute('front_login', [
-                '_target_path' => $request->getUri(),
-            ]);
-        }
-
-        $team = $captainTeamContextProvider->resolveManagedTeamById($viewer, $teamId);
-        if (!$team instanceof Team) {
-            throw $this->createAccessDeniedException('Equipe non autorisee.');
-        }
-
-        $activeMembers = $teamMemberRepository->findByTeamWithUser($team, true);
-        $inactiveMembers = $teamMemberRepository->findByTeamWithUser($team, false);
-        $inactiveMembers = array_values(array_filter(
-            $inactiveMembers,
-            static fn (TeamMember $teamMember): bool => !$teamMember->isActive(),
-        ));
-
-        return $captainRosterPdfExporter->export($team, $activeMembers, $inactiveMembers, $rosterManager->buildRosterStats($team));
-    }
-
-    #[Route('/pages/captain-members/{teamId}/{userId}/role', name: 'front_captain_members_role', requirements: ['teamId' => '\d+', 'userId' => '\d+'], methods: ['POST'])]
-    public function updateRole(
-        int $teamId,
-        int $userId,
-        Request $request,
-        CaptainTeamContextProvider $captainTeamContextProvider,
-        UserRepository $userRepository,
-        TeamMemberRepository $teamMemberRepository,
-        RosterManager $rosterManager,
-        EntityManagerInterface $entityManager,
-    ): Response {
-        $viewer = $this->getUser();
-        if (!$viewer instanceof User) {
-            return $this->redirectToRoute('front_login');
-        }
-
-        if (!$this->isCsrfTokenValid('captain_member_role_' . $teamId . '_' . $userId, (string) $request->request->get('_token'))) {
-            $this->addFlash('error', 'Jeton CSRF invalide.');
-
-            return $this->redirectToRoute('front_captain_members', ['team' => $teamId]);
-        }
-
-        $team = $captainTeamContextProvider->resolveManagedTeamById($viewer, $teamId);
-        if (!$team instanceof Team) {
-            throw $this->createAccessDeniedException('Equipe non autorisee.');
-        }
-
-        $memberUser = $userRepository->find($userId);
-        if (!$memberUser instanceof User) {
-            $this->addFlash('error', 'Membre introuvable.');
-
-            return $this->redirectToRoute('front_captain_members', ['team' => $teamId]);
-        }
-
-        $membership = $teamMemberRepository->findOneByTeamAndUser($team, $memberUser);
-        if (!$membership instanceof TeamMember || !$membership->isActive()) {
-            $this->addFlash('error', 'Membre actif introuvable.');
-
-            return $this->redirectToRoute('front_captain_members', ['team' => $teamId]);
-        }
-
-        $newRole = $rosterManager->normalizeRole((string) $request->request->get('roster_role', ''));
-        $validation = $rosterManager->validateRoleChange($team, $membership, $newRole);
-        if (!$validation['ok']) {
-            $this->addFlash('error', $validation['message']);
-
-            return $this->redirectToRoute('front_captain_members', ['team' => $teamId]);
-        }
-
-        $membership->setRosterRole($newRole);
-        $entityManager->flush();
-
-        $this->addFlash('success', 'Rôle roster mis à jour.');
-
-        return $this->redirectToRoute('front_captain_members', ['team' => $teamId]);
     }
 
     #[Route('/pages/captain-members/{teamId}/{userId}/remove', name: 'front_captain_members_remove', requirements: ['teamId' => '\d+', 'userId' => '\d+'], methods: ['POST'])]
@@ -178,7 +77,6 @@ final class CaptainMembersController extends AbstractController
         CaptainTeamContextProvider $captainTeamContextProvider,
         UserRepository $userRepository,
         TeamMemberRepository $teamMemberRepository,
-        RosterManager $rosterManager,
         EntityManagerInterface $entityManager,
     ): Response {
         $viewer = $this->getUser();
@@ -236,7 +134,6 @@ final class CaptainMembersController extends AbstractController
         CaptainTeamContextProvider $captainTeamContextProvider,
         UserRepository $userRepository,
         TeamMemberRepository $teamMemberRepository,
-        RosterManager $rosterManager,
         EntityManagerInterface $entityManager,
     ): Response {
         $viewer = $this->getUser();
@@ -264,30 +161,216 @@ final class CaptainMembersController extends AbstractController
 
         $membership = $teamMemberRepository->findOneByTeamAndUser($team, $memberUser);
         if (!$membership instanceof TeamMember) {
-            $this->addFlash('error', 'Historique membre introuvable.');
+            $this->addFlash('error', "Ce joueur n'est pas membre de cette equipe.");
 
             return $this->redirectToRoute('front_captain_members', ['team' => $teamId]);
         }
 
-        $capacity = $rosterManager->validateAddActiveMember($team);
-        if (!$capacity['ok']) {
-            $this->addFlash('error', $capacity['message']);
+        if ($membership->isActive() === true && $membership->getLeftAt() === null) {
+            $this->addFlash('info', 'Ce membre est deja actif.');
 
             return $this->redirectToRoute('front_captain_members', ['team' => $teamId]);
         }
 
         $membership
             ->setIsActive(true)
-            ->setLeftAt(null)
-            ->setRosterRole($team->getCaptainUserId()?->getUserId() === $memberUser->getUserId()
-                ? TeamMember::ROSTER_ROLE_CAPTAIN
-                : TeamMember::ROSTER_ROLE_STARTER);
+            ->setLeftAt(null);
+
+        if ($team->getCaptainUserId()?->getUserId() === $userId) {
+            $membership->setRosterRole(TeamMember::ROSTER_ROLE_CAPTAIN);
+        }
 
         $entityManager->flush();
 
-        $this->addFlash('success', 'Membre réactivé dans le roster.');
+        $this->addFlash('success', 'Le membre a ete reactive.');
 
         return $this->redirectToRoute('front_captain_members', ['team' => $teamId]);
+    }
+
+    #[Route('/pages/captain-members/{teamId}/{userId}/remove-inactive', name: 'front_captain_members_remove_inactive', requirements: ['teamId' => '\d+', 'userId' => '\d+'], methods: ['POST'])]
+    public function removeInactive(
+        int $teamId,
+        int $userId,
+        Request $request,
+        CaptainTeamContextProvider $captainTeamContextProvider,
+        UserRepository $userRepository,
+        TeamMemberRepository $teamMemberRepository,
+        EntityManagerInterface $entityManager,
+    ): Response {
+        $viewer = $this->getUser();
+        if (!$viewer instanceof User) {
+            return $this->redirectToRoute('front_login');
+        }
+
+        if (!$this->isCsrfTokenValid('captain_member_remove_inactive_' . $teamId . '_' . $userId, (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Jeton CSRF invalide.');
+
+            return $this->redirectToRoute('front_captain_members', ['team' => $teamId]);
+        }
+
+        $team = $captainTeamContextProvider->resolveManagedTeamById($viewer, $teamId);
+        if (!$team instanceof Team) {
+            throw $this->createAccessDeniedException('Equipe non autorisee.');
+        }
+
+        if ($team->getCaptainUserId()?->getUserId() === $userId) {
+            $this->addFlash('error', "Le capitaine ne peut pas etre retire de l'historique.");
+
+            return $this->redirectToRoute('front_captain_members', ['team' => $teamId]);
+        }
+
+        $memberUser = $userRepository->find($userId);
+        if (!$memberUser instanceof User) {
+            $this->addFlash('error', 'Membre introuvable.');
+
+            return $this->redirectToRoute('front_captain_members', ['team' => $teamId]);
+        }
+
+        $membership = $teamMemberRepository->findOneByTeamAndUser($team, $memberUser);
+        if (!$membership instanceof TeamMember) {
+            $this->addFlash('error', "Ce joueur n'est pas membre de cette equipe.");
+
+            return $this->redirectToRoute('front_captain_members', ['team' => $teamId]);
+        }
+
+        if ($membership->isActive() === true || $membership->getLeftAt() === null) {
+            $this->addFlash('error', 'Ce membre est actif. Utilisez Retirer dans la liste des membres actifs.');
+
+            return $this->redirectToRoute('front_captain_members', ['team' => $teamId]);
+        }
+
+        $entityManager->remove($membership);
+        $entityManager->flush();
+
+        $this->addFlash('success', "L'ancien membre a ete retire de l'historique.");
+
+        return $this->redirectToRoute('front_captain_members', ['team' => $teamId]);
+    }
+
+    #[Route('/pages/captain-members/{teamId}/{userId}/roster-role', name: 'front_captain_members_roster_role', requirements: ['teamId' => '\d+', 'userId' => '\d+'], methods: ['POST'])]
+    public function updateRosterRole(
+        int $teamId,
+        int $userId,
+        Request $request,
+        CaptainTeamContextProvider $captainTeamContextProvider,
+        RosterManager $rosterManager,
+        UserRepository $userRepository,
+        TeamMemberRepository $teamMemberRepository,
+        EntityManagerInterface $entityManager,
+    ): Response {
+        $viewer = $this->getUser();
+        if (!$viewer instanceof User) {
+            return $this->redirectToRoute('front_login');
+        }
+
+        if (!$this->isCsrfTokenValid('captain_member_roster_role_' . $teamId . '_' . $userId, (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Jeton CSRF invalide.');
+
+            return $this->redirectToRoute('front_captain_members', ['team' => $teamId]);
+        }
+
+        $team = $captainTeamContextProvider->resolveManagedTeamById($viewer, $teamId);
+        if (!$team instanceof Team) {
+            throw $this->createAccessDeniedException('Equipe non autorisee.');
+        }
+
+        $memberUser = $userRepository->find($userId);
+        if (!$memberUser instanceof User) {
+            $this->addFlash('error', 'Membre introuvable.');
+
+            return $this->redirectToRoute('front_captain_members', ['team' => $teamId]);
+        }
+
+        $membership = $teamMemberRepository->findOneByTeamAndUser($team, $memberUser);
+        if (!$membership instanceof TeamMember || $membership->isActive() !== true || $membership->getLeftAt() !== null) {
+            $this->addFlash('error', "Le role roster ne peut etre modifie que pour un membre actif.");
+
+            return $this->redirectToRoute('front_captain_members', ['team' => $teamId]);
+        }
+
+        $requestedRole = strtoupper(trim((string) $request->request->get('roster_role', '')));
+        if (!in_array($requestedRole, TeamMember::getRosterRoles(), true)) {
+            $this->addFlash('error', 'Role roster invalide.');
+
+            return $this->redirectToRoute('front_captain_members', ['team' => $teamId]);
+        }
+
+        $captainUserId = $team->getCaptainUserId()?->getUserId();
+        if ($captainUserId === $userId) {
+            $membership->setRosterRole(TeamMember::ROSTER_ROLE_CAPTAIN);
+        } elseif ($requestedRole === TeamMember::ROSTER_ROLE_CAPTAIN) {
+            $this->addFlash('error', 'Seul le capitaine principal peut avoir le role CAPTAIN.');
+
+            return $this->redirectToRoute('front_captain_members', ['team' => $teamId]);
+        } else {
+            $validation = $rosterManager->validateRoleChange(
+                $team,
+                $membership,
+                $requestedRole,
+                $teamMemberRepository,
+            );
+            if ($validation['allowed'] !== true) {
+                $this->addFlash('error', $validation['reason']);
+
+                return $this->redirectToRoute('front_captain_members', ['team' => $teamId]);
+            }
+
+            $membership->setRosterRole($requestedRole);
+        }
+
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Le role roster a ete mis a jour.');
+
+        return $this->redirectToRoute('front_captain_members', ['team' => $teamId]);
+    }
+
+    #[Route('/pages/captain-members/{teamId}/roster-sheet', name: 'front_captain_members_roster_pdf', requirements: ['teamId' => '\d+'], methods: ['GET'])]
+    public function rosterPdf(
+        int $teamId,
+        CaptainTeamContextProvider $captainTeamContextProvider,
+        TeamRosterPdfService $teamRosterPdfService,
+    ): Response {
+        $viewer = $this->getUser();
+        if (!$viewer instanceof User) {
+            return $this->redirectToRoute('front_login');
+        }
+
+        $team = $captainTeamContextProvider->resolveManagedTeamById($viewer, $teamId);
+        if (!$team instanceof Team) {
+            throw $this->createAccessDeniedException('Equipe non autorisee.');
+        }
+
+        return $teamRosterPdfService->buildResponse($team);
+    }
+
+    /**
+     * @param array{CAPTAIN:int,CO_CAPTAIN:int,STARTER:int,SUBSTITUTE:int} $roleDistribution
+     */
+    private function buildRosterDistributionChart(array $roleDistribution): PieChart
+    {
+        $chart = new PieChart();
+        $chart->getData()->setArrayToDataTable([
+            ['Role', 'Membres'],
+            [TeamMember::ROSTER_ROLE_CAPTAIN, $roleDistribution[TeamMember::ROSTER_ROLE_CAPTAIN]],
+            [TeamMember::ROSTER_ROLE_CO_CAPTAIN, $roleDistribution[TeamMember::ROSTER_ROLE_CO_CAPTAIN]],
+            [TeamMember::ROSTER_ROLE_STARTER, $roleDistribution[TeamMember::ROSTER_ROLE_STARTER]],
+            [TeamMember::ROSTER_ROLE_SUBSTITUTE, $roleDistribution[TeamMember::ROSTER_ROLE_SUBSTITUTE]],
+        ]);
+
+        $chart->getOptions()->setTitle('Repartition du roster actif');
+        $chart->getOptions()->setHeight(320);
+        $chart->getOptions()->setPieHole(0.45);
+        $chart->getOptions()->setPieSliceText('value');
+        $chart->getOptions()->setColors([
+            '#1d4ed8',
+            '#0f766e',
+            '#f59e0b',
+            '#94a3b8',
+        ]);
+        $chart->getOptions()->getLegend()->setPosition('right');
+
+        return $chart;
     }
 
     private function toPositiveInt(mixed $rawValue): ?int

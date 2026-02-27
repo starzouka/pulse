@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    @page { margin: 18px; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: DejaVu Sans, sans-serif; font-size: 10px; color: #0f172a; background: #eef2f8; }
+    .reportHeader { margin-bottom: 12px; padding: 12px 14px; border: 1px solid #d9e2ef; border-top: 4px solid #ff9d2e; background: #ffffff; }
+    .brand { display: inline-block; font-size: 9px; font-weight: 700; letter-spacing: 1px; color: #ff9d2e; margin-bottom: 4px; }
+    h1 { margin: 0; font-size: 18px; color: #0b1220; }
+    .metaRow { margin-top: 6px; font-size: 9px; color: #475569; }
+    .metaRow span { display: inline-block; margin-right: 12px; }
+    table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    thead { display: table-header-group; }
+    th, td { border: 1px solid #d9e2ef; padding: 6px; text-align: left; vertical-align: top; word-wrap: break-word; }
+    th { background: #1f2937; color: #f8fafc; font-size: 9px; }
+    tbody tr:nth-child(even) td { background: #f8fafc; }
+    .photoCell { width: 120px; }
+    .photoThumb { width: 110px; height: 62px; object-fit: cover; border: 1px solid #d9e2ef; }
+    .badge { display: inline-block; padding: 2px 6px; font-size: 9px; font-weight: 700; border-radius: 999px; border: 1px solid #d9e2ef; background: #f8fafc; color: #0f172a; }
+    .status-scheduled { background: #e8f1ff; color: #1d4ed8; border-color: #bfdbfe; }
+    .status-ongoing { background: #e6f8ee; color: #065f46; border-color: #a7f3d0; }
+    .status-finished { background: #f1f5f9; color: #0f172a; border-color: #d9e2ef; }
+    .status-cancelled { background: #fee2e2; color: #991b1b; border-color: #fecaca; }
+    .teamList { margin: 0; padding: 0; list-style: none; }
+    .teamList li { margin: 0 0 2px; }
+    .winner { font-weight: 700; color: #065f46; }
+    .muted { color: #64748b; font-style: italic; text-align: center; }
+  </style>
+</head>
+<body>
+  <section class="reportHeader">
+    <div class="brand">PULSE ADMIN EXPORT</div>
+    <h1>{{ title }}</h1>
+    <div class="metaRow">
+      <span>Lignes: {{ matchRows|length }}</span>
+      <span>Genere le: {{ generatedAt|date('Y-m-d H:i') }}</span>
+    </div>
+  </section>
+
+  <table>
+    <thead>
+      <tr>
+        <th class="photoCell">Photo tournoi</th>
+        <th>ID</th>
+        <th>Tournoi</th>
+        <th>Round</th>
+        <th>Participants</th>
+        <th>Horaire</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in matchRows %}
+        {% set match = row.match %}
+        {% set matchId = match.matchId ?? 0 %}
+        {% set tournament = match.tournamentId %}
+        {% set photoUrl = row.photoSrc %}
+        {% set status = match.status|default('SCHEDULED') %}
+        {% set teams = matchTeamsByMatchId[matchId]|default([]) %}
+        <tr>
+          <td class="photoCell">
+            {% if photoUrl %}
+              <img class="photoThumb" src="{{ photoUrl }}" alt="tournoi match #{{ matchId }}">
+            {% else %}
+              -
+            {% endif %}
+          </td>
+          <td>#{{ matchId }}</td>
+          <td>
+            <strong>{{ tournament ? tournament.title : '-' }}</strong><br>
+            <span>{{ tournament and tournament.gameId ? tournament.gameId.name : '-' }}</span>
+          </td>
+          <td>{{ match.roundName ?: '-' }}{% if match.bestOf %} BO{{ match.bestOf }}{% endif %}</td>
+          <td>
+            {% if teams is empty %}
+              -
+            {% else %}
+              <ul class="teamList">
+                {% for relation in teams %}
+                  {% set relationTeam = relation.teamId %}
+                  <li class="{{ relation.isWinner is same as(true) ? 'winner' : '' }}">
+                    {{ relationTeam ? relationTeam.name : '-' }}
+                    {% if relation.score is not null %} ({{ relation.score }}){% endif %}
+                    {% if relation.isWinner is same as(true) %} W{% endif %}
+                  </li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+          </td>
+          <td>{{ match.scheduledAt ? match.scheduledAt|date('d/m/Y H:i') : '-' }}</td>
+          <td><span class="badge status-{{ status|lower }}">{{ status }}</span></td>
+        </tr>
+      {% else %}
+        <tr>
+          <td class="muted" colspan="7">Aucun match disponible.</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>

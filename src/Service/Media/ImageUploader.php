@@ -6,12 +6,8 @@ namespace App\Service\Media;
 
 use App\Entity\Image;
 use App\Entity\User;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpKernel\KernelInterface;
-use Symfony\Component\Mime\Part\DataPart;
-use Symfony\Component\Mime\Part\Multipart\FormDataPart;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final class ImageUploader
 {
@@ -27,12 +23,6 @@ final class ImageUploader
 
     public function __construct(
         private readonly KernelInterface $kernel,
-        private readonly HttpClientInterface $httpClient,
-        private readonly ?LoggerInterface $logger = null,
-        private readonly string $cloudinaryCloudName = '',
-        private readonly string $cloudinaryApiKey = '',
-        private readonly string $cloudinaryApiSecret = '',
-        private readonly string $cloudinaryFolder = '',
     ) {
     }
 
@@ -88,18 +78,6 @@ final class ImageUploader
         $extension = $this->resolveExtension($uploadedFile, $mimeType);
         $filename = $filenamePrefix . '_' . bin2hex(random_bytes(10)) . '.' . $extension;
 
-        $cloudinaryImage = $this->uploadToCloudinary(
-            $uploadedFile,
-            $uploadedByUser,
-            trim($targetDirectoryName, '/'),
-            $filenamePrefix,
-            $mimeType,
-            $altText,
-        );
-        if ($cloudinaryImage instanceof Image) {
-            return $cloudinaryImage;
-        }
-
         $projectDirectory = $this->kernel->getProjectDir();
         $targetDirectory = $projectDirectory . '/public/uploads/' . trim($targetDirectoryName, '/');
         if (!is_dir($targetDirectory)) {
@@ -120,73 +98,6 @@ final class ImageUploader
             ->setAltText($altText)
             ->setUploadedByUserId($uploadedByUser)
             ->setCreatedAt(new \DateTime());
-    }
-
-    private function uploadToCloudinary(
-        UploadedFile $uploadedFile,
-        User $uploadedByUser,
-        string $targetDirectoryName,
-        string $filenamePrefix,
-        string $mimeType,
-        ?string $altText,
-    ): ?Image {
-        if (!$this->canUseCloudinary()) {
-            return null;
-        }
-
-        try {
-            $timestamp = time();
-            $publicId = trim($filenamePrefix, '_') . '_' . bin2hex(random_bytes(8));
-            $folder = trim(($this->cloudinaryFolder !== '' ? $this->cloudinaryFolder : 'pulse') . '/' . $targetDirectoryName, '/');
-
-            $signatureParams = [
-                'folder' => $folder,
-                'public_id' => $publicId,
-                'timestamp' => (string) $timestamp,
-            ];
-            $signature = $this->signCloudinaryParams($signatureParams);
-
-            $formFields = [
-                'file' => DataPart::fromPath($uploadedFile->getPathname(), $uploadedFile->getClientOriginalName(), $mimeType),
-                'api_key' => trim($this->cloudinaryApiKey),
-                'timestamp' => (string) $timestamp,
-                'signature' => $signature,
-                'folder' => $folder,
-                'public_id' => $publicId,
-            ];
-            $formData = new FormDataPart($formFields);
-
-            $response = $this->httpClient->request('POST', sprintf(
-                'https://api.cloudinary.com/v1_1/%s/image/upload',
-                rawurlencode(trim($this->cloudinaryCloudName))
-            ), [
-                'headers' => $formData->getPreparedHeaders()->toArray(),
-                'body' => $formData->bodyToIterable(),
-                'timeout' => 20,
-            ]);
-
-            $payload = $response->toArray(false);
-            $secureUrl = trim((string) ($payload['secure_url'] ?? ''));
-            if ($secureUrl === '') {
-                return null;
-            }
-
-            return (new Image())
-                ->setFileUrl($secureUrl)
-                ->setMimeType($mimeType)
-                ->setSizeBytes((string) max(0, (int) ($payload['bytes'] ?? 0)))
-                ->setWidth(isset($payload['width']) ? (int) $payload['width'] : null)
-                ->setHeight(isset($payload['height']) ? (int) $payload['height'] : null)
-                ->setAltText($altText)
-                ->setUploadedByUserId($uploadedByUser)
-                ->setCreatedAt(new \DateTime());
-        } catch (\Throwable $e) {
-            $this->logger?->warning('Cloudinary upload failed, falling back to local storage.', [
-                'error' => $e->getMessage(),
-            ]);
-
-            return null;
-        }
     }
 
     private function resolveMimeType(UploadedFile $uploadedFile): string
@@ -229,28 +140,6 @@ final class ImageUploader
         }
 
         return self::MIME_TO_EXTENSION[$mimeType] ?? 'jpg';
-    }
-
-    private function canUseCloudinary(): bool
-    {
-        return trim($this->cloudinaryCloudName) !== ''
-            && trim($this->cloudinaryApiKey) !== ''
-            && trim($this->cloudinaryApiSecret) !== '';
-    }
-
-    /**
-     * @param array<string, string> $params
-     */
-    private function signCloudinaryParams(array $params): string
-    {
-        ksort($params);
-
-        $parts = [];
-        foreach ($params as $key => $value) {
-            $parts[] = $key . '=' . $value;
-        }
-
-        return sha1(implode('&', $parts) . trim($this->cloudinaryApiSecret));
     }
 
     /**

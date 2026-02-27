@@ -7,7 +7,7 @@ namespace Proxies\__CG__\App\Entity;
  */
 class User extends \App\Entity\User implements \Doctrine\ORM\Proxy\InternalProxy
 {
-     use \Symfony\Component\VarExporter\LazyGhostTrait {
+    use \Symfony\Component\VarExporter\LazyGhostTrait {
         initializeLazyObject as private;
         setLazyObjectAsInitialized as public __setInitialized;
         isLazyObjectInitialized as private;
@@ -38,6 +38,9 @@ class User extends \App\Entity\User implements \Doctrine\ORM\Proxy\InternalProxy
         "\0".parent::class."\0".'resetPasswordExpiresAt' => [parent::class, 'resetPasswordExpiresAt', null, 16],
         "\0".parent::class."\0".'resetPasswordTokenHash' => [parent::class, 'resetPasswordTokenHash', null, 16],
         "\0".parent::class."\0".'role' => [parent::class, 'role', null, 16],
+        "\0".parent::class."\0".'twoFactorEnabled' => [parent::class, 'twoFactorEnabled', null, 16],
+        "\0".parent::class."\0".'twoFactorEnabledAt' => [parent::class, 'twoFactorEnabledAt', null, 16],
+        "\0".parent::class."\0".'twoFactorSecret' => [parent::class, 'twoFactorSecret', null, 16],
         "\0".parent::class."\0".'updatedAt' => [parent::class, 'updatedAt', null, 16],
         "\0".parent::class."\0".'userId' => [parent::class, 'userId', null, 16],
         "\0".parent::class."\0".'username' => [parent::class, 'username', null, 16],
@@ -57,10 +60,13 @@ class User extends \App\Entity\User implements \Doctrine\ORM\Proxy\InternalProxy
         'resetPasswordExpiresAt' => [parent::class, 'resetPasswordExpiresAt', null, 16],
         'resetPasswordTokenHash' => [parent::class, 'resetPasswordTokenHash', null, 16],
         'role' => [parent::class, 'role', null, 16],
+        'twoFactorEnabled' => [parent::class, 'twoFactorEnabled', null, 16],
+        'twoFactorEnabledAt' => [parent::class, 'twoFactorEnabledAt', null, 16],
+        'twoFactorSecret' => [parent::class, 'twoFactorSecret', null, 16],
         'updatedAt' => [parent::class, 'updatedAt', null, 16],
         'userId' => [parent::class, 'userId', null, 16],
         'username' => [parent::class, 'username', null, 16],
-    ];
+    ];
 
     public function __isInitialized(): bool
     {

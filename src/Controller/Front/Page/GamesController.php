@@ -7,6 +7,7 @@ namespace App\Controller\Front\Page;
 use App\Repository\CategoryRepository;
 use App\Repository\GameRepository;
 use App\Repository\TournamentRepository;
+use App\Service\Catalog\GamePopularityService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,6 +23,7 @@ final class GamesController extends AbstractController
         GameRepository $gameRepository,
         CategoryRepository $categoryRepository,
         TournamentRepository $tournamentRepository,
+        GamePopularityService $gamePopularityService,
     ): Response {
         $query = trim((string) $request->query->get('q', ''));
         $categoryId = $this->toPositiveInt($request->query->get('category'));
@@ -33,15 +35,18 @@ final class GamesController extends AbstractController
             $sort = 'name';
         }
 
-        $repositorySort = $sort === 'popular' ? 'name' : $sort;
         $games = $gameRepository->searchCatalog(
             $query !== '' ? $query : null,
             $categoryId,
             $publisher !== '' ? $publisher : null,
             $activeOnly,
-            $repositorySort,
+            $sort,
             180,
         );
+
+        if ($games !== []) {
+            $gamePopularityService->refreshScoresForGames($games, true);
+        }
 
         $gameIds = [];
         foreach ($games as $game) {
@@ -53,27 +58,6 @@ final class GamesController extends AbstractController
 
         $totalTournamentsByGameId = $tournamentRepository->countByGameIds($gameIds);
         $activeTournamentsByGameId = $tournamentRepository->countByGameIds($gameIds, ['OPEN', 'ONGOING']);
-
-        if ($sort === 'popular') {
-            usort($games, static function ($leftGame, $rightGame) use ($activeTournamentsByGameId, $totalTournamentsByGameId): int {
-                $leftId = $leftGame->getGameId() ?? 0;
-                $rightId = $rightGame->getGameId() ?? 0;
-
-                $leftActive = $activeTournamentsByGameId[$leftId] ?? 0;
-                $rightActive = $activeTournamentsByGameId[$rightId] ?? 0;
-                if ($leftActive !== $rightActive) {
-                    return $rightActive <=> $leftActive;
-                }
-
-                $leftTotal = $totalTournamentsByGameId[$leftId] ?? 0;
-                $rightTotal = $totalTournamentsByGameId[$rightId] ?? 0;
-                if ($leftTotal !== $rightTotal) {
-                    return $rightTotal <=> $leftTotal;
-                }
-
-                return strcasecmp((string) $leftGame->getName(), (string) $rightGame->getName());
-            });
-        }
 
         $pagination = $this->paginateItems($games, $this->readPage($request), 12);
         $games = $pagination['items'];
@@ -89,12 +73,29 @@ final class GamesController extends AbstractController
         $totalTournamentsByGameId = $tournamentRepository->countByGameIds($gameIds);
         $activeTournamentsByGameId = $tournamentRepository->countByGameIds($gameIds, ['OPEN', 'ONGOING']);
 
+        $trendingGames = $gameRepository->findTrending(6);
+        if ($trendingGames !== []) {
+            $gamePopularityService->refreshScoresForGames($trendingGames, true);
+        }
+
+        $trendingIds = [];
+        foreach ($trendingGames as $trendingGame) {
+            $trendingId = $trendingGame->getGameId();
+            if ($trendingId !== null) {
+                $trendingIds[] = $trendingId;
+            }
+        }
+
+        $trendingActiveTournamentsByGameId = $tournamentRepository->countByGameIds($trendingIds, ['OPEN', 'ONGOING']);
+
         return $this->render('front/pages/games.html.twig', [
             'games' => $games,
+            'trending_games' => $trendingGames,
             'categories' => $categoryRepository->findAllOrdered(),
             'publishers' => $gameRepository->findDistinctPublishers(),
             'tournaments_count_by_game_id' => $totalTournamentsByGameId,
             'active_tournaments_count_by_game_id' => $activeTournamentsByGameId,
+            'trending_active_tournaments_count_by_game_id' => $trendingActiveTournamentsByGameId,
             'pagination' => $pagination,
             'filters' => [
                 'q' => $query,

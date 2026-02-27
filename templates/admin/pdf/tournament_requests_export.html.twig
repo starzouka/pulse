@@ -1,0 +1,92 @@
+{% extends 'admin/pdf/_export_layout.html.twig' %}
+
+{% block pdf_content %}
+  <div class="panel">
+    <div class="panelHeader">
+      <h2 class="panelTitle">Liste des demandes de tournoi</h2>
+      <div class="panelSub">{{ counter|default(requests|length) }} element(s) exporte(s)</div>
+    </div>
+
+    {% if requests is empty %}
+      <div class="emptyState">Aucune demande trouvee pour les filtres selectionnes.</div>
+    {% else %}
+      <table class="dataTable">
+        <thead>
+          <tr>
+            <th style="width: 4%;">ID</th>
+            <th style="width: 20%;">Demande</th>
+            <th style="width: 10%;">Organisateur</th>
+            <th style="width: 9%;">Jeu</th>
+            <th style="width: 12%;">Dates</th>
+            <th style="width: 10%;">Parametres</th>
+            <th style="width: 10%;" class="textRight">Prize Pool</th>
+            <th style="width: 8%;">Status</th>
+            <th style="width: 17%;">Suivi admin</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for requestItem in requests %}
+            {% set requestId = requestItem.requestId ?? 0 %}
+            {% set status = requestItem.status|default('PENDING') %}
+            {% set photoSrc = photoUris[requestId]|default(null) %}
+            {% set statusClass = status == 'ACCEPTED' ? 'status-success' : (status == 'REFUSED' ? 'status-danger' : 'status-warning') %}
+
+            <tr>
+              <td class="nowrap">#{{ requestId }}</td>
+              <td>
+                {% if photoSrc %}
+                  <img class="thumb" src="{{ photoSrc }}" alt="">
+                {% else %}
+                  <div class="thumbPlaceholder">No photo</div>
+                {% endif %}
+                <div class="rowTitle">{{ requestItem.title|default('-') }}</div>
+                <div class="muted">
+                  Cree le {{ requestItem.createdAt ? requestItem.createdAt|date('d/m/Y H:i') : '-' }}
+                </div>
+              </td>
+              <td>
+                <div class="rowTitle">{{ requestItem.organizerUserId ? requestItem.organizerUserId.username : '-' }}</div>
+                <div class="muted">{{ requestItem.organizerUserId ? requestItem.organizerUserId.email : '' }}</div>
+              </td>
+              <td>
+                <div class="rowTitle">{{ requestItem.gameId ? requestItem.gameId.name : '-' }}</div>
+              </td>
+              <td>
+                <div class="nowrap">{{ requestItem.startDate ? requestItem.startDate|date('d/m/Y') : '-' }}</div>
+                <div class="muted nowrap">au {{ requestItem.endDate ? requestItem.endDate|date('d/m/Y') : '-' }}</div>
+                {% if requestItem.registrationDeadline %}
+                  <div class="muted nowrap">DL: {{ requestItem.registrationDeadline|date('d/m/Y') }}</div>
+                {% endif %}
+              </td>
+              <td>
+                <span class="chip">{{ requestItem.format|default('-') }}</span>
+                <span class="chip">{{ requestItem.registrationMode|default('-') }}</span>
+                <div class="muted">Max teams: {{ requestItem.maxTeams ?? 0 }}</div>
+              </td>
+              <td class="textRight nowrap">
+                <div class="rowTitle">{{ (requestItem.prizePool ?? 0)|number_format(2, '.', ' ') }} DT</div>
+                {% if requestItem.prizeDescription %}
+                  <div class="muted">{{ requestItem.prizeDescription|slice(0, 36) }}{{ requestItem.prizeDescription|length > 36 ? '...' : '' }}</div>
+                {% endif %}
+              </td>
+              <td>
+                <span class="statusPill {{ statusClass }}">{{ status }}</span>
+              </td>
+              <td>
+                {% if requestItem.reviewedAt %}
+                  <div class="rowTitle">{{ requestItem.reviewedAt|date('d/m/Y H:i') }}</div>
+                  <div class="muted">Par: {{ requestItem.reviewedByAdminId ? requestItem.reviewedByAdminId.username : '-' }}</div>
+                {% else %}
+                  <div class="muted">En attente de revue</div>
+                {% endif %}
+                {% if requestItem.adminResponseNote %}
+                  <div class="muted">{{ requestItem.adminResponseNote|striptags|slice(0, 72) }}{{ requestItem.adminResponseNote|length > 72 ? '...' : '' }}</div>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endif %}
+  </div>
+{% endblock %}

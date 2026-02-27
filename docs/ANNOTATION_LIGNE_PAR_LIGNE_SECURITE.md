@@ -1,0 +1,351 @@
+# Annotation Ligne Par Ligne - Module Securite
+
+Ce fichier explique chaque ligne des fichiers suivants:
+- `src/Security/LoginFormAuthenticator.php`
+- `src/Security/UserChecker.php`
+- `src/Controller/Security/VerifyEmailController.php`
+- `src/Controller/Security/LoginController.php`
+
+---
+
+## 1) `src/Security/LoginFormAuthenticator.php`
+
+- L1: `<?php`
+  - Ouvre le mode PHP du fichier.
+- L2: `(ligne vide)`
+  - Separe visuellement le tag d'ouverture et la configuration du fichier.
+- L3: `declare(strict_types=1);`
+  - Active le typage strict en PHP pour ce fichier.
+- L4: `(ligne vide)`
+  - Separation lisible.
+- L5: `namespace App\Security;`
+  - Place cette classe dans le namespace `App\Security`.
+- L6: `(ligne vide)`
+  - Separation lisible.
+- L7: `use Symfony\Component\HttpFoundation\RedirectResponse;`
+  - Importe la classe de reponse HTTP de redirection.
+- L8: `use Symfony\Component\HttpFoundation\Request;`
+  - Importe l'objet representant la requete HTTP entrante.
+- L9: `use Symfony\Component\HttpFoundation\Response;`
+  - Importe la classe de reponse HTTP generique.
+- L10: `use Symfony\Component\Routing\Generator\UrlGeneratorInterface;`
+  - Importe l'interface qui genere des URLs depuis les noms de routes.
+- L11: `use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;`
+  - Importe l'interface du token de securite apres authentification.
+- L12: `use Symfony\Component\Security\Http\Authenticator\AbstractLoginFormAuthenticator;`
+  - Importe la classe de base Symfony pour un authenticator de formulaire login.
+- L13: `use Symfony\Component\Security\Http\Authenticator\Passport\Badge\CsrfTokenBadge;`
+  - Importe le badge qui valide le token CSRF du formulaire.
+- L14: `use Symfony\Component\Security\Http\Authenticator\Passport\Badge\RememberMeBadge;`
+  - Importe le badge qui active la fonctionnalite \"remember me\".
+- L15: `use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;`
+  - Importe le badge qui permet de charger l'utilisateur depuis son identifiant.
+- L16: `use Symfony\Component\Security\Http\Authenticator\Passport\Credentials\PasswordCredentials;`
+  - Importe l'objet contenant le mot de passe saisi.
+- L17: `use Symfony\Component\Security\Http\Authenticator\Passport\Passport;`
+  - Importe l'objet Passport qui regroupe user + credentials + badges.
+- L18: `use Symfony\Component\Security\Http\SecurityRequestAttributes;`
+  - Importe les constantes utilitaires de securite HTTP (ex: last username).
+- L19: `use Symfony\Component\Security\Http\Util\TargetPathTrait;`
+  - Importe le trait qui gere la destination apres login.
+- L20: `(ligne vide)`
+  - Separation lisible.
+- L21: `final class LoginFormAuthenticator extends AbstractLoginFormAuthenticator`
+  - Declare la classe finale d'authentification, basee sur l'authenticator Symfony.
+- L22: `{`
+  - Ouvre le bloc de classe.
+- L23: `use TargetPathTrait;`
+  - Injecte les methodes du trait pour lire/ecrire la target path en session.
+- L24: `(ligne vide)`
+  - Separation lisible.
+- L25: `public const LOGIN_ROUTE = 'front_login';`
+  - Defini le nom de route login utilise par cet authenticator.
+- L26: `(ligne vide)`
+  - Separation lisible.
+- L27: `public function __construct(`
+  - Debut du constructeur.
+- L28: `private readonly UrlGeneratorInterface $urlGenerator,`
+  - Injection de dependance: generateur d'URL, stocke en propriete readonly.
+- L29: `) {`
+  - Fin de signature et ouverture du corps du constructeur.
+- L30: `}`
+  - Corps du constructeur vide (l'injection suffit).
+- L31: `(ligne vide)`
+  - Separation lisible.
+- L32: `public function authenticate(Request $request): Passport`
+  - Methode appelee par Symfony pour authentifier une requete login.
+- L33: `{`
+  - Ouvre le bloc de methode.
+- L34: `$identifier = strtolower(trim((string) $request->request->get('_username', '')));`
+  - Lit `_username` du formulaire, le cast en string, retire espaces, et force en minuscule.
+- L35: `$request->getSession()->set(SecurityRequestAttributes::LAST_USERNAME, $identifier);`
+  - Stocke le dernier username en session pour le reafficher en cas d'erreur de login.
+- L36: `(ligne vide)`
+  - Separation lisible.
+- L37: `return new Passport(`
+  - Retourne l'objet Passport complet a Symfony Security.
+- L38: `new UserBadge($identifier),`
+  - Indique comment retrouver l'utilisateur (a partir de l'identifiant saisi).
+- L39: `new PasswordCredentials((string) $request->request->get('_password', '')),`
+  - Fournit le mot de passe brut saisi pour verification par hasher.
+- L40: `[`
+  - Debut de la liste des badges complementaires.
+- L41: `new CsrfTokenBadge('authenticate', (string) $request->request->get('_csrf_token')),`
+  - Active la verification CSRF du formulaire login.
+- L42: `new RememberMeBadge(),`
+  - Active la logique remember-me si cochee/configuree.
+- L43: `]`
+  - Fin de la liste des badges.
+- L44: `);`
+  - Fin de la creation du Passport.
+- L45: `}`
+  - Fin de la methode `authenticate`.
+- L46: `(ligne vide)`
+  - Separation lisible.
+- L47: `public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response`
+  - Methode appelee lorsque l'authentification reussit.
+- L48: `{`
+  - Ouvre le bloc.
+- L49: `$targetPath = $this->getTargetPath($request->getSession(), $firewallName);`
+  - Lit une destination sauvegardee avant login (page demandee initialement).
+- L50: `if ($targetPath) {`
+  - Verifie si une destination existe.
+- L51: `return new RedirectResponse($targetPath);`
+  - Redirige vers cette destination.
+- L52: `}`
+  - Fin du `if`.
+- L53: `(ligne vide)`
+  - Separation lisible.
+- L54: `return new RedirectResponse($this->urlGenerator->generate('front_home'));`
+  - Sinon, redirige par defaut vers la home front.
+- L55: `}`
+  - Fin de la methode `onAuthenticationSuccess`.
+- L56: `(ligne vide)`
+  - Separation lisible.
+- L57: `protected function getLoginUrl(Request $request): string`
+  - Methode requise par la classe parente pour connaitre l'URL login.
+- L58: `{`
+  - Ouvre le bloc.
+- L59: `return $this->urlGenerator->generate(self::LOGIN_ROUTE);`
+  - Genere l'URL de la route login definie dans la constante.
+- L60: `}`
+  - Fin de la methode.
+- L61: `}`
+  - Fin de la classe.
+
+---
+
+## 2) `src/Security/UserChecker.php`
+
+- L1: `<?php`
+  - Ouvre le mode PHP.
+- L2: `(ligne vide)`
+  - Separation lisible.
+- L3: `declare(strict_types=1);`
+  - Active le typage strict.
+- L4: `(ligne vide)`
+  - Separation lisible.
+- L5: `namespace App\Security;`
+  - Namespace de la classe.
+- L6: `(ligne vide)`
+  - Separation lisible.
+- L7: `use App\Entity\User;`
+  - Importe votre entite User.
+- L8: `use Symfony\Component\Security\Core\Exception\CustomUserMessageAccountStatusException;`
+  - Importe l'exception personnalisee affichable a l'utilisateur.
+- L9: `use Symfony\Component\Security\Core\User\UserCheckerInterface;`
+  - Importe l'interface a implementer pour checks pre/post auth.
+- L10: `use Symfony\Component\Security\Core\User\UserInterface;`
+  - Importe le type de base utilisateur de Symfony.
+- L11: `(ligne vide)`
+  - Separation lisible.
+- L12: `final class UserChecker implements UserCheckerInterface`
+  - Declare un checker final qui suit le contrat Symfony.
+- L13: `{`
+  - Ouvre la classe.
+- L14: `public function checkPreAuth(UserInterface $user): void`
+  - Methode appelee avant la validation complete de login.
+- L15: `{`
+  - Ouvre le bloc.
+- L16: `if (!$user instanceof User) {`
+  - Verifie que l'objet est bien votre classe User.
+- L17: `return;`
+  - Si non, ne fait aucun controle specifique.
+- L18: `}`
+  - Fin du test de type.
+- L19: `(ligne vide)`
+  - Separation lisible.
+- L20: `if (!$user->isActive()) {`
+  - Verifie que le compte est actif.
+- L21: `throw new CustomUserMessageAccountStatusException('Votre compte est desactive.');`
+  - Bloque le login avec un message utilisateur explicite.
+- L22: `}`
+  - Fin du test compte actif.
+- L23: `}`
+  - Fin de `checkPreAuth`.
+- L24: `(ligne vide)`
+  - Separation lisible.
+- L25: `public function checkPostAuth(UserInterface $user): void`
+  - Methode appelee apres l'authentification de base.
+- L26: `{`
+  - Ouvre le bloc.
+- L27: `if (!$user instanceof User) {`
+  - Verifie encore le type de user.
+- L28: `return;`
+  - Si type different, pas de controle specifique.
+- L29: `}`
+  - Fin du test.
+- L30: `(ligne vide)`
+  - Separation lisible.
+- L31: `if (!$user->isEmailVerified()) {`
+  - Verifie que l'email est confirme.
+- L32: `throw new CustomUserMessageAccountStatusException('Vous devez verifier votre email avant de vous connecter.');`
+  - Bloque le login si email non verifie, avec message clair.
+- L33: `}`
+  - Fin du test verification email.
+- L34: `}`
+  - Fin de `checkPostAuth`.
+- L35: `}`
+  - Fin de la classe.
+
+---
+
+## 3) `src/Controller/Security/VerifyEmailController.php`
+
+- L1: `<?php`
+  - Ouvre le mode PHP.
+- L2: `(ligne vide)`
+  - Separation lisible.
+- L3: `declare(strict_types=1);`
+  - Active le typage strict.
+- L4: `(ligne vide)`
+  - Separation lisible.
+- L5: `namespace App\Controller\Security;`
+  - Place le controller dans le namespace de securite.
+- L6: `(ligne vide)`
+  - Separation lisible.
+- L7: `use App\Repository\UserRepository;`
+  - Importe le repository utilisateur.
+- L8: `use App\Security\EmailVerifier;`
+  - Importe le service qui valide le lien email signe.
+- L9: `use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;`
+  - Importe la classe de base des controllers Symfony.
+- L10: `use Symfony\Component\HttpFoundation\Request;`
+  - Importe la requete HTTP.
+- L11: `use Symfony\Component\HttpFoundation\Response;`
+  - Importe la reponse HTTP.
+- L12: `use Symfony\Component\Routing\Attribute\Route;`
+  - Importe l'attribut PHP de route.
+- L13: `use Symfony\Contracts\Translation\TranslatorInterface;`
+  - Importe le traducteur pour messages d'erreur bundle.
+- L14: `use SymfonyCasts\Bundle\VerifyEmail\Exception\VerifyEmailExceptionInterface;`
+  - Importe l'exception du bundle verify-email.
+- L15: `(ligne vide)`
+  - Separation lisible.
+- L16: `final class VerifyEmailController extends AbstractController`
+  - Declare le controller final de verification email.
+- L17: `{`
+  - Ouvre la classe.
+- L18: `#[Route('/verify/email', name: 'front_verify_email', methods: ['GET'])]`
+  - Defini la route GET de verification email.
+- L19: `public function verifyUserEmail(`
+  - Debut de l'action controller.
+- L20: `Request $request,`
+  - Injecte la requete courante.
+- L21: `UserRepository $userRepository,`
+  - Injecte le repository User.
+- L22: `EmailVerifier $emailVerifier,`
+  - Injecte le service de verification email.
+- L23: `TranslatorInterface $translator,`
+  - Injecte le service de traduction.
+- L24: `): Response {`
+  - Fin de signature et ouverture du corps.
+- L25: `$id = $request->query->get('id');`
+  - Recupere l'id user depuis query string.
+- L26: `if ($id === null) {`
+  - Verifie presence de l'id.
+- L27: `return $this->redirectToRoute('front_register');`
+  - Si absent, redirige vers page register.
+- L28: `}`
+  - Fin du test id absent.
+- L29: `(ligne vide)`
+  - Separation lisible.
+- L30: `$user = $userRepository->find($id);`
+  - Charge l'utilisateur par id.
+- L31: `if ($user === null) {`
+  - Verifie que l'utilisateur existe.
+- L32: `return $this->redirectToRoute('front_register');`
+  - Si introuvable, renvoie vers register.
+- L33: `}`
+  - Fin du test user inexistant.
+- L34: `(ligne vide)`
+  - Separation lisible.
+- L35: `try {`
+  - Debut bloc de tentative de verification.
+- L36: `$emailVerifier->handleEmailConfirmation($request, $user);`
+  - Valide la signature du lien et marque email verifie.
+- L37: `$this->addFlash('success', 'Votre email est verifie. Vous pouvez vous connecter.');`
+  - Ajoute un message flash de succes.
+- L38: `} catch (VerifyEmailExceptionInterface $exception) {`
+  - Capture les erreurs de verification de lien.
+- L39: `$this->addFlash('error', $translator->trans($exception->getReason(), [], 'VerifyEmailBundle'));`
+  - Traduit et affiche la raison de l'erreur.
+- L40: `return $this->redirectToRoute('front_register');`
+  - En cas d'erreur, redirige vers register.
+- L41: `}`
+  - Fin du try/catch.
+- L42: `(ligne vide)`
+  - Separation lisible.
+- L43: `return $this->redirectToRoute('front_login');`
+  - Si tout est bon, redirige vers login.
+- L44: `}`
+  - Fin de la methode.
+- L45: `}`
+  - Fin de la classe.
+
+---
+
+## 4) `src/Controller/Security/LoginController.php`
+
+- L1: `<?php`
+  - Ouvre le mode PHP.
+- L2: `(ligne vide)`
+  - Separation lisible.
+- L3: `namespace App\Controller\Security;`
+  - Place la classe dans le namespace des controllers securite.
+- L4: `(ligne vide)`
+  - Separation lisible.
+- L5: `use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;`
+  - Importe la classe de base controller Symfony.
+- L6: `use Symfony\Component\HttpFoundation\Response;`
+  - Importe le type Response.
+- L7: `use Symfony\Component\Routing\Attribute\Route;`
+  - Importe l'attribut Route.
+- L8: `(ligne vide)`
+  - Separation lisible.
+- L9: `final class LoginController extends AbstractController`
+  - Declare un controller final.
+- L10: `{`
+  - Ouvre la classe.
+- L11: `#[Route('/security/login', name: 'security_login', methods: ['GET'])]`
+  - Defini une route legacy/de support vers le login front.
+- L12: `public function index(): Response`
+  - Declare l'action `index` qui renvoie une Response.
+- L13: `{`
+  - Ouvre la methode.
+- L14: `return $this->redirectToRoute('front_login');`
+  - Redirige simplement vers la vraie page login front.
+- L15: `}`
+  - Fin de la methode.
+- L16: `}`
+  - Fin de la classe.
+
+---
+
+## Note
+
+Si tu veux, je continue exactement le meme format ligne par ligne pour:
+- tout `src/Security/`
+- puis tout `src/Controller/Front/Page/`
+- puis tout le reste du projet, module par module.
+

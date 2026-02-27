@@ -1,0 +1,90 @@
+{% extends 'admin/pdf/_export_layout.html.twig' %}
+
+{% block pdf_content %}
+  <div class="panel">
+    <div class="panelHeader">
+      <h2 class="panelTitle">Liste des tournois</h2>
+      <div class="panelSub">{{ counter|default(tournaments|length) }} element(s) exporte(s)</div>
+    </div>
+
+    {% if tournaments is empty %}
+      <div class="emptyState">Aucun tournoi trouve pour les filtres selectionnes.</div>
+    {% else %}
+      <table class="dataTable">
+        <thead>
+          <tr>
+            <th style="width: 4%;">ID</th>
+            <th style="width: 20%;">Tournoi</th>
+            <th style="width: 10%;">Jeu</th>
+            <th style="width: 10%;">Organisateur</th>
+            <th style="width: 7%;">Status</th>
+            <th style="width: 12%;">Dates</th>
+            <th style="width: 8%;">Equipes</th>
+            <th style="width: 7%;">Matchs</th>
+            <th style="width: 10%;">Format</th>
+            <th style="width: 12%;" class="textRight">Prize Pool</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for tournament in tournaments %}
+            {% set tournamentId = tournament.tournamentId ?? 0 %}
+            {% set status = tournament.status|default('DRAFT') %}
+            {% set photoSrc = photoUris[tournamentId]|default(null) %}
+            {% set acceptedCount = acceptedByTournamentId[tournamentId]|default(0) %}
+            {% set registrationCount = registrationsByTournamentId[tournamentId]|default(0) %}
+            {% set matchesCount = matchesByTournamentId[tournamentId]|default(0) %}
+            {% set statusClass = status in ['OPEN', 'ONGOING'] ? 'status-success' : (status == 'FINISHED' ? 'status-info' : (status == 'CANCELLED' ? 'status-danger' : 'status-warning')) %}
+
+            <tr>
+              <td class="nowrap">#{{ tournamentId }}</td>
+              <td>
+                {% if photoSrc %}
+                  <img class="thumb" src="{{ photoSrc }}" alt="">
+                {% else %}
+                  <div class="thumbPlaceholder">No photo</div>
+                {% endif %}
+                <div class="rowTitle">{{ tournament.title|default('-') }}</div>
+                <div class="muted">
+                  {{ tournament.description ? (tournament.description|striptags|slice(0, 62) ~ (tournament.description|length > 62 ? '...' : '')) : 'Aucune description' }}
+                </div>
+              </td>
+              <td>
+                <div class="rowTitle">{{ tournament.gameId ? tournament.gameId.name : '-' }}</div>
+              </td>
+              <td>
+                <div class="rowTitle">{{ tournament.organizerUserId ? tournament.organizerUserId.username : '-' }}</div>
+              </td>
+              <td>
+                <span class="statusPill {{ statusClass }}">{{ status }}</span>
+              </td>
+              <td>
+                <div class="nowrap">{{ tournament.startDate ? tournament.startDate|date('d/m/Y') : '-' }}</div>
+                <div class="muted nowrap">au {{ tournament.endDate ? tournament.endDate|date('d/m/Y') : '-' }}</div>
+                {% if tournament.registrationDeadline %}
+                  <div class="muted nowrap">DL: {{ tournament.registrationDeadline|date('d/m/Y') }}</div>
+                {% endif %}
+              </td>
+              <td>
+                <div class="rowTitle">{{ acceptedCount }}/{{ tournament.maxTeams ?? 0 }}</div>
+                <div class="muted">Total: {{ registrationCount }}</div>
+              </td>
+              <td class="nowrap">
+                <div class="rowTitle">{{ matchesCount }}</div>
+              </td>
+              <td>
+                <span class="chip">{{ tournament.format|default('-') }}</span>
+                <span class="chip">{{ tournament.registrationMode|default('-') }}</span>
+              </td>
+              <td class="textRight nowrap">
+                <div class="rowTitle">{{ (tournament.prizePool ?? 0)|number_format(2, '.', ' ') }} DT</div>
+                {% if tournament.prizeDescription %}
+                  <div class="muted">{{ tournament.prizeDescription|slice(0, 36) }}{{ tournament.prizeDescription|length > 36 ? '...' : '' }}</div>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endif %}
+  </div>
+{% endblock %}

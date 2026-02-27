@@ -1,23 +1,21 @@
 liip_imagine:
-    driver: gd
-    twig:
-        mode: lazy
+    driver: "gd"
+    resolvers:
+        default:
+            web_path:
+                web_root: "%kernel.project_dir%/public"
+                cache_prefix: "media/cache"
     filter_sets:
         cache: ~
-        team_logo_thumb:
-            quality: 85
+        team_logo:
+            quality: 88
             filters:
                 thumbnail: { size: [320, 320], mode: outbound }
-                background: { size: [320, 320], position: center, color: '#111111' }
         team_banner:
-            quality: 85
+            quality: 82
             filters:
-                thumbnail: { size: [1200, 675], mode: outbound }
-        game_cover_card:
-            quality: 85
-            filters:
-                thumbnail: { size: [1200, 800], mode: outbound }
-        avatar_small:
+                thumbnail: { size: [1400, 420], mode: outbound }
+        team_thumbnail:
             quality: 85
             filters:
                 thumbnail: { size: [96, 96], mode: outbound }

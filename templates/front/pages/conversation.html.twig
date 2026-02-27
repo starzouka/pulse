@@ -12,6 +12,25 @@
 
   <main class="page">
     <section class="belowHero">
+      {% for label, messages in app.flashes %}
+        {% for message in messages %}
+          <div class="listItem">
+            <span>{{ message }}</span>
+            <span class="badge {{ label == 'error' ? 'badge--danger' : (label == 'warning' ? 'badge--warning' : (label == 'info' ? 'badge--info' : 'badge--success')) }}">{{ label|upper }}</span>
+          </div>
+        {% endfor %}
+      {% endfor %}
+
+      <section class="panel" style="margin-bottom:12px;">
+        <h3 class="panel__title">MESSAGERIE SECURISEE</h3>
+        <div class="list">
+          <div class="listItem"><span>Analyse automatique</span><span class="listItem__meta">Detection spam + toxicite par score/signaux.</span></div>
+          <div class="listItem"><span>Categories risque</span><span class="listItem__meta">scam_recruitment, harassment, aggressive_tone.</span></div>
+          <div class="listItem"><span>Decision metier</span><span class="listItem__meta">Autorisation, avertissement ou blocage selon le niveau de risque.</span></div>
+          <div class="listItem"><span>Message normal</span><span class="listItem__meta">Autorise avec retour clair "message normal autorise".</span></div>
+        </div>
+      </section>
+
       <div class="layout">
         {% include 'front/partials/_player_side_nav.html.twig' with { active: 'conversation' } %}
 
@@ -70,11 +89,9 @@
 
                 <form method="post" action="{{ path('front_conversation', {id: partnerId}) }}" style="margin-top:10px; display:flex; gap:8px; align-items:flex-start;">
                   <input type="hidden" name="_token" value="{{ csrf_token('conversation_send') }}">
-                  <input type="hidden" name="g-recaptcha-response" data-recaptcha-token>
                   <textarea class="textarea" name="body_text" placeholder="Ecrire un message..." style="min-height: 70px; flex:1;" required></textarea>
                   <button class="btn btn--primary" type="submit">Envoyer</button>
                 </form>
-                <div class="muted" style="margin-top:8px;">Modération chat équipe (tests): spam/scam, toxicité, agressivité (MAJUSCULES).</div>
               {% else %}
                 <div class="emptyState">Aucun destinataire selectionne.</div>
               {% endif %}
@@ -88,24 +105,4 @@
   </main>
 
   {% include 'front/partials/_auth_modal.html.twig' %}
-  {% if google_recaptcha_site_key %}
-    <script src="https://www.google.com/recaptcha/api.js?render={{ google_recaptcha_site_key }}"></script>
-    <script>
-      (() => {
-        const form = document.querySelector('form[action*="/pages/conversation/"]');
-        if (!form || !window.grecaptcha) return;
-        form.addEventListener('submit', async (event) => {
-          const tokenInput = form.querySelector('[data-recaptcha-token]');
-          if (!tokenInput || tokenInput.value) return;
-          event.preventDefault();
-          try {
-            tokenInput.value = await window.grecaptcha.execute('{{ google_recaptcha_site_key|e('js') }}', { action: 'conversation_send' });
-          } catch (e) {
-            tokenInput.value = '';
-          }
-          form.submit();
-        });
-      })();
-    </script>
-  {% endif %}
 {% endblock %}

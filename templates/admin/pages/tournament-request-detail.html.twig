@@ -55,6 +55,42 @@
 
   <section class="panel">
     <div class="panelHeader">
+      <h3 class="panelTitle">Assistant IA (Ollama)</h3>
+      <span class="listMeta">Analyse automatique de la demande</span>
+    </div>
+
+    <div class="formActions">
+      <button
+        class="btn btnPrimary"
+        type="button"
+        id="aiRequestAnalyzeBtn"
+        data-endpoint="{{ path('admin_api_ai_tournament_request_analysis', {id: requestId}) }}"
+      >
+        Lancer analyse IA
+      </button>
+      <a
+        class="btn btnGhost"
+        href="{{ path('admin_api_ai_tournament_request_analysis', {id: requestId}) }}"
+        target="_blank"
+        rel="noopener"
+      >
+        Ouvrir JSON API
+      </a>
+      <a
+        class="btn btnGhost"
+        href="{{ path('admin_api_ai_health') }}"
+        target="_blank"
+        rel="noopener"
+      >
+        Health API
+      </a>
+    </div>
+
+    <pre id="aiRequestOutput" class="listMeta" style="margin-top:12px; white-space:pre-wrap;">Clique sur "Lancer analyse IA".</pre>
+  </section>
+
+  <section class="panel">
+    <div class="panelHeader">
       <h3 class="panelTitle">Decision admin</h3>
       <span class="listMeta">Email automatique a l'organisateur</span>
     </div>
@@ -84,4 +120,155 @@
       </div>
     {% endif %}
   </section>
+
+  <section class="panel">
+    <div class="panelHeader">
+      <h3 class="panelTitle">Assistant IA (Ollama local)</h3>
+      <span class="listMeta">Analyse heuristique + LLM local via API Symfony</span>
+    </div>
+
+    <div class="formActions" style="margin-bottom: 10px;">
+      <button
+        type="button"
+        class="btn btnPrimary js-ai-ollama-review-btn"
+        data-status-url="{{ path('admin_api_ai_ollama_status') }}"
+        data-review-url="{{ path('admin_api_ai_tournament_request_review', {id: requestId}) }}"
+      >
+        Analyser avec IA
+      </button>
+      <a class="btn btnGhost" href="{{ path('admin_api_ai_ollama_status') }}" target="_blank" rel="noopener">Voir status API</a>
+    </div>
+
+    <div class="listItem js-ai-ollama-review-status" style="display:none;">
+      <span>...</span>
+      <span class="badge badge--info">IA</span>
+    </div>
+
+    <div class="field" style="margin-top: 10px;">
+      <label>Resultat JSON (debug / test API)</label>
+      <textarea class="js-ai-ollama-review-output" rows="18" readonly style="font-family: monospace; white-space: pre;">Cliquez sur "Analyser avec IA" pour lancer un test.</textarea>
+    </div>
+  </section>
+{% endblock %}
+
+{% block javascripts %}
+  {{ parent() }}
+  <script>
+    (function () {
+      const button = document.querySelector('.js-ai-ollama-review-btn');
+      if (!button) {
+        return;
+      }
+
+      const statusBox = document.querySelector('.js-ai-ollama-review-status');
+      const output = document.querySelector('.js-ai-ollama-review-output');
+
+      const setStatus = function (text, badgeClass, badgeText) {
+        if (!statusBox) {
+          return;
+        }
+
+        const textNode = statusBox.querySelector('span');
+        const badgeNode = statusBox.querySelector('.badge');
+        if (textNode) {
+          textNode.textContent = text;
+        }
+        if (badgeNode) {
+          badgeNode.className = 'badge ' + (badgeClass || 'badge--info');
+          badgeNode.textContent = badgeText || 'IA';
+        }
+        statusBox.style.display = 'flex';
+      };
+
+      button.addEventListener('click', async function () {
+        const statusUrl = button.getAttribute('data-status-url');
+        const reviewUrl = button.getAttribute('data-review-url');
+        if (!statusUrl || !reviewUrl) {
+          return;
+        }
+
+        button.disabled = true;
+        const defaultLabel = button.textContent;
+        button.textContent = 'Analyse en cours...';
+        setStatus('Verification de la connexion Ollama...', 'badge--info', 'CHECK');
+
+        try {
+          const statusResponse = await fetch(statusUrl, { headers: { 'Accept': 'application/json' } });
+          const statusData = await statusResponse.json();
+
+          if (!statusResponse.ok || !statusData.success) {
+            if (output) {
+              output.value = JSON.stringify(statusData, null, 2);
+            }
+            setStatus('Ollama indisponible depuis Symfony.', 'badge--danger', 'OFFLINE');
+            return;
+          }
+
+          setStatus('Ollama connecte. Generation de l analyse IA...', 'badge--warning', 'RUN');
+
+          const reviewResponse = await fetch(reviewUrl, { headers: { 'Accept': 'application/json' } });
+          const reviewData = await reviewResponse.json();
+
+          if (output) {
+            output.value = JSON.stringify(reviewData, null, 2);
+          }
+
+          if (reviewResponse.ok && reviewData.success) {
+            setStatus('Analyse IA terminee. JSON affiche ci-dessous.', 'badge--success', 'OK');
+          } else {
+            setStatus('Analyse partielle/erreur. Voir JSON ci-dessous.', 'badge--warning', 'PARTIAL');
+          }
+        } catch (error) {
+          if (output) {
+            output.value = String(error);
+          }
+          setStatus('Erreur reseau pendant l appel IA.', 'badge--danger', 'ERROR');
+        } finally {
+          button.disabled = false;
+          button.textContent = defaultLabel;
+        }
+      });
+    })();
+  </script>
+{% endblock %}
+
+{% block javascripts %}
+  {{ parent() }}
+  <script>
+    (function () {
+      const trigger = document.getElementById('aiRequestAnalyzeBtn');
+      const output = document.getElementById('aiRequestOutput');
+      if (!trigger || !output) {
+        return;
+      }
+
+      const endpoint = trigger.getAttribute('data-endpoint');
+      if (!endpoint) {
+        output.textContent = 'Endpoint IA introuvable.';
+        return;
+      }
+
+      trigger.addEventListener('click', async function () {
+        trigger.disabled = true;
+        output.textContent = 'Analyse en cours...';
+
+        try {
+          const response = await fetch(endpoint, {
+            method: 'GET',
+            headers: {
+              'Accept': 'application/json'
+            },
+            credentials: 'same-origin'
+          });
+
+          const data = await response.json();
+          output.textContent = JSON.stringify(data, null, 2);
+        } catch (error) {
+          output.textContent = 'Erreur IA: ' + String(error);
+        } finally {
+          trigger.disabled = false;
+        }
+      });
+    })();
+  </script>
 {% endblock %}

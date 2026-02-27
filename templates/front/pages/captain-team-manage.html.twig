@@ -2,6 +2,167 @@
 
 {% block title %}PULSE - Mon equipe{% endblock %}
 
+{% block stylesheets %}
+  {{ parent() }}
+  <style>
+    .captainManageMode {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .captainManageHero {
+      padding: 18px;
+      border-radius: 28px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background:
+        radial-gradient(900px 260px at 80% 20%, rgba(43, 210, 255, 0.14), transparent 60%),
+        linear-gradient(145deg, rgba(9, 28, 47, 0.92), rgba(6, 20, 38, 0.92));
+      box-shadow: 0 26px 60px rgba(0, 0, 0, 0.35);
+    }
+
+    .captainManageIdentity {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .captainManageAvatar {
+      width: 96px;
+      height: 96px;
+      border-radius: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+      flex: 0 0 auto;
+    }
+
+    .captainManageName {
+      margin: 0;
+      font-size: clamp(24px, 4vw, 34px);
+      line-height: 1.05;
+    }
+
+    .captainManageStats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .captainManageStat {
+      border-radius: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.03);
+      padding: 12px 14px;
+      min-height: 84px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .captainManageStatValue {
+      font-size: 30px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .captainManageStatLabel {
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.04em;
+    }
+
+    .captainManageEditor {
+      border-radius: 28px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background:
+        radial-gradient(1000px 400px at 74% 12%, rgba(43, 210, 255, 0.14), transparent 60%),
+        radial-gradient(760px 340px at 20% 20%, rgba(43, 210, 255, 0.06), transparent 65%),
+        linear-gradient(165deg, rgba(7, 22, 40, 0.95), rgba(5, 18, 34, 0.95));
+      box-shadow: 0 28px 62px rgba(0, 0, 0, 0.38);
+      padding: 16px;
+    }
+
+    .captainManageGrid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .captainManageField {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .captainManageField .textarea {
+      min-height: 136px;
+    }
+
+    .captainManageRegionInline {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .captainManageRegionActions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .captainManageRegionInline .btn,
+    .captainManageRegionActions .btn {
+      white-space: nowrap;
+    }
+
+    .captainManageAiMeta {
+      margin-top: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 14px;
+      padding: 10px 12px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .captainManageActions {
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .captainManageStatus {
+      margin-top: 6px;
+      min-height: 16px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    @media (max-width: 980px) {
+      .captainManageStats {
+        grid-template-columns: 1fr;
+      }
+
+      .captainManageGrid {
+        grid-template-columns: 1fr;
+      }
+
+      .captainManageRegionInline {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+{% endblock %}
+
 {% block body %}
   {% include 'front/partials/_hero_mini.html.twig' with {
     hero_kicker: 'CAPITAINE',
@@ -12,6 +173,15 @@
 
   <main class="page">
     <section class="belowHero">
+      {% for label, messages in app.flashes %}
+        {% for message in messages %}
+          <div class="listItem">
+            <span>{{ message }}</span>
+            <span class="badge {{ label == 'error' ? 'badge--danger' : (label == 'warning' ? 'badge--warning' : (label == 'info' ? 'badge--info' : 'badge--success')) }}">{{ label|upper }}</span>
+          </div>
+        {% endfor %}
+      {% endfor %}
+
       <div class="layout">
         {% include 'front/partials/_captain_side_nav.html.twig' with {
           active: 'team',
@@ -25,154 +195,171 @@
             selector_route: 'front_captain_team_manage'
           } %}
 
-          <div class="panel">
-            <div class="panel__head">
-              <div>
-                <h3 class="panel__title">MODE ACTUEL</h3>
-                <div class="panel__desc">
-                  {% if team_form_mode == 'create' %}
-                    Creation d'une nouvelle equipe.
-                  {% else %}
-                    Modification de l'equipe active.
-                  {% endif %}
-                </div>
-              </div>
-              <div class="panel__actions">
-                <a class="btn btn--ghost" href="{{ path('front_captain_team_manage', {mode: 'create'}) }}">Nouvelle equipe</a>
-                {% if active_team %}
-                  <a class="btn btn--ghost" href="{{ path('front_captain_team_manage', {team: active_team.teamId}) }}">Modifier active</a>
+          <section class="panel captainManageMode">
+            <div>
+              <h3 class="panel__title">MODE ACTUEL</h3>
+              <div class="panel__desc">
+                {% if team_form_mode == 'create' %}
+                  Creation d'une nouvelle equipe.
+                {% else %}
+                  Modification de l'equipe active.
                 {% endif %}
               </div>
             </div>
-          </div>
+            <div class="panel__actions">
+              <a class="btn btn--ghost" href="{{ path('front_captain_team_manage', {mode: 'create'}) }}">Nouvelle equipe</a>
+              {% if active_team %}
+                <a class="btn btn--ghost" href="{{ path('front_captain_team_manage', {team: active_team.teamId}) }}">Modifier active</a>
+              {% endif %}
+            </div>
+          </section>
 
           {% if active_team %}
             {% set teamLogoPath = active_team.logoImageId ? active_team.logoImageId.fileUrl : '' %}
-            {% set teamLogoUrl = teamLogoPath ? (teamLogoPath starts with 'http' ? teamLogoPath : (asset(teamLogoPath)|imagine_filter('team_logo_thumb'))) : 'https://picsum.photos/seed/captain_team_' ~ active_team.teamId ~ '/320/320' %}
-            <section class="panel">
-              <div class="profileHeader">
-                <div class="avatarLg" data-avatar="{{ teamLogoUrl }}"></div>
+            {% if teamLogoPath and (teamLogoPath starts with 'http') %}
+              {% set teamLogoUrl = teamLogoPath %}
+            {% elseif teamLogoPath %}
+              {% set teamLogoUrl = asset(teamLogoPath)|imagine_filter('team_logo') %}
+            {% else %}
+              {% set teamLogoUrl = 'https://picsum.photos/seed/captain_team_' ~ active_team.teamId ~ '/320/320' %}
+            {% endif %}
+
+            <section class="captainManageHero">
+              <div class="captainManageIdentity">
+                <div class="captainManageAvatar avatarLg" data-avatar="{{ teamLogoUrl }}" aria-hidden="true"></div>
                 <div>
-                  <h3 style="margin:0;">{{ active_team.name }}</h3>
+                  <h2 class="captainManageName">{{ active_team.name }}</h2>
                   <div class="muted">{{ active_team.region ?: 'Region non definie' }}</div>
                 </div>
               </div>
 
-              <div class="statsRow" style="margin-top:12px;">
-                <div class="statCard">
-                  <div class="statCard__value">{{ team_stats.members }}</div>
-                  <div class="statCard__label">Membres actifs</div>
-                </div>
-                <div class="statCard">
-                  <div class="statCard__value">{{ team_stats.products }}</div>
-                  <div class="statCard__label">Produits</div>
-                </div>
-                <div class="statCard">
-                  <div class="statCard__value">{{ team_stats.tournaments }}</div>
-                  <div class="statCard__label">Inscriptions tournoi</div>
-                </div>
+              <div class="captainManageStats">
+                <article class="captainManageStat">
+                  <div class="captainManageStatValue">{{ team_stats.members }}</div>
+                  <div class="captainManageStatLabel">Membres actifs</div>
+                </article>
+                <article class="captainManageStat">
+                  <div class="captainManageStatValue">{{ team_stats.products }}</div>
+                  <div class="captainManageStatLabel">Produits</div>
+                </article>
+                <article class="captainManageStat">
+                  <div class="captainManageStatValue">{{ team_stats.tournaments }}</div>
+                  <div class="captainManageStatLabel">Inscriptions tournoi</div>
+                </article>
               </div>
             </section>
           {% endif %}
 
           {% if team_form_mode == 'create' %}
-            <form class="panel" method="post" action="{{ path('front_captain_team_manage_create') }}" enctype="multipart/form-data" data-team-manage-form>
+            <input type="hidden" id="captainRegionNormalizeToken" value="{{ csrf_token('captain_team_region_normalize') }}">
+            <section class="captainManageEditor">
               <h3 class="panel__title">CREER UNE EQUIPE</h3>
+              <form method="post" action="{{ path('front_captain_team_manage_create') }}" enctype="multipart/form-data">
+                <div class="captainManageGrid" style="margin-top:12px;">
+                  <label class="captainManageField">
+                    <span class="field__label">Nom de l'equipe *</span>
+                    <input class="input" type="text" name="name" required maxlength="100">
+                  </label>
 
-              <div class="formGrid" style="margin-top:12px;">
-                <label class="field">
-                  <span class="field__label">Nom de l'equipe *</span>
-                  <input class="input" type="text" name="name" required maxlength="100" data-team-name-input>
-                </label>
+                  <label class="captainManageField">
+                    <span class="field__label">Region</span>
+                    <div class="captainManageRegionInline">
+                      <input class="input" id="captainCreateTeamRegion" type="text" name="region" maxlength="80" placeholder="Ex: Tunis">
+                      <div class="captainManageRegionActions">
+                        <button class="btn btn--ghost" type="button" id="captainCreateRegionNormalize">Normaliser</button>
+                        <button class="btn btn--ghost" type="button" id="captainCreateRegionLocate">Ma position</button>
+                      </div>
+                    </div>
+                    <span class="muted">Saisie libre normalisee via OpenStreetMap.</span>
+                    <span class="captainManageStatus" id="captainCreateRegionStatus"></span>
+                  </label>
 
-                <label class="field">
-                  <span class="field__label">Region</span>
-                  <div style="display:flex; gap:8px; align-items:center;">
-                    <input class="input" type="text" name="region" maxlength="80" data-team-region-input style="flex:1;">
-                    <button class="btn btn--ghost" type="button" data-geo-fill-region>Ma position</button>
-                  </div>
-                </label>
+                  <label class="captainManageField">
+                    <span class="field__label">Description</span>
+                    <textarea class="textarea" name="description" rows="5"></textarea>
+                  </label>
 
-                <label class="field">
-                  <span class="field__label">Description</span>
-                  <textarea class="textarea" name="description" rows="5" data-team-description-input></textarea>
-                </label>
+                  <label class="captainManageField">
+                    <span class="field__label">Logo equipe</span>
+                    <input class="input" type="file" name="logo_file" accept="image/png,image/jpeg,image/webp,image/gif">
+                  </label>
+                </div>
 
-                <label class="field">
-                  <span class="field__label">Style IA (optionnel)</span>
-                  <input class="input" type="text" name="style_hint" placeholder="ex: agressif, pro, tactique..." data-team-style-input>
-                </label>
-
-                <label class="field">
-                  <span class="field__label">Slogan IA (aperçu)</span>
-                  <input class="input" type="text" value="" readonly data-team-slogan-output placeholder="Générer via IA">
-                  <div style="margin-top:8px; display:flex; gap:8px; align-items:center;">
-                    <button class="btn btn--soft" type="button" data-generate-team-branding data-branding-url="{{ path('front_captain_team_manage_ai_branding') }}" data-branding-csrf="{{ csrf_token('captain_team_branding_ai') }}">Générer bio + slogan (IA)</button>
-                    <span class="muted" data-branding-source></span>
-                  </div>
-                </label>
-
-                <label class="field">
-                  <span class="field__label">Logo equipe</span>
-                  <input class="input" type="file" name="logo_file" accept="image/png,image/jpeg,image/webp,image/gif">
-                </label>
-              </div>
-
-              <div class="formActions" style="margin-top:12px;">
-                <input type="hidden" name="_token" value="{{ csrf_token('captain_team_create') }}">
-                <input type="hidden" name="g-recaptcha-response" data-recaptcha-token>
-                <button class="btn btn--primary" type="submit">Creer equipe</button>
-              </div>
-            </form>
+                <div class="captainManageActions">
+                  <input type="hidden" name="_token" value="{{ csrf_token('captain_team_create') }}">
+                  <button class="btn btn--primary" type="submit">Creer equipe</button>
+                </div>
+              </form>
+            </section>
           {% elseif active_team %}
-            <form class="panel" method="post" action="{{ path('front_captain_team_manage_update', {id: active_team.teamId}) }}" enctype="multipart/form-data" data-team-manage-form>
+            {% set aiSuggestedBio = ai_team_branding and ai_team_branding.bio ? ai_team_branding.bio : active_team.description %}
+            {% set aiSuggestedSlogan = ai_team_branding and ai_team_branding.slogan ? ai_team_branding.slogan : '' %}
+            {% set aiStyleHint = ai_team_branding and ai_team_branding.style_hint ? ai_team_branding.style_hint : '' %}
+
+            <section class="captainManageEditor">
               <h3 class="panel__title">MODIFIER L'EQUIPE ACTIVE</h3>
 
-              <div class="formGrid" style="margin-top:12px;">
-                <label class="field">
-                  <span class="field__label">Nom de l'equipe *</span>
-                  <input class="input" type="text" name="name" value="{{ active_team.name }}" required maxlength="100" data-team-name-input>
-                </label>
+              <form id="captainTeamUpdateForm" method="post" action="{{ path('front_captain_team_manage_update', {id: active_team.teamId}) }}" enctype="multipart/form-data">
+                <div class="captainManageGrid" style="margin-top:12px;">
+                  <label class="captainManageField">
+                    <span class="field__label">Nom de l'equipe *</span>
+                    <input class="input" type="text" name="name" value="{{ active_team.name }}" required maxlength="100">
+                  </label>
 
-                <label class="field">
-                  <span class="field__label">Region</span>
-                  <div style="display:flex; gap:8px; align-items:center;">
-                    <input class="input" type="text" name="region" value="{{ active_team.region }}" maxlength="80" data-team-region-input style="flex:1;">
-                    <button class="btn btn--ghost" type="button" data-geo-fill-region>Ma position</button>
-                  </div>
-                </label>
+                  <label class="captainManageField">
+                    <span class="field__label">Region</span>
+                    <div class="captainManageRegionInline">
+                      <input class="input" id="captainTeamRegion" type="text" name="region" value="{{ active_team.region }}" maxlength="80" placeholder="Ex: Tunis">
+                      <div class="captainManageRegionActions">
+                        <button class="btn btn--ghost" type="button" id="captainRegionNormalize">Normaliser</button>
+                        <button class="btn btn--ghost" type="button" id="captainRegionLocate">Ma position</button>
+                      </div>
+                    </div>
+                    <span class="muted">Saisie libre normalisee via OpenStreetMap.</span>
+                  </label>
 
-                <label class="field">
-                  <span class="field__label">Description</span>
-                  <textarea class="textarea" name="description" rows="5" data-team-description-input>{{ active_team.description }}</textarea>
-                </label>
+                  <label class="captainManageField">
+                    <span class="field__label">Description</span>
+                    <textarea class="textarea" name="description" rows="6">{{ aiSuggestedBio }}</textarea>
+                  </label>
 
-                <label class="field">
-                  <span class="field__label">Style IA (optionnel)</span>
-                  <input class="input" type="text" name="style_hint" placeholder="ex: agressif, pro, tactique..." data-team-style-input>
-                </label>
+                  <label class="captainManageField">
+                    <span class="field__label">Style IA (optionnel)</span>
+                    <input class="input" id="captainBrandingStyleHint" type="text" value="{{ aiStyleHint }}" placeholder="ex: agressif, pro, tactique...">
+                  </label>
 
-                <label class="field">
-                  <span class="field__label">Slogan IA (aperçu)</span>
-                  <input class="input" type="text" value="" readonly data-team-slogan-output placeholder="Générer via IA">
-                  <div style="margin-top:8px; display:flex; gap:8px; align-items:center;">
-                    <button class="btn btn--soft" type="button" data-generate-team-branding data-branding-url="{{ path('front_captain_team_manage_ai_branding') }}" data-branding-csrf="{{ csrf_token('captain_team_branding_ai') }}">Générer bio + slogan (IA)</button>
-                    <span class="muted" data-branding-source></span>
-                  </div>
-                </label>
+                  <label class="captainManageField">
+                    <span class="field__label">Slogan IA (apercu)</span>
+                    <input class="input" type="text" value="{{ aiSuggestedSlogan }}" placeholder="Generer via IA" readonly>
+                  </label>
 
-                <label class="field">
-                  <span class="field__label">Changer le logo</span>
-                  <input class="input" type="file" name="logo_file" accept="image/png,image/jpeg,image/webp,image/gif">
-                </label>
-              </div>
+                  <label class="captainManageField">
+                    <span class="field__label">Changer le logo</span>
+                    <input class="input" type="file" name="logo_file" accept="image/png,image/jpeg,image/webp,image/gif">
+                  </label>
+                </div>
 
-              <div class="formActions" style="margin-top:12px;">
                 <input type="hidden" name="_token" value="{{ csrf_token('captain_team_update_' ~ active_team.teamId) }}">
-                <input type="hidden" name="g-recaptcha-response" data-recaptcha-token>
-                <button class="btn btn--primary" type="submit">Enregistrer</button>
+              </form>
+              <input type="hidden" id="captainRegionNormalizeToken" value="{{ csrf_token('captain_team_region_normalize') }}">
+
+              <form id="captainTeamBrandingForm" method="post" action="{{ path('front_captain_team_manage_generate_branding', {id: active_team.teamId}) }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('captain_team_manage_generate_branding_' ~ active_team.teamId) }}">
+                <input type="hidden" name="style_hint" id="captainBrandingStyleHintMirror" value="{{ aiStyleHint }}">
+              </form>
+
+              {% if ai_team_branding %}
+                <div class="captainManageAiMeta">
+                  Source IA: {{ ai_team_branding.provider }}/{{ ai_team_branding.source }} ({{ ai_team_branding.model }}){% if ai_team_branding.generated_at %} - {{ ai_team_branding.generated_at }}{% endif %}
+                </div>
+              {% endif %}
+
+              <div class="captainManageActions">
+                <button class="btn btn--soft" type="submit" form="captainTeamBrandingForm">Generer bio + slogan (IA)</button>
+                <button class="btn btn--primary" type="submit" form="captainTeamUpdateForm">Enregistrer</button>
               </div>
-            </form>
+              <div class="captainManageStatus" id="captainRegionLocateStatus"></div>
+            </section>
           {% endif %}
 
           <section class="panel">
@@ -181,6 +368,7 @@
               <table class="table">
                 <thead>
                   <tr>
+                    <th>Logo</th>
                     <th>Equipe</th>
                     <th>Region</th>
                     <th>Action</th>
@@ -188,7 +376,16 @@
                 </thead>
                 <tbody>
                   {% for team in captain_teams %}
+                    {% set listLogoPath = team.logoImageId ? team.logoImageId.fileUrl : '' %}
+                    {% if listLogoPath and (listLogoPath starts with 'http') %}
+                      {% set listLogoUrl = listLogoPath %}
+                    {% elseif listLogoPath %}
+                      {% set listLogoUrl = asset(listLogoPath)|imagine_filter('team_thumbnail') %}
+                    {% else %}
+                      {% set listLogoUrl = 'https://picsum.photos/seed/captain_team_list_' ~ (team.teamId ?? 0) ~ '/96/96' %}
+                    {% endif %}
                     <tr>
+                      <td><div class="avatar" data-avatar="{{ listLogoUrl }}" aria-hidden="true"></div></td>
                       <td>{{ team.name }}</td>
                       <td>{{ team.region ?: '-' }}</td>
                       <td>
@@ -197,7 +394,7 @@
                     </tr>
                   {% else %}
                     <tr>
-                      <td colspan="3">Aucune equipe pour le moment.</td>
+                      <td colspan="4">Aucune equipe pour le moment.</td>
                     </tr>
                   {% endfor %}
                 </tbody>
@@ -212,118 +409,150 @@
   </main>
 
   {% include 'front/partials/_auth_modal.html.twig' %}
-  <script>
-    (() => {
-      const forms = document.querySelectorAll('[data-team-manage-form]');
-      if (!forms.length) return;
-
-      forms.forEach((form) => {
-        const regionInput = form.querySelector('[data-team-region-input]');
-        const nameInput = form.querySelector('[data-team-name-input]');
-        const descriptionInput = form.querySelector('[data-team-description-input]');
-        const styleInput = form.querySelector('[data-team-style-input]');
-        const sloganOutput = form.querySelector('[data-team-slogan-output]');
-        const brandingSource = form.querySelector('[data-branding-source]');
-
-        const geoButton = form.querySelector('[data-geo-fill-region]');
-        if (geoButton && regionInput) {
-          geoButton.addEventListener('click', async () => {
-            if (!navigator.geolocation) {
-              alert('Géolocalisation non supportée par le navigateur.');
-              return;
-            }
-            geoButton.disabled = true;
-            geoButton.textContent = 'Localisation...';
-            navigator.geolocation.getCurrentPosition(async (position) => {
-              try {
-                const url = new URL('{{ path('api_location_reverse_geocode') }}', window.location.origin);
-                url.searchParams.set('lat', String(position.coords.latitude));
-                url.searchParams.set('lon', String(position.coords.longitude));
-                const resp = await fetch(url.toString(), { headers: { 'Accept': 'application/json' } });
-                const payload = await resp.json();
-                if (payload && payload.ok && payload.data && payload.data.normalized_region) {
-                  regionInput.value = payload.data.normalized_region;
-                } else {
-                  alert((payload && payload.message) || 'Localisation introuvable.');
-                }
-              } catch (e) {
-                alert('Erreur API géolocalisation.');
-              } finally {
-                geoButton.disabled = false;
-                geoButton.textContent = 'Ma position';
-              }
-            }, () => {
-              geoButton.disabled = false;
-              geoButton.textContent = 'Ma position';
-              alert('Accès à la position refusé.');
-            }, { enableHighAccuracy: true, timeout: 10000 });
-          });
-        }
-
-        const brandingButton = form.querySelector('[data-generate-team-branding]');
-        if (brandingButton && nameInput && descriptionInput && sloganOutput) {
-          brandingButton.addEventListener('click', async () => {
-            brandingButton.disabled = true;
-            brandingButton.textContent = 'Génération...';
-            try {
-              const body = new URLSearchParams();
-              body.set('_token', brandingButton.dataset.brandingCsrf || '');
-              body.set('name', nameInput.value || '');
-              body.set('region', regionInput ? regionInput.value || '' : '');
-              body.set('style_hint', styleInput ? styleInput.value || '' : '');
-
-              const resp = await fetch(brandingButton.dataset.brandingUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json' },
-                body: body.toString(),
-              });
-              const payload = await resp.json();
-              if (payload && payload.ok && payload.data) {
-                if (!descriptionInput.value.trim()) {
-                  descriptionInput.value = payload.data.bio || '';
-                } else {
-                  descriptionInput.value = (descriptionInput.value.trim() + "\\n\\n" + (payload.data.bio || '')).trim();
-                }
-                sloganOutput.value = payload.data.slogan || '';
-                if (brandingSource) {
-                  brandingSource.textContent = 'Source: ' + (payload.data.source || 'IA');
-                }
-              } else {
-                alert((payload && payload.message) || 'Erreur génération IA.');
-              }
-            } catch (e) {
-              alert('Erreur génération IA.');
-            } finally {
-              brandingButton.disabled = false;
-              brandingButton.textContent = 'Générer bio + slogan (IA)';
-            }
-          });
-        }
-      });
-    })();
-  </script>
-  {% if google_recaptcha_site_key %}
-    <script src="https://www.google.com/recaptcha/api.js?render={{ google_recaptcha_site_key }}"></script>
-    <script>
-      (() => {
-        const forms = document.querySelectorAll('[data-team-manage-form]');
-        if (!forms.length || !window.grecaptcha) return;
-        forms.forEach((form) => {
-          form.addEventListener('submit', async (event) => {
-            const tokenInput = form.querySelector('[data-recaptcha-token]');
-            if (!tokenInput || tokenInput.value) return;
-            event.preventDefault();
-            const action = form.action.includes('/update') ? 'captain_team_update' : 'captain_team_create';
-            try {
-              tokenInput.value = await window.grecaptcha.execute('{{ google_recaptcha_site_key|e('js') }}', { action });
-            } catch (e) {
-              tokenInput.value = '';
-            }
-            form.submit();
-          });
-        });
-      })();
-    </script>
-  {% endif %}
 {% endblock %}
 
+{% block javascripts %}
+  {{ parent() }}
+  <script>
+    (function () {
+      var normalizeEndpoint = '{{ path('front_captain_team_manage_normalize_region') }}';
+      var normalizeTokenInput = document.getElementById('captainRegionNormalizeToken');
+      var normalizeToken = normalizeTokenInput ? normalizeTokenInput.value : '';
+
+      var styleHintInput = document.getElementById('captainBrandingStyleHint');
+      var styleHintMirror = document.getElementById('captainBrandingStyleHintMirror');
+      var syncStyleHint = function () {
+        if (!styleHintInput || !styleHintMirror) {
+          return;
+        }
+
+        styleHintMirror.value = styleHintInput.value.trim();
+      };
+
+      if (styleHintInput && styleHintMirror) {
+        styleHintInput.addEventListener('input', syncStyleHint);
+        syncStyleHint();
+      }
+
+      var postNormalize = function (payload, onSuccess, onError) {
+        if (normalizeEndpoint === '' || normalizeToken === '') {
+          onError('Normalisation indisponible (token manquant).');
+          return;
+        }
+
+        payload['_token'] = normalizeToken;
+
+        fetch(normalizeEndpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: new URLSearchParams(payload).toString()
+        })
+          .then(function (response) { return response.json(); })
+          .then(function (json) {
+            if (!json || json.ok !== true || !json.data || !json.data.region) {
+              onError(json && json.message ? json.message : 'Region non resolue.');
+              return;
+            }
+
+            onSuccess(String(json.data.region), String(json.data.source || 'osm'));
+          })
+          .catch(function () {
+            onError('Erreur reseau pendant la normalisation OpenStreetMap.');
+          });
+      };
+
+      var wireRegionTools = function (inputId, normalizeButtonId, locateButtonId, statusId) {
+        var regionInput = document.getElementById(inputId);
+        var normalizeButton = document.getElementById(normalizeButtonId);
+        var locateButton = document.getElementById(locateButtonId);
+        var locateStatus = document.getElementById(statusId);
+
+        var setLocateStatus = function (message) {
+          if (!locateStatus) {
+            return;
+          }
+
+          locateStatus.textContent = message;
+        };
+
+        if (!regionInput || (!normalizeButton && !locateButton)) {
+          return;
+        }
+
+        if (normalizeButton) {
+          normalizeButton.addEventListener('click', function () {
+            var rawRegion = String(regionInput.value || '').trim();
+            if (rawRegion === '') {
+              setLocateStatus('Saisissez une region a normaliser.');
+              return;
+            }
+
+            normalizeButton.disabled = true;
+            setLocateStatus('Normalisation en cours...');
+            postNormalize(
+              { region: rawRegion },
+              function (normalizedRegion, source) {
+                regionInput.value = normalizedRegion;
+                setLocateStatus('Region normalisee via ' + source + '.');
+                normalizeButton.disabled = false;
+              },
+              function (errorMessage) {
+                setLocateStatus(errorMessage);
+                normalizeButton.disabled = false;
+              }
+            );
+          });
+        }
+
+        if (!locateButton) {
+          return;
+        }
+
+        locateButton.addEventListener('click', function () {
+          if (!('geolocation' in navigator)) {
+            setLocateStatus('Geolocalisation indisponible sur ce navigateur.');
+            return;
+          }
+
+          locateButton.disabled = true;
+          setLocateStatus('Localisation en cours...');
+
+          navigator.geolocation.getCurrentPosition(
+            function (position) {
+              postNormalize(
+                {
+                  latitude: String(position.coords.latitude || ''),
+                  longitude: String(position.coords.longitude || '')
+                },
+                function (normalizedRegion, source) {
+                  regionInput.value = normalizedRegion;
+                  setLocateStatus('Position normalisee via ' + source + '.');
+                  locateButton.disabled = false;
+                },
+                function (errorMessage) {
+                  setLocateStatus(errorMessage);
+                  locateButton.disabled = false;
+                }
+              );
+            },
+            function () {
+              locateButton.disabled = false;
+              setLocateStatus('Autorisez la geolocalisation pour remplir la region.');
+            },
+            {
+              enableHighAccuracy: true,
+              timeout: 10000,
+              maximumAge: 0
+            }
+          );
+        });
+      };
+
+      wireRegionTools('captainTeamRegion', 'captainRegionNormalize', 'captainRegionLocate', 'captainRegionLocateStatus');
+      wireRegionTools('captainCreateTeamRegion', 'captainCreateRegionNormalize', 'captainCreateRegionLocate', 'captainCreateRegionStatus');
+    })();
+  </script>
+{% endblock %}

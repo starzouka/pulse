@@ -19,14 +19,14 @@
         <a class="btn btn--ghost" href="{{ path('app_logout') }}">Se deconnecter</a>
       </div>
     {% else %}
-      <form class="authForm" id="loginForm" method="post" action="{{ path('front_login') }}">
+      <form class="authForm" id="loginForm" method="post" action="{{ path('front_login') }}" novalidate="novalidate">
         <label class="field">
           <span class="field__label">Email</span>
-          <input type="email" name="_username" placeholder="ex: you@email.com" required autocomplete="email" />
+          <input type="text" name="_username" placeholder="ex: you@email.com" autocomplete="email" />
         </label>
         <label class="field">
           <span class="field__label">Mot de passe</span>
-          <input type="password" name="_password" placeholder="********" required autocomplete="current-password" />
+          <input type="password" name="_password" placeholder="********" autocomplete="current-password" />
         </label>
         <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
         <input type="hidden" name="_target_path" value="{{ app.request.uri }}">

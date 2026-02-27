@@ -12,6 +12,15 @@
 
   <main class="page">
     <section class="belowHero">
+      {% for label, messages in app.flashes %}
+        {% for message in messages %}
+          <div class="listItem">
+            <span>{{ message }}</span>
+            <span class="badge {{ label == 'error' ? 'badge--danger' : (label == 'warning' ? 'badge--warning' : (label == 'info' ? 'badge--info' : 'badge--success')) }}">{{ label|upper }}</span>
+          </div>
+        {% endfor %}
+      {% endfor %}
+
       <div class="layout">
         {% include 'front/partials/_captain_side_nav.html.twig' with {
           active: 'members',
@@ -33,21 +42,25 @@
                   {{ active_team.name }} - {{ active_members|length }} membre(s) actif(s)
                 </div>
               </div>
-              <div>
-                <a class="btn btn--ghost" href="{{ path('front_captain_members_export_roster_pdf', {teamId: active_team.teamId}) }}">Exporter fiche roster (PDF)</a>
+              <div class="panel__actions">
+                <a class="btn btn--ghost" href="{{ path('front_captain_members_roster_pdf', {teamId: active_team.teamId}) }}">Exporter fiche roster (PDF)</a>
               </div>
             </div>
-            <div class="statsRow" style="margin-top:12px;">
-              <div class="statCard"><div class="statCard__value">{{ roster_stats.total_active }}</div><div class="statCard__label">Actifs</div></div>
-              <div class="statCard"><div class="statCard__value">{{ roster_stats.captains }}</div><div class="statCard__label">Captain</div></div>
-              <div class="statCard"><div class="statCard__value">{{ roster_stats.co_captains }}</div><div class="statCard__label">Co-captains</div></div>
-              <div class="statCard"><div class="statCard__value">{{ roster_stats.starters }}</div><div class="statCard__label">Titulaires</div></div>
-              <div class="statCard"><div class="statCard__value">{{ roster_stats.substitutes }}</div><div class="statCard__label">Remplaçants</div></div>
-            </div>
 
-            <div class="panel" style="margin-top:12px;">
-              <h3 class="panel__title">DISTRIBUTION ROSTER (GOOGLE CHARTS)</h3>
-              <div id="roster_distribution_chart" style="min-height:320px;"></div>
+            <div class="layout" style="margin-top:10px;">
+              <section class="panel" style="margin:0;">
+                <h4 style="margin:0 0 8px;">REPARTITION ROSTER</h4>
+                <div id="rosterRolesChart" style="height:320px;"></div>
+              </section>
+              <aside class="panel" style="margin:0;">
+                <h4 style="margin:0 0 8px;">SYNTHESE</h4>
+                <div class="list">
+                  <div class="listItem"><span>CAPTAIN</span><span class="badge badge--info">{{ roster_distribution.CAPTAIN|default(0) }}</span></div>
+                  <div class="listItem"><span>CO_CAPTAIN</span><span class="badge">{{ roster_distribution.CO_CAPTAIN|default(0) }}</span></div>
+                  <div class="listItem"><span>STARTER</span><span class="badge">{{ roster_distribution.STARTER|default(0) }}</span></div>
+                  <div class="listItem"><span>SUBSTITUTE</span><span class="badge">{{ roster_distribution.SUBSTITUTE|default(0) }}</span></div>
+                </div>
+              </aside>
             </div>
 
             <div class="tableWrap" style="margin-top:10px;">
@@ -55,8 +68,8 @@
                 <thead>
                   <tr>
                     <th>Joueur</th>
-                    <th>Role compte</th>
                     <th>Role roster</th>
+                    <th>Role compte</th>
                     <th>Date adhesion</th>
                     <th>Action</th>
                   </tr>
@@ -64,28 +77,24 @@
                 <tbody>
                   {% for membership in active_members %}
                     {% set member = membership.userId %}
+                    {% set memberIsCaptain = active_team.captainUserId and member.userId == active_team.captainUserId.userId %}
                     <tr>
                       <td>
                         {{ member.displayName ?: member.username }}
                         <div class="muted">@{{ member.username }}</div>
                       </td>
                       <td>
-                        {% if active_team.captainUserId and member.userId == active_team.captainUserId.userId %}
+                        {% if memberIsCaptain %}
                           <span class="badge badge--info">CAPITAINE</span>
                         {% else %}
-                          <span class="badge">MEMBRE</span>
-                        {% endif %}
-                      </td>
-                      <td>
-                        {% if active_team.captainUserId and member.userId == active_team.captainUserId.userId %}
-                          <span class="badge badge--info">CAPTAIN</span>
-                        {% else %}
-                          <form method="post" action="{{ path('front_captain_members_role', {teamId: active_team.teamId, userId: member.userId}) }}" style="display:flex; gap:8px; align-items:center;">
-                            <input type="hidden" name="_token" value="{{ csrf_token('captain_member_role_' ~ active_team.teamId ~ '_' ~ member.userId) }}">
-                            <div class="select" style="min-width:160px;">
+                          <form method="post" action="{{ path('front_captain_members_roster_role', {teamId: active_team.teamId, userId: member.userId}) }}" style="display:flex; gap:8px; align-items:center;">
+                            <input type="hidden" name="_token" value="{{ csrf_token('captain_member_roster_role_' ~ active_team.teamId ~ '_' ~ member.userId) }}">
+                            <div class="select">
                               <select name="roster_role">
-                                {% for rosterRole in assignable_roster_roles %}
-                                  <option value="{{ rosterRole }}" {{ membership.rosterRole == rosterRole ? 'selected' : '' }}>{{ rosterRole }}</option>
+                                {% for roster_role in roster_roles %}
+                                  {% if roster_role != 'CAPTAIN' %}
+                                    <option value="{{ roster_role }}" {{ membership.rosterRole == roster_role ? 'selected' : '' }}>{{ roster_role }}</option>
+                                  {% endif %}
                                 {% endfor %}
                               </select>
                             </div>
@@ -93,9 +102,10 @@
                           </form>
                         {% endif %}
                       </td>
+                      <td><span class="badge">{{ member.role }}</span></td>
                       <td>{{ membership.joinedAt ? membership.joinedAt|date('d/m/Y H:i') : '-' }}</td>
                       <td>
-                        {% if active_team.captainUserId and member.userId == active_team.captainUserId.userId %}
+                        {% if memberIsCaptain %}
                           -
                         {% else %}
                           <form method="post" action="{{ path('front_captain_members_remove', {teamId: active_team.teamId, userId: member.userId}) }}">
@@ -130,15 +140,30 @@
                 <tbody>
                   {% for membership in inactive_members %}
                     {% set member = membership.userId %}
+                    {% set memberIsCaptain = active_team.captainUserId and member.userId == active_team.captainUserId.userId %}
                     <tr>
-                      <td>{{ member.displayName ?: member.username }}</td>
-                      <td>{{ membership.rosterRole ?: 'STARTER' }}</td>
+                      <td>
+                        {{ member.displayName ?: member.username }}
+                        <div class="muted">@{{ member.username }}</div>
+                      </td>
+                      <td><span class="badge">{{ membership.rosterRole ?: 'STARTER' }}</span></td>
                       <td>{{ membership.leftAt ? membership.leftAt|date('d/m/Y H:i') : '-' }}</td>
                       <td>
-                        <form method="post" action="{{ path('front_captain_members_reactivate', {teamId: active_team.teamId, userId: member.userId}) }}">
-                          <input type="hidden" name="_token" value="{{ csrf_token('captain_member_reactivate_' ~ active_team.teamId ~ '_' ~ member.userId) }}">
-                          <button class="btn btn--ghost" type="submit">Réactiver</button>
-                        </form>
+                        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                          <form method="post" action="{{ path('front_captain_members_reactivate', {teamId: active_team.teamId, userId: member.userId}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('captain_member_reactivate_' ~ active_team.teamId ~ '_' ~ member.userId) }}">
+                            <button class="btn btn--ghost" type="submit">Reactiver</button>
+                          </form>
+
+                          {% if memberIsCaptain %}
+                            <span class="muted">-</span>
+                          {% else %}
+                            <form method="post" action="{{ path('front_captain_members_remove_inactive', {teamId: active_team.teamId, userId: member.userId}) }}">
+                              <input type="hidden" name="_token" value="{{ csrf_token('captain_member_remove_inactive_' ~ active_team.teamId ~ '_' ~ member.userId) }}">
+                              <button class="btn btn--ghost" type="submit">Retirer</button>
+                            </form>
+                          {% endif %}
+                        </div>
                       </td>
                     </tr>
                   {% else %}
@@ -158,9 +183,14 @@
   </main>
 
   {% include 'front/partials/_auth_modal.html.twig' %}
+{% endblock %}
+
+{% block javascripts %}
+  {{ parent() }}
   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
   <script type="text/javascript">
-    {{ gc_draw(roster_distribution_chart, 'roster_distribution_chart') }}
+    {{ gc_language('fr') }}
+    {{ gc_draw(roster_chart, 'rosterRolesChart') }}
   </script>
 {% endblock %}
 
