@@ -48,8 +48,21 @@
 
           {% if active_team %}
             {% set teamLogoPath = active_team.logoImageId ? active_team.logoImageId.fileUrl : '' %}
-            {% set teamLogoUrl = teamLogoPath ? (teamLogoPath starts with 'http' ? teamLogoPath : asset(teamLogoPath)) : 'https://picsum.photos/seed/captain_team_' ~ active_team.teamId ~ '/320/320' %}
+            {% if teamLogoPath and (teamLogoPath starts with 'http') %}
+              {% set teamLogoUrl = teamLogoPath %}
+              {% set teamBannerUrl = teamLogoPath %}
+              {% set teamThumbUrl = teamLogoPath %}
+            {% elseif teamLogoPath %}
+              {% set teamLogoUrl = asset(teamLogoPath)|imagine_filter('team_logo') %}
+              {% set teamBannerUrl = asset(teamLogoPath)|imagine_filter('team_banner') %}
+              {% set teamThumbUrl = asset(teamLogoPath)|imagine_filter('team_thumbnail') %}
+            {% else %}
+              {% set teamLogoUrl = 'https://picsum.photos/seed/captain_team_' ~ active_team.teamId ~ '/320/320' %}
+              {% set teamBannerUrl = 'https://picsum.photos/seed/captain_team_banner_' ~ active_team.teamId ~ '/1200/400' %}
+              {% set teamThumbUrl = 'https://picsum.photos/seed/captain_team_thumb_' ~ active_team.teamId ~ '/96/96' %}
+            {% endif %}
             <section class="panel">
+              <div class="coverBlock" data-bg="{{ teamBannerUrl }}"></div>
               <div class="profileHeader">
                 <div class="avatarLg" data-avatar="{{ teamLogoUrl }}"></div>
                 <div>
@@ -145,6 +158,7 @@
               <table class="table">
                 <thead>
                   <tr>
+                    <th>Logo</th>
                     <th>Equipe</th>
                     <th>Region</th>
                     <th>Action</th>
@@ -152,7 +166,16 @@
                 </thead>
                 <tbody>
                   {% for team in captain_teams %}
+                    {% set listLogoPath = team.logoImageId ? team.logoImageId.fileUrl : '' %}
+                    {% if listLogoPath and (listLogoPath starts with 'http') %}
+                      {% set listLogoUrl = listLogoPath %}
+                    {% elseif listLogoPath %}
+                      {% set listLogoUrl = asset(listLogoPath)|imagine_filter('team_thumbnail') %}
+                    {% else %}
+                      {% set listLogoUrl = 'https://picsum.photos/seed/captain_team_list_' ~ (team.teamId ?? 0) ~ '/96/96' %}
+                    {% endif %}
                     <tr>
+                      <td><div class="avatar" data-avatar="{{ listLogoUrl }}" aria-hidden="true"></div></td>
                       <td>{{ team.name }}</td>
                       <td>{{ team.region ?: '-' }}</td>
                       <td>
@@ -161,7 +184,7 @@
                     </tr>
                   {% else %}
                     <tr>
-                      <td colspan="3">Aucune equipe pour le moment.</td>
+                      <td colspan="4">Aucune equipe pour le moment.</td>
                     </tr>
                   {% endfor %}
                 </tbody>

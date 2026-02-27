@@ -143,6 +143,7 @@ final class CaptainTeamManageController extends AbstractController
                 ->setUserId($viewer)
                 ->setJoinedAt($now)
                 ->setIsActive(true)
+                ->setRosterRole(TeamMember::ROSTER_ROLE_CAPTAIN)
                 ->setLeftAt(null),
         );
 
@@ -227,6 +228,7 @@ final class CaptainTeamManageController extends AbstractController
         if ($captainMembership instanceof TeamMember) {
             $captainMembership
                 ->setIsActive(true)
+                ->setRosterRole(TeamMember::ROSTER_ROLE_CAPTAIN)
                 ->setLeftAt(null);
         } else {
             $entityManager->persist(
@@ -235,6 +237,7 @@ final class CaptainTeamManageController extends AbstractController
                     ->setUserId($viewer)
                     ->setJoinedAt(new \DateTime())
                     ->setIsActive(true)
+                    ->setRosterRole(TeamMember::ROSTER_ROLE_CAPTAIN)
                     ->setLeftAt(null),
             );
         }
