@@ -12,6 +12,7 @@ use App\Repository\UserRepository;
 use App\Service\Captain\CaptainTeamContextProvider;
 use App\Service\Captain\RosterManager;
 use App\Service\Pdf\CaptainRosterPdfExporter;
+use CMEN\GoogleChartsBundle\GoogleCharts\Charts\PieChart;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -54,6 +55,20 @@ final class CaptainMembersController extends AbstractController
             static fn (TeamMember $teamMember): bool => !$teamMember->isActive(),
         ));
         $rosterStats = $rosterManager->buildRosterStats($activeTeam);
+        $rosterDistributionChart = new PieChart();
+        $rosterDistributionChart->getData()->setArrayToDataTable([
+            ['Role', 'Count'],
+            ['Captain', (int) ($rosterStats['captains'] ?? 0)],
+            ['Co-captains', (int) ($rosterStats['co_captains'] ?? 0)],
+            ['Titulaires', (int) ($rosterStats['starters'] ?? 0)],
+            ['Remplacants', (int) ($rosterStats['substitutes'] ?? 0)],
+        ]);
+        $rosterDistributionChart->getOptions()
+            ->setTitle('Repartition du roster')
+            ->setHeight(300)
+            ->setWidth(560)
+            ->setPieSliceText('value');
+        $rosterDistributionChart->getOptions()->getLegend()->setPosition('right');
 
         return $this->render('front/pages/captain-members.html.twig', [
             'viewer_user' => $viewer,
@@ -63,6 +78,7 @@ final class CaptainMembersController extends AbstractController
             'inactive_members' => $inactiveMembers,
             'roster_stats' => $rosterStats,
             'assignable_roster_roles' => $rosterManager->getAssignableRoles(),
+            'roster_distribution_chart' => $rosterDistributionChart,
         ]);
     }
 
