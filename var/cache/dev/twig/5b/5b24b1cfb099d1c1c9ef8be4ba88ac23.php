@@ -600,6 +600,6 @@ class __TwigTemplate_0bf0fe50c4691699cf29a0bf2a23663f extends Template
     </div>
   </section>
 {% endblock %}
-", "admin/pages/tournaments.html.twig", "C:\\Users\\ilyes\\OneDrive\\Bureau\\PULSE\\PULSE\\templates\\admin\\pages\\tournaments.html.twig");
+", "admin/pages/tournaments.html.twig", "C:\\Users\\ilyes\\OneDrive\\Bureau\\PULSE - Copie\\PULSE\\templates\\admin\\pages\\tournaments.html.twig");
     }
 }

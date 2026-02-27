@@ -47,33 +47,35 @@ class __TwigTemplate_a41d3a572e368cde4bc9d4c3b0363bcd extends Template
         // line 1
         $context["current_route"] = ((CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, ($context["app"] ?? null), "request", [], "any", false, true, false, 1), "attributes", [], "any", false, true, false, 1), "get", ["_route"], "method", true, true, false, 1)) ? (Twig\Extension\CoreExtension::default(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, (isset($context["app"]) || array_key_exists("app", $context) ? $context["app"] : (function () { throw new RuntimeError('Variable "app" does not exist.', 1, $this->source); })()), "request", [], "any", false, false, false, 1), "attributes", [], "any", false, false, false, 1), "get", ["_route"], "method", false, false, false, 1), "")) : (""));
         // line 2
+        $context["two_factor_pending"] = ((CoreExtension::getAttribute($this->env, $this->source, (isset($context["app"]) || array_key_exists("app", $context) ? $context["app"] : (function () { throw new RuntimeError('Variable "app" does not exist.', 2, $this->source); })()), "user", [], "any", false, false, false, 2) && CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, (isset($context["app"]) || array_key_exists("app", $context) ? $context["app"] : (function () { throw new RuntimeError('Variable "app" does not exist.', 2, $this->source); })()), "request", [], "any", false, false, false, 2), "hasSession", [], "method", false, false, false, 2)) && (CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, (isset($context["app"]) || array_key_exists("app", $context) ? $context["app"] : (function () { throw new RuntimeError('Variable "app" does not exist.', 2, $this->source); })()), "session", [], "any", false, false, false, 2), "get", ["_2fa_verified", false], "method", false, false, false, 2) != true));
+        // line 3
         yield "
 ";
-        // line 3
-        $context["is_home"] = CoreExtension::inFilter((isset($context["current_route"]) || array_key_exists("current_route", $context) ? $context["current_route"] : (function () { throw new RuntimeError('Variable "current_route" does not exist.', 3, $this->source); })()), ["front_root", "front_home", "front_about", "front_contact", "front_faq", "front_search", "front_login", "front_register", "front_forgot_password", "front_reset_password", "front_password_change", "front_dashboard", "front_feed", "front_feed_public", "front_messages", "front_conversation", "front_notifications", "front_profile", "front_profile_edit"]);
-        // line 10
-        $context["is_tournaments"] = ((((is_string($_v0 = (isset($context["current_route"]) || array_key_exists("current_route", $context) ? $context["current_route"] : (function () { throw new RuntimeError('Variable "current_route" does not exist.', 10, $this->source); })())) && is_string($_v1 = "front_tournament") && str_starts_with($_v0, $_v1)) || (is_string($_v2 =         // line 11
-(isset($context["current_route"]) || array_key_exists("current_route", $context) ? $context["current_route"] : (function () { throw new RuntimeError('Variable "current_route" does not exist.', 11, $this->source); })())) && is_string($_v3 = "front_organizer_tournament") && str_starts_with($_v2, $_v3))) || (is_string($_v4 =         // line 12
-(isset($context["current_route"]) || array_key_exists("current_route", $context) ? $context["current_route"] : (function () { throw new RuntimeError('Variable "current_route" does not exist.', 12, $this->source); })())) && is_string($_v5 = "front_organizer_request") && str_starts_with($_v4, $_v5))) || CoreExtension::inFilter(        // line 13
-(isset($context["current_route"]) || array_key_exists("current_route", $context) ? $context["current_route"] : (function () { throw new RuntimeError('Variable "current_route" does not exist.', 13, $this->source); })()), ["front_organizer_registrations", "front_captain_tournaments", "front_captain_team_tournaments", "front_captain_requests"]));
-        // line 14
-        $context["is_games"] = (is_string($_v6 = (isset($context["current_route"]) || array_key_exists("current_route", $context) ? $context["current_route"] : (function () { throw new RuntimeError('Variable "current_route" does not exist.', 14, $this->source); })())) && is_string($_v7 = "front_game") && str_starts_with($_v6, $_v7));
+        // line 4
+        $context["is_home"] = CoreExtension::inFilter((isset($context["current_route"]) || array_key_exists("current_route", $context) ? $context["current_route"] : (function () { throw new RuntimeError('Variable "current_route" does not exist.', 4, $this->source); })()), ["front_root", "front_home", "front_about", "front_contact", "front_faq", "front_search", "front_login", "front_register", "front_forgot_password", "front_reset_password", "front_password_change", "front_dashboard", "front_feed", "front_feed_public", "front_messages", "front_conversation", "front_notifications", "front_profile", "front_profile_edit"]);
+        // line 11
+        $context["is_tournaments"] = ((((is_string($_v0 = (isset($context["current_route"]) || array_key_exists("current_route", $context) ? $context["current_route"] : (function () { throw new RuntimeError('Variable "current_route" does not exist.', 11, $this->source); })())) && is_string($_v1 = "front_tournament") && str_starts_with($_v0, $_v1)) || (is_string($_v2 =         // line 12
+(isset($context["current_route"]) || array_key_exists("current_route", $context) ? $context["current_route"] : (function () { throw new RuntimeError('Variable "current_route" does not exist.', 12, $this->source); })())) && is_string($_v3 = "front_organizer_tournament") && str_starts_with($_v2, $_v3))) || (is_string($_v4 =         // line 13
+(isset($context["current_route"]) || array_key_exists("current_route", $context) ? $context["current_route"] : (function () { throw new RuntimeError('Variable "current_route" does not exist.', 13, $this->source); })())) && is_string($_v5 = "front_organizer_request") && str_starts_with($_v4, $_v5))) || CoreExtension::inFilter(        // line 14
+(isset($context["current_route"]) || array_key_exists("current_route", $context) ? $context["current_route"] : (function () { throw new RuntimeError('Variable "current_route" does not exist.', 14, $this->source); })()), ["front_organizer_registrations", "front_captain_tournaments", "front_captain_team_tournaments", "front_captain_requests"]));
         // line 15
-        $context["is_matches"] = ((is_string($_v8 = (isset($context["current_route"]) || array_key_exists("current_route", $context) ? $context["current_route"] : (function () { throw new RuntimeError('Variable "current_route" does not exist.', 15, $this->source); })())) && is_string($_v9 = "front_match") && str_starts_with($_v8, $_v9)) || (is_string($_v10 =         // line 16
-(isset($context["current_route"]) || array_key_exists("current_route", $context) ? $context["current_route"] : (function () { throw new RuntimeError('Variable "current_route" does not exist.', 16, $this->source); })())) && is_string($_v11 = "front_organizer_match") && str_starts_with($_v10, $_v11)));
-        // line 17
-        $context["is_shop"] = ((CoreExtension::inFilter((isset($context["current_route"]) || array_key_exists("current_route", $context) ? $context["current_route"] : (function () { throw new RuntimeError('Variable "current_route" does not exist.', 17, $this->source); })()), ["front_shop", "front_cart", "front_checkout", "front_orders", "front_order_detail", "front_product_detail"]) || (is_string($_v12 =         // line 18
-(isset($context["current_route"]) || array_key_exists("current_route", $context) ? $context["current_route"] : (function () { throw new RuntimeError('Variable "current_route" does not exist.', 18, $this->source); })())) && is_string($_v13 = "front_captain_product") && str_starts_with($_v12, $_v13))) || CoreExtension::inFilter(        // line 19
-(isset($context["current_route"]) || array_key_exists("current_route", $context) ? $context["current_route"] : (function () { throw new RuntimeError('Variable "current_route" does not exist.', 19, $this->source); })()), ["front_captain_products", "front_captain_orders"]));
-        // line 20
-        $context["is_teams"] = (((is_string($_v14 = (isset($context["current_route"]) || array_key_exists("current_route", $context) ? $context["current_route"] : (function () { throw new RuntimeError('Variable "current_route" does not exist.', 20, $this->source); })())) && is_string($_v15 = "front_team") && str_starts_with($_v14, $_v15)) || (is_string($_v16 =         // line 21
-(isset($context["current_route"]) || array_key_exists("current_route", $context) ? $context["current_route"] : (function () { throw new RuntimeError('Variable "current_route" does not exist.', 21, $this->source); })())) && is_string($_v17 = "front_player") && str_starts_with($_v16, $_v17))) || CoreExtension::inFilter(        // line 22
-(isset($context["current_route"]) || array_key_exists("current_route", $context) ? $context["current_route"] : (function () { throw new RuntimeError('Variable "current_route" does not exist.', 22, $this->source); })()), ["front_players", "front_friends", "front_my_teams", "front_my_requests", "front_captain_members", "front_captain_invite", "front_captain_team_create", "front_captain_team_manage"]));
-        // line 23
+        $context["is_games"] = (is_string($_v6 = (isset($context["current_route"]) || array_key_exists("current_route", $context) ? $context["current_route"] : (function () { throw new RuntimeError('Variable "current_route" does not exist.', 15, $this->source); })())) && is_string($_v7 = "front_game") && str_starts_with($_v6, $_v7));
+        // line 16
+        $context["is_matches"] = ((is_string($_v8 = (isset($context["current_route"]) || array_key_exists("current_route", $context) ? $context["current_route"] : (function () { throw new RuntimeError('Variable "current_route" does not exist.', 16, $this->source); })())) && is_string($_v9 = "front_match") && str_starts_with($_v8, $_v9)) || (is_string($_v10 =         // line 17
+(isset($context["current_route"]) || array_key_exists("current_route", $context) ? $context["current_route"] : (function () { throw new RuntimeError('Variable "current_route" does not exist.', 17, $this->source); })())) && is_string($_v11 = "front_organizer_match") && str_starts_with($_v10, $_v11)));
+        // line 18
+        $context["is_shop"] = ((CoreExtension::inFilter((isset($context["current_route"]) || array_key_exists("current_route", $context) ? $context["current_route"] : (function () { throw new RuntimeError('Variable "current_route" does not exist.', 18, $this->source); })()), ["front_shop", "front_cart", "front_checkout", "front_orders", "front_order_detail", "front_product_detail"]) || (is_string($_v12 =         // line 19
+(isset($context["current_route"]) || array_key_exists("current_route", $context) ? $context["current_route"] : (function () { throw new RuntimeError('Variable "current_route" does not exist.', 19, $this->source); })())) && is_string($_v13 = "front_captain_product") && str_starts_with($_v12, $_v13))) || CoreExtension::inFilter(        // line 20
+(isset($context["current_route"]) || array_key_exists("current_route", $context) ? $context["current_route"] : (function () { throw new RuntimeError('Variable "current_route" does not exist.', 20, $this->source); })()), ["front_captain_products", "front_captain_orders"]));
+        // line 21
+        $context["is_teams"] = (((is_string($_v14 = (isset($context["current_route"]) || array_key_exists("current_route", $context) ? $context["current_route"] : (function () { throw new RuntimeError('Variable "current_route" does not exist.', 21, $this->source); })())) && is_string($_v15 = "front_team") && str_starts_with($_v14, $_v15)) || (is_string($_v16 =         // line 22
+(isset($context["current_route"]) || array_key_exists("current_route", $context) ? $context["current_route"] : (function () { throw new RuntimeError('Variable "current_route" does not exist.', 22, $this->source); })())) && is_string($_v17 = "front_player") && str_starts_with($_v16, $_v17))) || CoreExtension::inFilter(        // line 23
+(isset($context["current_route"]) || array_key_exists("current_route", $context) ? $context["current_route"] : (function () { throw new RuntimeError('Variable "current_route" does not exist.', 23, $this->source); })()), ["front_players", "front_friends", "front_my_teams", "front_my_requests", "front_captain_members", "front_captain_invite", "front_captain_team_create", "front_captain_team_manage"]));
+        // line 24
         yield "
 <div class=\"heroTop\">
   <a class=\"brand\" href=\"";
-        // line 25
+        // line 26
         yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_home");
         yield "\" aria-label=\"Pulse\">
     <span class=\"brand__logo\" aria-hidden=\"true\">
@@ -89,8 +91,8 @@ class __TwigTemplate_a41d3a572e368cde4bc9d4c3b0363bcd extends Template
 
   <nav class=\"topbar\" aria-label=\"Navigation principale\">
     <a class=\"topbar__item";
-        // line 38
-        yield (((($tmp = (isset($context["is_home"]) || array_key_exists("is_home", $context) ? $context["is_home"] : (function () { throw new RuntimeError('Variable "is_home" does not exist.', 38, $this->source); })())) && $tmp instanceof Markup ? (string) $tmp : $tmp)) ? (" is-active") : (""));
+        // line 39
+        yield (((($tmp = (isset($context["is_home"]) || array_key_exists("is_home", $context) ? $context["is_home"] : (function () { throw new RuntimeError('Variable "is_home" does not exist.', 39, $this->source); })())) && $tmp instanceof Markup ? (string) $tmp : $tmp)) ? (" is-active") : (""));
         yield "\" href=\"";
         yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_home");
         yield "\">
@@ -101,8 +103,8 @@ class __TwigTemplate_a41d3a572e368cde4bc9d4c3b0363bcd extends Template
     </a>
 
     <a class=\"topbar__item";
-        // line 45
-        yield (((($tmp = (isset($context["is_tournaments"]) || array_key_exists("is_tournaments", $context) ? $context["is_tournaments"] : (function () { throw new RuntimeError('Variable "is_tournaments" does not exist.', 45, $this->source); })())) && $tmp instanceof Markup ? (string) $tmp : $tmp)) ? (" is-active") : (""));
+        // line 46
+        yield (((($tmp = (isset($context["is_tournaments"]) || array_key_exists("is_tournaments", $context) ? $context["is_tournaments"] : (function () { throw new RuntimeError('Variable "is_tournaments" does not exist.', 46, $this->source); })())) && $tmp instanceof Markup ? (string) $tmp : $tmp)) ? (" is-active") : (""));
         yield "\" href=\"";
         yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_tournaments");
         yield "\">
@@ -113,8 +115,8 @@ class __TwigTemplate_a41d3a572e368cde4bc9d4c3b0363bcd extends Template
     </a>
 
     <a class=\"topbar__item";
-        // line 52
-        yield (((($tmp = (isset($context["is_games"]) || array_key_exists("is_games", $context) ? $context["is_games"] : (function () { throw new RuntimeError('Variable "is_games" does not exist.', 52, $this->source); })())) && $tmp instanceof Markup ? (string) $tmp : $tmp)) ? (" is-active") : (""));
+        // line 53
+        yield (((($tmp = (isset($context["is_games"]) || array_key_exists("is_games", $context) ? $context["is_games"] : (function () { throw new RuntimeError('Variable "is_games" does not exist.', 53, $this->source); })())) && $tmp instanceof Markup ? (string) $tmp : $tmp)) ? (" is-active") : (""));
         yield "\" href=\"";
         yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_games");
         yield "\">
@@ -125,8 +127,8 @@ class __TwigTemplate_a41d3a572e368cde4bc9d4c3b0363bcd extends Template
     </a>
 
     <a class=\"topbar__item";
-        // line 59
-        yield (((($tmp = (isset($context["is_matches"]) || array_key_exists("is_matches", $context) ? $context["is_matches"] : (function () { throw new RuntimeError('Variable "is_matches" does not exist.', 59, $this->source); })())) && $tmp instanceof Markup ? (string) $tmp : $tmp)) ? (" is-active") : (""));
+        // line 60
+        yield (((($tmp = (isset($context["is_matches"]) || array_key_exists("is_matches", $context) ? $context["is_matches"] : (function () { throw new RuntimeError('Variable "is_matches" does not exist.', 60, $this->source); })())) && $tmp instanceof Markup ? (string) $tmp : $tmp)) ? (" is-active") : (""));
         yield "\" href=\"";
         yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_matches");
         yield "\">
@@ -137,8 +139,8 @@ class __TwigTemplate_a41d3a572e368cde4bc9d4c3b0363bcd extends Template
     </a>
 
     <a class=\"topbar__item";
-        // line 66
-        yield (((($tmp = (isset($context["is_shop"]) || array_key_exists("is_shop", $context) ? $context["is_shop"] : (function () { throw new RuntimeError('Variable "is_shop" does not exist.', 66, $this->source); })())) && $tmp instanceof Markup ? (string) $tmp : $tmp)) ? (" is-active") : (""));
+        // line 67
+        yield (((($tmp = (isset($context["is_shop"]) || array_key_exists("is_shop", $context) ? $context["is_shop"] : (function () { throw new RuntimeError('Variable "is_shop" does not exist.', 67, $this->source); })())) && $tmp instanceof Markup ? (string) $tmp : $tmp)) ? (" is-active") : (""));
         yield "\" href=\"";
         yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_shop");
         yield "\">
@@ -149,8 +151,8 @@ class __TwigTemplate_a41d3a572e368cde4bc9d4c3b0363bcd extends Template
     </a>
 
     <a class=\"topbar__item";
-        // line 73
-        yield (((($tmp = (isset($context["is_teams"]) || array_key_exists("is_teams", $context) ? $context["is_teams"] : (function () { throw new RuntimeError('Variable "is_teams" does not exist.', 73, $this->source); })())) && $tmp instanceof Markup ? (string) $tmp : $tmp)) ? (" is-active") : (""));
+        // line 74
+        yield (((($tmp = (isset($context["is_teams"]) || array_key_exists("is_teams", $context) ? $context["is_teams"] : (function () { throw new RuntimeError('Variable "is_teams" does not exist.', 74, $this->source); })())) && $tmp instanceof Markup ? (string) $tmp : $tmp)) ? (" is-active") : (""));
         yield "\" href=\"";
         yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_teams");
         yield "\">
@@ -163,19 +165,28 @@ class __TwigTemplate_a41d3a572e368cde4bc9d4c3b0363bcd extends Template
 
   <div class=\"heroTop__right\">
     ";
-        // line 82
-        if ((($tmp = CoreExtension::getAttribute($this->env, $this->source, (isset($context["app"]) || array_key_exists("app", $context) ? $context["app"] : (function () { throw new RuntimeError('Variable "app" does not exist.', 82, $this->source); })()), "user", [], "any", false, false, false, 82)) && $tmp instanceof Markup ? (string) $tmp : $tmp)) {
-            // line 83
+        // line 83
+        if ((CoreExtension::getAttribute($this->env, $this->source, (isset($context["app"]) || array_key_exists("app", $context) ? $context["app"] : (function () { throw new RuntimeError('Variable "app" does not exist.', 83, $this->source); })()), "user", [], "any", false, false, false, 83) &&  !(isset($context["two_factor_pending"]) || array_key_exists("two_factor_pending", $context) ? $context["two_factor_pending"] : (function () { throw new RuntimeError('Variable "two_factor_pending" does not exist.', 83, $this->source); })()))) {
+            // line 84
             yield "      <a class=\"btn btn--ghost\" href=\"";
             yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_profile");
             yield "\">Mon compte</a>
       <a class=\"btn btn--ghost\" href=\"";
-            // line 84
+            // line 85
+            yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_logout");
+            yield "\">Logout</a>
+    ";
+        } elseif ((CoreExtension::getAttribute($this->env, $this->source,         // line 86
+(isset($context["app"]) || array_key_exists("app", $context) ? $context["app"] : (function () { throw new RuntimeError('Variable "app" does not exist.', 86, $this->source); })()), "user", [], "any", false, false, false, 86) && (isset($context["two_factor_pending"]) || array_key_exists("two_factor_pending", $context) ? $context["two_factor_pending"] : (function () { throw new RuntimeError('Variable "two_factor_pending" does not exist.', 86, $this->source); })()))) {
+            // line 87
+            yield "      <span class=\"btn btn--ghost\" role=\"status\">2FA requise</span>
+      <a class=\"btn btn--ghost\" href=\"";
+            // line 88
             yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_logout");
             yield "\">Logout</a>
     ";
         } else {
-            // line 86
+            // line 90
             yield "      <a class=\"btn btn--ghost\" href=\"";
             yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_register");
             yield "\">S'inscrire</a>
@@ -189,12 +200,19 @@ class __TwigTemplate_a41d3a572e368cde4bc9d4c3b0363bcd extends Template
       </button>
     ";
         }
-        // line 96
+        // line 100
         yield "
-    <button class=\"menuBtn\" type=\"button\" aria-label=\"Menu\">
-      <span></span><span></span><span></span>
-    </button>
-  </div>
+    ";
+        // line 101
+        if ((($tmp =  !(isset($context["two_factor_pending"]) || array_key_exists("two_factor_pending", $context) ? $context["two_factor_pending"] : (function () { throw new RuntimeError('Variable "two_factor_pending" does not exist.', 101, $this->source); })())) && $tmp instanceof Markup ? (string) $tmp : $tmp)) {
+            // line 102
+            yield "      <button class=\"menuBtn\" type=\"button\" aria-label=\"Menu\">
+        <span></span><span></span><span></span>
+      </button>
+    ";
+        }
+        // line 106
+        yield "  </div>
 </div>
 ";
         
@@ -227,12 +245,13 @@ class __TwigTemplate_a41d3a572e368cde4bc9d4c3b0363bcd extends Template
      */
     public function getDebugInfo(): array
     {
-        return array (  193 => 96,  179 => 86,  174 => 84,  169 => 83,  167 => 82,  153 => 73,  141 => 66,  129 => 59,  117 => 52,  105 => 45,  93 => 38,  77 => 25,  73 => 23,  71 => 22,  70 => 21,  69 => 20,  67 => 19,  66 => 18,  65 => 17,  63 => 16,  62 => 15,  60 => 14,  58 => 13,  57 => 12,  56 => 11,  55 => 10,  53 => 3,  50 => 2,  48 => 1,);
+        return array (  215 => 106,  209 => 102,  207 => 101,  204 => 100,  190 => 90,  185 => 88,  182 => 87,  180 => 86,  176 => 85,  171 => 84,  169 => 83,  155 => 74,  143 => 67,  131 => 60,  119 => 53,  107 => 46,  95 => 39,  79 => 26,  75 => 24,  73 => 23,  72 => 22,  71 => 21,  69 => 20,  68 => 19,  67 => 18,  65 => 17,  64 => 16,  62 => 15,  60 => 14,  59 => 13,  58 => 12,  57 => 11,  55 => 4,  52 => 3,  50 => 2,  48 => 1,);
     }
 
     public function getSourceContext(): Source
     {
         return new Source("{% set current_route = app.request.attributes.get('_route')|default('') %}
+{% set two_factor_pending = app.user and app.request.hasSession() and app.session.get('_2fa_verified', false) != true %}
 
 {% set is_home = current_route in [
     'front_root', 'front_home', 'front_about', 'front_contact', 'front_faq',
@@ -313,8 +332,11 @@ class __TwigTemplate_a41d3a572e368cde4bc9d4c3b0363bcd extends Template
   </nav>
 
   <div class=\"heroTop__right\">
-    {% if app.user %}
+    {% if app.user and not two_factor_pending %}
       <a class=\"btn btn--ghost\" href=\"{{ path('front_profile') }}\">Mon compte</a>
+      <a class=\"btn btn--ghost\" href=\"{{ path('app_logout') }}\">Logout</a>
+    {% elseif app.user and two_factor_pending %}
+      <span class=\"btn btn--ghost\" role=\"status\">2FA requise</span>
       <a class=\"btn btn--ghost\" href=\"{{ path('app_logout') }}\">Logout</a>
     {% else %}
       <a class=\"btn btn--ghost\" href=\"{{ path('front_register') }}\">S'inscrire</a>
@@ -328,11 +350,13 @@ class __TwigTemplate_a41d3a572e368cde4bc9d4c3b0363bcd extends Template
       </button>
     {% endif %}
 
-    <button class=\"menuBtn\" type=\"button\" aria-label=\"Menu\">
-      <span></span><span></span><span></span>
-    </button>
+    {% if not two_factor_pending %}
+      <button class=\"menuBtn\" type=\"button\" aria-label=\"Menu\">
+        <span></span><span></span><span></span>
+      </button>
+    {% endif %}
   </div>
 </div>
-", "front/partials/_top_nav.html.twig", "C:\\Users\\ilyes\\OneDrive\\Bureau\\PULSE\\PULSE\\templates\\front\\partials\\_top_nav.html.twig");
+", "front/partials/_top_nav.html.twig", "C:\\Users\\ilyes\\OneDrive\\Bureau\\PULSE - Copie\\PULSE\\templates\\front\\partials\\_top_nav.html.twig");
     }
 }

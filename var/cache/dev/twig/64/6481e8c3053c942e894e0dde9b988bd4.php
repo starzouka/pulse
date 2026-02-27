@@ -106,6 +106,6 @@ class __TwigTemplate_ee4a4bd5107e0691f25fe25386b2937c extends Template
     <a href=\"{{ path('front_faq') }}\">FAQ</a>
   </div>
 </footer>
-", "front/partials/_footer.html.twig", "C:\\Users\\ilyes\\OneDrive\\Bureau\\PULSE\\PULSE\\templates\\front\\partials\\_footer.html.twig");
+", "front/partials/_footer.html.twig", "C:\\Users\\ilyes\\OneDrive\\Bureau\\PULSE - Copie\\PULSE\\templates\\front\\partials\\_footer.html.twig");
     }
 }

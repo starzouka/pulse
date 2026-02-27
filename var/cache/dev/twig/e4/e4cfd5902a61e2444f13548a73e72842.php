@@ -32,7 +32,6 @@ class __TwigTemplate_1991b0d785702be04b65078b8a1cd205 extends Template
         $this->blocks = [
             'title' => [$this, 'block_title'],
             'admin_content' => [$this, 'block_admin_content'],
-            'javascripts' => [$this, 'block_javascripts'],
         ];
     }
 
@@ -300,148 +299,6 @@ class __TwigTemplate_1991b0d785702be04b65078b8a1cd205 extends Template
         }
         // line 86
         yield "  </section>
-
-  <section class=\"panel\">
-    <div class=\"panelHeader\">
-      <h3 class=\"panelTitle\">Assistant IA (Ollama local)</h3>
-      <span class=\"listMeta\">Analyse heuristique + LLM local via API Symfony</span>
-    </div>
-
-    <div class=\"formActions\" style=\"margin-bottom: 10px;\">
-      <button
-        type=\"button\"
-        class=\"btn btnPrimary js-ai-ollama-review-btn\"
-        data-status-url=\"";
-        // line 98
-        yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("admin_api_ai_ollama_status");
-        yield "\"
-        data-review-url=\"";
-        // line 99
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("admin_api_ai_tournament_request_review", ["id" => (isset($context["requestId"]) || array_key_exists("requestId", $context) ? $context["requestId"] : (function () { throw new RuntimeError('Variable "requestId" does not exist.', 99, $this->source); })())]), "html", null, true);
-        yield "\"
-      >
-        Analyser avec IA
-      </button>
-      <a class=\"btn btnGhost\" href=\"";
-        // line 103
-        yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("admin_api_ai_ollama_status");
-        yield "\" target=\"_blank\" rel=\"noopener\">Voir status API</a>
-    </div>
-
-    <div class=\"listItem js-ai-ollama-review-status\" style=\"display:none;\">
-      <span>...</span>
-      <span class=\"badge badge--info\">IA</span>
-    </div>
-
-    <div class=\"field\" style=\"margin-top: 10px;\">
-      <label>Resultat JSON (debug / test API)</label>
-      <textarea class=\"js-ai-ollama-review-output\" rows=\"18\" readonly style=\"font-family: monospace; white-space: pre;\">Cliquez sur \"Analyser avec IA\" pour lancer un test.</textarea>
-    </div>
-  </section>
-";
-        
-        $__internal_6f47bbe9983af81f1e7450e9a3e3768f->leave($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof);
-
-        
-        $__internal_5a27a8ba21ca79b61932376b2fa922d2->leave($__internal_5a27a8ba21ca79b61932376b2fa922d2_prof);
-
-        yield from [];
-    }
-
-    // line 118
-    /**
-     * @return iterable<null|scalar|\Stringable>
-     */
-    public function block_javascripts(array $context, array $blocks = []): iterable
-    {
-        $macros = $this->macros;
-        $__internal_5a27a8ba21ca79b61932376b2fa922d2 = $this->extensions["Symfony\\Bundle\\WebProfilerBundle\\Twig\\WebProfilerExtension"];
-        $__internal_5a27a8ba21ca79b61932376b2fa922d2->enter($__internal_5a27a8ba21ca79b61932376b2fa922d2_prof = new \Twig\Profiler\Profile($this->getTemplateName(), "block", "javascripts"));
-
-        $__internal_6f47bbe9983af81f1e7450e9a3e3768f = $this->extensions["Symfony\\Bridge\\Twig\\Extension\\ProfilerExtension"];
-        $__internal_6f47bbe9983af81f1e7450e9a3e3768f->enter($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof = new \Twig\Profiler\Profile($this->getTemplateName(), "block", "javascripts"));
-
-        // line 119
-        yield "  ";
-        yield from $this->yieldParentBlock("javascripts", $context, $blocks);
-        yield "
-  <script>
-    (function () {
-      const button = document.querySelector('.js-ai-ollama-review-btn');
-      if (!button) {
-        return;
-      }
-
-      const statusBox = document.querySelector('.js-ai-ollama-review-status');
-      const output = document.querySelector('.js-ai-ollama-review-output');
-
-      const setStatus = function (text, badgeClass, badgeText) {
-        if (!statusBox) {
-          return;
-        }
-
-        const textNode = statusBox.querySelector('span');
-        const badgeNode = statusBox.querySelector('.badge');
-        if (textNode) {
-          textNode.textContent = text;
-        }
-        if (badgeNode) {
-          badgeNode.className = 'badge ' + (badgeClass || 'badge--info');
-          badgeNode.textContent = badgeText || 'IA';
-        }
-        statusBox.style.display = 'flex';
-      };
-
-      button.addEventListener('click', async function () {
-        const statusUrl = button.getAttribute('data-status-url');
-        const reviewUrl = button.getAttribute('data-review-url');
-        if (!statusUrl || !reviewUrl) {
-          return;
-        }
-
-        button.disabled = true;
-        const defaultLabel = button.textContent;
-        button.textContent = 'Analyse en cours...';
-        setStatus('Verification de la connexion Ollama...', 'badge--info', 'CHECK');
-
-        try {
-          const statusResponse = await fetch(statusUrl, { headers: { 'Accept': 'application/json' } });
-          const statusData = await statusResponse.json();
-
-          if (!statusResponse.ok || !statusData.success) {
-            if (output) {
-              output.value = JSON.stringify(statusData, null, 2);
-            }
-            setStatus('Ollama indisponible depuis Symfony.', 'badge--danger', 'OFFLINE');
-            return;
-          }
-
-          setStatus('Ollama connecte. Generation de l analyse IA...', 'badge--warning', 'RUN');
-
-          const reviewResponse = await fetch(reviewUrl, { headers: { 'Accept': 'application/json' } });
-          const reviewData = await reviewResponse.json();
-
-          if (output) {
-            output.value = JSON.stringify(reviewData, null, 2);
-          }
-
-          if (reviewResponse.ok && reviewData.success) {
-            setStatus('Analyse IA terminee. JSON affiche ci-dessous.', 'badge--success', 'OK');
-          } else {
-            setStatus('Analyse partielle/erreur. Voir JSON ci-dessous.', 'badge--warning', 'PARTIAL');
-          }
-        } catch (error) {
-          if (output) {
-            output.value = String(error);
-          }
-          setStatus('Erreur reseau pendant l appel IA.', 'badge--danger', 'ERROR');
-        } finally {
-          button.disabled = false;
-          button.textContent = defaultLabel;
-        }
-      });
-    })();
-  </script>
 ";
         
         $__internal_6f47bbe9983af81f1e7450e9a3e3768f->leave($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof);
@@ -473,7 +330,7 @@ class __TwigTemplate_1991b0d785702be04b65078b8a1cd205 extends Template
      */
     public function getDebugInfo(): array
     {
-        return array (  365 => 119,  352 => 118,  327 => 103,  320 => 99,  316 => 98,  302 => 86,  294 => 83,  290 => 81,  279 => 73,  275 => 72,  265 => 65,  261 => 64,  258 => 63,  256 => 62,  245 => 53,  239 => 51,  237 => 50,  233 => 49,  229 => 48,  225 => 47,  221 => 46,  217 => 45,  213 => 44,  209 => 43,  205 => 42,  199 => 41,  195 => 40,  191 => 39,  187 => 38,  181 => 37,  177 => 36,  168 => 32,  162 => 28,  156 => 27,  145 => 24,  141 => 23,  138 => 22,  133 => 21,  129 => 20,  122 => 16,  115 => 12,  110 => 9,  107 => 8,  104 => 7,  101 => 6,  88 => 5,  65 => 3,  42 => 1,);
+        return array (  301 => 86,  293 => 83,  289 => 81,  278 => 73,  274 => 72,  264 => 65,  260 => 64,  257 => 63,  255 => 62,  244 => 53,  238 => 51,  236 => 50,  232 => 49,  228 => 48,  224 => 47,  220 => 46,  216 => 45,  212 => 44,  208 => 43,  204 => 42,  198 => 41,  194 => 40,  190 => 39,  186 => 38,  180 => 37,  176 => 36,  167 => 32,  161 => 28,  155 => 27,  144 => 24,  140 => 23,  137 => 22,  132 => 21,  128 => 20,  121 => 16,  114 => 12,  109 => 9,  106 => 8,  103 => 7,  100 => 6,  87 => 5,  64 => 3,  41 => 1,);
     }
 
     public function getSourceContext(): Source
@@ -564,116 +421,6 @@ class __TwigTemplate_1991b0d785702be04b65078b8a1cd205 extends Template
       </div>
     {% endif %}
   </section>
-
-  <section class=\"panel\">
-    <div class=\"panelHeader\">
-      <h3 class=\"panelTitle\">Assistant IA (Ollama local)</h3>
-      <span class=\"listMeta\">Analyse heuristique + LLM local via API Symfony</span>
-    </div>
-
-    <div class=\"formActions\" style=\"margin-bottom: 10px;\">
-      <button
-        type=\"button\"
-        class=\"btn btnPrimary js-ai-ollama-review-btn\"
-        data-status-url=\"{{ path('admin_api_ai_ollama_status') }}\"
-        data-review-url=\"{{ path('admin_api_ai_tournament_request_review', {id: requestId}) }}\"
-      >
-        Analyser avec IA
-      </button>
-      <a class=\"btn btnGhost\" href=\"{{ path('admin_api_ai_ollama_status') }}\" target=\"_blank\" rel=\"noopener\">Voir status API</a>
-    </div>
-
-    <div class=\"listItem js-ai-ollama-review-status\" style=\"display:none;\">
-      <span>...</span>
-      <span class=\"badge badge--info\">IA</span>
-    </div>
-
-    <div class=\"field\" style=\"margin-top: 10px;\">
-      <label>Resultat JSON (debug / test API)</label>
-      <textarea class=\"js-ai-ollama-review-output\" rows=\"18\" readonly style=\"font-family: monospace; white-space: pre;\">Cliquez sur \"Analyser avec IA\" pour lancer un test.</textarea>
-    </div>
-  </section>
-{% endblock %}
-
-{% block javascripts %}
-  {{ parent() }}
-  <script>
-    (function () {
-      const button = document.querySelector('.js-ai-ollama-review-btn');
-      if (!button) {
-        return;
-      }
-
-      const statusBox = document.querySelector('.js-ai-ollama-review-status');
-      const output = document.querySelector('.js-ai-ollama-review-output');
-
-      const setStatus = function (text, badgeClass, badgeText) {
-        if (!statusBox) {
-          return;
-        }
-
-        const textNode = statusBox.querySelector('span');
-        const badgeNode = statusBox.querySelector('.badge');
-        if (textNode) {
-          textNode.textContent = text;
-        }
-        if (badgeNode) {
-          badgeNode.className = 'badge ' + (badgeClass || 'badge--info');
-          badgeNode.textContent = badgeText || 'IA';
-        }
-        statusBox.style.display = 'flex';
-      };
-
-      button.addEventListener('click', async function () {
-        const statusUrl = button.getAttribute('data-status-url');
-        const reviewUrl = button.getAttribute('data-review-url');
-        if (!statusUrl || !reviewUrl) {
-          return;
-        }
-
-        button.disabled = true;
-        const defaultLabel = button.textContent;
-        button.textContent = 'Analyse en cours...';
-        setStatus('Verification de la connexion Ollama...', 'badge--info', 'CHECK');
-
-        try {
-          const statusResponse = await fetch(statusUrl, { headers: { 'Accept': 'application/json' } });
-          const statusData = await statusResponse.json();
-
-          if (!statusResponse.ok || !statusData.success) {
-            if (output) {
-              output.value = JSON.stringify(statusData, null, 2);
-            }
-            setStatus('Ollama indisponible depuis Symfony.', 'badge--danger', 'OFFLINE');
-            return;
-          }
-
-          setStatus('Ollama connecte. Generation de l analyse IA...', 'badge--warning', 'RUN');
-
-          const reviewResponse = await fetch(reviewUrl, { headers: { 'Accept': 'application/json' } });
-          const reviewData = await reviewResponse.json();
-
-          if (output) {
-            output.value = JSON.stringify(reviewData, null, 2);
-          }
-
-          if (reviewResponse.ok && reviewData.success) {
-            setStatus('Analyse IA terminee. JSON affiche ci-dessous.', 'badge--success', 'OK');
-          } else {
-            setStatus('Analyse partielle/erreur. Voir JSON ci-dessous.', 'badge--warning', 'PARTIAL');
-          }
-        } catch (error) {
-          if (output) {
-            output.value = String(error);
-          }
-          setStatus('Erreur reseau pendant l appel IA.', 'badge--danger', 'ERROR');
-        } finally {
-          button.disabled = false;
-          button.textContent = defaultLabel;
-        }
-      });
-    })();
-  </script>
 {% endblock %}
 ", "admin/pages/tournament-request-detail.html.twig", "C:\\Users\\ilyes\\OneDrive\\Bureau\\PULSE - Copie\\PULSE\\templates\\admin\\pages\\tournament-request-detail.html.twig");
     }

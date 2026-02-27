@@ -79,14 +79,14 @@ class __TwigTemplate_897588d0d1d2330c22e39ec1adb34880 extends Template
             // line 22
             yield "      <form class=\"authForm\" id=\"loginForm\" method=\"post\" action=\"";
             yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_login");
-            yield "\" novalidate=\"novalidate\">
+            yield "\">
         <label class=\"field\">
           <span class=\"field__label\">Email</span>
-          <input type=\"text\" name=\"_username\" placeholder=\"ex: you@email.com\" autocomplete=\"email\" />
+          <input type=\"email\" name=\"_username\" placeholder=\"ex: you@email.com\" required autocomplete=\"email\" />
         </label>
         <label class=\"field\">
           <span class=\"field__label\">Mot de passe</span>
-          <input type=\"password\" name=\"_password\" placeholder=\"********\" autocomplete=\"current-password\" />
+          <input type=\"password\" name=\"_password\" placeholder=\"********\" required autocomplete=\"current-password\" />
         </label>
         <input type=\"hidden\" name=\"_csrf_token\" value=\"";
             // line 31
@@ -166,14 +166,14 @@ class __TwigTemplate_897588d0d1d2330c22e39ec1adb34880 extends Template
         <a class=\"btn btn--ghost\" href=\"{{ path('app_logout') }}\">Se deconnecter</a>
       </div>
     {% else %}
-      <form class=\"authForm\" id=\"loginForm\" method=\"post\" action=\"{{ path('front_login') }}\" novalidate=\"novalidate\">
+      <form class=\"authForm\" id=\"loginForm\" method=\"post\" action=\"{{ path('front_login') }}\">
         <label class=\"field\">
           <span class=\"field__label\">Email</span>
-          <input type=\"text\" name=\"_username\" placeholder=\"ex: you@email.com\" autocomplete=\"email\" />
+          <input type=\"email\" name=\"_username\" placeholder=\"ex: you@email.com\" required autocomplete=\"email\" />
         </label>
         <label class=\"field\">
           <span class=\"field__label\">Mot de passe</span>
-          <input type=\"password\" name=\"_password\" placeholder=\"********\" autocomplete=\"current-password\" />
+          <input type=\"password\" name=\"_password\" placeholder=\"********\" required autocomplete=\"current-password\" />
         </label>
         <input type=\"hidden\" name=\"_csrf_token\" value=\"{{ csrf_token('authenticate') }}\">
         <input type=\"hidden\" name=\"_target_path\" value=\"{{ app.request.uri }}\">
@@ -185,6 +185,6 @@ class __TwigTemplate_897588d0d1d2330c22e39ec1adb34880 extends Template
     {% endif %}
   </div>
 </div>
-", "front/partials/_auth_modal.html.twig", "C:\\Users\\ilyes\\OneDrive\\Bureau\\PULSE\\PULSE\\templates\\front\\partials\\_auth_modal.html.twig");
+", "front/partials/_auth_modal.html.twig", "C:\\Users\\ilyes\\OneDrive\\Bureau\\PULSE - Copie\\PULSE\\templates\\front\\partials\\_auth_modal.html.twig");
     }
 }

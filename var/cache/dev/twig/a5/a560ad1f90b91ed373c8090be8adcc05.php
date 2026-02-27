@@ -978,6 +978,6 @@ class __TwigTemplate_4fbb739250df8c5a139f5e6486009647 extends Template
 
   {% include 'front/partials/_auth_modal.html.twig' %}
 {% endblock %}
-", "front/home/index.html.twig", "C:\\Users\\ilyes\\OneDrive\\Bureau\\PULSE\\PULSE\\templates\\front\\home\\index.html.twig");
+", "front/home/index.html.twig", "C:\\Users\\ilyes\\OneDrive\\Bureau\\PULSE - Copie\\PULSE\\templates\\front\\home\\index.html.twig");
     }
 }

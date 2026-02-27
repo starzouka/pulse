@@ -169,6 +169,6 @@ class __TwigTemplate_64125b7d4646e78df619d1f772ef5266 extends Template
   <a class=\"{{ active in ['orders', 'order_detail'] ? 'is-active' : '' }}\" href=\"{{ path('front_orders') }}\">Mes commandes</a>
   <a class=\"{{ active == 'notifications' ? 'is-active' : '' }}\" href=\"{{ path('front_notifications') }}\">Notifications</a>
 </aside>
-", "front/partials/_player_side_nav.html.twig", "C:\\Users\\ilyes\\OneDrive\\Bureau\\PULSE\\PULSE\\templates\\front\\partials\\_player_side_nav.html.twig");
+", "front/partials/_player_side_nav.html.twig", "C:\\Users\\ilyes\\OneDrive\\Bureau\\PULSE - Copie\\PULSE\\templates\\front\\partials\\_player_side_nav.html.twig");
     }
 }

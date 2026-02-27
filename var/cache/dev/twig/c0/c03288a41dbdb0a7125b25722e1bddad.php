@@ -499,6 +499,6 @@ class __TwigTemplate_e52094817401a6e82d4b31e7e0dbdb1c extends Template
 
   {% include 'front/partials/_auth_modal.html.twig' %}
 {% endblock %}
-", "front/pages/games.html.twig", "C:\\Users\\ilyes\\OneDrive\\Bureau\\PULSE\\PULSE\\templates\\front\\pages\\games.html.twig");
+", "front/pages/games.html.twig", "C:\\Users\\ilyes\\OneDrive\\Bureau\\PULSE - Copie\\PULSE\\templates\\front\\pages\\games.html.twig");
     }
 }

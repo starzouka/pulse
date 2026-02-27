@@ -119,6 +119,6 @@ class __TwigTemplate_b9a43ca01d785e1d90f26c9fdb4cf5cf extends Template
   </form>
 </header>
 
-", "admin/Partials/navbar.html.twig", "C:\\Users\\ilyes\\OneDrive\\Bureau\\PULSE\\PULSE\\templates\\admin\\Partials\\navbar.html.twig");
+", "admin/Partials/navbar.html.twig", "C:\\Users\\ilyes\\OneDrive\\Bureau\\PULSE - Copie\\PULSE\\templates\\admin\\Partials\\navbar.html.twig");
     }
 }

@@ -583,6 +583,6 @@ class __TwigTemplate_5af86e5521f5671ecd02140f960f6d0b extends Template
     </div>
   </section>
 {% endblock %}
-", "admin/pages/tournament-requests.html.twig", "C:\\Users\\ilyes\\OneDrive\\Bureau\\PULSE\\PULSE\\templates\\admin\\pages\\tournament-requests.html.twig");
+", "admin/pages/tournament-requests.html.twig", "C:\\Users\\ilyes\\OneDrive\\Bureau\\PULSE - Copie\\PULSE\\templates\\admin\\pages\\tournament-requests.html.twig");
     }
 }

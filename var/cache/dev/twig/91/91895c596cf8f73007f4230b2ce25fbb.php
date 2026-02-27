@@ -32,7 +32,6 @@ class __TwigTemplate_df610bd1eaee5b71c2ac5088a13241be extends Template
         $this->blocks = [
             'title' => [$this, 'block_title'],
             'admin_content' => [$this, 'block_admin_content'],
-            'javascripts' => [$this, 'block_javascripts'],
         ];
     }
 
@@ -101,232 +100,45 @@ class __TwigTemplate_df610bd1eaee5b71c2ac5088a13241be extends Template
         $__internal_6f47bbe9983af81f1e7450e9a3e3768f->enter($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof = new \Twig\Profiler\Profile($this->getTemplateName(), "block", "admin_content"));
 
         // line 19
-        yield "  ";
-        $context["stats"] = ((array_key_exists("userStats", $context)) ? (Twig\Extension\CoreExtension::default((isset($context["userStats"]) || array_key_exists("userStats", $context) ? $context["userStats"] : (function () { throw new RuntimeError('Variable "userStats" does not exist.', 19, $this->source); })()), [])) : ([]));
-        // line 20
-        yield "  ";
-        $context["charts"] = ((array_key_exists("userCharts", $context)) ? (Twig\Extension\CoreExtension::default((isset($context["userCharts"]) || array_key_exists("userCharts", $context) ? $context["userCharts"] : (function () { throw new RuntimeError('Variable "userCharts" does not exist.', 20, $this->source); })()), [])) : ([]));
-        // line 21
-        yield "
-  <div class=\"pageHeader\">
+        yield "  <div class=\"pageHeader\">
     <div>
       <h2>Gestion utilisateurs</h2>
       <div class=\"pageSub\">Recherche/filtre DB + CRUD + exports.</div>
     </div>
     <div class=\"formActions\">
       <a class=\"btn btnPrimary\" href=\"";
-        // line 28
+        // line 25
         yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("admin_user_create");
         yield "\">+ Creer utilisateur</a>
       <a class=\"btn btnGhost\" href=\"";
-        // line 29
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("admin_users_export", Twig\Extension\CoreExtension::merge((isset($context["filters"]) || array_key_exists("filters", $context) ? $context["filters"] : (function () { throw new RuntimeError('Variable "filters" does not exist.', 29, $this->source); })()), ["format" => "pdf"])), "html", null, true);
+        // line 26
+        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("admin_users_export", Twig\Extension\CoreExtension::merge((isset($context["filters"]) || array_key_exists("filters", $context) ? $context["filters"] : (function () { throw new RuntimeError('Variable "filters" does not exist.', 26, $this->source); })()), ["format" => "pdf"])), "html", null, true);
         yield "\">Exporter PDF</a>
       <a class=\"btn btnGhost\" href=\"";
-        // line 30
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("admin_users_export", Twig\Extension\CoreExtension::merge((isset($context["filters"]) || array_key_exists("filters", $context) ? $context["filters"] : (function () { throw new RuntimeError('Variable "filters" does not exist.', 30, $this->source); })()), ["format" => "excel"])), "html", null, true);
+        // line 27
+        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("admin_users_export", Twig\Extension\CoreExtension::merge((isset($context["filters"]) || array_key_exists("filters", $context) ? $context["filters"] : (function () { throw new RuntimeError('Variable "filters" does not exist.', 27, $this->source); })()), ["format" => "excel"])), "html", null, true);
         yield "\">Exporter Excel</a>
     </div>
   </div>
 
-  <div class=\"kpiRow\">
-    <div class=\"kpiCard\">
-      <div class=\"kpiLabel\">Utilisateurs affiches</div>
-      <div class=\"kpiValue\">";
-        // line 37
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(((CoreExtension::getAttribute($this->env, $this->source, ($context["stats"] ?? null), "total", [], "any", true, true, false, 37)) ? (Twig\Extension\CoreExtension::default(CoreExtension::getAttribute($this->env, $this->source, (isset($context["stats"]) || array_key_exists("stats", $context) ? $context["stats"] : (function () { throw new RuntimeError('Variable "stats" does not exist.', 37, $this->source); })()), "total", [], "any", false, false, false, 37), Twig\Extension\CoreExtension::length($this->env->getCharset(), (isset($context["users"]) || array_key_exists("users", $context) ? $context["users"] : (function () { throw new RuntimeError('Variable "users" does not exist.', 37, $this->source); })())))) : (Twig\Extension\CoreExtension::length($this->env->getCharset(), (isset($context["users"]) || array_key_exists("users", $context) ? $context["users"] : (function () { throw new RuntimeError('Variable "users" does not exist.', 37, $this->source); })())))), "html", null, true);
-        yield "</div>
-      <div class=\"listMeta\">Apres filtres en cours</div>
-    </div>
-    <div class=\"kpiCard\">
-      <div class=\"kpiLabel\">Actifs</div>
-      <div class=\"kpiValue\">";
-        // line 42
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(((CoreExtension::getAttribute($this->env, $this->source, ($context["stats"] ?? null), "active", [], "any", true, true, false, 42)) ? (Twig\Extension\CoreExtension::default(CoreExtension::getAttribute($this->env, $this->source, (isset($context["stats"]) || array_key_exists("stats", $context) ? $context["stats"] : (function () { throw new RuntimeError('Variable "stats" does not exist.', 42, $this->source); })()), "active", [], "any", false, false, false, 42), 0)) : (0)), "html", null, true);
-        yield "</div>
-      <div class=\"listMeta\">Inactifs: ";
-        // line 43
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(((CoreExtension::getAttribute($this->env, $this->source, ($context["stats"] ?? null), "inactive", [], "any", true, true, false, 43)) ? (Twig\Extension\CoreExtension::default(CoreExtension::getAttribute($this->env, $this->source, (isset($context["stats"]) || array_key_exists("stats", $context) ? $context["stats"] : (function () { throw new RuntimeError('Variable "stats" does not exist.', 43, $this->source); })()), "inactive", [], "any", false, false, false, 43), 0)) : (0)), "html", null, true);
-        yield "</div>
-    </div>
-    <div class=\"kpiCard\">
-      <div class=\"kpiLabel\">Emails verifies</div>
-      <div class=\"kpiValue\">";
-        // line 47
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(((CoreExtension::getAttribute($this->env, $this->source, ($context["stats"] ?? null), "verified", [], "any", true, true, false, 47)) ? (Twig\Extension\CoreExtension::default(CoreExtension::getAttribute($this->env, $this->source, (isset($context["stats"]) || array_key_exists("stats", $context) ? $context["stats"] : (function () { throw new RuntimeError('Variable "stats" does not exist.', 47, $this->source); })()), "verified", [], "any", false, false, false, 47), 0)) : (0)), "html", null, true);
-        yield "</div>
-      <div class=\"listMeta\">Non verifies: ";
-        // line 48
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(((CoreExtension::getAttribute($this->env, $this->source, ($context["stats"] ?? null), "unverified", [], "any", true, true, false, 48)) ? (Twig\Extension\CoreExtension::default(CoreExtension::getAttribute($this->env, $this->source, (isset($context["stats"]) || array_key_exists("stats", $context) ? $context["stats"] : (function () { throw new RuntimeError('Variable "stats" does not exist.', 48, $this->source); })()), "unverified", [], "any", false, false, false, 48), 0)) : (0)), "html", null, true);
-        yield "</div>
-    </div>
-    <div class=\"kpiCard\">
-      <div class=\"kpiLabel\">Nouveaux comptes</div>
-      <div class=\"kpiValue\">";
-        // line 52
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(((CoreExtension::getAttribute($this->env, $this->source, ($context["stats"] ?? null), "newLast30d", [], "any", true, true, false, 52)) ? (Twig\Extension\CoreExtension::default(CoreExtension::getAttribute($this->env, $this->source, (isset($context["stats"]) || array_key_exists("stats", $context) ? $context["stats"] : (function () { throw new RuntimeError('Variable "stats" does not exist.', 52, $this->source); })()), "newLast30d", [], "any", false, false, false, 52), 0)) : (0)), "html", null, true);
-        yield "</div>
-      <div class=\"listMeta\">Derniers 30 jours: ";
-        // line 53
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(((CoreExtension::getAttribute($this->env, $this->source, ($context["stats"] ?? null), "newLast7d", [], "any", true, true, false, 53)) ? (Twig\Extension\CoreExtension::default(CoreExtension::getAttribute($this->env, $this->source, (isset($context["stats"]) || array_key_exists("stats", $context) ? $context["stats"] : (function () { throw new RuntimeError('Variable "stats" does not exist.', 53, $this->source); })()), "newLast7d", [], "any", false, false, false, 53), 0)) : (0)), "html", null, true);
-        yield " sur 7 jours</div>
-    </div>
-    <div class=\"kpiCard\">
-      <div class=\"kpiLabel\">Connexions recentes</div>
-      <div class=\"kpiValue\">";
-        // line 57
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(((CoreExtension::getAttribute($this->env, $this->source, ($context["stats"] ?? null), "loggedLast7d", [], "any", true, true, false, 57)) ? (Twig\Extension\CoreExtension::default(CoreExtension::getAttribute($this->env, $this->source, (isset($context["stats"]) || array_key_exists("stats", $context) ? $context["stats"] : (function () { throw new RuntimeError('Variable "stats" does not exist.', 57, $this->source); })()), "loggedLast7d", [], "any", false, false, false, 57), 0)) : (0)), "html", null, true);
-        yield "</div>
-      <div class=\"listMeta\">Jamais connectes: ";
-        // line 58
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(((CoreExtension::getAttribute($this->env, $this->source, ($context["stats"] ?? null), "neverLoggedIn", [], "any", true, true, false, 58)) ? (Twig\Extension\CoreExtension::default(CoreExtension::getAttribute($this->env, $this->source, (isset($context["stats"]) || array_key_exists("stats", $context) ? $context["stats"] : (function () { throw new RuntimeError('Variable "stats" does not exist.', 58, $this->source); })()), "neverLoggedIn", [], "any", false, false, false, 58), 0)) : (0)), "html", null, true);
-        yield "</div>
-    </div>
-    <div class=\"kpiCard\">
-      <div class=\"kpiLabel\">Pays distincts</div>
-      <div class=\"kpiValue\">";
-        // line 62
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(((CoreExtension::getAttribute($this->env, $this->source, ($context["stats"] ?? null), "countriesCount", [], "any", true, true, false, 62)) ? (Twig\Extension\CoreExtension::default(CoreExtension::getAttribute($this->env, $this->source, (isset($context["stats"]) || array_key_exists("stats", $context) ? $context["stats"] : (function () { throw new RuntimeError('Variable "stats" does not exist.', 62, $this->source); })()), "countriesCount", [], "any", false, false, false, 62), 0)) : (0)), "html", null, true);
-        yield "</div>
-      <div class=\"listMeta\">Sur la selection affichee</div>
-    </div>
-  </div>
-
-  <div class=\"chartGrid\">
-    <section class=\"panel\">
-      <div class=\"panelHeader\">
-        <h3 class=\"panelTitle\">Inscriptions utilisateurs</h3>
-        <span class=\"listMeta\">Evolution sur 6 mois</span>
-      </div>
-      <div class=\"chartWrap\">
-        <canvas id=\"usersRegistrationsChart\"></canvas>
-      </div>
-    </section>
-
-    <section class=\"panel\">
-      <div class=\"panelHeader\">
-        <h3 class=\"panelTitle\">Repartition des roles</h3>
-        <span class=\"listMeta\">Selection courante</span>
-      </div>
-      <div class=\"chartWrap chartWrap--sm\">
-        <canvas id=\"usersRolesChart\"></canvas>
-      </div>
-    </section>
-
-    <section class=\"panel\">
-      <div class=\"panelHeader\">
-        <h3 class=\"panelTitle\">Comportement de connexion</h3>
-        <span class=\"listMeta\">Delai depuis la derniere connexion</span>
-      </div>
-      <div class=\"split\">
-        <div class=\"chartWrap chartWrap--sm\">
-          <canvas id=\"usersLoginsChart\"></canvas>
-        </div>
-        <div>
-          <div class=\"panelHeader\">
-            <h4 class=\"panelTitle\">Top pays</h4>
-          </div>
-          <div class=\"list\">
-            ";
-        // line 102
-        $context['_parent'] = $context;
-        $context['_seq'] = CoreExtension::ensureTraversable(((CoreExtension::getAttribute($this->env, $this->source, ($context["stats"] ?? null), "topCountries", [], "any", true, true, false, 102)) ? (Twig\Extension\CoreExtension::default(CoreExtension::getAttribute($this->env, $this->source, (isset($context["stats"]) || array_key_exists("stats", $context) ? $context["stats"] : (function () { throw new RuntimeError('Variable "stats" does not exist.', 102, $this->source); })()), "topCountries", [], "any", false, false, false, 102), [])) : ([])));
-        $context['_iterated'] = false;
-        foreach ($context['_seq'] as $context["_key"] => $context["country"]) {
-            // line 103
-            yield "              ";
-            $context["topCount"] = ((CoreExtension::getAttribute($this->env, $this->source, Twig\Extension\CoreExtension::first($this->env->getCharset(), ((CoreExtension::getAttribute($this->env, $this->source, ($context["stats"] ?? null), "topCountries", [], "any", true, true, false, 103)) ? (Twig\Extension\CoreExtension::default(CoreExtension::getAttribute($this->env, $this->source, (isset($context["stats"]) || array_key_exists("stats", $context) ? $context["stats"] : (function () { throw new RuntimeError('Variable "stats" does not exist.', 103, $this->source); })()), "topCountries", [], "any", false, false, false, 103), [])) : ([]))), "count", [], "any", true, true, false, 103)) ? (Twig\Extension\CoreExtension::default(CoreExtension::getAttribute($this->env, $this->source, Twig\Extension\CoreExtension::first($this->env->getCharset(), ((CoreExtension::getAttribute($this->env, $this->source, ($context["stats"] ?? null), "topCountries", [], "any", true, true, false, 103)) ? (Twig\Extension\CoreExtension::default(CoreExtension::getAttribute($this->env, $this->source, (isset($context["stats"]) || array_key_exists("stats", $context) ? $context["stats"] : (function () { throw new RuntimeError('Variable "stats" does not exist.', 103, $this->source); })()), "topCountries", [], "any", false, false, false, 103), [])) : ([]))), "count", [], "any", false, false, false, 103), 0)) : (0));
-            // line 104
-            yield "              ";
-            $context["percent"] = ((((isset($context["topCount"]) || array_key_exists("topCount", $context) ? $context["topCount"] : (function () { throw new RuntimeError('Variable "topCount" does not exist.', 104, $this->source); })()) > 0)) ? (Twig\Extension\CoreExtension::round(((CoreExtension::getAttribute($this->env, $this->source, $context["country"], "count", [], "any", false, false, false, 104) / (isset($context["topCount"]) || array_key_exists("topCount", $context) ? $context["topCount"] : (function () { throw new RuntimeError('Variable "topCount" does not exist.', 104, $this->source); })())) * 100), 0, "floor")) : (0));
-            // line 105
-            yield "              <div class=\"listItem\">
-                <span>";
-            // line 106
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["country"], "name", [], "any", false, false, false, 106), "html", null, true);
-            yield "</span>
-                <span class=\"listMeta\">";
-            // line 107
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["country"], "count", [], "any", false, false, false, 107), "html", null, true);
-            yield "</span>
-              </div>
-              <div class=\"progressBar\" style=\"margin-top:-4px; margin-bottom:8px;\">
-                <div class=\"progressFill\" style=\"width:";
-            // line 110
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape((isset($context["percent"]) || array_key_exists("percent", $context) ? $context["percent"] : (function () { throw new RuntimeError('Variable "percent" does not exist.', 110, $this->source); })()), "html", null, true);
-            yield "%;\"></div>
-              </div>
-            ";
-            $context['_iterated'] = true;
-        }
-        // line 112
-        if (!$context['_iterated']) {
-            // line 113
-            yield "              <div class=\"listItem\">
-                <span>Aucune donnee pays</span>
-                <span class=\"listMeta\">--</span>
-              </div>
-            ";
-        }
-        $_parent = $context['_parent'];
-        unset($context['_seq'], $context['_key'], $context['country'], $context['_parent'], $context['_iterated']);
-        $context = array_intersect_key($context, $_parent) + $_parent;
-        // line 118
-        yield "          </div>
-
-          <div class=\"progressWrap\">
-            <div class=\"progressLabel\">
-              <span>Taux actifs</span>
-              <strong>";
-        // line 123
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(((CoreExtension::getAttribute($this->env, $this->source, ($context["stats"] ?? null), "activeRate", [], "any", true, true, false, 123)) ? (Twig\Extension\CoreExtension::default(CoreExtension::getAttribute($this->env, $this->source, (isset($context["stats"]) || array_key_exists("stats", $context) ? $context["stats"] : (function () { throw new RuntimeError('Variable "stats" does not exist.', 123, $this->source); })()), "activeRate", [], "any", false, false, false, 123), 0)) : (0)), "html", null, true);
-        yield "%</strong>
-            </div>
-            <div class=\"progressBar\">
-              <div class=\"progressFill\" style=\"width:";
-        // line 126
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(((CoreExtension::getAttribute($this->env, $this->source, ($context["stats"] ?? null), "activeRate", [], "any", true, true, false, 126)) ? (Twig\Extension\CoreExtension::default(CoreExtension::getAttribute($this->env, $this->source, (isset($context["stats"]) || array_key_exists("stats", $context) ? $context["stats"] : (function () { throw new RuntimeError('Variable "stats" does not exist.', 126, $this->source); })()), "activeRate", [], "any", false, false, false, 126), 0)) : (0)), "html", null, true);
-        yield "%;\"></div>
-            </div>
-          </div>
-          <div class=\"progressWrap\">
-            <div class=\"progressLabel\">
-              <span>Taux verifies</span>
-              <strong>";
-        // line 132
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(((CoreExtension::getAttribute($this->env, $this->source, ($context["stats"] ?? null), "verifiedRate", [], "any", true, true, false, 132)) ? (Twig\Extension\CoreExtension::default(CoreExtension::getAttribute($this->env, $this->source, (isset($context["stats"]) || array_key_exists("stats", $context) ? $context["stats"] : (function () { throw new RuntimeError('Variable "stats" does not exist.', 132, $this->source); })()), "verifiedRate", [], "any", false, false, false, 132), 0)) : (0)), "html", null, true);
-        yield "%</strong>
-            </div>
-            <div class=\"progressBar\">
-              <div class=\"progressFill\" style=\"width:";
-        // line 135
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(((CoreExtension::getAttribute($this->env, $this->source, ($context["stats"] ?? null), "verifiedRate", [], "any", true, true, false, 135)) ? (Twig\Extension\CoreExtension::default(CoreExtension::getAttribute($this->env, $this->source, (isset($context["stats"]) || array_key_exists("stats", $context) ? $context["stats"] : (function () { throw new RuntimeError('Variable "stats" does not exist.', 135, $this->source); })()), "verifiedRate", [], "any", false, false, false, 135), 0)) : (0)), "html", null, true);
-        yield "%; background: linear-gradient(90deg, rgba(48, 216, 135, 1), rgba(24, 178, 110, 1)); box-shadow: 0 0 16px rgba(48, 216, 135, .35);\"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  </div>
-
   ";
-        // line 143
+        // line 31
         $context['_parent'] = $context;
-        $context['_seq'] = CoreExtension::ensureTraversable(CoreExtension::getAttribute($this->env, $this->source, (isset($context["app"]) || array_key_exists("app", $context) ? $context["app"] : (function () { throw new RuntimeError('Variable "app" does not exist.', 143, $this->source); })()), "flashes", [], "any", false, false, false, 143));
+        $context['_seq'] = CoreExtension::ensureTraversable(CoreExtension::getAttribute($this->env, $this->source, (isset($context["app"]) || array_key_exists("app", $context) ? $context["app"] : (function () { throw new RuntimeError('Variable "app" does not exist.', 31, $this->source); })()), "flashes", [], "any", false, false, false, 31));
         foreach ($context['_seq'] as $context["label"] => $context["messages"]) {
-            // line 144
+            // line 32
             yield "    ";
             $context['_parent'] = $context;
             $context['_seq'] = CoreExtension::ensureTraversable($context["messages"]);
             foreach ($context['_seq'] as $context["_key"] => $context["message"]) {
-                // line 145
+                // line 33
                 yield "      <div class=\"listItem\">
         <span>";
-                // line 146
+                // line 34
                 yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($context["message"], "html", null, true);
                 yield "</span>
         <span class=\"badge ";
-                // line 147
+                // line 35
                 yield ((($context["label"] == "error")) ? ("badge--danger") : ("badge--success"));
                 yield "\">";
                 yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(Twig\Extension\CoreExtension::upper($this->env->getCharset(), $context["label"]), "html", null, true);
@@ -337,31 +149,31 @@ class __TwigTemplate_df610bd1eaee5b71c2ac5088a13241be extends Template
             $_parent = $context['_parent'];
             unset($context['_seq'], $context['_key'], $context['message'], $context['_parent']);
             $context = array_intersect_key($context, $_parent) + $_parent;
-            // line 150
+            // line 38
             yield "  ";
         }
         $_parent = $context['_parent'];
         unset($context['_seq'], $context['label'], $context['messages'], $context['_parent']);
         $context = array_intersect_key($context, $_parent) + $_parent;
-        // line 151
+        // line 39
         yield "
   <form class=\"filtersBar\" method=\"get\" action=\"";
-        // line 152
+        // line 40
         yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("admin_users");
         yield "\">
     <input type=\"hidden\" name=\"sort\" value=\"";
-        // line 153
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(((CoreExtension::getAttribute($this->env, $this->source, ($context["filters"] ?? null), "sort", [], "any", true, true, false, 153)) ? (Twig\Extension\CoreExtension::default(CoreExtension::getAttribute($this->env, $this->source, (isset($context["filters"]) || array_key_exists("filters", $context) ? $context["filters"] : (function () { throw new RuntimeError('Variable "filters" does not exist.', 153, $this->source); })()), "sort", [], "any", false, false, false, 153), "created_at")) : ("created_at")), "html", null, true);
+        // line 41
+        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(((CoreExtension::getAttribute($this->env, $this->source, ($context["filters"] ?? null), "sort", [], "any", true, true, false, 41)) ? (Twig\Extension\CoreExtension::default(CoreExtension::getAttribute($this->env, $this->source, (isset($context["filters"]) || array_key_exists("filters", $context) ? $context["filters"] : (function () { throw new RuntimeError('Variable "filters" does not exist.', 41, $this->source); })()), "sort", [], "any", false, false, false, 41), "created_at")) : ("created_at")), "html", null, true);
         yield "\" />
     <input type=\"hidden\" name=\"direction\" value=\"";
-        // line 154
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(((CoreExtension::getAttribute($this->env, $this->source, ($context["filters"] ?? null), "direction", [], "any", true, true, false, 154)) ? (Twig\Extension\CoreExtension::default(CoreExtension::getAttribute($this->env, $this->source, (isset($context["filters"]) || array_key_exists("filters", $context) ? $context["filters"] : (function () { throw new RuntimeError('Variable "filters" does not exist.', 154, $this->source); })()), "direction", [], "any", false, false, false, 154), "desc")) : ("desc")), "html", null, true);
+        // line 42
+        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(((CoreExtension::getAttribute($this->env, $this->source, ($context["filters"] ?? null), "direction", [], "any", true, true, false, 42)) ? (Twig\Extension\CoreExtension::default(CoreExtension::getAttribute($this->env, $this->source, (isset($context["filters"]) || array_key_exists("filters", $context) ? $context["filters"] : (function () { throw new RuntimeError('Variable "filters" does not exist.', 42, $this->source); })()), "direction", [], "any", false, false, false, 42), "desc")) : ("desc")), "html", null, true);
         yield "\" />
     <div class=\"filterGroup\">
       <label>Recherche</label>
       <input type=\"search\" name=\"q\" value=\"";
-        // line 157
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, (isset($context["filters"]) || array_key_exists("filters", $context) ? $context["filters"] : (function () { throw new RuntimeError('Variable "filters" does not exist.', 157, $this->source); })()), "q", [], "any", false, false, false, 157), "html", null, true);
+        // line 45
+        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, (isset($context["filters"]) || array_key_exists("filters", $context) ? $context["filters"] : (function () { throw new RuntimeError('Variable "filters" does not exist.', 45, $this->source); })()), "q", [], "any", false, false, false, 45), "html", null, true);
         yield "\" placeholder=\"username, email, display name\" />
     </div>
 
@@ -370,15 +182,15 @@ class __TwigTemplate_df610bd1eaee5b71c2ac5088a13241be extends Template
       <select name=\"role\">
         <option value=\"\">ALL</option>
         ";
-        // line 164
+        // line 52
         $context['_parent'] = $context;
-        $context['_seq'] = CoreExtension::ensureTraversable((isset($context["roleOptions"]) || array_key_exists("roleOptions", $context) ? $context["roleOptions"] : (function () { throw new RuntimeError('Variable "roleOptions" does not exist.', 164, $this->source); })()));
+        $context['_seq'] = CoreExtension::ensureTraversable((isset($context["roleOptions"]) || array_key_exists("roleOptions", $context) ? $context["roleOptions"] : (function () { throw new RuntimeError('Variable "roleOptions" does not exist.', 52, $this->source); })()));
         foreach ($context['_seq'] as $context["_key"] => $context["role"]) {
-            // line 165
+            // line 53
             yield "          <option value=\"";
             yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($context["role"], "html", null, true);
             yield "\" ";
-            yield (((CoreExtension::getAttribute($this->env, $this->source, (isset($context["filters"]) || array_key_exists("filters", $context) ? $context["filters"] : (function () { throw new RuntimeError('Variable "filters" does not exist.', 165, $this->source); })()), "role", [], "any", false, false, false, 165) == $context["role"])) ? ("selected") : (""));
+            yield (((CoreExtension::getAttribute($this->env, $this->source, (isset($context["filters"]) || array_key_exists("filters", $context) ? $context["filters"] : (function () { throw new RuntimeError('Variable "filters" does not exist.', 53, $this->source); })()), "role", [], "any", false, false, false, 53) == $context["role"])) ? ("selected") : (""));
             yield ">";
             yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($context["role"], "html", null, true);
             yield "</option>
@@ -387,7 +199,7 @@ class __TwigTemplate_df610bd1eaee5b71c2ac5088a13241be extends Template
         $_parent = $context['_parent'];
         unset($context['_seq'], $context['_key'], $context['role'], $context['_parent']);
         $context = array_intersect_key($context, $_parent) + $_parent;
-        // line 167
+        // line 55
         yield "      </select>
     </div>
 
@@ -395,16 +207,16 @@ class __TwigTemplate_df610bd1eaee5b71c2ac5088a13241be extends Template
       <label>Actif</label>
       <select name=\"active\">
         <option value=\"\" ";
-        // line 173
-        yield (((CoreExtension::getAttribute($this->env, $this->source, (isset($context["filters"]) || array_key_exists("filters", $context) ? $context["filters"] : (function () { throw new RuntimeError('Variable "filters" does not exist.', 173, $this->source); })()), "active", [], "any", false, false, false, 173) == "")) ? ("selected") : (""));
+        // line 61
+        yield (((CoreExtension::getAttribute($this->env, $this->source, (isset($context["filters"]) || array_key_exists("filters", $context) ? $context["filters"] : (function () { throw new RuntimeError('Variable "filters" does not exist.', 61, $this->source); })()), "active", [], "any", false, false, false, 61) == "")) ? ("selected") : (""));
         yield ">ALL</option>
         <option value=\"1\" ";
-        // line 174
-        yield (((CoreExtension::getAttribute($this->env, $this->source, (isset($context["filters"]) || array_key_exists("filters", $context) ? $context["filters"] : (function () { throw new RuntimeError('Variable "filters" does not exist.', 174, $this->source); })()), "active", [], "any", false, false, false, 174) == "1")) ? ("selected") : (""));
+        // line 62
+        yield (((CoreExtension::getAttribute($this->env, $this->source, (isset($context["filters"]) || array_key_exists("filters", $context) ? $context["filters"] : (function () { throw new RuntimeError('Variable "filters" does not exist.', 62, $this->source); })()), "active", [], "any", false, false, false, 62) == "1")) ? ("selected") : (""));
         yield ">Oui</option>
         <option value=\"0\" ";
-        // line 175
-        yield (((CoreExtension::getAttribute($this->env, $this->source, (isset($context["filters"]) || array_key_exists("filters", $context) ? $context["filters"] : (function () { throw new RuntimeError('Variable "filters" does not exist.', 175, $this->source); })()), "active", [], "any", false, false, false, 175) == "0")) ? ("selected") : (""));
+        // line 63
+        yield (((CoreExtension::getAttribute($this->env, $this->source, (isset($context["filters"]) || array_key_exists("filters", $context) ? $context["filters"] : (function () { throw new RuntimeError('Variable "filters" does not exist.', 63, $this->source); })()), "active", [], "any", false, false, false, 63) == "0")) ? ("selected") : (""));
         yield ">Non</option>
       </select>
     </div>
@@ -413,16 +225,16 @@ class __TwigTemplate_df610bd1eaee5b71c2ac5088a13241be extends Template
       <label>Email verifie</label>
       <select name=\"verified\">
         <option value=\"\" ";
-        // line 182
-        yield (((CoreExtension::getAttribute($this->env, $this->source, (isset($context["filters"]) || array_key_exists("filters", $context) ? $context["filters"] : (function () { throw new RuntimeError('Variable "filters" does not exist.', 182, $this->source); })()), "verified", [], "any", false, false, false, 182) == "")) ? ("selected") : (""));
+        // line 70
+        yield (((CoreExtension::getAttribute($this->env, $this->source, (isset($context["filters"]) || array_key_exists("filters", $context) ? $context["filters"] : (function () { throw new RuntimeError('Variable "filters" does not exist.', 70, $this->source); })()), "verified", [], "any", false, false, false, 70) == "")) ? ("selected") : (""));
         yield ">ALL</option>
         <option value=\"1\" ";
-        // line 183
-        yield (((CoreExtension::getAttribute($this->env, $this->source, (isset($context["filters"]) || array_key_exists("filters", $context) ? $context["filters"] : (function () { throw new RuntimeError('Variable "filters" does not exist.', 183, $this->source); })()), "verified", [], "any", false, false, false, 183) == "1")) ? ("selected") : (""));
+        // line 71
+        yield (((CoreExtension::getAttribute($this->env, $this->source, (isset($context["filters"]) || array_key_exists("filters", $context) ? $context["filters"] : (function () { throw new RuntimeError('Variable "filters" does not exist.', 71, $this->source); })()), "verified", [], "any", false, false, false, 71) == "1")) ? ("selected") : (""));
         yield ">Oui</option>
         <option value=\"0\" ";
-        // line 184
-        yield (((CoreExtension::getAttribute($this->env, $this->source, (isset($context["filters"]) || array_key_exists("filters", $context) ? $context["filters"] : (function () { throw new RuntimeError('Variable "filters" does not exist.', 184, $this->source); })()), "verified", [], "any", false, false, false, 184) == "0")) ? ("selected") : (""));
+        // line 72
+        yield (((CoreExtension::getAttribute($this->env, $this->source, (isset($context["filters"]) || array_key_exists("filters", $context) ? $context["filters"] : (function () { throw new RuntimeError('Variable "filters" does not exist.', 72, $this->source); })()), "verified", [], "any", false, false, false, 72) == "0")) ? ("selected") : (""));
         yield ">Non</option>
       </select>
     </div>
@@ -430,7 +242,7 @@ class __TwigTemplate_df610bd1eaee5b71c2ac5088a13241be extends Template
     <div class=\"formActions\">
       <button class=\"btn btnPrimary\" type=\"submit\">Filtrer</button>
       <a class=\"btn btnGhost\" href=\"";
-        // line 190
+        // line 78
         yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("admin_users");
         yield "\">Reset</a>
     </div>
@@ -440,8 +252,8 @@ class __TwigTemplate_df610bd1eaee5b71c2ac5088a13241be extends Template
     <div class=\"panelHeader\">
       <h3 class=\"panelTitle\">LISTE</h3>
       <span class=\"listMeta\">";
-        // line 197
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(Twig\Extension\CoreExtension::length($this->env->getCharset(), (isset($context["users"]) || array_key_exists("users", $context) ? $context["users"] : (function () { throw new RuntimeError('Variable "users" does not exist.', 197, $this->source); })())), "html", null, true);
+        // line 85
+        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(Twig\Extension\CoreExtension::length($this->env->getCharset(), (isset($context["users"]) || array_key_exists("users", $context) ? $context["users"] : (function () { throw new RuntimeError('Variable "users" does not exist.', 85, $this->source); })())), "html", null, true);
         yield " resultat(s)</span>
     </div>
 
@@ -451,127 +263,127 @@ class __TwigTemplate_df610bd1eaee5b71c2ac5088a13241be extends Template
           <tr>
             <th>Photo</th>
             <th>";
-        // line 205
-        yield $macros["sorter"]->getTemplateForMacro("macro_sort_link", $context, 205, $this->getSourceContext())->macro_sort_link(...["admin_users", (isset($context["filters"]) || array_key_exists("filters", $context) ? $context["filters"] : (function () { throw new RuntimeError('Variable "filters" does not exist.', 205, $this->source); })()), "id", "ID"]);
+        // line 93
+        yield $macros["sorter"]->getTemplateForMacro("macro_sort_link", $context, 93, $this->getSourceContext())->macro_sort_link(...["admin_users", (isset($context["filters"]) || array_key_exists("filters", $context) ? $context["filters"] : (function () { throw new RuntimeError('Variable "filters" does not exist.', 93, $this->source); })()), "id", "ID"]);
         yield "</th>
             <th>";
-        // line 206
-        yield $macros["sorter"]->getTemplateForMacro("macro_sort_link", $context, 206, $this->getSourceContext())->macro_sort_link(...["admin_users", (isset($context["filters"]) || array_key_exists("filters", $context) ? $context["filters"] : (function () { throw new RuntimeError('Variable "filters" does not exist.', 206, $this->source); })()), "username", "Username"]);
+        // line 94
+        yield $macros["sorter"]->getTemplateForMacro("macro_sort_link", $context, 94, $this->getSourceContext())->macro_sort_link(...["admin_users", (isset($context["filters"]) || array_key_exists("filters", $context) ? $context["filters"] : (function () { throw new RuntimeError('Variable "filters" does not exist.', 94, $this->source); })()), "username", "Username"]);
         yield "</th>
             <th>";
-        // line 207
-        yield $macros["sorter"]->getTemplateForMacro("macro_sort_link", $context, 207, $this->getSourceContext())->macro_sort_link(...["admin_users", (isset($context["filters"]) || array_key_exists("filters", $context) ? $context["filters"] : (function () { throw new RuntimeError('Variable "filters" does not exist.', 207, $this->source); })()), "email", "Email"]);
+        // line 95
+        yield $macros["sorter"]->getTemplateForMacro("macro_sort_link", $context, 95, $this->getSourceContext())->macro_sort_link(...["admin_users", (isset($context["filters"]) || array_key_exists("filters", $context) ? $context["filters"] : (function () { throw new RuntimeError('Variable "filters" does not exist.', 95, $this->source); })()), "email", "Email"]);
         yield "</th>
             <th>";
-        // line 208
-        yield $macros["sorter"]->getTemplateForMacro("macro_sort_link", $context, 208, $this->getSourceContext())->macro_sort_link(...["admin_users", (isset($context["filters"]) || array_key_exists("filters", $context) ? $context["filters"] : (function () { throw new RuntimeError('Variable "filters" does not exist.', 208, $this->source); })()), "role", "Role"]);
+        // line 96
+        yield $macros["sorter"]->getTemplateForMacro("macro_sort_link", $context, 96, $this->getSourceContext())->macro_sort_link(...["admin_users", (isset($context["filters"]) || array_key_exists("filters", $context) ? $context["filters"] : (function () { throw new RuntimeError('Variable "filters" does not exist.', 96, $this->source); })()), "role", "Role"]);
         yield "</th>
             <th>";
-        // line 209
-        yield $macros["sorter"]->getTemplateForMacro("macro_sort_link", $context, 209, $this->getSourceContext())->macro_sort_link(...["admin_users", (isset($context["filters"]) || array_key_exists("filters", $context) ? $context["filters"] : (function () { throw new RuntimeError('Variable "filters" does not exist.', 209, $this->source); })()), "active", "Actif"]);
+        // line 97
+        yield $macros["sorter"]->getTemplateForMacro("macro_sort_link", $context, 97, $this->getSourceContext())->macro_sort_link(...["admin_users", (isset($context["filters"]) || array_key_exists("filters", $context) ? $context["filters"] : (function () { throw new RuntimeError('Variable "filters" does not exist.', 97, $this->source); })()), "active", "Actif"]);
         yield "</th>
             <th>";
-        // line 210
-        yield $macros["sorter"]->getTemplateForMacro("macro_sort_link", $context, 210, $this->getSourceContext())->macro_sort_link(...["admin_users", (isset($context["filters"]) || array_key_exists("filters", $context) ? $context["filters"] : (function () { throw new RuntimeError('Variable "filters" does not exist.', 210, $this->source); })()), "verified", "Email verifie"]);
+        // line 98
+        yield $macros["sorter"]->getTemplateForMacro("macro_sort_link", $context, 98, $this->getSourceContext())->macro_sort_link(...["admin_users", (isset($context["filters"]) || array_key_exists("filters", $context) ? $context["filters"] : (function () { throw new RuntimeError('Variable "filters" does not exist.', 98, $this->source); })()), "verified", "Email verifie"]);
         yield "</th>
             <th>";
-        // line 211
-        yield $macros["sorter"]->getTemplateForMacro("macro_sort_link", $context, 211, $this->getSourceContext())->macro_sort_link(...["admin_users", (isset($context["filters"]) || array_key_exists("filters", $context) ? $context["filters"] : (function () { throw new RuntimeError('Variable "filters" does not exist.', 211, $this->source); })()), "country", "Country"]);
+        // line 99
+        yield $macros["sorter"]->getTemplateForMacro("macro_sort_link", $context, 99, $this->getSourceContext())->macro_sort_link(...["admin_users", (isset($context["filters"]) || array_key_exists("filters", $context) ? $context["filters"] : (function () { throw new RuntimeError('Variable "filters" does not exist.', 99, $this->source); })()), "country", "Country"]);
         yield "</th>
             <th>";
-        // line 212
-        yield $macros["sorter"]->getTemplateForMacro("macro_sort_link", $context, 212, $this->getSourceContext())->macro_sort_link(...["admin_users", (isset($context["filters"]) || array_key_exists("filters", $context) ? $context["filters"] : (function () { throw new RuntimeError('Variable "filters" does not exist.', 212, $this->source); })()), "created_at", "Created"]);
+        // line 100
+        yield $macros["sorter"]->getTemplateForMacro("macro_sort_link", $context, 100, $this->getSourceContext())->macro_sort_link(...["admin_users", (isset($context["filters"]) || array_key_exists("filters", $context) ? $context["filters"] : (function () { throw new RuntimeError('Variable "filters" does not exist.', 100, $this->source); })()), "created_at", "Created"]);
         yield "</th>
             <th>";
-        // line 213
-        yield $macros["sorter"]->getTemplateForMacro("macro_sort_link", $context, 213, $this->getSourceContext())->macro_sort_link(...["admin_users", (isset($context["filters"]) || array_key_exists("filters", $context) ? $context["filters"] : (function () { throw new RuntimeError('Variable "filters" does not exist.', 213, $this->source); })()), "last_login_at", "Last login"]);
+        // line 101
+        yield $macros["sorter"]->getTemplateForMacro("macro_sort_link", $context, 101, $this->getSourceContext())->macro_sort_link(...["admin_users", (isset($context["filters"]) || array_key_exists("filters", $context) ? $context["filters"] : (function () { throw new RuntimeError('Variable "filters" does not exist.', 101, $this->source); })()), "last_login_at", "Last login"]);
         yield "</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           ";
-        // line 218
+        // line 106
         $context['_parent'] = $context;
-        $context['_seq'] = CoreExtension::ensureTraversable((isset($context["users"]) || array_key_exists("users", $context) ? $context["users"] : (function () { throw new RuntimeError('Variable "users" does not exist.', 218, $this->source); })()));
+        $context['_seq'] = CoreExtension::ensureTraversable((isset($context["users"]) || array_key_exists("users", $context) ? $context["users"] : (function () { throw new RuntimeError('Variable "users" does not exist.', 106, $this->source); })()));
         $context['_iterated'] = false;
         foreach ($context['_seq'] as $context["_key"] => $context["user"]) {
-            // line 219
+            // line 107
             yield "            ";
-            $context["userId"] = (((CoreExtension::getAttribute($this->env, $this->source, $context["user"], "userId", [], "any", true, true, false, 219) &&  !(null === CoreExtension::getAttribute($this->env, $this->source, $context["user"], "userId", [], "any", false, false, false, 219)))) ? (CoreExtension::getAttribute($this->env, $this->source, $context["user"], "userId", [], "any", false, false, false, 219)) : (0));
-            // line 220
+            $context["userId"] = (((CoreExtension::getAttribute($this->env, $this->source, $context["user"], "userId", [], "any", true, true, false, 107) &&  !(null === CoreExtension::getAttribute($this->env, $this->source, $context["user"], "userId", [], "any", false, false, false, 107)))) ? (CoreExtension::getAttribute($this->env, $this->source, $context["user"], "userId", [], "any", false, false, false, 107)) : (0));
+            // line 108
             yield "            <tr>
               <td>
                 ";
-            // line 222
-            if ((($tmp = CoreExtension::getAttribute($this->env, $this->source, $context["user"], "profileImageId", [], "any", false, false, false, 222)) && $tmp instanceof Markup ? (string) $tmp : $tmp)) {
-                // line 223
+            // line 110
+            if ((($tmp = CoreExtension::getAttribute($this->env, $this->source, $context["user"], "profileImageId", [], "any", false, false, false, 110)) && $tmp instanceof Markup ? (string) $tmp : $tmp)) {
+                // line 111
                 yield "                  <img src=\"";
-                yield (((is_string($_v0 = CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["user"], "profileImageId", [], "any", false, false, false, 223), "fileUrl", [], "any", false, false, false, 223)) && is_string($_v1 = "http") && str_starts_with($_v0, $_v1))) ? ($this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["user"], "profileImageId", [], "any", false, false, false, 223), "fileUrl", [], "any", false, false, false, 223), "html", null, true)) : ($this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\AssetExtension']->getAssetUrl(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["user"], "profileImageId", [], "any", false, false, false, 223), "fileUrl", [], "any", false, false, false, 223)), "html", null, true)));
+                yield (((is_string($_v0 = CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["user"], "profileImageId", [], "any", false, false, false, 111), "fileUrl", [], "any", false, false, false, 111)) && is_string($_v1 = "http") && str_starts_with($_v0, $_v1))) ? ($this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["user"], "profileImageId", [], "any", false, false, false, 111), "fileUrl", [], "any", false, false, false, 111), "html", null, true)) : ($this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\AssetExtension']->getAssetUrl(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["user"], "profileImageId", [], "any", false, false, false, 111), "fileUrl", [], "any", false, false, false, 111)), "html", null, true)));
                 yield "\" alt=\"avatar\" style=\"width:28px;height:28px;border-radius:999px;object-fit:cover;\" />
                 ";
             } else {
-                // line 225
+                // line 113
                 yield "                  <span class=\"avatarSmall\">";
-                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(Twig\Extension\CoreExtension::upper($this->env->getCharset(), Twig\Extension\CoreExtension::slice($this->env->getCharset(), CoreExtension::getAttribute($this->env, $this->source, $context["user"], "username", [], "any", false, false, false, 225), 0, 1)), "html", null, true);
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(Twig\Extension\CoreExtension::upper($this->env->getCharset(), Twig\Extension\CoreExtension::slice($this->env->getCharset(), CoreExtension::getAttribute($this->env, $this->source, $context["user"], "username", [], "any", false, false, false, 113), 0, 1)), "html", null, true);
                 yield "</span>
                 ";
             }
-            // line 227
+            // line 115
             yield "              </td>
               <td>#";
-            // line 228
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape((isset($context["userId"]) || array_key_exists("userId", $context) ? $context["userId"] : (function () { throw new RuntimeError('Variable "userId" does not exist.', 228, $this->source); })()), "html", null, true);
+            // line 116
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape((isset($context["userId"]) || array_key_exists("userId", $context) ? $context["userId"] : (function () { throw new RuntimeError('Variable "userId" does not exist.', 116, $this->source); })()), "html", null, true);
             yield "</td>
               <td>";
-            // line 229
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["user"], "username", [], "any", false, false, false, 229), "html", null, true);
+            // line 117
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["user"], "username", [], "any", false, false, false, 117), "html", null, true);
             yield "</td>
               <td>";
-            // line 230
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["user"], "email", [], "any", false, false, false, 230), "html", null, true);
+            // line 118
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["user"], "email", [], "any", false, false, false, 118), "html", null, true);
             yield "</td>
               <td><span class=\"badge badge--info\">";
-            // line 231
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["user"], "role", [], "any", false, false, false, 231), "html", null, true);
+            // line 119
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["user"], "role", [], "any", false, false, false, 119), "html", null, true);
             yield "</span></td>
               <td>";
-            // line 232
-            yield (((($tmp = CoreExtension::getAttribute($this->env, $this->source, $context["user"], "isActive", [], "any", false, false, false, 232)) && $tmp instanceof Markup ? (string) $tmp : $tmp)) ? ("Oui") : ("Non"));
+            // line 120
+            yield (((($tmp = CoreExtension::getAttribute($this->env, $this->source, $context["user"], "isActive", [], "any", false, false, false, 120)) && $tmp instanceof Markup ? (string) $tmp : $tmp)) ? ("Oui") : ("Non"));
             yield "</td>
               <td>";
-            // line 233
-            yield (((($tmp = CoreExtension::getAttribute($this->env, $this->source, $context["user"], "emailVerified", [], "any", false, false, false, 233)) && $tmp instanceof Markup ? (string) $tmp : $tmp)) ? ("Oui") : ("Non"));
+            // line 121
+            yield (((($tmp = CoreExtension::getAttribute($this->env, $this->source, $context["user"], "emailVerified", [], "any", false, false, false, 121)) && $tmp instanceof Markup ? (string) $tmp : $tmp)) ? ("Oui") : ("Non"));
             yield "</td>
               <td>";
-            // line 234
-            yield ((CoreExtension::getAttribute($this->env, $this->source, $context["user"], "country", [], "any", false, false, false, 234)) ? ($this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["user"], "country", [], "any", false, false, false, 234), "html", null, true)) : ("-"));
+            // line 122
+            yield ((CoreExtension::getAttribute($this->env, $this->source, $context["user"], "country", [], "any", false, false, false, 122)) ? ($this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["user"], "country", [], "any", false, false, false, 122), "html", null, true)) : ("-"));
             yield "</td>
               <td>";
-            // line 235
-            yield (((($tmp = CoreExtension::getAttribute($this->env, $this->source, $context["user"], "createdAt", [], "any", false, false, false, 235)) && $tmp instanceof Markup ? (string) $tmp : $tmp)) ? ($this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Twig\Extension\CoreExtension']->formatDate(CoreExtension::getAttribute($this->env, $this->source, $context["user"], "createdAt", [], "any", false, false, false, 235), "d/m/Y H:i"), "html", null, true)) : ("-"));
+            // line 123
+            yield (((($tmp = CoreExtension::getAttribute($this->env, $this->source, $context["user"], "createdAt", [], "any", false, false, false, 123)) && $tmp instanceof Markup ? (string) $tmp : $tmp)) ? ($this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Twig\Extension\CoreExtension']->formatDate(CoreExtension::getAttribute($this->env, $this->source, $context["user"], "createdAt", [], "any", false, false, false, 123), "d/m/Y H:i"), "html", null, true)) : ("-"));
             yield "</td>
               <td>";
-            // line 236
-            yield (((($tmp = CoreExtension::getAttribute($this->env, $this->source, $context["user"], "lastLoginAt", [], "any", false, false, false, 236)) && $tmp instanceof Markup ? (string) $tmp : $tmp)) ? ($this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Twig\Extension\CoreExtension']->formatDate(CoreExtension::getAttribute($this->env, $this->source, $context["user"], "lastLoginAt", [], "any", false, false, false, 236), "d/m/Y H:i"), "html", null, true)) : ("-"));
+            // line 124
+            yield (((($tmp = CoreExtension::getAttribute($this->env, $this->source, $context["user"], "lastLoginAt", [], "any", false, false, false, 124)) && $tmp instanceof Markup ? (string) $tmp : $tmp)) ? ($this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Twig\Extension\CoreExtension']->formatDate(CoreExtension::getAttribute($this->env, $this->source, $context["user"], "lastLoginAt", [], "any", false, false, false, 124), "d/m/Y H:i"), "html", null, true)) : ("-"));
             yield "</td>
               <td>
                 <div class=\"formActions\">
                   <a class=\"btn btnTiny\" href=\"";
-            // line 239
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("admin_user_detail", ["id" => (isset($context["userId"]) || array_key_exists("userId", $context) ? $context["userId"] : (function () { throw new RuntimeError('Variable "userId" does not exist.', 239, $this->source); })())]), "html", null, true);
+            // line 127
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("admin_user_detail", ["id" => (isset($context["userId"]) || array_key_exists("userId", $context) ? $context["userId"] : (function () { throw new RuntimeError('Variable "userId" does not exist.', 127, $this->source); })())]), "html", null, true);
             yield "\">Voir</a>
                   <a class=\"btn btnTiny\" href=\"";
-            // line 240
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("admin_user_edit", ["id" => (isset($context["userId"]) || array_key_exists("userId", $context) ? $context["userId"] : (function () { throw new RuntimeError('Variable "userId" does not exist.', 240, $this->source); })())]), "html", null, true);
+            // line 128
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("admin_user_edit", ["id" => (isset($context["userId"]) || array_key_exists("userId", $context) ? $context["userId"] : (function () { throw new RuntimeError('Variable "userId" does not exist.', 128, $this->source); })())]), "html", null, true);
             yield "\">Update</a>
                   <form method=\"post\" action=\"";
-            // line 241
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("admin_user_delete", ["id" => (isset($context["userId"]) || array_key_exists("userId", $context) ? $context["userId"] : (function () { throw new RuntimeError('Variable "userId" does not exist.', 241, $this->source); })())]), "html", null, true);
+            // line 129
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("admin_user_delete", ["id" => (isset($context["userId"]) || array_key_exists("userId", $context) ? $context["userId"] : (function () { throw new RuntimeError('Variable "userId" does not exist.', 129, $this->source); })())]), "html", null, true);
             yield "\" onsubmit=\"return confirm('Supprimer cet utilisateur ?');\" style=\"display:inline-block;\">
                     <input type=\"hidden\" name=\"_token\" value=\"";
-            // line 242
-            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->env->getRuntime('Symfony\Component\Form\FormRenderer')->renderCsrfToken(("delete_user_" . (isset($context["userId"]) || array_key_exists("userId", $context) ? $context["userId"] : (function () { throw new RuntimeError('Variable "userId" does not exist.', 242, $this->source); })()))), "html", null, true);
+            // line 130
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->env->getRuntime('Symfony\Component\Form\FormRenderer')->renderCsrfToken(("delete_user_" . (isset($context["userId"]) || array_key_exists("userId", $context) ? $context["userId"] : (function () { throw new RuntimeError('Variable "userId" does not exist.', 130, $this->source); })()))), "html", null, true);
             yield "\" />
                     <button class=\"btn btnTiny\" type=\"submit\">Delete</button>
                   </form>
@@ -581,9 +393,9 @@ class __TwigTemplate_df610bd1eaee5b71c2ac5088a13241be extends Template
           ";
             $context['_iterated'] = true;
         }
-        // line 248
+        // line 136
         if (!$context['_iterated']) {
-            // line 249
+            // line 137
             yield "            <tr>
               <td colspan=\"11\" class=\"listMeta\">Aucun utilisateur trouve.</td>
             </tr>
@@ -592,139 +404,11 @@ class __TwigTemplate_df610bd1eaee5b71c2ac5088a13241be extends Template
         $_parent = $context['_parent'];
         unset($context['_seq'], $context['_key'], $context['user'], $context['_parent'], $context['_iterated']);
         $context = array_intersect_key($context, $_parent) + $_parent;
-        // line 253
+        // line 141
         yield "        </tbody>
       </table>
     </div>
   </section>
-";
-        
-        $__internal_6f47bbe9983af81f1e7450e9a3e3768f->leave($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof);
-
-        
-        $__internal_5a27a8ba21ca79b61932376b2fa922d2->leave($__internal_5a27a8ba21ca79b61932376b2fa922d2_prof);
-
-        yield from [];
-    }
-
-    // line 259
-    /**
-     * @return iterable<null|scalar|\Stringable>
-     */
-    public function block_javascripts(array $context, array $blocks = []): iterable
-    {
-        $macros = $this->macros;
-        $__internal_5a27a8ba21ca79b61932376b2fa922d2 = $this->extensions["Symfony\\Bundle\\WebProfilerBundle\\Twig\\WebProfilerExtension"];
-        $__internal_5a27a8ba21ca79b61932376b2fa922d2->enter($__internal_5a27a8ba21ca79b61932376b2fa922d2_prof = new \Twig\Profiler\Profile($this->getTemplateName(), "block", "javascripts"));
-
-        $__internal_6f47bbe9983af81f1e7450e9a3e3768f = $this->extensions["Symfony\\Bridge\\Twig\\Extension\\ProfilerExtension"];
-        $__internal_6f47bbe9983af81f1e7450e9a3e3768f->enter($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof = new \Twig\Profiler\Profile($this->getTemplateName(), "block", "javascripts"));
-
-        // line 260
-        yield "  ";
-        yield from $this->yieldParentBlock("javascripts", $context, $blocks);
-        yield "
-  <script src=\"https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js\"></script>
-  <script>
-    (() => {
-      if (typeof Chart === 'undefined') {
-        return;
-      }
-
-      const charts = ";
-        // line 268
-        yield json_encode(((array_key_exists("userCharts", $context)) ? (Twig\Extension\CoreExtension::default((isset($context["userCharts"]) || array_key_exists("userCharts", $context) ? $context["userCharts"] : (function () { throw new RuntimeError('Variable "userCharts" does not exist.', 268, $this->source); })()), [])) : ([])));
-        yield ";
-      const textColor = 'rgba(255,255,255,.78)';
-      const gridColor = 'rgba(255,255,255,.10)';
-
-      const registrationsCtx = document.getElementById('usersRegistrationsChart');
-      if (registrationsCtx && charts.registrationsByMonth) {
-        new Chart(registrationsCtx, {
-          type: 'line',
-          data: {
-            labels: charts.registrationsByMonth.labels || [],
-            datasets: [{
-              label: 'Nouveaux utilisateurs',
-              data: charts.registrationsByMonth.data || [],
-              borderColor: '#ff9d2e',
-              backgroundColor: 'rgba(255,157,46,.22)',
-              tension: 0.35,
-              fill: true,
-              pointRadius: 3,
-              pointHoverRadius: 5,
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: { labels: { color: textColor } }
-            },
-            scales: {
-              x: { ticks: { color: textColor }, grid: { color: gridColor } },
-              y: { ticks: { color: textColor, precision: 0 }, grid: { color: gridColor } }
-            }
-          }
-        });
-      }
-
-      const rolesCtx = document.getElementById('usersRolesChart');
-      if (rolesCtx && charts.roles) {
-        new Chart(rolesCtx, {
-          type: 'doughnut',
-          data: {
-            labels: charts.roles.labels || [],
-            datasets: [{
-              data: charts.roles.data || [],
-              backgroundColor: ['#20d4a8', '#4da3ff', '#ffd166', '#ff6b6b'],
-              borderColor: 'rgba(16,14,24,.95)',
-              borderWidth: 2
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                position: 'bottom',
-                labels: { color: textColor, boxWidth: 10, boxHeight: 10 }
-              }
-            }
-          }
-        });
-      }
-
-      const loginsCtx = document.getElementById('usersLoginsChart');
-      if (loginsCtx && charts.lastLoginBuckets) {
-        new Chart(loginsCtx, {
-          type: 'bar',
-          data: {
-            labels: charts.lastLoginBuckets.labels || [],
-            datasets: [{
-              label: 'Utilisateurs',
-              data: charts.lastLoginBuckets.data || [],
-              backgroundColor: ['rgba(32,212,168,.45)', 'rgba(77,163,255,.45)', 'rgba(255,209,102,.45)', 'rgba(255,107,107,.45)'],
-              borderColor: ['#20d4a8', '#4da3ff', '#ffd166', '#ff6b6b'],
-              borderWidth: 1.5,
-              borderRadius: 8
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: { labels: { color: textColor } }
-            },
-            scales: {
-              x: { ticks: { color: textColor }, grid: { color: gridColor } },
-              y: { ticks: { color: textColor, precision: 0 }, grid: { color: gridColor } }
-            }
-          }
-        });
-      }
-    })();
-  </script>
 ";
         
         $__internal_6f47bbe9983af81f1e7450e9a3e3768f->leave($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof);
@@ -813,7 +497,7 @@ class __TwigTemplate_df610bd1eaee5b71c2ac5088a13241be extends Template
      */
     public function getDebugInfo(): array
     {
-        return array (  780 => 10,  775 => 9,  772 => 8,  769 => 7,  766 => 6,  763 => 5,  760 => 4,  739 => 3,  636 => 268,  624 => 260,  611 => 259,  596 => 253,  587 => 249,  585 => 248,  574 => 242,  570 => 241,  566 => 240,  562 => 239,  556 => 236,  552 => 235,  548 => 234,  544 => 233,  540 => 232,  536 => 231,  532 => 230,  528 => 229,  524 => 228,  521 => 227,  515 => 225,  509 => 223,  507 => 222,  503 => 220,  500 => 219,  495 => 218,  487 => 213,  483 => 212,  479 => 211,  475 => 210,  471 => 209,  467 => 208,  463 => 207,  459 => 206,  455 => 205,  444 => 197,  434 => 190,  425 => 184,  421 => 183,  417 => 182,  407 => 175,  403 => 174,  399 => 173,  391 => 167,  378 => 165,  374 => 164,  364 => 157,  358 => 154,  354 => 153,  350 => 152,  347 => 151,  341 => 150,  330 => 147,  326 => 146,  323 => 145,  318 => 144,  314 => 143,  303 => 135,  297 => 132,  288 => 126,  282 => 123,  275 => 118,  265 => 113,  263 => 112,  256 => 110,  250 => 107,  246 => 106,  243 => 105,  240 => 104,  237 => 103,  232 => 102,  189 => 62,  182 => 58,  178 => 57,  171 => 53,  167 => 52,  160 => 48,  156 => 47,  149 => 43,  145 => 42,  137 => 37,  127 => 30,  123 => 29,  119 => 28,  110 => 21,  107 => 20,  104 => 19,  91 => 18,  68 => 16,  57 => 1,  55 => 14,  42 => 1,);
+        return array (  464 => 10,  459 => 9,  456 => 8,  453 => 7,  450 => 6,  447 => 5,  444 => 4,  423 => 3,  408 => 141,  399 => 137,  397 => 136,  386 => 130,  382 => 129,  378 => 128,  374 => 127,  368 => 124,  364 => 123,  360 => 122,  356 => 121,  352 => 120,  348 => 119,  344 => 118,  340 => 117,  336 => 116,  333 => 115,  327 => 113,  321 => 111,  319 => 110,  315 => 108,  312 => 107,  307 => 106,  299 => 101,  295 => 100,  291 => 99,  287 => 98,  283 => 97,  279 => 96,  275 => 95,  271 => 94,  267 => 93,  256 => 85,  246 => 78,  237 => 72,  233 => 71,  229 => 70,  219 => 63,  215 => 62,  211 => 61,  203 => 55,  190 => 53,  186 => 52,  176 => 45,  170 => 42,  166 => 41,  162 => 40,  159 => 39,  153 => 38,  142 => 35,  138 => 34,  135 => 33,  130 => 32,  126 => 31,  119 => 27,  115 => 26,  111 => 25,  103 => 19,  90 => 18,  67 => 16,  56 => 1,  54 => 14,  41 => 1,);
     }
 
     public function getSourceContext(): Source
@@ -836,9 +520,6 @@ class __TwigTemplate_df610bd1eaee5b71c2ac5088a13241be extends Template
 {% block title %}PULSE - Gestion utilisateurs{% endblock %}
 
 {% block admin_content %}
-  {% set stats = userStats|default({}) %}
-  {% set charts = userCharts|default({}) %}
-
   <div class=\"pageHeader\">
     <div>
       <h2>Gestion utilisateurs</h2>
@@ -849,115 +530,6 @@ class __TwigTemplate_df610bd1eaee5b71c2ac5088a13241be extends Template
       <a class=\"btn btnGhost\" href=\"{{ path('admin_users_export', filters|merge({format: 'pdf'})) }}\">Exporter PDF</a>
       <a class=\"btn btnGhost\" href=\"{{ path('admin_users_export', filters|merge({format: 'excel'})) }}\">Exporter Excel</a>
     </div>
-  </div>
-
-  <div class=\"kpiRow\">
-    <div class=\"kpiCard\">
-      <div class=\"kpiLabel\">Utilisateurs affiches</div>
-      <div class=\"kpiValue\">{{ stats.total|default(users|length) }}</div>
-      <div class=\"listMeta\">Apres filtres en cours</div>
-    </div>
-    <div class=\"kpiCard\">
-      <div class=\"kpiLabel\">Actifs</div>
-      <div class=\"kpiValue\">{{ stats.active|default(0) }}</div>
-      <div class=\"listMeta\">Inactifs: {{ stats.inactive|default(0) }}</div>
-    </div>
-    <div class=\"kpiCard\">
-      <div class=\"kpiLabel\">Emails verifies</div>
-      <div class=\"kpiValue\">{{ stats.verified|default(0) }}</div>
-      <div class=\"listMeta\">Non verifies: {{ stats.unverified|default(0) }}</div>
-    </div>
-    <div class=\"kpiCard\">
-      <div class=\"kpiLabel\">Nouveaux comptes</div>
-      <div class=\"kpiValue\">{{ stats.newLast30d|default(0) }}</div>
-      <div class=\"listMeta\">Derniers 30 jours: {{ stats.newLast7d|default(0) }} sur 7 jours</div>
-    </div>
-    <div class=\"kpiCard\">
-      <div class=\"kpiLabel\">Connexions recentes</div>
-      <div class=\"kpiValue\">{{ stats.loggedLast7d|default(0) }}</div>
-      <div class=\"listMeta\">Jamais connectes: {{ stats.neverLoggedIn|default(0) }}</div>
-    </div>
-    <div class=\"kpiCard\">
-      <div class=\"kpiLabel\">Pays distincts</div>
-      <div class=\"kpiValue\">{{ stats.countriesCount|default(0) }}</div>
-      <div class=\"listMeta\">Sur la selection affichee</div>
-    </div>
-  </div>
-
-  <div class=\"chartGrid\">
-    <section class=\"panel\">
-      <div class=\"panelHeader\">
-        <h3 class=\"panelTitle\">Inscriptions utilisateurs</h3>
-        <span class=\"listMeta\">Evolution sur 6 mois</span>
-      </div>
-      <div class=\"chartWrap\">
-        <canvas id=\"usersRegistrationsChart\"></canvas>
-      </div>
-    </section>
-
-    <section class=\"panel\">
-      <div class=\"panelHeader\">
-        <h3 class=\"panelTitle\">Repartition des roles</h3>
-        <span class=\"listMeta\">Selection courante</span>
-      </div>
-      <div class=\"chartWrap chartWrap--sm\">
-        <canvas id=\"usersRolesChart\"></canvas>
-      </div>
-    </section>
-
-    <section class=\"panel\">
-      <div class=\"panelHeader\">
-        <h3 class=\"panelTitle\">Comportement de connexion</h3>
-        <span class=\"listMeta\">Delai depuis la derniere connexion</span>
-      </div>
-      <div class=\"split\">
-        <div class=\"chartWrap chartWrap--sm\">
-          <canvas id=\"usersLoginsChart\"></canvas>
-        </div>
-        <div>
-          <div class=\"panelHeader\">
-            <h4 class=\"panelTitle\">Top pays</h4>
-          </div>
-          <div class=\"list\">
-            {% for country in stats.topCountries|default([]) %}
-              {% set topCount = (stats.topCountries|default([])|first).count|default(0) %}
-              {% set percent = topCount > 0 ? (country.count / topCount * 100)|round(0, 'floor') : 0 %}
-              <div class=\"listItem\">
-                <span>{{ country.name }}</span>
-                <span class=\"listMeta\">{{ country.count }}</span>
-              </div>
-              <div class=\"progressBar\" style=\"margin-top:-4px; margin-bottom:8px;\">
-                <div class=\"progressFill\" style=\"width:{{ percent }}%;\"></div>
-              </div>
-            {% else %}
-              <div class=\"listItem\">
-                <span>Aucune donnee pays</span>
-                <span class=\"listMeta\">--</span>
-              </div>
-            {% endfor %}
-          </div>
-
-          <div class=\"progressWrap\">
-            <div class=\"progressLabel\">
-              <span>Taux actifs</span>
-              <strong>{{ stats.activeRate|default(0) }}%</strong>
-            </div>
-            <div class=\"progressBar\">
-              <div class=\"progressFill\" style=\"width:{{ stats.activeRate|default(0) }}%;\"></div>
-            </div>
-          </div>
-          <div class=\"progressWrap\">
-            <div class=\"progressLabel\">
-              <span>Taux verifies</span>
-              <strong>{{ stats.verifiedRate|default(0) }}%</strong>
-            </div>
-            <div class=\"progressBar\">
-              <div class=\"progressFill\" style=\"width:{{ stats.verifiedRate|default(0) }}%; background: linear-gradient(90deg, rgba(48, 216, 135, 1), rgba(24, 178, 110, 1)); box-shadow: 0 0 16px rgba(48, 216, 135, .35);\"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
   </div>
 
   {% for label, messages in app.flashes %}
@@ -1074,108 +646,6 @@ class __TwigTemplate_df610bd1eaee5b71c2ac5088a13241be extends Template
       </table>
     </div>
   </section>
-{% endblock %}
-
-{% block javascripts %}
-  {{ parent() }}
-  <script src=\"https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js\"></script>
-  <script>
-    (() => {
-      if (typeof Chart === 'undefined') {
-        return;
-      }
-
-      const charts = {{ userCharts|default({})|json_encode|raw }};
-      const textColor = 'rgba(255,255,255,.78)';
-      const gridColor = 'rgba(255,255,255,.10)';
-
-      const registrationsCtx = document.getElementById('usersRegistrationsChart');
-      if (registrationsCtx && charts.registrationsByMonth) {
-        new Chart(registrationsCtx, {
-          type: 'line',
-          data: {
-            labels: charts.registrationsByMonth.labels || [],
-            datasets: [{
-              label: 'Nouveaux utilisateurs',
-              data: charts.registrationsByMonth.data || [],
-              borderColor: '#ff9d2e',
-              backgroundColor: 'rgba(255,157,46,.22)',
-              tension: 0.35,
-              fill: true,
-              pointRadius: 3,
-              pointHoverRadius: 5,
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: { labels: { color: textColor } }
-            },
-            scales: {
-              x: { ticks: { color: textColor }, grid: { color: gridColor } },
-              y: { ticks: { color: textColor, precision: 0 }, grid: { color: gridColor } }
-            }
-          }
-        });
-      }
-
-      const rolesCtx = document.getElementById('usersRolesChart');
-      if (rolesCtx && charts.roles) {
-        new Chart(rolesCtx, {
-          type: 'doughnut',
-          data: {
-            labels: charts.roles.labels || [],
-            datasets: [{
-              data: charts.roles.data || [],
-              backgroundColor: ['#20d4a8', '#4da3ff', '#ffd166', '#ff6b6b'],
-              borderColor: 'rgba(16,14,24,.95)',
-              borderWidth: 2
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                position: 'bottom',
-                labels: { color: textColor, boxWidth: 10, boxHeight: 10 }
-              }
-            }
-          }
-        });
-      }
-
-      const loginsCtx = document.getElementById('usersLoginsChart');
-      if (loginsCtx && charts.lastLoginBuckets) {
-        new Chart(loginsCtx, {
-          type: 'bar',
-          data: {
-            labels: charts.lastLoginBuckets.labels || [],
-            datasets: [{
-              label: 'Utilisateurs',
-              data: charts.lastLoginBuckets.data || [],
-              backgroundColor: ['rgba(32,212,168,.45)', 'rgba(77,163,255,.45)', 'rgba(255,209,102,.45)', 'rgba(255,107,107,.45)'],
-              borderColor: ['#20d4a8', '#4da3ff', '#ffd166', '#ff6b6b'],
-              borderWidth: 1.5,
-              borderRadius: 8
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: { labels: { color: textColor } }
-            },
-            scales: {
-              x: { ticks: { color: textColor }, grid: { color: gridColor } },
-              y: { ticks: { color: textColor, precision: 0 }, grid: { color: gridColor } }
-            }
-          }
-        });
-      }
-    })();
-  </script>
 {% endblock %}
 ", "admin/pages/users.html.twig", "C:\\Users\\ilyes\\OneDrive\\Bureau\\PULSE - Copie\\PULSE\\templates\\admin\\pages\\users.html.twig");
     }

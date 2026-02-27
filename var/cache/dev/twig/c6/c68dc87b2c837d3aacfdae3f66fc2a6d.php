@@ -104,6 +104,6 @@ class __TwigTemplate_d84b5d71170e693ffb92c0fdfbad8338 extends Template
     <span>{{ \"now\"|date(\"Y\") }} - Back Office</span>
   </div>
 </footer>
-", "admin/Partials/footer.html.twig", "C:\\Users\\ilyes\\OneDrive\\Bureau\\PULSE\\PULSE\\templates\\admin\\Partials\\footer.html.twig");
+", "admin/Partials/footer.html.twig", "C:\\Users\\ilyes\\OneDrive\\Bureau\\PULSE - Copie\\PULSE\\templates\\admin\\Partials\\footer.html.twig");
     }
 }

@@ -245,6 +245,6 @@ class __TwigTemplate_00c8177ecba294c5aed35372d530981d extends Template
     {{ form_end(userForm) }}
   </section>
 {% endblock %}
-", "admin/pages/user-edit.html.twig", "C:\\Users\\ilyes\\OneDrive\\Bureau\\PULSE\\PULSE\\templates\\admin\\pages\\user-edit.html.twig");
+", "admin/pages/user-edit.html.twig", "C:\\Users\\ilyes\\OneDrive\\Bureau\\PULSE - Copie\\PULSE\\templates\\admin\\pages\\user-edit.html.twig");
     }
 }

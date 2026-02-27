@@ -1134,6 +1134,6 @@ class __TwigTemplate_61f0b5e99a672e13d04d68b3d1544883 extends Template
     })();
   </script>
 {% endblock %}
-", "admin/index.html.twig", "C:\\Users\\ilyes\\OneDrive\\Bureau\\PULSE\\PULSE\\templates\\admin\\index.html.twig");
+", "admin/index.html.twig", "C:\\Users\\ilyes\\OneDrive\\Bureau\\PULSE - Copie\\PULSE\\templates\\admin\\index.html.twig");
     }
 }

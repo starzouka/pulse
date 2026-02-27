@@ -344,6 +344,6 @@ class __TwigTemplate_4d5dd0840070a88002302f44fab760fd extends Template
     {{ form_errors(form.emailVerified) }}
     {{ form_errors(form.isActive) }}
   </div>
-</div>", "admin/pages/_user_form_fields.html.twig", "C:\\Users\\ilyes\\OneDrive\\Bureau\\PULSE\\PULSE\\templates\\admin\\pages\\_user_form_fields.html.twig");
+</div>", "admin/pages/_user_form_fields.html.twig", "C:\\Users\\ilyes\\OneDrive\\Bureau\\PULSE - Copie\\PULSE\\templates\\admin\\pages\\_user_form_fields.html.twig");
     }
 }

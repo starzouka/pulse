@@ -198,6 +198,6 @@ class __TwigTemplate_c85bbba9b3291a6dfaee5b28194eec73 extends Template
     </div>
   </form>
 {% endif %}
-", "front/partials/_post_composer.html.twig", "C:\\Users\\ilyes\\OneDrive\\Bureau\\PULSE\\PULSE\\templates\\front\\partials\\_post_composer.html.twig");
+", "front/partials/_post_composer.html.twig", "C:\\Users\\ilyes\\OneDrive\\Bureau\\PULSE - Copie\\PULSE\\templates\\front\\partials\\_post_composer.html.twig");
     }
 }

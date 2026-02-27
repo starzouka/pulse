@@ -895,6 +895,6 @@ $context["postData"], "viewer_user" =>                 // line 133
 
   {% include 'front/partials/_auth_modal.html.twig' %}
 {% endblock %}
-", "front/pages/profile.html.twig", "C:\\Users\\ilyes\\OneDrive\\Bureau\\PULSE\\PULSE\\templates\\front\\pages\\profile.html.twig");
+", "front/pages/profile.html.twig", "C:\\Users\\ilyes\\OneDrive\\Bureau\\PULSE - Copie\\PULSE\\templates\\front\\pages\\profile.html.twig");
     }
 }

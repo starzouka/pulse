@@ -72,19 +72,22 @@ class __TwigTemplate_3c26dd0f8059b34a6093df62224a09a2 extends Template
         yield "
         ";
         // line 16
-        if ((is_string($_v0 = CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, (isset($context["app"]) || array_key_exists("app", $context) ? $context["app"] : (function () { throw new RuntimeError('Variable "app" does not exist.', 16, $this->source); })()), "request", [], "any", false, false, false, 16), "attributes", [], "any", false, false, false, 16), "get", ["_route"], "method", false, false, false, 16)) && is_string($_v1 = "front_") && str_starts_with($_v0, $_v1))) {
-            // line 17
-            yield "            ";
-            yield from $this->load("front/partials/_account_sidebar.html.twig", 17)->unwrap()->yield($context);
+        $context["two_factor_pending"] = ((CoreExtension::getAttribute($this->env, $this->source, (isset($context["app"]) || array_key_exists("app", $context) ? $context["app"] : (function () { throw new RuntimeError('Variable "app" does not exist.', 16, $this->source); })()), "user", [], "any", false, false, false, 16) && CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, (isset($context["app"]) || array_key_exists("app", $context) ? $context["app"] : (function () { throw new RuntimeError('Variable "app" does not exist.', 16, $this->source); })()), "request", [], "any", false, false, false, 16), "hasSession", [], "method", false, false, false, 16)) && (CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, (isset($context["app"]) || array_key_exists("app", $context) ? $context["app"] : (function () { throw new RuntimeError('Variable "app" does not exist.', 16, $this->source); })()), "session", [], "any", false, false, false, 16), "get", ["_2fa_verified", false], "method", false, false, false, 16) != true));
+        // line 17
+        yield "        ";
+        if (((is_string($_v0 = CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, (isset($context["app"]) || array_key_exists("app", $context) ? $context["app"] : (function () { throw new RuntimeError('Variable "app" does not exist.', 17, $this->source); })()), "request", [], "any", false, false, false, 17), "attributes", [], "any", false, false, false, 17), "get", ["_route"], "method", false, false, false, 17)) && is_string($_v1 = "front_") && str_starts_with($_v0, $_v1)) &&  !(isset($context["two_factor_pending"]) || array_key_exists("two_factor_pending", $context) ? $context["two_factor_pending"] : (function () { throw new RuntimeError('Variable "two_factor_pending" does not exist.', 17, $this->source); })()))) {
             // line 18
+            yield "            ";
+            yield from $this->load("front/partials/_account_sidebar.html.twig", 18)->unwrap()->yield($context);
+            // line 19
             yield "        ";
         }
-        // line 19
+        // line 20
         yield "
         ";
-        // line 20
+        // line 21
         yield from $this->unwrap()->yieldBlock('javascripts', $context, $blocks);
-        // line 33
+        // line 34
         yield "    </body>
 </html>
 
@@ -174,7 +177,7 @@ class __TwigTemplate_3c26dd0f8059b34a6093df62224a09a2 extends Template
         yield from [];
     }
 
-    // line 20
+    // line 21
     /**
      * @return iterable<null|scalar|\Stringable>
      */
@@ -187,37 +190,37 @@ class __TwigTemplate_3c26dd0f8059b34a6093df62224a09a2 extends Template
         $__internal_6f47bbe9983af81f1e7450e9a3e3768f = $this->extensions["Symfony\\Bridge\\Twig\\Extension\\ProfilerExtension"];
         $__internal_6f47bbe9983af81f1e7450e9a3e3768f->enter($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof = new \Twig\Profiler\Profile($this->getTemplateName(), "block", "javascripts"));
 
-        // line 21
+        // line 22
         yield "            <script>
                 window.PULSE_ROUTES = {
                     tournamentDetail: \"";
-        // line 23
+        // line 24
         yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_tournament_detail");
         yield "\",
                     gameDetail: \"";
-        // line 24
+        // line 25
         yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_game_detail");
         yield "\",
                     matchDetail: \"";
-        // line 25
+        // line 26
         yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_match_detail");
         yield "\",
                     teamDetail: \"";
-        // line 26
+        // line 27
         yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_team_detail");
         yield "\",
                     playerDetail: \"";
-        // line 27
+        // line 28
         yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_player_profile");
         yield "\",
                     productDetail: \"";
-        // line 28
+        // line 29
         yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("front_product_detail");
         yield "\"
                 };
             </script>
             <script src=\"";
-        // line 31
+        // line 32
         yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\AssetExtension']->getAssetUrl("assets/template_fo/js/app.js"), "html", null, true);
         yield "\"></script>
         ";
@@ -251,7 +254,7 @@ class __TwigTemplate_3c26dd0f8059b34a6093df62224a09a2 extends Template
      */
     public function getDebugInfo(): array
     {
-        return array (  221 => 31,  215 => 28,  211 => 27,  207 => 26,  203 => 25,  199 => 24,  195 => 23,  191 => 21,  178 => 20,  156 => 14,  143 => 10,  138 => 9,  125 => 8,  102 => 6,  88 => 33,  86 => 20,  83 => 19,  80 => 18,  77 => 17,  75 => 16,  72 => 15,  70 => 14,  66 => 12,  64 => 8,  59 => 6,  52 => 1,);
+        return array (  224 => 32,  218 => 29,  214 => 28,  210 => 27,  206 => 26,  202 => 25,  198 => 24,  194 => 22,  181 => 21,  159 => 14,  146 => 10,  141 => 9,  128 => 8,  105 => 6,  91 => 34,  89 => 21,  86 => 20,  83 => 19,  80 => 18,  77 => 17,  75 => 16,  72 => 15,  70 => 14,  66 => 12,  64 => 8,  59 => 6,  52 => 1,);
     }
 
     public function getSourceContext(): Source
@@ -271,7 +274,8 @@ class __TwigTemplate_3c26dd0f8059b34a6093df62224a09a2 extends Template
     <body class=\"antialiased\">
         {% block body %}{% endblock %}
 
-        {% if app.request.attributes.get('_route') starts with 'front_' %}
+        {% set two_factor_pending = app.user and app.request.hasSession() and app.session.get('_2fa_verified', false) != true %}
+        {% if app.request.attributes.get('_route') starts with 'front_' and not two_factor_pending %}
             {% include 'front/partials/_account_sidebar.html.twig' %}
         {% endif %}
 
@@ -291,6 +295,6 @@ class __TwigTemplate_3c26dd0f8059b34a6093df62224a09a2 extends Template
     </body>
 </html>
 
-", "base.html.twig", "C:\\Users\\ilyes\\OneDrive\\Bureau\\PULSE\\PULSE\\templates\\base.html.twig");
+", "base.html.twig", "C:\\Users\\ilyes\\OneDrive\\Bureau\\PULSE - Copie\\PULSE\\templates\\base.html.twig");
     }
 }

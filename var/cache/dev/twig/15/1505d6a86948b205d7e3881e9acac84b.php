@@ -576,6 +576,6 @@ class __TwigTemplate_5c035a0e73df48aec9b0cae8cc616746 extends Template
     </section>
   </div>
 </aside>
-", "front/partials/_account_sidebar.html.twig", "C:\\Users\\ilyes\\OneDrive\\Bureau\\PULSE\\PULSE\\templates\\front\\partials\\_account_sidebar.html.twig");
+", "front/partials/_account_sidebar.html.twig", "C:\\Users\\ilyes\\OneDrive\\Bureau\\PULSE - Copie\\PULSE\\templates\\front\\partials\\_account_sidebar.html.twig");
     }
 }
