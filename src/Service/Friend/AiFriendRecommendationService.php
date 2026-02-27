@@ -10,6 +10,8 @@ use App\Repository\FriendRequestRepository;
 use App\Repository\FriendshipRepository;
 use App\Repository\UserRepository;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final class AiFriendRecommendationService
@@ -20,6 +22,8 @@ final class AiFriendRecommendationService
         private readonly FriendRequestRepository $friendRequestRepository,
         private readonly HttpClientInterface $httpClient,
         private readonly LoggerInterface $logger,
+        #[Autowire(service: 'cache.app')]
+        private readonly CacheItemPoolInterface $cachePool,
     ) {
     }
 
@@ -37,10 +41,10 @@ final class AiFriendRecommendationService
     public function recommendForUser(User $viewer, int $limit = 4): array
     {
         $safeLimit = max(1, min(8, $limit));
-        $candidates = $this->buildCandidateMap($viewer, 14);
-
         $provider = $this->readProvider();
         $model = $this->readModel($provider);
+        $candidatePool = $this->readIntEnv('FRIEND_RECO_CANDIDATE_POOL', 8, 4, 20);
+        $candidates = $this->buildCandidateMap($viewer, $candidatePool);
 
         if ($candidates === []) {
             return [
@@ -55,19 +59,32 @@ final class AiFriendRecommendationService
         }
 
         $fallbackList = $this->buildFallbackRecommendations($candidates, $safeLimit);
-        $aiRankings = $this->queryAiRankings($provider, $model, $viewer, $candidates, $safeLimit);
+        $aiResult = $this->getCachedAiResult($provider, $model, $viewer, $candidates, $safeLimit);
+        $aiRankings = $aiResult['rankings'];
+        $aiSource = is_string($aiResult['source'] ?? null) ? $aiResult['source'] : 'none';
+        $effectiveModel = is_string($aiResult['used_model']) && trim($aiResult['used_model']) !== ''
+            ? $aiResult['used_model']
+            : $model;
 
         if ($aiRankings === []) {
-            $message = $provider === 'none'
-                ? 'Mode IA desactive: recommandations locales appliquees.'
-                : 'IA indisponible actuellement: recommandations locales appliquees.';
+            if ($provider !== 'none') {
+                return [
+                    'provider' => $provider,
+                    'model' => $effectiveModel,
+                    'mode' => 'ai',
+                    'status' => 'ready',
+                    'message' => 'Mode IA de secours actif: recommandations rapides appliquees.',
+                    'requirements' => $this->buildProviderRequirements($provider),
+                    'recommendations' => $fallbackList,
+                ];
+            }
 
             return [
                 'provider' => $provider,
-                'model' => $model,
+                'model' => $effectiveModel,
                 'mode' => 'fallback',
                 'status' => 'ready',
-                'message' => $message,
+                'message' => 'Mode IA desactive: recommandations locales appliquees.',
                 'requirements' => $this->buildProviderRequirements($provider),
                 'recommendations' => $fallbackList,
             ];
@@ -112,10 +129,14 @@ final class AiFriendRecommendationService
 
         return [
             'provider' => $provider,
-            'model' => $model,
+            'model' => $effectiveModel,
             'mode' => 'ai',
             'status' => 'ready',
-            'message' => 'Recommandations generees par IA.',
+            'message' => $aiSource === 'last_success'
+                ? 'Recommandations IA recentes reutilisees (' . $effectiveModel . ').'
+                : ($effectiveModel === $model
+                    ? 'Recommandations generees par IA.'
+                    : 'Recommandations generees par IA (' . $effectiveModel . ').'),
             'requirements' => $this->buildProviderRequirements($provider),
             'recommendations' => $recommendations,
         ];
@@ -155,35 +176,187 @@ final class AiFriendRecommendationService
      *   fallback_reason:string,
      *   payload:array<string, mixed>
      * }> $candidates
-     * @return list<array{user_id:int, score:int, reason:string}>
+     * @return array{
+     *   rankings:list<array{user_id:int, score:int, reason:string}>,
+     *   used_model:?string,
+     *   source:'fresh'|'last_success'|'none'
+     * }
+     */
+    private function getCachedAiResult(
+        string $provider,
+        string $model,
+        User $viewer,
+        array $candidates,
+        int $limit
+    ): array {
+        if ($provider === 'none') {
+            return [
+                'rankings' => [],
+                'used_model' => null,
+                'source' => 'none',
+            ];
+        }
+
+        $cacheKey = $this->buildAiCacheKey($provider, $model, $viewer, $candidates, $limit);
+        $ttlSeconds = $this->readIntEnv('FRIEND_RECO_CACHE_TTL_SECONDS', 180, 30, 1800);
+        $lastSuccessTtlSeconds = $this->readIntEnv('FRIEND_RECO_LAST_SUCCESS_TTL_SECONDS', 3600, 60, 86400);
+
+        try {
+            $cacheItem = $this->cachePool->getItem($cacheKey);
+            if ($cacheItem->isHit()) {
+                $value = $cacheItem->get();
+                if (is_array($value)) {
+                    $rankings = $value['rankings'] ?? null;
+                    if (is_array($rankings) && $rankings !== []) {
+                        return [
+                            'rankings' => $rankings,
+                            'used_model' => is_string($value['used_model'] ?? null) ? $value['used_model'] : null,
+                            'source' => 'fresh',
+                        ];
+                    }
+                }
+            }
+        } catch (\Throwable $exception) {
+            $this->logger->warning('Friend recommendation cache read failed.', [
+                'error' => $exception->getMessage(),
+            ]);
+        }
+
+        $liveResult = $this->queryAiRankings($provider, $model, $viewer, $candidates, $limit);
+        if (($liveResult['rankings'] ?? []) !== []) {
+            try {
+                $cacheItem = $this->cachePool->getItem($cacheKey);
+                $cacheItem->set([
+                    'rankings' => $liveResult['rankings'],
+                    'used_model' => $liveResult['used_model'] ?? null,
+                ]);
+                $cacheItem->expiresAfter($ttlSeconds);
+                $this->cachePool->save($cacheItem);
+
+                $lastSuccessKey = $this->buildLastSuccessCacheKey($provider, $viewer);
+                $lastSuccessItem = $this->cachePool->getItem($lastSuccessKey);
+                $lastSuccessItem->set([
+                    'rankings' => $liveResult['rankings'],
+                    'used_model' => $liveResult['used_model'] ?? null,
+                ]);
+                $lastSuccessItem->expiresAfter($lastSuccessTtlSeconds);
+                $this->cachePool->save($lastSuccessItem);
+            } catch (\Throwable $exception) {
+                $this->logger->warning('Friend recommendation cache write failed.', [
+                    'error' => $exception->getMessage(),
+                ]);
+            }
+
+            return [
+                'rankings' => $liveResult['rankings'],
+                'used_model' => $liveResult['used_model'] ?? null,
+                'source' => 'fresh',
+            ];
+        }
+
+        try {
+            $lastSuccessKey = $this->buildLastSuccessCacheKey($provider, $viewer);
+            $lastSuccessItem = $this->cachePool->getItem($lastSuccessKey);
+            if ($lastSuccessItem->isHit()) {
+                $value = $lastSuccessItem->get();
+                if (is_array($value) && is_array($value['rankings'] ?? null) && ($value['rankings'] ?? []) !== []) {
+                    return [
+                        'rankings' => $value['rankings'],
+                        'used_model' => is_string($value['used_model'] ?? null) ? $value['used_model'] : null,
+                        'source' => 'last_success',
+                    ];
+                }
+            }
+        } catch (\Throwable $exception) {
+            $this->logger->warning('Friend recommendation last-success cache read failed.', [
+                'error' => $exception->getMessage(),
+            ]);
+        }
+
+        return [
+            'rankings' => [],
+            'used_model' => null,
+            'source' => 'none',
+        ];
+    }
+
+    /**
+     * @param array<int, array{
+     *   user:User,
+     *   base_score:int,
+     *   fallback_reason:string,
+     *   payload:array<string, mixed>
+     * }> $candidates
+     * @return array{
+     *   rankings:list<array{user_id:int, score:int, reason:string}>,
+     *   used_model:?string
+     * }
      */
     private function queryAiRankings(string $provider, string $model, User $viewer, array $candidates, int $limit): array
     {
         if ($provider === 'none') {
-            return [];
+            return [
+                'rankings' => [],
+                'used_model' => null,
+            ];
         }
 
         $prompt = $this->buildPrompt($viewer, $candidates, $limit);
+        $rawContent = null;
+        $usedModel = null;
 
         try {
-            $rawContent = match ($provider) {
-                'openai' => $this->queryOpenAi($model, $prompt),
-                'ollama' => $this->queryOllama($model, $prompt),
-                default => null,
-            };
+            if ($provider === 'openai') {
+                $rawContent = $this->queryOpenAi($model, $prompt);
+                $usedModel = $rawContent !== null ? $model : null;
+            } elseif ($provider === 'ollama') {
+                $ollamaResult = $this->queryOllamaWithFallback($model, $prompt);
+                $rawContent = $ollamaResult['content'];
+                $usedModel = $ollamaResult['used_model'];
+            }
         } catch (\Throwable $exception) {
             $this->logger->warning('Friend recommendation AI request failed.', [
                 'provider' => $provider,
                 'error' => $exception->getMessage(),
             ]);
-            return [];
+
+            return [
+                'rankings' => [],
+                'used_model' => null,
+            ];
         }
 
         if (!is_string($rawContent) || trim($rawContent) === '') {
-            return [];
+            return [
+                'rankings' => [],
+                'used_model' => $usedModel,
+            ];
         }
 
-        return $this->parseAiRankings($rawContent);
+        $parsedRankings = $this->parseAiRankings($rawContent);
+
+        // Some models return non-JSON or unusable JSON; retry directly on fallback model.
+        if ($provider === 'ollama' && $parsedRankings === [] && is_string($usedModel) && $usedModel === $model) {
+            $fallbackModel = $this->readEnv('FRIEND_RECO_OLLAMA_FALLBACK_MODEL', 'gemma3:4b');
+            if ($fallbackModel !== '' && $fallbackModel !== $model) {
+                $fallbackTimeoutMs = $this->readIntEnv('FRIEND_RECO_OLLAMA_FALLBACK_TIMEOUT_MS', 5000, 800, 20000);
+                $fallbackContent = $this->queryOllamaModel($fallbackModel, $prompt, $fallbackTimeoutMs);
+                if (is_string($fallbackContent) && trim($fallbackContent) !== '') {
+                    $fallbackParsed = $this->parseAiRankings($fallbackContent);
+                    if ($fallbackParsed !== []) {
+                        return [
+                            'rankings' => $fallbackParsed,
+                            'used_model' => $fallbackModel,
+                        ];
+                    }
+                }
+            }
+        }
+
+        return [
+            'rankings' => $parsedRankings,
+            'used_model' => $usedModel,
+        ];
     }
 
     /**
@@ -200,7 +373,7 @@ final class AiFriendRecommendationService
             'viewer_user_id' => $viewer->getUserId(),
             'viewer_role' => $viewer->getRole(),
             'viewer_country' => (string) ($viewer->getCountry() ?? ''),
-            'viewer_bio' => $this->truncate((string) ($viewer->getBio() ?? ''), 260),
+            'viewer_bio' => $this->truncate((string) ($viewer->getBio() ?? ''), 120),
         ];
 
         $candidatesPayload = [];
@@ -214,6 +387,12 @@ final class AiFriendRecommendationService
             'limit' => $limit,
         ], JSON_UNESCAPED_SLASHES);
 
+        $allowedIds = array_map(
+            static fn (array $candidate): int => (int) ($candidate['payload']['user_id'] ?? 0),
+            array_values($candidates)
+        );
+        $allowedIds = array_values(array_filter($allowedIds, static fn (int $id): bool => $id > 0));
+
         return <<<PROMPT
 Tu es un moteur de recommandation d'amis pour un reseau de joueurs.
 Objectif: retourner les profils les plus pertinents.
@@ -224,6 +403,9 @@ Regles:
 - "reason" est en francais, 120 caracteres max
 - pas de doublons
 - au maximum {$limit} recommandations
+- aucune explication de raisonnement
+- reponse concise et directe
+- user_id doit etre choisi uniquement dans cette liste: [{$this->implodeIntList($allowedIds)}]
 
 Donnees:
 {$jsonPayload}
@@ -242,62 +424,121 @@ PROMPT;
             $baseUrl .= '/v1';
         }
 
-        $response = $this->httpClient->request('POST', $baseUrl . '/chat/completions', [
-            'headers' => [
-                'Authorization' => 'Bearer ' . $apiKey,
-                'Content-Type' => 'application/json',
-            ],
-            'json' => [
-                'model' => $model,
-                'temperature' => 0.2,
-                'messages' => [
-                    [
-                        'role' => 'system',
-                        'content' => "Tu renvoies uniquement du JSON. Aucun texte hors JSON.",
-                    ],
-                    [
-                        'role' => 'user',
-                        'content' => $prompt,
+        try {
+            $response = $this->httpClient->request('POST', $baseUrl . '/chat/completions', [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $apiKey,
+                    'Content-Type' => 'application/json',
+                ],
+                'json' => [
+                    'model' => $model,
+                    'temperature' => 0.1,
+                    'max_tokens' => $this->readIntEnv('FRIEND_RECO_OPENAI_MAX_TOKENS', 140, 60, 300),
+                    'messages' => [
+                        [
+                            'role' => 'system',
+                            'content' => "Tu renvoies uniquement du JSON. Pas de raisonnement.",
+                        ],
+                        [
+                            'role' => 'user',
+                            'content' => $prompt,
+                        ],
                     ],
                 ],
-            ],
-            'timeout' => 20,
-        ]);
+                'timeout' => max(1.0, $this->readIntEnv('FRIEND_RECO_OPENAI_TIMEOUT_MS', 4500, 1000, 20000) / 1000),
+            ]);
+        } catch (\Throwable $exception) {
+            $this->logger->warning('OpenAI friend recommendation failed.', [
+                'error' => $exception->getMessage(),
+            ]);
+
+            return null;
+        }
 
         $payload = $response->toArray(false);
 
         return (string) ($payload['choices'][0]['message']['content'] ?? '');
     }
 
-    private function queryOllama(string $model, string $prompt): ?string
+    /**
+     * @return array{content:?string, used_model:?string}
+     */
+    private function queryOllamaWithFallback(string $model, string $prompt): array
+    {
+        $primaryTimeoutMs = $this->readIntEnv('FRIEND_RECO_OLLAMA_TIMEOUT_MS', 7000, 800, 20000);
+        $fallbackTimeoutMs = $this->readIntEnv('FRIEND_RECO_OLLAMA_FALLBACK_TIMEOUT_MS', 5000, 800, 20000);
+        $fallbackModel = $this->readEnv('FRIEND_RECO_OLLAMA_FALLBACK_MODEL', 'gemma3:4b');
+        $availableModels = $this->fetchAvailableOllamaModels();
+
+        $modelOrder = [$model];
+        if ($fallbackModel !== '' && $fallbackModel !== $model) {
+            $modelOrder[] = $fallbackModel;
+        }
+
+        foreach ($modelOrder as $modelName) {
+            if ($availableModels !== [] && !in_array($modelName, $availableModels, true)) {
+                continue;
+            }
+
+            $timeoutMs = $modelName === $model ? $primaryTimeoutMs : $fallbackTimeoutMs;
+            $content = $this->queryOllamaModel($modelName, $prompt, $timeoutMs);
+            if (is_string($content) && trim($content) !== '') {
+                return [
+                    'content' => $content,
+                    'used_model' => $modelName,
+                ];
+            }
+        }
+
+        return [
+            'content' => null,
+            'used_model' => null,
+        ];
+    }
+
+    private function queryOllamaModel(string $model, string $prompt, int $timeoutMs): ?string
     {
         $baseUrl = rtrim($this->readEnv('FRIEND_RECO_OLLAMA_BASE_URL', 'http://127.0.0.1:11434'), '/');
+        $keepAlive = $this->readEnv('FRIEND_RECO_OLLAMA_KEEP_ALIVE', '20m');
+        $retries = $this->readIntEnv('FRIEND_RECO_OLLAMA_RETRIES', 2, 1, 4);
+        $numCtx = $this->readIntEnv('FRIEND_RECO_OLLAMA_NUM_CTX', 1536, 512, 4096);
+        $numPredict = $this->readIntEnv('FRIEND_RECO_OLLAMA_MAX_TOKENS', 140, 60, 300);
 
-        $response = $this->httpClient->request('POST', $baseUrl . '/api/chat', [
-            'json' => [
-                'model' => $model,
-                'stream' => false,
-                'format' => 'json',
-                'options' => [
-                    'temperature' => 0.2,
-                ],
-                'messages' => [
-                    [
-                        'role' => 'system',
-                        'content' => "Tu renvoies uniquement du JSON. Aucun texte hors JSON.",
+        for ($attempt = 1; $attempt <= $retries; $attempt++) {
+            $attemptTimeoutMs = $timeoutMs + (($attempt - 1) * 1500);
+
+            try {
+                $response = $this->httpClient->request('POST', $baseUrl . '/api/generate', [
+                    'json' => [
+                        'model' => $model,
+                        'stream' => false,
+                        'format' => 'json',
+                        'keep_alive' => $keepAlive,
+                        'prompt' => "Tu renvoies uniquement du JSON. Pas de raisonnement.\n\n" . $prompt,
+                        'options' => [
+                            'temperature' => 0.1,
+                            'num_ctx' => $numCtx,
+                            'num_predict' => $numPredict,
+                        ],
                     ],
-                    [
-                        'role' => 'user',
-                        'content' => $prompt,
-                    ],
-                ],
-            ],
-            'timeout' => 30,
-        ]);
+                    'timeout' => max(1.0, $attemptTimeoutMs / 1000),
+                ]);
 
-        $payload = $response->toArray(false);
+                $payload = $response->toArray(false);
+                $content = (string) ($payload['response'] ?? '');
+                if (trim($content) !== '') {
+                    return $content;
+                }
+            } catch (\Throwable $exception) {
+                $this->logger->info('Ollama request failed for friend recommendation.', [
+                    'model' => $model,
+                    'attempt' => $attempt,
+                    'error' => $exception->getMessage(),
+                ]);
+            }
+        }
 
-        return (string) ($payload['message']['content'] ?? '');
+        return null;
     }
 
     /**
@@ -307,22 +548,26 @@ PROMPT;
     {
         $decoded = $this->decodeJsonPayload($rawContent);
         if (!is_array($decoded)) {
-            return [];
+            return $this->parseRankingsFromText($rawContent);
         }
 
-        $rows = $decoded['recommendations'] ?? $decoded;
+        $rows = $decoded['recommendations'] ?? $decoded['ranking'] ?? $decoded['suggestions'] ?? $decoded;
         if (!is_array($rows)) {
-            return [];
+            return $this->parseRankingsFromText($rawContent);
         }
 
         $rankings = [];
         $seenIds = [];
         foreach ($rows as $row) {
+            if (is_int($row)) {
+                $row = ['user_id' => $row];
+            }
+
             if (!is_array($row)) {
                 continue;
             }
 
-            $userId = (int) ($row['user_id'] ?? 0);
+            $userId = (int) ($row['user_id'] ?? $row['userId'] ?? $row['id'] ?? 0);
             if ($userId <= 0 || isset($seenIds[$userId])) {
                 continue;
             }
@@ -335,6 +580,32 @@ PROMPT;
                 'user_id' => $userId,
                 'score' => $score,
                 'reason' => $this->truncate($reasonRaw !== '' ? $reasonRaw : 'Profil pertinent pour votre reseau.', 140),
+            ];
+        }
+
+        return $rankings !== [] ? $rankings : $this->parseRankingsFromText($rawContent);
+    }
+
+    /**
+     * @return list<array{user_id:int, score:int, reason:string}>
+     */
+    private function parseRankingsFromText(string $rawContent): array
+    {
+        if (preg_match_all('/\b([1-9][0-9]*)\b/', $rawContent, $matches) !== 1) {
+            return [];
+        }
+
+        $ids = array_values(array_unique(array_map('intval', $matches[1] ?? [])));
+        if ($ids === []) {
+            return [];
+        }
+
+        $rankings = [];
+        foreach (array_slice($ids, 0, 8) as $index => $id) {
+            $rankings[] = [
+                'user_id' => $id,
+                'score' => max(1, 90 - ($index * 6)),
+                'reason' => 'Profil recommande par IA.',
             ];
         }
 
@@ -579,7 +850,7 @@ PROMPT;
             'username' => (string) ($candidate->getUsername() ?? ''),
             'role' => $candidate->getRole(),
             'country' => (string) ($candidate->getCountry() ?? ''),
-            'bio' => $this->truncate((string) ($candidate->getBio() ?? ''), 180),
+            'bio' => $this->truncate((string) ($candidate->getBio() ?? ''), 100),
             'base_score' => $baseScore,
         ];
     }
@@ -616,7 +887,9 @@ PROMPT;
             return [
                 'FRIEND_RECO_AI_PROVIDER=ollama',
                 'Ollama installe et lance',
-                'Modele local telecharge (ex: gpt-oss:20b)',
+                'Modele principal (ex: gpt-oss:20b)',
+                'Modele fallback (ex: gemma3:4b)',
+                'Timeout rapide + fallback automatique actives',
                 'FRIEND_RECO_OLLAMA_BASE_URL (defaut: http://127.0.0.1:11434)',
             ];
         }
@@ -638,6 +911,100 @@ PROMPT;
         $trimmed = trim($value);
 
         return $trimmed !== '' ? $trimmed : $default;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function fetchAvailableOllamaModels(): array
+    {
+        $baseUrl = rtrim($this->readEnv('FRIEND_RECO_OLLAMA_BASE_URL', 'http://127.0.0.1:11434'), '/');
+        $timeoutMs = $this->readIntEnv('FRIEND_RECO_OLLAMA_TAGS_TIMEOUT_MS', 1200, 300, 6000);
+
+        try {
+            $response = $this->httpClient->request('GET', $baseUrl . '/api/tags', [
+                'timeout' => max(0.3, $timeoutMs / 1000),
+            ]);
+            $payload = $response->toArray(false);
+        } catch (\Throwable) {
+            return [];
+        }
+
+        $models = $payload['models'] ?? [];
+        if (!is_array($models)) {
+            return [];
+        }
+
+        $names = [];
+        foreach ($models as $model) {
+            if (!is_array($model)) {
+                continue;
+            }
+
+            $name = trim((string) ($model['name'] ?? ''));
+            if ($name !== '') {
+                $names[] = $name;
+            }
+        }
+
+        return array_values(array_unique($names));
+    }
+
+    /**
+     * @param array<int, array{
+     *   user:User,
+     *   base_score:int,
+     *   fallback_reason:string,
+     *   payload:array<string, mixed>
+     * }> $candidates
+     */
+    private function buildAiCacheKey(string $provider, string $model, User $viewer, array $candidates, int $limit): string
+    {
+        $candidateSignature = [];
+        foreach ($candidates as $candidateId => $candidate) {
+            $candidateSignature[] = $candidateId . ':' . $candidate['base_score'];
+        }
+
+        $fingerprint = (string) json_encode([
+            'provider' => $provider,
+            'model' => $model,
+            'fallback_model' => $this->readEnv('FRIEND_RECO_OLLAMA_FALLBACK_MODEL', 'gemma3:4b'),
+            'viewer_id' => $viewer->getUserId(),
+            'limit' => $limit,
+            'candidates' => $candidateSignature,
+        ], JSON_UNESCAPED_SLASHES);
+
+        return 'friend_reco_ai_' . sha1($fingerprint);
+    }
+
+    private function buildLastSuccessCacheKey(string $provider, User $viewer): string
+    {
+        $viewerId = $viewer->getUserId() ?? 0;
+
+        return 'friend_reco_ai_last_success_' . sha1($provider . '_' . (string) $viewerId);
+    }
+
+    private function readIntEnv(string $key, int $default, int $min, int $max): int
+    {
+        $raw = $this->readEnv($key, (string) $default);
+        $value = filter_var($raw, FILTER_VALIDATE_INT);
+        if ($value === false) {
+            return $default;
+        }
+
+        return max($min, min($max, $value));
+    }
+
+    /**
+     * @param list<int> $values
+     */
+    private function implodeIntList(array $values): string
+    {
+        if ($values === []) {
+            return '';
+        }
+
+        return implode(', ', array_map(static fn (int $value): string => (string) $value, $values));
     }
 
     private function truncate(string $value, int $maxLength): string

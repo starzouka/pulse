@@ -1363,6 +1363,7 @@
       <argument type="service" id="App\Repository\FriendRequestRepository"/>
       <argument type="service" id=".debug.http_client"/>
       <argument type="service" id="monolog.logger"/>
+      <argument type="service" id="cache.app"/>
     </service>
     <service id="App\Service\Media\ImageUploader" class="App\Service\Media\ImageUploader" autowire="true" autoconfigure="true">
       <argument type="service" id="kernel"/>
