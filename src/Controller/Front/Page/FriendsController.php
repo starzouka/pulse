@@ -8,6 +8,7 @@ use App\Entity\Friendship;
 use App\Entity\User;
 use App\Repository\FriendRequestRepository;
 use App\Repository\FriendshipRepository;
+use App\Service\Friend\AiFriendRecommendationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -23,6 +24,7 @@ final class FriendsController extends AbstractController
         Request $request,
         FriendshipRepository $friendshipRepository,
         FriendRequestRepository $friendRequestRepository,
+        AiFriendRecommendationService $friendRecommendationService,
     ): Response
     {
         $viewer = $this->getUser();
@@ -68,12 +70,14 @@ final class FriendsController extends AbstractController
         $friendsPagination = $this->paginateItems($friends, $this->readPage($request, 'friends_page'), 12);
         $receivedPagination = $this->paginateItems($receivedRequests, $this->readPage($request, 'received_page'), 12);
         $sentPagination = $this->paginateItems($sentRequests, $this->readPage($request, 'sent_page'), 12);
+        $friendRecommendations = $friendRecommendationService->recommendForUser($viewer, 4);
 
         return $this->render('front/pages/friends.html.twig', [
             'viewer_user' => $viewer,
             'friends' => $friendsPagination['items'],
             'received_requests' => $receivedPagination['items'],
             'sent_requests' => $sentPagination['items'],
+            'friend_recommendations' => $friendRecommendations,
             'pagination' => [
                 'friends' => $friendsPagination,
                 'received' => $receivedPagination,

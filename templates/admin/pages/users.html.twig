@@ -37,6 +37,79 @@
     {% endfor %}
   {% endfor %}
 
+  <section class="panel adminUsersStats">
+    <div class="panelHeader">
+      <h3 class="panelTitle">STATISTIQUES UTILISATEURS</h3>
+      <span class="listMeta">Liste courante: {{ stats.total }} utilisateur(s)</span>
+    </div>
+
+    <div class="kpiRow">
+      <div class="kpiCard">
+        <div class="kpiLabel">Total</div>
+        <div class="kpiValue">{{ stats.total }}</div>
+      </div>
+      <div class="kpiCard">
+        <div class="kpiLabel">Actifs</div>
+        <div class="kpiValue">{{ stats.active }}</div>
+        <div class="listMeta">Inactifs: {{ stats.inactive }}</div>
+      </div>
+      <div class="kpiCard">
+        <div class="kpiLabel">Email verifies</div>
+        <div class="kpiValue">{{ stats.verified }}</div>
+      </div>
+      <div class="kpiCard">
+        <div class="kpiLabel">2FA active</div>
+        <div class="kpiValue">{{ stats.twoFactor }}</div>
+      </div>
+      <div class="kpiCard">
+        <div class="kpiLabel">Nouveaux (30j)</div>
+        <div class="kpiValue">{{ stats.newUsers30d }}</div>
+      </div>
+      <div class="kpiCard">
+        <div class="kpiLabel">Connexions (7j)</div>
+        <div class="kpiValue">{{ stats.recentLogin7d }}</div>
+      </div>
+    </div>
+
+    <div class="adminUsersStatsGrid">
+      <div class="adminUsersStatsBox">
+        <h4>Repartition par role</h4>
+        <div class="adminUsersBars">
+          {% for role in stats.roles %}
+            <div class="adminUsersBarRow">
+              <div class="adminUsersBarHead">
+                <span>{{ role.label }}</span>
+                <span class="listMeta">{{ role.count }} ({{ role.percent }}%)</span>
+              </div>
+              <div class="adminUsersBar">
+                <span style="width: {{ role.percent }}%"></span>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="adminUsersStatsBox">
+        <h4>Top pays</h4>
+        <div class="adminUsersBars">
+          {% for country in stats.countries %}
+            <div class="adminUsersBarRow">
+              <div class="adminUsersBarHead">
+                <span>{{ country.name }}</span>
+                <span class="listMeta">{{ country.count }} ({{ country.percent }}%)</span>
+              </div>
+              <div class="adminUsersBar">
+                <span style="width: {{ country.percent }}%"></span>
+              </div>
+            </div>
+          {% else %}
+            <div class="listMeta">Aucune donnee pays disponible.</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </section>
+
   <form class="filtersBar" method="get" action="{{ path('admin_users') }}">
     <input type="hidden" name="sort" value="{{ filters.sort|default('created_at') }}" />
     <input type="hidden" name="direction" value="{{ filters.direction|default('desc') }}" />
