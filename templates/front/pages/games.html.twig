@@ -69,6 +69,34 @@
         </form>
       </section>
 
+      <section class="panel" style="margin-top:12px;">
+        <div class="panelHeader">
+          <h3 class="panelTitle">TRENDING GAMES</h3>
+          <span class="listMeta">Classement par score intelligent</span>
+        </div>
+        <div class="cardsGrid">
+          {% for trendingGame in trending_games|default([]) %}
+            {% set trendingGameId = trendingGame.gameId ?? 0 %}
+            <article class="card card--game">
+              <div class="card__body">
+                <h4 class="card__title">{{ loop.index }}. {{ trendingGame.name }}</h4>
+                <div class="card__metaRow">
+                  <span class="metaPill">Score: <b>{{ trendingGame.popularityScore }}</b></span>
+                  <span class="metaPill">Vues: <b>{{ trendingGame.viewsCount }}</b></span>
+                  <span class="metaPill">Favoris: <b>{{ trendingGame.favoritesCount }}</b></span>
+                </div>
+                <div class="card__actions">
+                  <a class="btn btn--ghost" href="{{ path('front_game_detail', {slug: trendingGame.seoIdentifier}) }}">Detail</a>
+                  <a class="btn btn--primary" href="{{ trendingGameId > 0 ? path('front_tournaments', {game: trendingGameId}) : path('front_tournaments') }}">Tournois</a>
+                </div>
+              </div>
+            </article>
+          {% else %}
+            <div class="panel emptyState" style="grid-column: 1 / -1;">Aucun jeu trending disponible.</div>
+          {% endfor %}
+        </div>
+      </section>
+
       <section class="cardsGrid">
         {% if games is empty %}
           <div class="panel emptyState" style="grid-column: 1 / -1;">
@@ -77,7 +105,7 @@
         {% else %}
           {% for game in games %}
             {% set gameId = game.gameId ?? 0 %}
-            {% set imagePath = game.coverImageId ? game.coverImageId.fileUrl : '' %}
+            {% set imagePath = game.coverPublicPath ?: (game.coverImageId ? game.coverImageId.fileUrl : '') %}
             {% set imageUrl = imagePath ? (imagePath starts with 'http' ? imagePath : asset(imagePath)) : 'https://picsum.photos/seed/pulse_game_' ~ gameId ~ '/1200/800' %}
             {% set activeCount = active_tournaments_count_by_game_id[gameId]|default(0) %}
             {% set totalCount = tournaments_count_by_game_id[gameId]|default(0) %}
@@ -99,8 +127,12 @@
                   <span class="metaPill">Total tournois: <b>{{ totalCount }}</b></span>
                   <span class="metaPill">Actifs: <b>{{ activeCount }}</b></span>
                 </div>
+                <div class="card__metaRow">
+                  <span class="metaPill">Score: <b>{{ game.popularityScore }}</b></span>
+                  <span class="metaPill">Statut: <b>{{ game.status }}</b></span>
+                </div>
                 <div class="card__actions">
-                  <a class="btn btn--ghost" href="{{ path('front_game_detail', {id: gameId}) }}">Detail</a>
+                  <a class="btn btn--ghost" href="{{ path('front_game_detail', {slug: game.seoIdentifier}) }}">Detail</a>
                   <a class="btn btn--primary" href="{{ gameId > 0 ? path('front_tournaments', {game: gameId}) : path('front_tournaments') }}">Tournois</a>
                 </div>
               </div>
@@ -109,10 +141,9 @@
         {% endif %}
       </section>
 
-      {% include 'front/partials/_pagination.html.twig' with {
-        pagination: pagination,
-        route_name: 'front_games'
-      } %}
+      <div style="margin-top:12px;">
+        {{ knp_pagination_render(games_pagination) }}
+      </div>
 
       {% include 'front/partials/_footer.html.twig' %}
     </section>

@@ -37,7 +37,8 @@ class GameRepository extends ServiceEntityRepository
         ?string $publisher = null,
         bool $withActiveTournamentsOnly = false,
         string $sort = 'name',
-        int $limit = 120
+        int $limit = 120,
+        ?array $statuses = null,
     ): array {
         $builder = $this->createQueryBuilder('game')
             ->leftJoin('game.categoryId', 'category')
@@ -85,6 +86,19 @@ class GameRepository extends ServiceEntityRepository
             ->setParameter('activeStatuses', ['OPEN', 'ONGOING']);
         }
 
+        if (is_array($statuses) && $statuses !== []) {
+            $normalizedStatuses = array_values(array_unique(array_filter(array_map(
+                static fn (mixed $status): string => strtoupper(trim((string) $status)),
+                $statuses
+            ))));
+
+            if ($normalizedStatuses !== []) {
+                $builder
+                    ->andWhere('game.status IN (:statuses)')
+                    ->setParameter('statuses', $normalizedStatuses);
+            }
+        }
+
         $sortValue = strtolower(trim($sort));
         switch ($sortValue) {
             case 'latest':
@@ -102,6 +116,12 @@ class GameRepository extends ServiceEntityRepository
             case 'category':
                 $builder
                     ->orderBy('category.name', 'ASC')
+                    ->addOrderBy('game.name', 'ASC');
+                break;
+
+            case 'popular':
+                $builder
+                    ->orderBy('game.popularityScore', 'DESC')
                     ->addOrderBy('game.name', 'ASC');
                 break;
 
@@ -155,6 +175,80 @@ class GameRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
+    public function findOneWithRelationsBySlug(string $slug): ?Game
+    {
+        $normalizedSlug = trim($slug);
+        if ($normalizedSlug === '') {
+            return null;
+        }
+
+        return $this->createQueryBuilder('game')
+            ->leftJoin('game.categoryId', 'category')
+            ->addSelect('category')
+            ->leftJoin('game.coverImageId', 'coverImage')
+            ->addSelect('coverImage')
+            ->andWhere('game.slug = :slug')
+            ->setParameter('slug', $normalizedSlug)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    public function findOneWithRelationsBySlugLoose(string $slug): ?Game
+    {
+        $normalizedSlug = trim($slug);
+        if ($normalizedSlug === '') {
+            return null;
+        }
+
+        return $this->createQueryBuilder('game')
+            ->leftJoin('game.categoryId', 'category')
+            ->addSelect('category')
+            ->leftJoin('game.coverImageId', 'coverImage')
+            ->addSelect('coverImage')
+            ->andWhere('game.slug = :slug OR game.slug LIKE :slugPrefix')
+            ->setParameter('slug', $normalizedSlug)
+            ->setParameter('slugPrefix', $normalizedSlug . '-%')
+            ->orderBy('game.gameId', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    /**
+     * @param list<string>|null $statuses
+     * @return list<Game>
+     */
+    public function findTrending(int $limit = 10, ?array $statuses = null): array
+    {
+        $builder = $this->createQueryBuilder('game')
+            ->leftJoin('game.categoryId', 'category')
+            ->addSelect('category')
+            ->leftJoin('game.coverImageId', 'coverImage')
+            ->addSelect('coverImage')
+            ->setMaxResults(max(1, $limit));
+
+        if (is_array($statuses) && $statuses !== []) {
+            $normalizedStatuses = array_values(array_unique(array_filter(array_map(
+                static fn (mixed $status): string => strtoupper(trim((string) $status)),
+                $statuses
+            ))));
+            if ($normalizedStatuses !== []) {
+                $builder
+                    ->andWhere('game.status IN (:statuses)')
+                    ->setParameter('statuses', $normalizedStatuses);
+            }
+        }
+
+        return $builder
+            ->orderBy('game.popularityScore', 'DESC')
+            ->addOrderBy('game.favoritesCount', 'DESC')
+            ->addOrderBy('game.viewsCount', 'DESC')
+            ->addOrderBy('game.name', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     /**
      * @return list<Game>
      */
@@ -162,6 +256,7 @@ class GameRepository extends ServiceEntityRepository
         ?string $query,
         ?int $categoryId,
         ?string $publisher,
+        ?string $status = null,
         string $sortBy = 'created_at',
         string $direction = 'desc',
         int $limit = 500
@@ -198,6 +293,13 @@ class GameRepository extends ServiceEntityRepository
                 ->setParameter('publisher', '%' . mb_strtolower($publisherValue) . '%');
         }
 
+        $statusValue = strtoupper(trim((string) $status));
+        if ($statusValue !== '') {
+            $builder
+                ->andWhere('game.status = :status')
+                ->setParameter('status', $statusValue);
+        }
+
         $sortDirection = strtoupper(trim($direction)) === 'ASC' ? 'ASC' : 'DESC';
         $sortKey = strtolower(trim($sortBy));
         switch ($sortKey) {
@@ -223,6 +325,30 @@ class GameRepository extends ServiceEntityRepository
                     ->addOrderBy('game.name', 'ASC');
                 break;
 
+            case 'status':
+                $builder
+                    ->orderBy('game.status', $sortDirection)
+                    ->addOrderBy('game.name', 'ASC');
+                break;
+
+            case 'popularity':
+                $builder
+                    ->orderBy('game.popularityScore', $sortDirection)
+                    ->addOrderBy('game.name', 'ASC');
+                break;
+
+            case 'views':
+                $builder
+                    ->orderBy('game.viewsCount', $sortDirection)
+                    ->addOrderBy('game.name', 'ASC');
+                break;
+
+            case 'favorites':
+                $builder
+                    ->orderBy('game.favoritesCount', $sortDirection)
+                    ->addOrderBy('game.name', 'ASC');
+                break;
+
             case 'created_at':
             default:
                 $builder
@@ -232,6 +358,27 @@ class GameRepository extends ServiceEntityRepository
         }
 
         return $builder->getQuery()->getResult();
+    }
+
+    /**
+     * @return list<Game>
+     */
+    public function findSimilarByName(string $name, int $limit = 5): array
+    {
+        $normalized = mb_strtolower(trim($name));
+        if ($normalized === '') {
+            return [];
+        }
+
+        return $this->createQueryBuilder('game')
+            ->leftJoin('game.categoryId', 'category')
+            ->addSelect('category')
+            ->andWhere('LOWER(game.name) LIKE :query')
+            ->setParameter('query', '%' . $normalized . '%')
+            ->orderBy('game.createdAt', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
     }
 
     /**

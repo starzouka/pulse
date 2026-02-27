@@ -1,0 +1,12 @@
+liip_imagine:
+    driver: gd
+    filter_sets:
+        cache: ~
+        game_thumb_admin:
+            quality: 82
+            filters:
+                thumbnail: { size: [80, 80], mode: outbound }
+        game_card_front:
+            quality: 85
+            filters:
+                thumbnail: { size: [640, 360], mode: outbound }

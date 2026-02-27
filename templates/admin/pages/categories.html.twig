@@ -84,7 +84,7 @@
   <section class="panel">
     <div class="panelHeader">
       <h3 class="panelTitle">LISTE</h3>
-      <span class="listMeta">{{ categories|length }} resultat(s)</span>
+      <span class="listMeta">{{ categories_pagination.getTotalItemCount }} resultat(s)</span>
     </div>
 
     <div class="dataTableWrap">
@@ -127,4 +127,7 @@
       </table>
     </div>
   </section>
+  <div style="margin-top: 12px;">
+    {{ knp_pagination_render(categories_pagination) }}
+  </div>
 {% endblock %}

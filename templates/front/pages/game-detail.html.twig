@@ -11,7 +11,8 @@
   } %}
 
   {% set gameId = game.gameId ?? 0 %}
-  {% set imagePath = game.coverImageId ? game.coverImageId.fileUrl : '' %}
+  {% set gameSlug = game.seoIdentifier %}
+  {% set imagePath = game.coverPublicPath ?: (game.coverImageId ? game.coverImageId.fileUrl : '') %}
   {% set imageUrl = imagePath ? (imagePath starts with 'http' ? imagePath : asset(imagePath)) : 'https://picsum.photos/seed/pulse_game_detail_' ~ gameId ~ '/400/400' %}
 
   <main class="page">
@@ -26,7 +27,19 @@
                 Categorie: {{ game.categoryId ? game.categoryId.name : '-' }}
                 {% if game.publisher %} · Publisher: {{ game.publisher }}{% endif %}
               </div>
+              <div class="muted">Statut: {{ game.status }} | Score popularite: {{ game.popularityScore }}</div>
+              <div class="muted">Vues: {{ game.viewsCount }} | Favoris: {{ game.favoritesCount }}</div>
               <div class="badge badge--info" style="margin-top:8px;">{{ stats.active_tournaments|default(0) }} tournoi(s) actif(s)</div>
+              <div style="margin-top:8px;">
+                {% if app.user %}
+                  <form method="post" action="{{ path('front_game_favorite_toggle', {slug: gameSlug}) }}" style="display:inline;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('favorite_game_' ~ gameId) }}" />
+                    <button class="btn btn--ghost" type="submit">{{ is_favorited ? 'Retirer des favoris' : 'Ajouter aux favoris' }}</button>
+                  </form>
+                {% else %}
+                  <a class="btn btn--ghost" href="{{ path('front_login') }}">Se connecter pour favori</a>
+                {% endif %}
+              </div>
             </div>
           </div>
 
@@ -41,7 +54,7 @@
 
         <aside class="panel">
           <h3 class="panel__title">FILTRES TOURNOIS</h3>
-          <form class="filtersRow" method="get" action="{{ path('front_game_detail', {id: gameId}) }}" data-auto-submit="1">
+          <form class="filtersRow" method="get" action="{{ path('front_game_detail', {slug: gameSlug}) }}" data-auto-submit="1">
             <input type="hidden" name="tab" value="{{ active_tab|default('open') }}">
             <input class="input" type="search" name="tq" value="{{ filters.tq|default('') }}" placeholder="Titre tournoi..." />
 
@@ -75,7 +88,7 @@
             </div>
 
             <button class="btn btn--ghost" type="submit">Filtrer</button>
-            <a class="btn btn--ghost" href="{{ path('front_game_detail', {id: gameId}) }}">Reset</a>
+            <a class="btn btn--ghost" href="{{ path('front_game_detail', {slug: gameSlug}) }}">Reset</a>
           </form>
         </aside>
       </div>
@@ -85,7 +98,7 @@
           <a
             class="tab {{ (active_tab|default('open')) == 'open' ? 'is-active' : '' }}"
             href="{{ path('front_game_detail', {
-              id: gameId,
+              slug: gameSlug,
               tab: 'open',
               tq: filters.tq|default(''),
               status: filters.status|default(''),
@@ -96,7 +109,7 @@
           <a
             class="tab {{ (active_tab|default('open')) == 'ongoing' ? 'is-active' : '' }}"
             href="{{ path('front_game_detail', {
-              id: gameId,
+              slug: gameSlug,
               tab: 'ongoing',
               tq: filters.tq|default(''),
               status: filters.status|default(''),
@@ -107,7 +120,7 @@
           <a
             class="tab {{ (active_tab|default('open')) == 'finished' ? 'is-active' : '' }}"
             href="{{ path('front_game_detail', {
-              id: gameId,
+              slug: gameSlug,
               tab: 'finished',
               tq: filters.tq|default(''),
               status: filters.status|default(''),

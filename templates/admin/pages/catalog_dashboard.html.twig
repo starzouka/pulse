@@ -1,0 +1,97 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}PULSE - KPI Catalogue{% endblock %}
+
+{% block admin_content %}
+  <div class="pageHeader">
+    <div>
+      <h2>KPI Catalogue</h2>
+      <div class="pageSub">Taux publication, delai review moyen, top categories mensuelles, trending games.</div>
+    </div>
+    <div class="formActions">
+      <a class="btn btnGhost" href="{{ path('admin_games') }}">Gestion jeux</a>
+      <a class="btn btnGhost" href="{{ path('admin_categories') }}">Gestion categories</a>
+    </div>
+  </div>
+
+  <section class="statsRow">
+    <article class="statCard">
+      <div class="statCard__value">{{ kpi.total_games }}</div>
+      <div class="statCard__label">Jeux total</div>
+    </article>
+    <article class="statCard">
+      <div class="statCard__value">{{ kpi.published_games }}</div>
+      <div class="statCard__label">Jeux publies</div>
+    </article>
+    <article class="statCard">
+      <div class="statCard__value">{{ kpi.publication_rate }}%</div>
+      <div class="statCard__label">Taux publication</div>
+    </article>
+    <article class="statCard">
+      <div class="statCard__value">{{ kpi.avg_review_delay_hours }} h</div>
+      <div class="statCard__label">Delai review moyen</div>
+    </article>
+  </section>
+
+  <section class="panel" style="margin-top:12px;">
+    <div class="panelHeader">
+      <h3 class="panelTitle">TOP CATEGORIES MENSUELLES ({{ kpi.month_label }})</h3>
+    </div>
+    <div class="dataTableWrap">
+      <table class="dataTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Categorie</th>
+            <th>Jeux crees ce mois</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in top_categories_monthly %}
+            <tr>
+              <td>{{ loop.index }}</td>
+              <td>{{ row.category_name }}</td>
+              <td>{{ row.games_count }}</td>
+            </tr>
+          {% else %}
+            <tr><td colspan="3" class="listMeta">Aucune donnee pour ce mois.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel" style="margin-top:12px;">
+    <div class="panelHeader">
+      <h3 class="panelTitle">TRENDING GAMES (SCORE INTELLIGENT)</h3>
+    </div>
+    <div class="dataTableWrap">
+      <table class="dataTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Jeu</th>
+            <th>Statut</th>
+            <th>Views</th>
+            <th>Favoris</th>
+            <th>Score</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for game in trending_games %}
+            <tr>
+              <td>{{ loop.index }}</td>
+              <td>{{ game.name }}</td>
+              <td><span class="badge">{{ game.status }}</span></td>
+              <td>{{ game.viewsCount }}</td>
+              <td>{{ game.favoritesCount }}</td>
+              <td>{{ game.popularityScore }}</td>
+            </tr>
+          {% else %}
+            <tr><td colspan="6" class="listMeta">Aucun jeu trending pour le moment.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+{% endblock %}

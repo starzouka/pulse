@@ -9,6 +9,7 @@ use App\Repository\CategoryRepository;
 use App\Repository\GameRepository;
 use App\Service\Admin\TableExportService;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -24,6 +25,7 @@ final class CategoriesController extends AbstractController
         Request $request,
         CategoryRepository $categoryRepository,
         GameRepository $gameRepository,
+        PaginatorInterface $paginator,
         EntityManagerInterface $entityManager
     ): Response {
         $editId = $request->query->getInt('edit', 0);
@@ -90,6 +92,12 @@ final class CategoriesController extends AbstractController
             $filters['direction'],
             500
         );
+        $categoriesPagination = $paginator->paginate(
+            $categories,
+            max(1, $request->query->getInt('page', 1)),
+            15
+        );
+        $categories = $categoriesPagination->getItems();
 
         $categoryIds = [];
         foreach ($categories as $category) {
@@ -105,6 +113,7 @@ final class CategoriesController extends AbstractController
             'editingCategory' => $editingCategory,
             'gamesByCategoryId' => $gamesByCategoryId,
             'filters' => $filters,
+            'categories_pagination' => $categoriesPagination,
         ]);
     }
 

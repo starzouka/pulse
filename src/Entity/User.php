@@ -40,8 +40,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private string $email = '';
 
     #[ORM\Column(name: 'password_hash', type: Types::STRING, length: 255)]
-    #[Assert\NotBlank(message: 'Le mot de passe est obligatoire.')]
-    #[Assert\Length(min: 8, max: 255)]
     private string $passwordHash = '';
 
     #[ORM\Column(name: 'role', type: Types::STRING, length: 9, options: ['default' => self::DOMAIN_ROLE_PLAYER])]
