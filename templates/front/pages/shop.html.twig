@@ -92,30 +92,6 @@
 
               <div class="card__body">
                 <h4 class="card__title">{{ product.name }}</h4>
-                <div class="product-rating" data-product-id="{{ product.productId }}">
-                  {% set productId = product.productId %}
-                  {% set ratingStats = product_ratings_stats[productId]|default({'averageRating': null, 'ratingCount': 0}) %}
-                  {% set avgRating = ratingStats.averageRating %}
-                  {% set ratingCount = ratingStats.ratingCount %}
-                  <div class="stars">
-                    {% for i in 1..5 %}
-                      <span class="star {{ avgRating >= i ? 'star--filled' : 'star--empty' }}">★</span>
-                    {% endfor %}
-                  </div>
-                  <span class="rating-count">({{ ratingCount }} vote{{ ratingCount > 1 ? 's' : '' }})</span>
-                  {% if app.user %}
-                    <form method="post" action="{{ path('front_product_rate', {id: product.productId}) }}" class="rating-form">
-                      <input type="hidden" name="_token" value="{{ csrf_token('product_rate_' ~ product.productId) }}">
-                      <div class="rating-buttons">
-                        {% for i in 1..5 %}
-                          <button type="submit" name="rating" value="{{ i }}" class="rating-btn" title="Noter {{ i }}/5">{{ i }}</button>
-                        {% endfor %}
-                      </div>
-                    </form>
-                  {% else %}
-                    <a href="{{ path('front_login', {'_target_path': app.request.uri}) }}" class="login-to-rate">Connectez-vous pour noter</a>
-                  {% endif %}
-                </div>
                 <p class="card__desc">{{ product.description ? product.description|slice(0, 90) ~ (product.description|length > 90 ? '...' : '') : 'Produit equipe PULSE.' }}</p>
 
                 <div class="card__actions">

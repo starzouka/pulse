@@ -34,10 +34,10 @@ final class ProductDetailController extends AbstractController
 
         $product = null;
         if ($id !== null) {
-            $product = $productRepository->findOneWithRelationsById($id);
-            if ($product && !$product->isActive()) {
-                $product = null;
-            }
+            $product = $productRepository->findOneBy([
+                'productId' => $id,
+                'isActive' => true,
+            ]);
         }
 
         if (!$product instanceof Product) {
@@ -68,22 +68,12 @@ final class ProductDetailController extends AbstractController
 
         $relatedProducts = $productRepository->findRelatedActiveByProduct($product, 8);
         $relatedPrimaryImagesByProductId = $productImageRepository->findPrimaryImagesByProducts($relatedProducts);
-        
-        // Charger les statistiques de notes du produit
-        $productRatingsStats = $productRepository->getRatingsStatsForProducts([$product->getProductId()]);
-        $productRatingStats = $productRatingsStats[$product->getProductId()] ?? ['averageRating' => null, 'ratingCount' => 0];
-        
-        // Charger les statistiques de notes des produits liés
-        $relatedProductIds = array_map(fn($p) => $p->getProductId(), $relatedProducts);
-        $relatedRatingsStatsByProductId = $productRepository->getRatingsStatsForProducts($relatedProductIds);
 
-        return $this->render('front/pages/product-detail-with-rating.html.twig', [
+        return $this->render('front/pages/product-detail.html.twig', [
             'product' => $product,
-            'product_rating_stats' => $productRatingStats,
             'product_images' => $productImageRepository->findImagesByProduct($product),
             'related_products' => $relatedProducts,
             'related_primary_images_by_product_id' => $relatedPrimaryImagesByProductId,
-            'related_ratings_stats_by_product_id' => $relatedRatingsStatsByProductId,
             'cart_quantity_for_product' => $cartQuantityForProduct,
             'login_target_path' => $request->getUri(),
         ]);

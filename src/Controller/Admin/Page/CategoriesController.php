@@ -9,6 +9,7 @@ use App\Repository\CategoryRepository;
 use App\Repository\GameRepository;
 use App\Service\Admin\TableExportService;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,14 +18,15 @@ use Symfony\Component\Routing\Attribute\Route;
 final class CategoriesController extends AbstractController
 {
     /** @var list<string> */
-    private const SORTS = ['id', 'name', 'created_at', 'games'];
+    private const SORTS = ['id', 'name', 'slug', 'created_at', 'games'];
 
     #[Route('/admin/categories', name: 'admin_categories', methods: ['GET', 'POST'])]
     public function index(
         Request $request,
         CategoryRepository $categoryRepository,
         GameRepository $gameRepository,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        PaginatorInterface $paginator,
     ): Response {
         $editId = $request->query->getInt('edit', 0);
         $editingCategory = $editId > 0 ? $categoryRepository->find($editId) : null;
@@ -72,7 +74,7 @@ final class CategoriesController extends AbstractController
 
                 return $this->redirectToRoute('admin_categories');
             } catch (\Throwable) {
-                $this->addFlash('error', 'Enregistrement impossible (nom deja utilise).');
+                $this->addFlash('error', 'Enregistrement impossible (nom/slug deja utilise).');
 
                 return $this->redirectToRoute('admin_categories', $categoryId > 0 ? ['edit' => $categoryId] : []);
             }
@@ -84,15 +86,28 @@ final class CategoriesController extends AbstractController
             'direction' => $this->sanitizeDirection((string) $request->query->get('direction', 'asc')),
         ];
 
-        $categories = $categoryRepository->searchForAdmin(
+        $queryBuilder = $categoryRepository->createAdminSearchQueryBuilder(
             $filters['q'],
             $filters['sort'],
             $filters['direction'],
-            500
+        );
+
+        $categoriesPagination = $paginator->paginate(
+            $queryBuilder,
+            max(1, $request->query->getInt('page', 1)),
+            16,
+            [
+                'distinct' => true,
+                'pageParameterName' => 'page',
+            ],
         );
 
         $categoryIds = [];
-        foreach ($categories as $category) {
+        foreach ($categoriesPagination as $category) {
+            if (!$category instanceof Category) {
+                continue;
+            }
+
             $categoryEntityId = $category->getCategoryId();
             if (is_int($categoryEntityId) && $categoryEntityId > 0) {
                 $categoryIds[] = $categoryEntityId;
@@ -101,14 +116,14 @@ final class CategoriesController extends AbstractController
         $gamesByCategoryId = $gameRepository->countByCategoryIds($categoryIds);
 
         return $this->render('admin/pages/categories.html.twig', [
-            'categories' => $categories,
+            'categoriesPagination' => $categoriesPagination,
             'editingCategory' => $editingCategory,
             'gamesByCategoryId' => $gamesByCategoryId,
             'filters' => $filters,
         ]);
     }
 
-    #[Route('/admin/categories/{id}/delete', name: 'admin_category_delete', requirements: ['id' => '\d+'], methods: ['POST'])]
+    #[Route('/admin/categories/{id}/delete', name: 'admin_category_delete', requirements: ['id' => '\\d+'], methods: ['POST'])]
     public function delete(
         int $id,
         Request $request,
@@ -169,13 +184,14 @@ final class CategoriesController extends AbstractController
         }
         $gamesByCategoryId = $gameRepository->countByCategoryIds($categoryIds);
 
-        $headers = ['ID', 'Nom', 'Description', 'Nb jeux', 'Cree le'];
+        $headers = ['ID', 'Nom', 'Slug', 'Description', 'Nb jeux', 'Cree le'];
         $rows = [];
         foreach ($categories as $category) {
             $categoryId = (int) ($category->getCategoryId() ?? 0);
             $rows[] = [
                 $categoryId,
                 (string) ($category->getName() ?? '-'),
+                (string) ($category->getSlug() ?: '-'),
                 (string) ($category->getDescription() ?? '-'),
                 (int) ($gamesByCategoryId[$categoryId] ?? 0),
                 $category->getCreatedAt()?->format('Y-m-d H:i') ?? '-',

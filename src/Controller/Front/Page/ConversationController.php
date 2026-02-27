@@ -8,6 +8,8 @@ use App\Entity\Message;
 use App\Entity\User;
 use App\Repository\MessageRepository;
 use App\Repository\UserRepository;
+use App\Service\Ai\Moderation\ChatModerationDecisionService;
+use App\Service\Ai\Moderation\ModerationFeedbackFormatter;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -22,6 +24,8 @@ final class ConversationController extends AbstractController
         Request $request,
         UserRepository $userRepository,
         MessageRepository $messageRepository,
+        ChatModerationDecisionService $chatModerationDecisionService,
+        ModerationFeedbackFormatter $moderationFeedbackFormatter,
         EntityManagerInterface $entityManager,
     ): Response
     {
@@ -66,6 +70,20 @@ final class ConversationController extends AbstractController
                 return $this->redirectToRoute('front_conversation', ['id' => $selectedPartner->getUserId()]);
             }
 
+            $moderation = $chatModerationDecisionService->moderateOutgoingMessage($body);
+            $moderationFeedback = $moderationFeedbackFormatter->format($moderation, 'Message de conversation');
+            if ($moderationFeedback['decision'] === 'block') {
+                $this->addFlash('error', $moderationFeedback['message']);
+
+                return $this->redirectToRoute('front_conversation', ['id' => $selectedPartner->getUserId()]);
+            }
+
+            if ($moderationFeedback['decision'] === 'warn') {
+                $this->addFlash('warning', $moderationFeedback['message']);
+            } else {
+                $this->addFlash('info', $moderationFeedback['message']);
+            }
+
             $message = (new Message())
                 ->setSenderUserId($viewer)
                 ->setReceiverUserId($selectedPartner)
@@ -78,6 +96,7 @@ final class ConversationController extends AbstractController
 
             $entityManager->persist($message);
             $entityManager->flush();
+            $this->addFlash('success', 'Message envoye.');
 
             return $this->redirectToRoute('front_conversation', ['id' => $selectedPartner->getUserId()]);
         }
@@ -134,4 +153,5 @@ final class ConversationController extends AbstractController
 
         return $sortedUsers;
     }
+
 }

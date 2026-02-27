@@ -6,8 +6,6 @@ namespace App\Entity;
 
 use Doctrine\DBAL\Types\Types;
 use App\Repository\ProductRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -57,16 +55,6 @@ class Product
     
     #[ORM\Column(name: 'updated_at', type: Types::DATETIME_MUTABLE)]
     private \DateTimeInterface $updatedAt;
-
-    #[ORM\OneToMany(mappedBy: 'product', targetEntity: ProductRating::class, orphanRemoval: true)]
-    private Collection $ratings;
-
-    public function __construct()
-    {
-        $this->createdAt = new \DateTime();
-        $this->updatedAt = new \DateTime();
-        $this->ratings = new ArrayCollection();
-    }
 
     public function getProductId(): ?int
     {
@@ -186,59 +174,5 @@ class Product
         $this->updatedAt = $updatedAt;
 
         return $this;
-    }
-
-    /**
-     * @return Collection<int, ProductRating>
-     */
-    public function getRatings(): Collection
-    {
-        return $this->ratings;
-    }
-
-    public function addRating(ProductRating $rating): static
-    {
-        if (!$this->ratings->contains($rating)) {
-            $this->ratings->add($rating);
-            $rating->setProduct($this);
-        }
-
-        return $this;
-    }
-
-    public function removeRating(ProductRating $rating): static
-    {
-        if ($this->ratings->removeElement($rating)) {
-            if ($rating->getProduct() === $this) {
-                $rating->setProduct(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * Calcule la note moyenne du produit
-     */
-    public function getAverageRating(): ?float
-    {
-        if ($this->ratings->isEmpty()) {
-            return null;
-        }
-
-        $total = 0;
-        foreach ($this->ratings as $rating) {
-            $total += $rating->getRating();
-        }
-
-        return $total / $this->ratings->count();
-    }
-
-    /**
-     * Retourne le nombre de votes pour le produit
-     */
-    public function getRatingCount(): int
-    {
-        return $this->ratings->count();
     }
 }

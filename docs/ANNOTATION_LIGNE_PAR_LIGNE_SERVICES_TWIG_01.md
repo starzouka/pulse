@@ -1,0 +1,616 @@
+# Annotation Ligne Par Ligne - Services + Twig (Lot 1)
+
+Ce fichier explique chaque ligne des fichiers:
+- `src/Twig/UserContextExtension.php`
+- `src/Service/Profile/ProfilePageDataProvider.php`
+- `src/Service/Captain/CaptainTeamContextProvider.php`
+
+---
+
+## 1) `src/Twig/UserContextExtension.php`
+
+- L1: `<?php`
+  - Ouvre le mode PHP.
+- L2: `(ligne vide)`
+  - Separation visuelle.
+- L3: `declare(strict_types=1);`
+  - Active le typage strict.
+- L4: `(ligne vide)`
+  - Separation visuelle.
+- L5: `namespace App\Twig;`
+  - Namespace de la classe Twig extension.
+- L6: `(ligne vide)`
+  - Separation visuelle.
+- L7: `use App\Entity\User;`
+  - Importe l'entite User.
+- L8: `use App\Security\CaptainAccess;`
+  - Importe le service qui sait si un user est capitaine.
+- L9: `use Twig\Extension\AbstractExtension;`
+  - Importe la classe de base pour creer une extension Twig.
+- L10: `use Twig\TwigFunction;`
+  - Importe le type de fonction Twig custom.
+- L11: `(ligne vide)`
+  - Separation visuelle.
+- L12: `final class UserContextExtension extends AbstractExtension`
+  - Declare l'extension Twig finale.
+- L13: `{`
+  - Ouvre la classe.
+- L14: `public function __construct(`
+  - Debut du constructeur.
+- L15: `private readonly CaptainAccess $captainAccess,`
+  - Injection du service `CaptainAccess`, en lecture seule.
+- L16: `) {`
+  - Fin de la signature + ouverture du constructeur.
+- L17: `}`
+  - Constructeur vide (injection uniquement).
+- L18: `(ligne vide)`
+  - Separation visuelle.
+- L19: `public function getFunctions(): array`
+  - Methode Twig qui declare les fonctions exposees.
+- L20: `{`
+  - Ouvre le bloc.
+- L21: `return [`
+  - Retourne la liste des fonctions Twig.
+- L22: `new TwigFunction('front_role', [$this, 'resolveFrontRole']),`
+  - Cree la fonction Twig `front_role()` qui appelle `resolveFrontRole`.
+- L23: `];`
+  - Fin du tableau retourne.
+- L24: `}`
+  - Fin de la methode.
+- L25: `(ligne vide)`
+  - Separation visuelle.
+- L26: `public function resolveFrontRole(?User $user): string`
+  - Methode qui calcule le role front a afficher.
+- L27: `{`
+  - Ouvre le bloc.
+- L28: `if (!$user instanceof User) {`
+  - Si aucun utilisateur connecte.
+- L29: `return 'GUEST';`
+  - Retourne le role visiteur.
+- L30: `}`
+  - Fin du test guest.
+- L31: `(ligne vide)`
+  - Separation visuelle.
+- L32: `$domainRole = strtoupper($user->getRole());`
+  - Lit le role metier du user et le normalise en majuscules.
+- L33: `if ($domainRole === User::DOMAIN_ROLE_ADMIN) {`
+  - Teste le role admin.
+- L34: `return 'ADMIN';`
+  - Retourne role front ADMIN.
+- L35: `}`
+  - Fin test admin.
+- L36: `(ligne vide)`
+  - Separation visuelle.
+- L37: `if ($domainRole === User::DOMAIN_ROLE_ORGANIZER) {`
+  - Teste le role organizer.
+- L38: `return 'ORGANIZER';`
+  - Retourne role front ORGANIZER.
+- L39: `}`
+  - Fin test organizer.
+- L40: `(ligne vide)`
+  - Separation visuelle.
+- L41: `if ($domainRole === User::DOMAIN_ROLE_CAPTAIN || $this->captainAccess->isCaptain($user)) {`
+  - Si role CAPTAIN explicite, ou detecte capitaine par contexte equipe.
+- L42: `return 'CAPTAIN';`
+  - Retourne role front CAPTAIN.
+- L43: `}`
+  - Fin test captain.
+- L44: `(ligne vide)`
+  - Separation visuelle.
+- L45: `return 'PLAYER';`
+  - Sinon, role par defaut cote front = PLAYER.
+- L46: `}`
+  - Fin de la methode.
+- L47: `}`
+  - Fin de la classe.
+
+---
+
+## 2) `src/Service/Profile/ProfilePageDataProvider.php`
+
+- L1: `<?php`
+  - Ouvre le mode PHP.
+- L2: `(ligne vide)`
+  - Separation visuelle.
+- L3: `declare(strict_types=1);`
+  - Active le typage strict.
+- L4: `(ligne vide)`
+  - Separation visuelle.
+- L5: `namespace App\Service\Profile;`
+  - Namespace du service profile.
+- L6: `(ligne vide)`
+  - Separation visuelle.
+- L7: `use App\Entity\Team;`
+  - Importe l'entite Team.
+- L8: `use App\Entity\User;`
+  - Importe l'entite User.
+- L9: `use App\Repository\CommentRepository;`
+  - Importe le repository des commentaires.
+- L10: `use App\Repository\FriendRequestRepository;`
+  - Importe le repository des demandes d'ami.
+- L11: `use App\Repository\FriendshipRepository;`
+  - Importe le repository des amities.
+- L12: `use App\Repository\PostImageRepository;`
+  - Importe le repository des images de posts.
+- L13: `use App\Repository\PostLikeRepository;`
+  - Importe le repository des likes.
+- L14: `use App\Repository\PostRepository;`
+  - Importe le repository des posts.
+- L15: `use App\Repository\TeamMemberRepository;`
+  - Importe le repository des membres d'equipe.
+- L16: `(ligne vide)`
+  - Separation visuelle.
+- L17: `final class ProfilePageDataProvider`
+  - Declare le service final de construction des donnees profil.
+- L18: `{`
+  - Ouvre la classe.
+- L19: `public function __construct(`
+  - Debut du constructeur.
+- L20: `private readonly PostRepository $postRepository,`
+  - Injection repository posts.
+- L21: `private readonly PostImageRepository $postImageRepository,`
+  - Injection repository post images.
+- L22: `private readonly PostLikeRepository $postLikeRepository,`
+  - Injection repository likes.
+- L23: `private readonly CommentRepository $commentRepository,`
+  - Injection repository comments.
+- L24: `private readonly FriendshipRepository $friendshipRepository,`
+  - Injection repository friendships.
+- L25: `private readonly FriendRequestRepository $friendRequestRepository,`
+  - Injection repository friend requests.
+- L26: `private readonly TeamMemberRepository $teamMemberRepository,`
+  - Injection repository team members.
+- L27: `) {`
+  - Fin de la signature + ouverture du constructeur.
+- L28: `}`
+  - Constructeur vide (injection uniquement).
+- L29: `(ligne vide)`
+  - Separation visuelle.
+- L30: `/**`
+  - Debut phpdoc de type de retour.
+- L31: `* @return array{`
+  - Indique qu'on retourne un tableau structure.
+- L32: `*   is_own_profile: bool,`
+  - Champ bool de possession du profil.
+- L33: `*   friend_status: string,`
+  - Champ statut d'amitie.
+- L34: `*   friends: list<User>,`
+  - Liste d'amis.
+- L35: `*   teams: list<Team>,`
+  - Liste d'equipes.
+- L36: `*   posts: list<array{`
+  - Debut des donnees de post.
+- L37: `*     post: \App\Entity\Post,`
+  - Entite post.
+- L38: `*     images: list<\App\Entity\Image>,`
+  - Liste d'images du post.
+- L39: `*     likes_count: int,`
+  - Nombre de likes.
+- L40: `*     comments_count: int,`
+  - Nombre de commentaires.
+- L41: `*     is_liked_by_viewer: bool,`
+  - Bool like par viewer.
+- L42: `*     comments: list<\App\Entity\Comment>`
+  - Derniers commentaires.
+- L43: `*   }>,`
+  - Fin structure d'un post.
+- L44: `*   stats: array{friends: int, teams: int, posts: int},`
+  - Stats globales.
+- L45: `*   applied_filters: array{`
+  - Debut des filtres appliques.
+- L46: `*     posts_q:string,`
+  - Filtre query posts.
+- L47: `*     posts_visibility:string,`
+  - Filtre visibilite posts.
+- L48: `*     posts_sort:string,`
+  - Filtre tri posts.
+- L49: `*     friends_q:string,`
+  - Filtre query amis.
+- L50: `*     friends_sort:string,`
+  - Filtre tri amis.
+- L51: `*     teams_q:string,`
+  - Filtre query equipes.
+- L52: `*     teams_region:string,`
+  - Filtre region equipes.
+- L53: `*     teams_sort:string`
+  - Filtre tri equipes.
+- L54: `*   }`
+  - Fin de structure `applied_filters`.
+- L55: `* }`
+  - Fin de structure globale retour.
+- L56: `*/`
+  - Fin de phpdoc.
+- L57: `public function build(User $profileUser, ?User $viewer, array $filters = []): array`
+  - Methode principale: construit les donnees de la page profil.
+- L58: `{`
+  - Ouvre la methode.
+- L59: `$isOwnProfile = $viewer instanceof User`
+  - Debut du calcul \"est-ce mon propre profil\".
+- L60: `&& $viewer->getUserId() !== null`
+  - Verifie que l'ID viewer existe.
+- L61: `&& $viewer->getUserId() === $profileUser->getUserId();`
+  - Compare IDs viewer/profile.
+- L62: `(ligne vide)`
+  - Separation visuelle.
+- L63: `$postsQuery = trim((string) ($filters['posts_q'] ?? ''));`
+  - Lit et nettoie filtre texte posts.
+- L64: `$postsVisibility = strtoupper(trim((string) ($filters['posts_visibility'] ?? '')));`
+  - Lit filtre visibilite posts et normalise.
+- L65: `if (!in_array($postsVisibility, ['PUBLIC', 'FRIENDS', 'TEAM_ONLY'], true)) {`
+  - Valide la visibilite autorisee.
+- L66: `$postsVisibility = '';`
+  - Vide si valeur invalide.
+- L67: `}`
+  - Fin validation visibilite.
+- L68: `(ligne vide)`
+  - Separation visuelle.
+- L69: `$postsSort = strtolower(trim((string) ($filters['posts_sort'] ?? 'latest')));`
+  - Lit tri posts.
+- L70: `if (!in_array($postsSort, ['latest', 'oldest', 'liked', 'commented'], true)) {`
+  - Valide tri posts.
+- L71: `$postsSort = 'latest';`
+  - Valeur par defaut si invalide.
+- L72: `}`
+  - Fin validation tri posts.
+- L73: `(ligne vide)`
+  - Separation visuelle.
+- L74: `$friendsQuery = trim((string) ($filters['friends_q'] ?? ''));`
+  - Lit filtre texte amis.
+- L75: `$friendsSort = strtolower(trim((string) ($filters['friends_sort'] ?? 'recent')));`
+  - Lit tri amis.
+- L76: `if (!in_array($friendsSort, ['recent', 'oldest', 'name'], true)) {`
+  - Valide tri amis.
+- L77: `$friendsSort = 'recent';`
+  - Defaut tri amis.
+- L78: `}`
+  - Fin validation tri amis.
+- L79: `(ligne vide)`
+  - Separation visuelle.
+- L80: `$teamsQuery = trim((string) ($filters['teams_q'] ?? ''));`
+  - Lit filtre texte equipes.
+- L81: `$teamsRegion = trim((string) ($filters['teams_region'] ?? ''));`
+  - Lit filtre region equipes.
+- L82: `$teamsSort = strtolower(trim((string) ($filters['teams_sort'] ?? 'latest')));`
+  - Lit tri equipes.
+- L83: `if (!in_array($teamsSort, ['latest', 'oldest', 'name', 'region'], true)) {`
+  - Valide tri equipes.
+- L84: `$teamsSort = 'latest';`
+  - Defaut tri equipes.
+- L85: `}`
+  - Fin validation tri equipes.
+- L86: `(ligne vide)`
+  - Separation visuelle.
+- L87: `$friends = $this->friendshipRepository->findFriendsByUser(`
+  - Appel DB pour recuperer les amis filtres/trie.
+- L88: `$profileUser,`
+  - Parametre user profile.
+- L89: `$friendsQuery,`
+  - Parametre query amis.
+- L90: `$friendsSort,`
+  - Parametre tri amis.
+- L91: `200`
+  - Limite max de resultats.
+- L92: `);`
+  - Fin appel repository amis.
+- L93: `(ligne vide)`
+  - Separation visuelle.
+- L94: `$teamMembers = $this->teamMemberRepository->findActiveByUserFiltered(`
+  - Appel DB pour recuperer appartenances equipes actives.
+- L95: `$profileUser,`
+  - User profile cible.
+- L96: `$teamsQuery,`
+  - Query equipes.
+- L97: `$teamsRegion !== '' ? $teamsRegion : null,`
+  - Region ou null.
+- L98: `$teamsSort,`
+  - Tri equipes.
+- L99: `50`
+  - Limite max.
+- L100: `);`
+  - Fin appel repository team members.
+- L101: `$teamsById = [];`
+  - Initialise map dedupliquee des equipes par ID.
+- L102: `foreach ($teamMembers as $teamMember) {`
+  - Parcourt les liaisons membre-equipe.
+- L103: `$team = $teamMember->getTeamId();`
+  - Extrait l'entite team.
+- L104: `$teamId = $team?->getTeamId();`
+  - Extrait l'ID team si present.
+- L105: `if (!$team instanceof Team || $teamId === null) {`
+  - Ignore les lignes invalides/incompletes.
+- L106: `continue;`
+  - Passe a l'iteration suivante.
+- L107: `}`
+  - Fin garde.
+- L108: `(ligne vide)`
+  - Separation visuelle.
+- L109: `$teamsById[$teamId] = $team;`
+  - Ajoute/remplace team par ID pour dedoublonnage.
+- L110: `}`
+  - Fin boucle teamMembers.
+- L111: `$teams = array_values($teamsById);`
+  - Convertit la map en liste simple.
+- L112: `(ligne vide)`
+  - Separation visuelle.
+- L113: `$posts = $this->postRepository->searchVisiblePaged(`
+  - Charge les posts du profil avec filtres serveur.
+- L114: `$postsQuery,`
+  - Query posts.
+- L115: `$postsVisibility !== '' ? $postsVisibility : null,`
+  - Visibilite ou null.
+- L116: `$profileUser,`
+  - Auteur cible.
+- L117: `$postsSort,`
+  - Tri posts.
+- L118: `25,`
+  - Limite 25 posts.
+- L119: `0,`
+  - Offset 0 (premiere page ici).
+- L120: `);`
+  - Fin appel repository posts.
+- L121: `$imagesByPostId = $this->postImageRepository->findImagesByPosts($posts);`
+  - Charge en lot les images pour tous les posts recuperes.
+- L122: `(ligne vide)`
+  - Separation visuelle.
+- L123: `$postsData = [];`
+  - Initialise le tableau final des posts enrichis.
+- L124: `foreach ($posts as $post) {`
+  - Parcourt chaque post.
+- L125: `$postId = $post->getPostId();`
+  - Lit son ID.
+- L126: `$likesCount = $this->postLikeRepository->count(['postId' => $post]);`
+  - Compte les likes du post.
+- L127: `$commentsCount = $this->commentRepository->count([`
+  - Debut du comptage commentaires non supprimes.
+- L128: `'postId' => $post,`
+  - Filtre par post.
+- L129: `'isDeleted' => false,`
+  - Filtre commentaires actifs.
+- L130: `]);`
+  - Fin du comptage commentaires.
+- L131: `(ligne vide)`
+  - Separation visuelle.
+- L132: `$latestComments = array_reverse(`
+  - Inverse l'ordre des derniers commentaires racine pour l'affichage.
+- L133: `$this->commentRepository->findLatestRootCommentsForPost($post, 3),`
+  - Charge les 3 derniers commentaires racine du post.
+- L134: `);`
+  - Fin de l'appel + inversion.
+- L135: `(ligne vide)`
+  - Separation visuelle.
+- L136: `$isLikedByViewer = false;`
+  - Valeur par defaut: viewer n'a pas like.
+- L137: `if ($viewer instanceof User) {`
+  - Si un viewer est connecte.
+- L138: `$isLikedByViewer = $this->postLikeRepository->findOneByPostAndUser($post, $viewer) !== null;`
+  - Verifie en base si ce viewer a like ce post.
+- L139: `}`
+  - Fin test viewer.
+- L140: `(ligne vide)`
+  - Separation visuelle.
+- L141: `$postsData[] = [`
+  - Ajoute un objet \"post enrichi\" au tableau final.
+- L142: `'post' => $post,`
+  - L'entite post.
+- L143: `'images' => $postId !== null ? ($imagesByPostId[$postId] ?? []) : [],`
+  - Liste d'images associees a ce post.
+- L144: `'likes_count' => $likesCount,`
+  - Nombre de likes.
+- L145: `'comments_count' => $commentsCount,`
+  - Nombre de commentaires.
+- L146: `'is_liked_by_viewer' => $isLikedByViewer,`
+  - Indique si viewer a like.
+- L147: `'comments' => $latestComments,`
+  - Derniers commentaires.
+- L148: `];`
+  - Fin structure post enrichi.
+- L149: `}`
+  - Fin boucle posts.
+- L150: `(ligne vide)`
+  - Separation visuelle.
+- L151: `$friendStatus = 'guest';`
+  - Statut ami par defaut si non connecte.
+- L152: `if ($isOwnProfile) {`
+  - Si le profil affiche est celui du viewer.
+- L153: `$friendStatus = 'self';`
+  - Statut = self.
+- L154: `} elseif ($viewer instanceof User) {`
+  - Sinon, si viewer connecte sur profil d'un autre.
+- L155: `if ($this->friendshipRepository->existsBetweenUsers($viewer, $profileUser)) {`
+  - Verifie amitie existante.
+- L156: `$friendStatus = 'friends';`
+  - Statut = amis.
+- L157: `} else {`
+  - Sinon pas amis.
+- L158: `$pendingRequest = $this->friendRequestRepository->findPendingBetweenUsers($viewer, $profileUser);`
+  - Cherche une demande d'ami en attente dans les deux sens.
+- L159: `if ($pendingRequest !== null && $pendingRequest->getFromUserId() instanceof User) {`
+  - Si une demande pending existe et expediteur valide.
+- L160: `$friendStatus = $pendingRequest->getFromUserId()?->getUserId() === $viewer->getUserId()`
+  - Teste si c'est viewer qui a envoye la demande.
+- L161: `? 'request_sent'`
+  - Si oui: statut demande envoyee.
+- L162: `: 'request_received';`
+  - Sinon: statut demande recue.
+- L163: `} else {`
+  - Si aucune demande pending.
+- L164: `$friendStatus = 'none';`
+  - Statut = aucune relation.
+- L165: `}`
+  - Fin test pending request.
+- L166: `}`
+  - Fin branche not-friends.
+- L167: `}`
+  - Fin branche viewer connecte.
+- L168: `(ligne vide)`
+  - Separation visuelle.
+- L169: `return [`
+  - Retourne toutes les donnees pour la page profil.
+- L170: `'is_own_profile' => $isOwnProfile,`
+  - Retourne bool proprietaire du profil.
+- L171: `'friend_status' => $friendStatus,`
+  - Retourne statut relation.
+- L172: `'friends' => array_slice($friends, 0, 12),`
+  - Retourne seulement 12 amis pour l'affichage.
+- L173: `'teams' => $teams,`
+  - Retourne equipes.
+- L174: `'posts' => $postsData,`
+  - Retourne posts enrichis.
+- L175: `'stats' => [`
+  - Debut bloc statistiques.
+- L176: `'friends' => count($friends),`
+  - Nombre total amis.
+- L177: `'teams' => count($teams),`
+  - Nombre total equipes.
+- L178: `'posts' => count($postsData),`
+  - Nombre total posts charges.
+- L179: `],`
+  - Fin stats.
+- L180: `'applied_filters' => [`
+  - Debut bloc filtres effectivement appliques.
+- L181: `'posts_q' => $postsQuery,`
+  - Retourne query posts.
+- L182: `'posts_visibility' => $postsVisibility,`
+  - Retourne visibilite posts.
+- L183: `'posts_sort' => $postsSort,`
+  - Retourne tri posts.
+- L184: `'friends_q' => $friendsQuery,`
+  - Retourne query amis.
+- L185: `'friends_sort' => $friendsSort,`
+  - Retourne tri amis.
+- L186: `'teams_q' => $teamsQuery,`
+  - Retourne query equipes.
+- L187: `'teams_region' => $teamsRegion,`
+  - Retourne region equipes.
+- L188: `'teams_sort' => $teamsSort,`
+  - Retourne tri equipes.
+- L189: `],`
+  - Fin applied_filters.
+- L190: `];`
+  - Fin du tableau retourne.
+- L191: `}`
+  - Fin de la methode `build`.
+- L192: `}`
+  - Fin de la classe.
+
+---
+
+## 3) `src/Service/Captain/CaptainTeamContextProvider.php`
+
+- L1: `<?php`
+  - Ouvre le mode PHP.
+- L2: `(ligne vide)`
+  - Separation visuelle.
+- L3: `declare(strict_types=1);`
+  - Active le typage strict.
+- L4: `(ligne vide)`
+  - Separation visuelle.
+- L5: `namespace App\Service\Captain;`
+  - Namespace du service capitaine.
+- L6: `(ligne vide)`
+  - Separation visuelle.
+- L7: `use App\Entity\Team;`
+  - Importe Team.
+- L8: `use App\Entity\User;`
+  - Importe User.
+- L9: `use App\Repository\TeamRepository;`
+  - Importe TeamRepository.
+- L10: `(ligne vide)`
+  - Separation visuelle.
+- L11: `final class CaptainTeamContextProvider`
+  - Declare service final de contexte capitaine/equipe.
+- L12: `{`
+  - Ouvre la classe.
+- L13: `public function __construct(`
+  - Debut constructeur.
+- L14: `private readonly TeamRepository $teamRepository,`
+  - Injection repository teams.
+- L15: `) {`
+  - Fin signature + ouverture constructeur.
+- L16: `}`
+  - Constructeur vide.
+- L17: `(ligne vide)`
+  - Separation visuelle.
+- L18: `/**`
+  - Debut phpdoc.
+- L19: `* @return array{`
+  - Type de retour tableau structure.
+- L20: `*   teams:list<Team>,`
+  - Liste des teams du capitaine.
+- L21: `*   active_team:?Team`
+  - Team active eventuelle.
+- L22: `* }`
+  - Fin structure retour.
+- L23: `*/`
+  - Fin phpdoc.
+- L24: `public function resolve(User $captainUser, ?int $requestedTeamId = null): array`
+  - Methode qui calcule teams + team active.
+- L25: `{`
+  - Ouvre methode.
+- L26: `$teams = $this->teamRepository->findByCaptainUser($captainUser, 200);`
+  - Charge les equipes du capitaine (max 200).
+- L27: `$activeTeam = null;`
+  - Initialise la team active a null.
+- L28: `(ligne vide)`
+  - Separation visuelle.
+- L29: `if ($requestedTeamId !== null && $requestedTeamId > 0) {`
+  - Si une team demandee est fournie et valide.
+- L30: `foreach ($teams as $team) {`
+  - Parcourt les teams du capitaine.
+- L31: `if ($team->getTeamId() === $requestedTeamId) {`
+  - Compare l'ID de team.
+- L32: `$activeTeam = $team;`
+  - Definit cette team comme active.
+- L33: `break;`
+  - Sort de la boucle des qu'on a trouve.
+- L34: `}`
+  - Fin condition match ID.
+- L35: `}`
+  - Fin boucle teams.
+- L36: `}`
+  - Fin condition requestedTeamId.
+- L37: `(ligne vide)`
+  - Separation visuelle.
+- L38: `if (!$activeTeam instanceof Team && $teams !== []) {`
+  - Si aucune team active trouvee mais liste non vide.
+- L39: `$activeTeam = $teams[0];`
+  - Prend la premiere team comme fallback.
+- L40: `}`
+  - Fin fallback.
+- L41: `(ligne vide)`
+  - Separation visuelle.
+- L42: `return [`
+  - Retourne le contexte.
+- L43: `'teams' => $teams,`
+  - Retourne la liste des teams.
+- L44: `'active_team' => $activeTeam,`
+  - Retourne la team active.
+- L45: `];`
+  - Fin du tableau.
+- L46: `}`
+  - Fin methode `resolve`.
+- L47: `(ligne vide)`
+  - Separation visuelle.
+- L48: `public function resolveManagedTeamById(User $captainUser, int $teamId): ?Team`
+  - Methode pour charger une team precise possedee par ce capitaine.
+- L49: `{`
+  - Ouvre la methode.
+- L50: `return $this->teamRepository->findOneByCaptainAndId($captainUser, $teamId);`
+  - Requete directe: team par capitaine + ID.
+- L51: `}`
+  - Fin methode.
+- L52: `}`
+  - Fin classe.
+- L53: `(ligne vide)`
+  - Ligne finale vide du fichier.
+
+---
+
+## Note
+
+Si tu veux, je continue exactement avec le meme format pour:
+- `src/Service/Post/*`
+- `src/Service/Shop/*`
+- `src/Controller/Front/Page/*` (lot par lot)
+- `src/Controller/Admin/Page/*` (lot par lot)
+

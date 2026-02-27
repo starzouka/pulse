@@ -8,14 +8,13 @@
         {% block stylesheets %}
             <link rel="stylesheet" href="{{ asset('assets/template_fo/css/styles.css') }}">
             <link rel="stylesheet" href="{{ asset('assets/template_fo/css/tailwind.css') }}">
-            <link rel="stylesheet" href="{{ asset('assets/css/product-rating.css') }}">
-            <link rel="stylesheet" href="{{ asset('assets/css/ai-assistant.css') }}">
         {% endblock %}
     </head>
     <body class="antialiased">
         {% block body %}{% endblock %}
 
-        {% if app.request.attributes.get('_route') starts with 'front_' %}
+        {% set two_factor_pending = app.user and app.request.hasSession() and app.session.get('_2fa_verified', false) != true %}
+        {% if app.request.attributes.get('_route') starts with 'front_' and not two_factor_pending %}
             {% include 'front/partials/_account_sidebar.html.twig' %}
         {% endif %}
 
@@ -31,8 +30,6 @@
                 };
             </script>
             <script src="{{ asset('assets/template_fo/js/app.js') }}"></script>
-            <script src="{{ asset('assets/js/product-rating.js') }}"></script>
-            <script src="{{ asset('assets/js/ai-assistant.js') }}"></script>
         {% endblock %}
     </body>
 </html>

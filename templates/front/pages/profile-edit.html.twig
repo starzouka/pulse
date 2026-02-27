@@ -96,6 +96,53 @@
                 <a class="btn btn--ghost" href="{{ path('front_profile') }}">Annuler</a>
               </div>
             {{ form_end(profileEditForm) }}
+
+            <section class="panel gadget" id="twoFactorPanel"
+              data-csrf-token="{{ csrf_token('profile_2fa_api') }}"
+              data-url-state="{{ path('front_profile_2fa_state') }}"
+              data-url-setup="{{ path('front_profile_2fa_setup') }}"
+              data-url-enable="{{ path('front_profile_2fa_enable') }}"
+              data-url-disable="{{ path('front_profile_2fa_disable') }}"
+            >
+              <h3 class="panel__title">DOUBLE AUTHENTIFICATION (2FA)</h3>
+              <div id="twoFactorStatus" class="listItem" style="margin-bottom:8px;">
+                <span>Etat actuel</span>
+                <span class="badge badge--warning">Chargement...</span>
+              </div>
+
+              <div id="twoFactorMessage" class="listItem" style="display:none; margin-bottom:8px;">
+                <span id="twoFactorMessageText"></span>
+                <span id="twoFactorMessageBadge" class="badge">INFO</span>
+              </div>
+
+              <div id="twoFactorSetupBox" style="display:none; margin-bottom:10px;">
+                <div class="listMeta" style="margin-bottom:8px;">
+                  Scannez le QR dans Google Authenticator, Microsoft Authenticator ou Authy, puis entrez le code genere.
+                </div>
+                <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-start;">
+                  <div>
+                    <img id="twoFactorQr" src="" alt="QR code 2FA" style="width:180px;height:180px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.03);" />
+                  </div>
+                  <div style="max-width:420px;">
+                    <div class="listMeta">Cle manuelle (backup):</div>
+                    <code id="twoFactorSecret" style="display:inline-block;margin-top:6px;padding:6px 10px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.10);letter-spacing:.08em;"></code>
+                  </div>
+                </div>
+              </div>
+
+              <div class="formGrid" style="margin-bottom:10px;">
+                <label class="field">
+                  <span class="field__label">Code TOTP (6 chiffres)</span>
+                  <input id="twoFactorCode" class="input" type="text" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="123456" />
+                </label>
+              </div>
+
+              <div class="formActions">
+                <button id="twoFactorSetupBtn" type="button" class="btn btn--ghost">Configurer 2FA</button>
+                <button id="twoFactorEnableBtn" type="button" class="btn btn--primary" disabled>Activer</button>
+                <button id="twoFactorDisableBtn" type="button" class="btn btn--ghost" style="display:none;">Desactiver</button>
+              </div>
+            </section>
           </div>
 
           <aside class="socialStack">
@@ -116,4 +163,196 @@
   </main>
 
   {% include 'front/partials/_auth_modal.html.twig' %}
+{% endblock %}
+
+{% block javascripts %}
+  {{ parent() }}
+  <script>
+    (() => {
+      const panel = document.getElementById('twoFactorPanel');
+      if (!panel) {
+        return;
+      }
+
+      const csrfToken = panel.dataset.csrfToken || '';
+      const urls = {
+        state: panel.dataset.urlState || '',
+        setup: panel.dataset.urlSetup || '',
+        enable: panel.dataset.urlEnable || '',
+        disable: panel.dataset.urlDisable || '',
+      };
+
+      const statusWrap = document.getElementById('twoFactorStatus');
+      const messageWrap = document.getElementById('twoFactorMessage');
+      const messageText = document.getElementById('twoFactorMessageText');
+      const messageBadge = document.getElementById('twoFactorMessageBadge');
+      const setupBox = document.getElementById('twoFactorSetupBox');
+      const qrImg = document.getElementById('twoFactorQr');
+      const secretCode = document.getElementById('twoFactorSecret');
+      const codeInput = document.getElementById('twoFactorCode');
+      const setupBtn = document.getElementById('twoFactorSetupBtn');
+      const enableBtn = document.getElementById('twoFactorEnableBtn');
+      const disableBtn = document.getElementById('twoFactorDisableBtn');
+
+      let state = {
+        enabled: false,
+        pendingSetup: false,
+      };
+
+      const setMessage = (message, type = 'info') => {
+        messageWrap.style.display = 'flex';
+        messageText.textContent = message;
+        messageBadge.textContent = type.toUpperCase();
+        messageBadge.className = 'badge ' + (type === 'error' ? 'badge--danger' : (type === 'success' ? 'badge--success' : 'badge--warning'));
+      };
+
+      const clearMessage = () => {
+        messageWrap.style.display = 'none';
+      };
+
+      const renderStatus = () => {
+        if (!statusWrap) {
+          return;
+        }
+
+        const statusLabel = statusWrap.querySelector('span.badge');
+        if (!statusLabel) {
+          return;
+        }
+
+        if (state.enabled) {
+          statusLabel.className = 'badge badge--success';
+          statusLabel.textContent = 'ACTIVE';
+          setupBox.style.display = 'none';
+          setupBtn.style.display = 'none';
+          enableBtn.style.display = 'none';
+          disableBtn.style.display = 'inline-flex';
+          disableBtn.disabled = false;
+        } else {
+          statusLabel.className = state.pendingSetup ? 'badge badge--warning' : 'badge badge--danger';
+          statusLabel.textContent = state.pendingSetup ? 'A ACTIVER' : 'INACTIVE';
+          setupBox.style.display = state.pendingSetup ? 'block' : 'none';
+          setupBtn.style.display = 'inline-flex';
+          setupBtn.disabled = false;
+          enableBtn.style.display = 'inline-flex';
+          enableBtn.disabled = !state.pendingSetup;
+          disableBtn.style.display = 'none';
+        }
+      };
+
+      const api = async (url, method = 'GET', payload = null) => {
+        const options = {
+          method,
+          headers: {
+            'Accept': 'application/json',
+          },
+        };
+
+        if (method !== 'GET') {
+          options.headers['Content-Type'] = 'application/json';
+          options.headers['X-CSRF-TOKEN'] = csrfToken;
+          options.body = JSON.stringify(payload || {});
+        }
+
+        const response = await fetch(url, options);
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || data.ok === false) {
+          const message = typeof data.message === 'string' && data.message !== '' ? data.message : 'Erreur API.';
+          throw new Error(message);
+        }
+
+        return data;
+      };
+
+      const refreshState = async () => {
+        try {
+          const data = await api(urls.state);
+          state.enabled = !!data.enabled;
+          state.pendingSetup = !!data.pending_setup;
+          renderStatus();
+        } catch (error) {
+          setMessage(error instanceof Error ? error.message : 'Impossible de charger l etat 2FA.', 'error');
+        }
+      };
+
+      setupBtn?.addEventListener('click', async () => {
+        clearMessage();
+        setupBtn.disabled = true;
+        enableBtn.disabled = true;
+        try {
+          const data = await api(urls.setup, 'POST', {});
+          state.pendingSetup = true;
+          state.enabled = false;
+          if (qrImg && typeof data.qr_code_url === 'string') {
+            qrImg.src = data.qr_code_url;
+          }
+          if (secretCode && typeof data.secret === 'string') {
+            secretCode.textContent = data.secret;
+          }
+          renderStatus();
+          setMessage(data.message || 'Configuration 2FA prete.', 'success');
+        } catch (error) {
+          setMessage(error instanceof Error ? error.message : 'Erreur setup 2FA.', 'error');
+        } finally {
+          setupBtn.disabled = false;
+          enableBtn.disabled = !state.pendingSetup;
+        }
+      });
+
+      enableBtn?.addEventListener('click', async () => {
+        clearMessage();
+        const code = (codeInput?.value || '').trim();
+        if (!/^\d{6}$/.test(code)) {
+          setMessage('Entrez un code a 6 chiffres.', 'error');
+          return;
+        }
+
+        enableBtn.disabled = true;
+        try {
+          const data = await api(urls.enable, 'POST', { code });
+          state.enabled = true;
+          state.pendingSetup = false;
+          if (codeInput) {
+            codeInput.value = '';
+          }
+          renderStatus();
+          setMessage(data.message || '2FA activee.', 'success');
+        } catch (error) {
+          setMessage(error instanceof Error ? error.message : 'Erreur activation 2FA.', 'error');
+        } finally {
+          enableBtn.disabled = !state.pendingSetup;
+        }
+      });
+
+      disableBtn?.addEventListener('click', async () => {
+        clearMessage();
+        const code = (codeInput?.value || '').trim();
+        if (!/^\d{6}$/.test(code)) {
+          setMessage('Saisissez un code actuel pour desactiver la 2FA.', 'error');
+          return;
+        }
+
+        disableBtn.disabled = true;
+        try {
+          const data = await api(urls.disable, 'POST', { code });
+          state.enabled = false;
+          state.pendingSetup = false;
+          if (codeInput) {
+            codeInput.value = '';
+          }
+          if (secretCode) {
+            secretCode.textContent = '';
+          }
+          renderStatus();
+          setMessage(data.message || '2FA desactivee.', 'success');
+        } catch (error) {
+          setMessage(error instanceof Error ? error.message : 'Erreur desactivation 2FA.', 'error');
+        } finally {
+          disableBtn.disabled = false;
+        }
+      });
+
+      refreshState();
+    })();
+  </script>
 {% endblock %}

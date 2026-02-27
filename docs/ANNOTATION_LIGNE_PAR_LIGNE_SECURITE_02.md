@@ -1,0 +1,177 @@
+# Annotation Ligne Par Ligne - Securite (Lot 2)
+
+Ce fichier explique chaque ligne des fichiers:
+- `src/Security/Voter/TeamVoter.php`
+- `src/Security/CaptainAccess.php`
+
+---
+
+## 1) `src/Security/Voter/TeamVoter.php`
+
+- L1: `<?php`
+  - Ouvre le mode PHP.
+- L2: `(ligne vide)`
+  - Separation visuelle.
+- L3: `declare(strict_types=1);`
+  - Active le typage strict pour ce fichier.
+- L4: `(ligne vide)`
+  - Separation visuelle.
+- L5: `namespace App\Security\Voter;`
+  - Definit le namespace de ce voter de securite.
+- L6: `(ligne vide)`
+  - Separation visuelle.
+- L7: `use App\Entity\Team;`
+  - Importe l'entite Team, qui est le sujet du voter.
+- L8: `use App\Entity\User;`
+  - Importe l'entite User, utilisee pour verifier l'utilisateur courant.
+- L9: `use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;`
+  - Importe le token d'authentification Symfony.
+- L10: `use Symfony\Component\Security\Core\Authorization\Voter\Voter;`
+  - Importe la classe de base des voters Symfony.
+- L11: `(ligne vide)`
+  - Separation visuelle.
+- L12: `final class TeamVoter extends Voter`
+  - Declare un voter final pour les autorisations sur Team.
+- L13: `{`
+  - Ouvre la classe.
+- L14: `public const TEAM_EDIT = 'TEAM_EDIT';`
+  - Constante d'autorisation: modifier une equipe.
+- L15: `public const TEAM_INVITE = 'TEAM_INVITE';`
+  - Constante d'autorisation: inviter des joueurs.
+- L16: `public const TEAM_KICK = 'TEAM_KICK';`
+  - Constante d'autorisation: retirer un membre.
+- L17: `public const TEAM_PRODUCTS_MANAGE = 'TEAM_PRODUCTS_MANAGE';`
+  - Constante d'autorisation: gerer les produits de l'equipe.
+- L18: `(ligne vide)`
+  - Separation visuelle.
+- L19: `protected function supports(string $attribute, mixed $subject): bool`
+  - Methode qui dit si ce voter sait traiter la demande d'autorisation.
+- L20: `{`
+  - Ouvre la methode.
+- L21: `return in_array($attribute, [`
+  - Verifie que l'attribut demande est un de ceux geres.
+- L22: `self::TEAM_EDIT,`
+  - Attribut autorise: edit team.
+- L23: `self::TEAM_INVITE,`
+  - Attribut autorise: invite.
+- L24: `self::TEAM_KICK,`
+  - Attribut autorise: kick.
+- L25: `self::TEAM_PRODUCTS_MANAGE,`
+  - Attribut autorise: gestion produits.
+- L26: `], true) && $subject instanceof Team;`
+  - Exige aussi que le sujet cible soit bien une instance de Team.
+- L27: `}`
+  - Fin de `supports`.
+- L28: `(ligne vide)`
+  - Separation visuelle.
+- L29: `protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool`
+  - Methode principale: decide autorise/refuse.
+- L30: `{`
+  - Ouvre la methode.
+- L31: `$user = $token->getUser();`
+  - Recupere l'utilisateur courant depuis le token.
+- L32: `if (!$user instanceof User) {`
+  - Si pas de User connecte (guest ou type inattendu).
+- L33: `return false;`
+  - Refuse l'autorisation.
+- L34: `}`
+  - Fin du test user.
+- L35: `(ligne vide)`
+  - Separation visuelle.
+- L36: `if (in_array('ROLE_ADMIN', $user->getRoles(), true)) {`
+  - Si l'utilisateur est admin.
+- L37: `return true;`
+  - Autorise directement (bypass admin).
+- L38: `}`
+  - Fin du test admin.
+- L39: `(ligne vide)`
+  - Separation visuelle.
+- L40: `if (!$subject instanceof Team) {`
+  - Securite supplementaire: sujet doit etre Team.
+- L41: `return false;`
+  - Refuse si sujet invalide.
+- L42: `}`
+  - Fin du test sujet.
+- L43: `(ligne vide)`
+  - Separation visuelle.
+- L44: `$captain = $subject->getCaptainUserId();`
+  - Recupere le capitaine de l'equipe cible.
+- L45: `if (!$captain instanceof User || $captain->getUserId() === null || $user->getUserId() === null) {`
+  - Verifie que capitaine et user courant sont valides et ont des IDs.
+- L46: `return false;`
+  - Refuse sinon.
+- L47: `}`
+  - Fin de la garde.
+- L48: `(ligne vide)`
+  - Separation visuelle.
+- L49: `return $captain->getUserId() === $user->getUserId();`
+  - Autorise uniquement si user courant est le capitaine de cette equipe.
+- L50: `}`
+  - Fin de `voteOnAttribute`.
+- L51: `}`
+  - Fin de la classe.
+
+---
+
+## 2) `src/Security/CaptainAccess.php`
+
+- L1: `<?php`
+  - Ouvre le mode PHP.
+- L2: `(ligne vide)`
+  - Separation visuelle.
+- L3: `declare(strict_types=1);`
+  - Active le typage strict.
+- L4: `(ligne vide)`
+  - Separation visuelle.
+- L5: `namespace App\Security;`
+  - Namespace du service de securite capitaine.
+- L6: `(ligne vide)`
+  - Separation visuelle.
+- L7: `use App\Entity\User;`
+  - Importe l'entite User.
+- L8: `use App\Repository\TeamRepository;`
+  - Importe TeamRepository pour verifier le statut capitaine.
+- L9: `(ligne vide)`
+  - Separation visuelle.
+- L10: `final class CaptainAccess`
+  - Declare un service final d'aide a l'acces capitaine.
+- L11: `{`
+  - Ouvre la classe.
+- L12: `public function __construct(`
+  - Debut constructeur.
+- L13: `private readonly TeamRepository $teamRepository,`
+  - Injecte TeamRepository en readonly.
+- L14: `) {`
+  - Fin de signature + ouverture constructeur.
+- L15: `}`
+  - Constructeur vide (injection uniquement).
+- L16: `(ligne vide)`
+  - Separation visuelle.
+- L17: `public function isCaptain(mixed $user): bool`
+  - Methode utilitaire: dit si l'utilisateur est capitaine.
+- L18: `{`
+  - Ouvre la methode.
+- L19: `if (!$user instanceof User) {`
+  - Si l'objet passe n'est pas un User valide.
+- L20: `return false;`
+  - Ce n'est pas un capitaine.
+- L21: `}`
+  - Fin de la garde type.
+- L22: `(ligne vide)`
+  - Separation visuelle.
+- L23: `return $this->teamRepository->existsByCaptain($user);`
+  - Interroge la base: existe-t-il au moins une equipe dont ce user est capitaine.
+- L24: `}`
+  - Fin de `isCaptain`.
+- L25: `}`
+  - Fin de la classe.
+
+---
+
+## Note
+
+Si tu veux, je continue en Lot 3 avec:
+- `src/Security/EmailVerifier.php`
+- `src/Controller/Security/LoginController.php` (si tu veux aussi cette version detaillee ici)
+- puis les controllers Front (`src/Controller/Front/Page/*`) par paquets.
+

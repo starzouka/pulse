@@ -38,8 +38,7 @@ final class RegistrationFormType extends AbstractType
                 'label' => 'Email',
                 'constraints' => [
                     new NotBlank(message: "L'email est obligatoire."),
-                    new Email(message: "L'email n'est pas valide."),
-                    new Length(max: 190, maxMessage: "L'email ne doit pas depasser {{ limit }} caracteres."),
+    
                 ],
             ])
             ->add('role', ChoiceType::class, [
@@ -118,12 +117,8 @@ final class RegistrationFormType extends AbstractType
                 'first_options' => ['label' => 'Mot de passe'],
                 'second_options' => ['label' => 'Confirmation'],
                 'constraints' => [
-                    new NotBlank(message: 'Le mot de passe est obligatoire.'),
-                    new Length(
-                        min: 8,
-                        max: 4096,
-                        minMessage: 'Le mot de passe doit contenir au moins {{ limit }} caracteres.',
-                    ),
+                    
+                    
                 ],
             ])
             ->add('agreeTerms', CheckboxType::class, [

@@ -48,9 +48,12 @@ final class UsersController extends AbstractController
             500
         );
 
+        $stats = $this->buildUserStats($users);
+
         return $this->render('admin/pages/users.html.twig', [
             'users' => $users,
             'filters' => $filters,
+            'stats' => $stats,
             'roleOptions' => [
                 User::DOMAIN_ROLE_PLAYER,
                 User::DOMAIN_ROLE_CAPTAIN,
@@ -186,5 +189,108 @@ final class UsersController extends AbstractController
     private function sanitizeDirection(string $value): string
     {
         return strtolower(trim($value)) === 'asc' ? 'asc' : 'desc';
+    }
+
+    /**
+     * @param list<User> $users
+     * @return array{
+     *   total:int,
+     *   active:int,
+     *   inactive:int,
+     *   verified:int,
+     *   twoFactor:int,
+     *   newUsers30d:int,
+     *   recentLogin7d:int,
+     *   roles:list<array{role:string,label:string,count:int,percent:int}>,
+     *   countries:list<array{name:string,count:int,percent:int}>
+     * }
+     */
+    private function buildUserStats(array $users): array
+    {
+        $total = count($users);
+        $active = 0;
+        $verified = 0;
+        $twoFactor = 0;
+        $newUsers30d = 0;
+        $recentLogin7d = 0;
+
+        $roleLabels = [
+            User::DOMAIN_ROLE_PLAYER => 'Joueurs',
+            User::DOMAIN_ROLE_CAPTAIN => 'Capitaines',
+            User::DOMAIN_ROLE_ORGANIZER => 'Organisateurs',
+            User::DOMAIN_ROLE_ADMIN => 'Admins',
+        ];
+        $roleCounts = array_fill_keys(array_keys($roleLabels), 0);
+        $countryCounts = [];
+
+        $newSince = (new \DateTimeImmutable())->modify('-30 days');
+        $loginSince = (new \DateTimeImmutable())->modify('-7 days');
+
+        foreach ($users as $user) {
+            if ($user->isActive()) {
+                ++$active;
+            }
+            if ($user->isEmailVerified()) {
+                ++$verified;
+            }
+            if ($user->isTwoFactorEnabled()) {
+                ++$twoFactor;
+            }
+
+            $createdAt = $user->getCreatedAt();
+            if ($createdAt instanceof \DateTimeInterface && $createdAt >= $newSince) {
+                ++$newUsers30d;
+            }
+
+            $lastLoginAt = $user->getLastLoginAt();
+            if ($lastLoginAt instanceof \DateTimeInterface && $lastLoginAt >= $loginSince) {
+                ++$recentLogin7d;
+            }
+
+            $role = (string) $user->getRole();
+            if (array_key_exists($role, $roleCounts)) {
+                ++$roleCounts[$role];
+            }
+
+            $country = trim((string) ($user->getCountry() ?? ''));
+            $countryKey = $country !== '' ? $country : 'Non renseigne';
+            $countryCounts[$countryKey] = (int) ($countryCounts[$countryKey] ?? 0) + 1;
+        }
+
+        $roles = [];
+        foreach ($roleLabels as $role => $label) {
+            $count = (int) ($roleCounts[$role] ?? 0);
+            $roles[] = [
+                'role' => $role,
+                'label' => $label,
+                'count' => $count,
+                'percent' => $total > 0 ? (int) round(($count / $total) * 100) : 0,
+            ];
+        }
+
+        usort($roles, static fn (array $left, array $right): int => $right['count'] <=> $left['count']);
+
+        arsort($countryCounts);
+        $countries = [];
+        $topCountries = array_slice($countryCounts, 0, 5, true);
+        foreach ($topCountries as $name => $count) {
+            $countries[] = [
+                'name' => (string) $name,
+                'count' => (int) $count,
+                'percent' => $total > 0 ? (int) round((((int) $count) / $total) * 100) : 0,
+            ];
+        }
+
+        return [
+            'total' => $total,
+            'active' => $active,
+            'inactive' => max(0, $total - $active),
+            'verified' => $verified,
+            'twoFactor' => $twoFactor,
+            'newUsers30d' => $newUsers30d,
+            'recentLogin7d' => $recentLogin7d,
+            'roles' => $roles,
+            'countries' => $countries,
+        ];
     }
 }

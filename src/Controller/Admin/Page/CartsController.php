@@ -9,7 +9,6 @@ use App\Entity\User;
 use App\Repository\CartItemRepository;
 use App\Repository\CartRepository;
 use App\Repository\UserRepository;
-use App\Service\Admin\CartPdfService;
 use App\Service\Admin\TableExportService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -163,8 +162,7 @@ final class CartsController extends AbstractController
         Request $request,
         CartRepository $cartRepository,
         CartItemRepository $cartItemRepository,
-        TableExportService $tableExportService,
-        CartPdfService $cartPdfService
+        TableExportService $tableExportService
     ): Response {
         $filters = [
             'q' => trim((string) $request->query->get('q', '')),
@@ -210,8 +208,7 @@ final class CartsController extends AbstractController
             return $tableExportService->exportExcel('Paniers', $headers, $rows, sprintf('admin_carts_%s.xlsx', $fileSuffix));
         }
 
-        // Use site-styled CartPdfService for PDF exports (one page per cart)
-        return $cartPdfService->renderCartsPdfResponse($carts, $itemsByCartId, sprintf('admin_carts_%s.pdf', $fileSuffix));
+        return $tableExportService->exportPdf('Paniers', $headers, $rows, sprintf('admin_carts_%s.pdf', $fileSuffix));
     }
 
     private function sanitizeSort(string $value): string

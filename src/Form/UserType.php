@@ -41,8 +41,7 @@ class UserType extends AbstractType
             ->add('email', TextType::class, [
                 'constraints' => [
                     new NotBlank(['message' => "L'email est obligatoire."]),
-                    new Email(['message' => "L'email n'est pas valide."]),
-                    new Length(['max' => 190]),
+                
                 ],
             ])
             ->add('plainPassword', PasswordType::class, [

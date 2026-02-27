@@ -1,0 +1,81 @@
+{% extends 'admin/pdf/_export_layout.html.twig' %}
+
+{% block pdf_content %}
+  <div class="panel">
+    <div class="panelHeader">
+      <h2 class="panelTitle">Liste des matchs</h2>
+      <div class="panelSub">{{ counter|default(matches|length) }} element(s) exporte(s)</div>
+    </div>
+
+    {% if matches is empty %}
+      <div class="emptyState">Aucun match trouve pour les filtres selectionnes.</div>
+    {% else %}
+      <table class="dataTable">
+        <thead>
+          <tr>
+            <th style="width: 4%;">ID</th>
+            <th style="width: 17%;">Tournoi</th>
+            <th style="width: 10%;">Jeu</th>
+            <th style="width: 13%;">Round / BO</th>
+            <th style="width: 11%;">Horaire</th>
+            <th style="width: 26%;">Participants</th>
+            <th style="width: 8%;">Status</th>
+            <th style="width: 11%;">Maj / Resultat</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for match in matches %}
+            {% set matchId = match.matchId ?? 0 %}
+            {% set teams = matchTeamsByMatchId[matchId]|default([]) %}
+            {% set status = match.status|default('SCHEDULED') %}
+            {% set statusClass = status == 'ONGOING' ? 'status-success' : (status == 'SCHEDULED' ? 'status-info' : (status == 'CANCELLED' ? 'status-danger' : 'status-warning')) %}
+
+            <tr>
+              <td class="nowrap">#{{ matchId }}</td>
+              <td>
+                <div class="rowTitle">{{ match.tournamentId ? match.tournamentId.title : '-' }}</div>
+                <div class="muted">#{{ match.tournamentId and match.tournamentId.tournamentId ? match.tournamentId.tournamentId : '-' }}</div>
+              </td>
+              <td>
+                <div class="rowTitle">{{ match.tournamentId and match.tournamentId.gameId ? match.tournamentId.gameId.name : '-' }}</div>
+              </td>
+              <td>
+                <div class="rowTitle">{{ match.roundName ?: '-' }}</div>
+                {% if match.bestOf %}
+                  <span class="chip">BO{{ match.bestOf }}</span>
+                {% endif %}
+              </td>
+              <td>
+                <div class="nowrap">{{ match.scheduledAt ? match.scheduledAt|date('d/m/Y H:i') : '-' }}</div>
+                <div class="muted nowrap">Created: {{ match.createdAt ? match.createdAt|date('d/m/Y') : '-' }}</div>
+              </td>
+              <td>
+                {% if teams is empty %}
+                  <div class="muted">Aucun participant</div>
+                {% else %}
+                  {% for relation in teams %}
+                    {% set team = relation.teamId %}
+                    <div style="margin-bottom: 3px;">
+                      <span class="chip {{ relation.isWinner is same as(true) ? 'chipWinner' : '' }}">
+                        {{ team ? team.name : '-' }}
+                        {% if relation.score is not null %} · {{ relation.score }}{% endif %}
+                        {% if relation.isWinner is same as(true) %} W{% endif %}
+                      </span>
+                    </div>
+                  {% endfor %}
+                {% endif %}
+              </td>
+              <td>
+                <span class="statusPill {{ statusClass }}">{{ status }}</span>
+              </td>
+              <td>
+                <div class="muted">Maj: {{ match.updatedAt ? match.updatedAt|date('d/m/Y H:i') : '-' }}</div>
+                <div class="muted">Par: {{ match.resultSubmittedByUserId ? match.resultSubmittedByUserId.username : '-' }}</div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endif %}
+  </div>
+{% endblock %}

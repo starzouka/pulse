@@ -12,6 +12,25 @@
 
   <main class="page">
     <section class="belowHero">
+      {% for label, messages in app.flashes %}
+        {% for message in messages %}
+          <div class="listItem">
+            <span>{{ message }}</span>
+            <span class="badge {{ label == 'error' ? 'badge--danger' : (label == 'warning' ? 'badge--warning' : (label == 'info' ? 'badge--info' : 'badge--success')) }}">{{ label|upper }}</span>
+          </div>
+        {% endfor %}
+      {% endfor %}
+
+      <section class="panel" style="margin-bottom:12px;">
+        <h3 class="panel__title">MESSAGERIE SECURISEE</h3>
+        <div class="list">
+          <div class="listItem"><span>Analyse automatique</span><span class="listItem__meta">Detection spam + toxicite par score/signaux.</span></div>
+          <div class="listItem"><span>Categories risque</span><span class="listItem__meta">scam_recruitment, harassment, aggressive_tone.</span></div>
+          <div class="listItem"><span>Decision metier</span><span class="listItem__meta">Autorisation, avertissement ou blocage selon le niveau de risque.</span></div>
+          <div class="listItem"><span>Message normal</span><span class="listItem__meta">Autorise avec retour clair "message normal autorise".</span></div>
+        </div>
+      </section>
+
       <div class="layout">
         {% include 'front/partials/_player_side_nav.html.twig' with { active: 'conversation' } %}
 

@@ -126,6 +126,7 @@ final class CaptainRequestsController extends AbstractController
                             ->setUserId($applicant)
                             ->setJoinedAt(new \DateTime())
                             ->setIsActive(true)
+                            ->setRosterRole(TeamMember::ROSTER_ROLE_SUBSTITUTE)
                             ->setLeftAt(null),
                     );
                 }

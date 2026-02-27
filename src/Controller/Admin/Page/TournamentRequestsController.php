@@ -8,6 +8,7 @@ use App\Entity\User;
 use App\Repository\GameRepository;
 use App\Repository\TournamentRepository;
 use App\Repository\TournamentRequestRepository;
+use App\Service\Admin\PdfImageResolver;
 use App\Service\Admin\TableExportService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
@@ -61,6 +62,7 @@ final class TournamentRequestsController extends AbstractController
         string $format,
         Request $request,
         TournamentRequestRepository $tournamentRequestRepository,
+        PdfImageResolver $pdfImageResolver,
         TableExportService $tableExportService,
     ): Response {
         $query = trim((string) $request->query->get('q', ''));
@@ -94,7 +96,29 @@ final class TournamentRequestsController extends AbstractController
             return $tableExportService->exportExcel('Demandes Tournois', $headers, $rows, sprintf('admin_tournament_requests_%s.xlsx', $timestamp));
         }
 
-        return $tableExportService->exportPdf('Demandes Tournois', $headers, $rows, sprintf('admin_tournament_requests_%s.pdf', $timestamp));
+        $pdfRows = [];
+        foreach ($requests as $requestItem) {
+            $pdfRows[] = [
+                'request' => $requestItem,
+                'photoSrc' => $pdfImageResolver->resolveFromPublicPath(
+                    $requestItem->getPhotoPath(),
+                    'assets/template_bo/img/champions.jpg'
+                ),
+            ];
+        }
+
+        $html = $this->renderView('admin/pdf/tournament_requests.html.twig', [
+            'title' => 'Demandes Tournois',
+            'requestRows' => $pdfRows,
+            'generatedAt' => new \DateTimeImmutable(),
+        ]);
+
+        return $tableExportService->exportPdfFromHtml(
+            $html,
+            sprintf('admin_tournament_requests_%s.pdf', $timestamp),
+            'A4',
+            'landscape'
+        );
     }
 
     #[Route('/admin/tournament-requests/{id}/review', name: 'admin_tournament_request_review', requirements: ['id' => '\d+'], methods: ['POST'])]

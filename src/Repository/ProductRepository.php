@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Entity\Product;
-use App\Entity\ProductRating;
 use App\Entity\Team;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -32,9 +31,7 @@ class ProductRepository extends ServiceEntityRepository
     ): array {
         $builder = $this->createQueryBuilder('product')
             ->leftJoin('product.teamId', 'team')
-            ->leftJoin('product.ratings', 'ratings')
             ->addSelect('team')
-            ->addSelect('ratings')
             ->setMaxResults($limit);
 
         if ($activeOnly) {
@@ -372,54 +369,11 @@ class ProductRepository extends ServiceEntityRepository
 
         return $this->createQueryBuilder('product')
             ->leftJoin('product.teamId', 'team')
-            ->leftJoin('product.ratings', 'ratings')
             ->addSelect('team')
-            ->addSelect('ratings')
             ->andWhere('product.productId = :id')
             ->setParameter('id', $id)
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
-    }
-
-    public function countByTeam(Team $team): int
-    {
-        return (int) $this->createQueryBuilder('product')
-            ->select('COUNT(product.productId)')
-            ->andWhere('product.teamId = :team')
-            ->setParameter('team', $team)
-            ->getQuery()
-            ->getSingleScalarResult();
-    }
-
-    /**
-     * Charge les produits avec leurs notes moyennes
-     * @param array<int> $productIds
-     * @return array<int, array{averageRating: ?float, ratingCount: int}>
-     */
-    public function getRatingsStatsForProducts(array $productIds): array
-    {
-        if (empty($productIds)) {
-            return [];
-        }
-
-        $result = $this->getEntityManager()->createQueryBuilder()
-            ->select('IDENTITY(r.product) as productId, AVG(r.rating) as averageRating, COUNT(r.ratingId) as ratingCount')
-            ->from(ProductRating::class, 'r')
-            ->where('IDENTITY(r.product) IN (:productIds)')
-            ->setParameter('productIds', $productIds)
-            ->groupBy('r.product')
-            ->getQuery()
-            ->getResult();
-
-        $stats = [];
-        foreach ($result as $row) {
-            $stats[(int) $row['productId']] = [
-                'averageRating' => $row['averageRating'] !== null ? (float) $row['averageRating'] : null,
-                'ratingCount' => (int) $row['ratingCount']
-            ];
-        }
-
-        return $stats;
     }
 }

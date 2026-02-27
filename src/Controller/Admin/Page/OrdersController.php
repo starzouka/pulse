@@ -11,7 +11,6 @@ use App\Repository\CartRepository;
 use App\Repository\OrderRepository;
 use App\Repository\UserRepository;
 use App\Service\Admin\TableExportService;
-use App\Service\Admin\OrderPdfService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -171,22 +170,6 @@ final class OrdersController extends AbstractController
         ]);
     }
 
-    #[Route('/admin/orders/{id}/pdf', name: 'admin_order_pdf', requirements: ['id' => '\\d+'], methods: ['GET'])]
-    public function pdf(
-        int $id,
-        OrderRepository $orderRepository,
-        OrderPdfService $orderPdfService
-    ): Response {
-        $order = $orderRepository->find($id);
-        if (!$order instanceof \App\Entity\Order) {
-            $this->addFlash('error', 'Commande introuvable.');
-            return $this->redirectToRoute('admin_orders');
-        }
-
-        $fileName = sprintf('order_%s.pdf', $order->getOrderNumber() ?? (string) $order->getOrderId());
-        return $orderPdfService->renderOrderPdfResponse($order, $fileName);
-    }
-
     #[Route('/admin/orders/{id}/delete', name: 'admin_order_delete', requirements: ['id' => '\d+'], methods: ['POST'])]
     public function delete(
         int $id,
@@ -223,8 +206,7 @@ final class OrdersController extends AbstractController
         string $format,
         Request $request,
         OrderRepository $orderRepository,
-        TableExportService $tableExportService,
-        OrderPdfService $orderPdfService
+        TableExportService $tableExportService
     ): Response {
         $filters = [
             'q' => trim((string) $request->query->get('q', '')),
@@ -282,8 +264,7 @@ final class OrdersController extends AbstractController
             return $tableExportService->exportExcel('Commandes', $headers, $rows, sprintf('admin_orders_%s.xlsx', $fileSuffix));
         }
 
-        // Use site-styled OrderPdfService for PDF exports (one page per order)
-        return $orderPdfService->renderOrdersPdfResponse($orders, sprintf('admin_orders_%s.pdf', $fileSuffix));
+        return $tableExportService->exportPdf('Commandes', $headers, $rows, sprintf('admin_orders_%s.pdf', $fileSuffix));
     }
 
     private function sanitizeSort(string $value): string

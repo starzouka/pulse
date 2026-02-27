@@ -39,7 +39,7 @@ class Team
     private ?Image $logoImageId;
     
     #[ORM\ManyToOne(targetEntity: User::class)]
-    #[ORM\JoinColumn(name: 'captain_user_id', referencedColumnName: 'user_id', nullable: false, onDelete: 'RESTRICT')]
+    #[ORM\JoinColumn(name: 'captain_user_id', referencedColumnName: 'user_id', nullable: false, onDelete: 'CASCADE')]
     #[Assert\NotNull(message: 'Le capitaine est obligatoire.')]
     private User $captainUserId;
     

@@ -135,6 +135,7 @@ final class MyTeamsController extends AbstractController
                         ->setUserId($viewer)
                         ->setJoinedAt(new \DateTime())
                         ->setIsActive(true)
+                        ->setRosterRole(TeamMember::ROSTER_ROLE_SUBSTITUTE)
                         ->setLeftAt(null);
                     $entityManager->persist($teamMember);
                 } else {
