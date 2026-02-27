@@ -14,6 +14,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final class OrganizerRequestCreateController extends AbstractController
 {
@@ -22,6 +23,7 @@ final class OrganizerRequestCreateController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager,
         KernelInterface $kernel,
+        HttpClientInterface $httpClient,
     ): Response
     {
         $user = $this->getUser();
@@ -42,6 +44,13 @@ final class OrganizerRequestCreateController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            if (!$this->verifyRecaptcha($request, $httpClient)) {
+                return $this->render('front/pages/organizer-request-create.html.twig', [
+                    'tournamentRequestForm' => $form->createView(),
+                    'recaptcha_site_key' => $this->getRecaptchaSiteKey(),
+                ]);
+            }
+
             $uploadedFile = $form->get('photoFile')->getData();
             if ($uploadedFile instanceof UploadedFile) {
                 $tournamentRequest->setPhotoPath($this->storeTournamentPhoto($uploadedFile, $kernel));
@@ -65,7 +74,72 @@ final class OrganizerRequestCreateController extends AbstractController
 
         return $this->render('front/pages/organizer-request-create.html.twig', [
             'tournamentRequestForm' => $form->createView(),
+            'recaptcha_site_key' => $this->getRecaptchaSiteKey(),
         ]);
+    }
+
+    private function verifyRecaptcha(Request $request, HttpClientInterface $httpClient): bool
+    {
+        $secretKey = $this->getRecaptchaSecretKey();
+        if ($secretKey === '') {
+            $this->addFlash('error', 'Configuration reCAPTCHA manquante.');
+
+            return false;
+        }
+
+        $token = trim((string) $request->request->get('g-recaptcha-response', ''));
+        if ($token === '') {
+            $this->addFlash('error', 'Veuillez valider le reCAPTCHA.');
+
+            return false;
+        }
+
+        try {
+            $response = $httpClient->request('POST', 'https://www.google.com/recaptcha/api/siteverify', [
+                'body' => [
+                    'secret' => $secretKey,
+                    'response' => $token,
+                    'remoteip' => (string) ($request->getClientIp() ?? ''),
+                ],
+                'timeout' => 8,
+            ]);
+
+            $payload = $response->toArray(false);
+        } catch (\Throwable) {
+            $this->addFlash('error', 'Verification reCAPTCHA impossible. Reessayez.');
+
+            return false;
+        }
+
+        $isSuccess = isset($payload['success']) && $payload['success'] === true;
+        if ($isSuccess) {
+            return true;
+        }
+
+        $errorCodes = $payload['error-codes'] ?? [];
+        $errorSuffix = is_array($errorCodes) && $errorCodes !== []
+            ? ' (' . implode(', ', array_map('strval', $errorCodes)) . ')'
+            : '';
+
+        $this->addFlash('error', 'reCAPTCHA invalide' . $errorSuffix . '.');
+
+        return false;
+    }
+
+    private function getRecaptchaSiteKey(): string
+    {
+        return (string) ($_ENV['GOOGLE_RECAPTCHA_SITE_KEY']
+            ?? $_SERVER['GOOGLE_RECAPTCHA_SITE_KEY']
+            ?? getenv('GOOGLE_RECAPTCHA_SITE_KEY')
+            ?: '');
+    }
+
+    private function getRecaptchaSecretKey(): string
+    {
+        return (string) ($_ENV['GOOGLE_RECAPTCHA_SECRET_KEY']
+            ?? $_SERVER['GOOGLE_RECAPTCHA_SECRET_KEY']
+            ?? getenv('GOOGLE_RECAPTCHA_SECRET_KEY')
+            ?: '');
     }
 
     private function storeTournamentPhoto(UploadedFile $uploadedFile, KernelInterface $kernel): string

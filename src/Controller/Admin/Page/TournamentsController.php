@@ -7,6 +7,7 @@ use App\Repository\GameRepository;
 use App\Repository\TournamentMatchRepository;
 use App\Repository\TournamentRepository;
 use App\Repository\TournamentTeamRepository;
+use App\Service\Admin\PdfImageResolver;
 use App\Service\Admin\TableExportService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -74,6 +75,7 @@ final class TournamentsController extends AbstractController
         TournamentRepository $tournamentRepository,
         TournamentTeamRepository $tournamentTeamRepository,
         TournamentMatchRepository $tournamentMatchRepository,
+        PdfImageResolver $pdfImageResolver,
         TableExportService $tableExportService,
     ): Response {
         $query = trim((string) $request->query->get('q', ''));
@@ -120,7 +122,31 @@ final class TournamentsController extends AbstractController
             return $tableExportService->exportExcel('Tournois', $headers, $rows, sprintf('admin_tournaments_%s.xlsx', $timestamp));
         }
 
-        return $tableExportService->exportPdf('Tournois', $headers, $rows, sprintf('admin_tournaments_%s.pdf', $timestamp));
+        $pdfRows = [];
+        foreach ($tournaments as $tournament) {
+            $pdfRows[] = [
+                'tournament' => $tournament,
+                'photoSrc' => $pdfImageResolver->resolveFromPublicPath(
+                    $tournament->getPhotoPath(),
+                    'assets/template_bo/img/champions.jpg'
+                ),
+            ];
+        }
+
+        $html = $this->renderView('admin/pdf/tournaments.html.twig', [
+            'title' => 'Tournois',
+            'tournamentRows' => $pdfRows,
+            'acceptedByTournamentId' => $acceptedByTournamentId,
+            'matchesByTournamentId' => $matchesByTournamentId,
+            'generatedAt' => new \DateTimeImmutable(),
+        ]);
+
+        return $tableExportService->exportPdfFromHtml(
+            $html,
+            sprintf('admin_tournaments_%s.pdf', $timestamp),
+            'A4',
+            'landscape'
+        );
     }
 
     #[Route('/admin/tournaments/{id}/delete', name: 'admin_tournament_delete', requirements: ['id' => '\d+'], methods: ['POST'])]

@@ -55,6 +55,42 @@
 
   <section class="panel">
     <div class="panelHeader">
+      <h3 class="panelTitle">Assistant IA (Ollama)</h3>
+      <span class="listMeta">Analyse automatique de la demande</span>
+    </div>
+
+    <div class="formActions">
+      <button
+        class="btn btnPrimary"
+        type="button"
+        id="aiRequestAnalyzeBtn"
+        data-endpoint="{{ path('admin_api_ai_tournament_request_analysis', {id: requestId}) }}"
+      >
+        Lancer analyse IA
+      </button>
+      <a
+        class="btn btnGhost"
+        href="{{ path('admin_api_ai_tournament_request_analysis', {id: requestId}) }}"
+        target="_blank"
+        rel="noopener"
+      >
+        Ouvrir JSON API
+      </a>
+      <a
+        class="btn btnGhost"
+        href="{{ path('admin_api_ai_health') }}"
+        target="_blank"
+        rel="noopener"
+      >
+        Health API
+      </a>
+    </div>
+
+    <pre id="aiRequestOutput" class="listMeta" style="margin-top:12px; white-space:pre-wrap;">Clique sur "Lancer analyse IA".</pre>
+  </section>
+
+  <section class="panel">
+    <div class="panelHeader">
       <h3 class="panelTitle">Decision admin</h3>
       <span class="listMeta">Email automatique a l'organisateur</span>
     </div>
@@ -84,4 +120,45 @@
       </div>
     {% endif %}
   </section>
+{% endblock %}
+
+{% block javascripts %}
+  {{ parent() }}
+  <script>
+    (function () {
+      const trigger = document.getElementById('aiRequestAnalyzeBtn');
+      const output = document.getElementById('aiRequestOutput');
+      if (!trigger || !output) {
+        return;
+      }
+
+      const endpoint = trigger.getAttribute('data-endpoint');
+      if (!endpoint) {
+        output.textContent = 'Endpoint IA introuvable.';
+        return;
+      }
+
+      trigger.addEventListener('click', async function () {
+        trigger.disabled = true;
+        output.textContent = 'Analyse en cours...';
+
+        try {
+          const response = await fetch(endpoint, {
+            method: 'GET',
+            headers: {
+              'Accept': 'application/json'
+            },
+            credentials: 'same-origin'
+          });
+
+          const data = await response.json();
+          output.textContent = JSON.stringify(data, null, 2);
+        } catch (error) {
+          output.textContent = 'Erreur IA: ' + String(error);
+        } finally {
+          trigger.disabled = false;
+        }
+      });
+    })();
+  </script>
 {% endblock %}

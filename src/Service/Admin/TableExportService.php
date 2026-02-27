@@ -30,12 +30,27 @@ final class TableExportService
      */
     public function exportPdf(string $title, array $headers, array $rows, string $fileName): Response
     {
+        return $this->exportPdfFromHtml(
+            $this->buildPdfHtml($title, $headers, $rows),
+            $fileName,
+            'A4',
+            'landscape'
+        );
+    }
+
+    public function exportPdfFromHtml(
+        string $html,
+        string $fileName,
+        string $paper = 'A4',
+        string $orientation = 'landscape',
+    ): Response {
         $options = new Options();
         $options->set('defaultFont', 'DejaVu Sans');
+        $options->set('isRemoteEnabled', true);
 
         $dompdf = new Dompdf($options);
-        $dompdf->loadHtml($this->buildPdfHtml($title, $headers, $rows));
-        $dompdf->setPaper('A4', 'landscape');
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper($paper, $orientation);
         $dompdf->render();
 
         $response = new Response($dompdf->output());

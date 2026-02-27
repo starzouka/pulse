@@ -376,6 +376,13 @@
         <argument type="service" id=".service_locator.O2p6Lk7.App\Controller\Admin\AddUserController"/>
       </call>
     </service>
+    <service id="App\Controller\Admin\Api\OllamaAssistantController" class="App\Controller\Admin\Api\OllamaAssistantController" public="true" autowire="true" autoconfigure="true">
+      <tag name="controller.service_arguments"/>
+      <tag name="container.service_subscriber"/>
+      <call method="setContainer">
+        <argument type="service" id=".service_locator.O2p6Lk7.App\Controller\Admin\Api\OllamaAssistantController"/>
+      </call>
+    </service>
     <service id="App\Controller\Admin\DashboardController" class="App\Controller\Admin\DashboardController" public="true" autowire="true" autoconfigure="true">
       <tag name="controller.service_arguments"/>
       <tag name="container.service_subscriber"/>
@@ -1336,7 +1343,17 @@
     <service id="App\Security\Voter\TeamVoter" class="App\Security\Voter\TeamVoter" autowire="true" autoconfigure="true">
       <tag name="security.voter"/>
     </service>
+    <service id="App\Service\Admin\PdfImageResolver" class="App\Service\Admin\PdfImageResolver" autowire="true" autoconfigure="true">
+      <argument type="service" id="kernel"/>
+    </service>
     <service id="App\Service\Admin\TableExportService" class="App\Service\Admin\TableExportService" autowire="true" autoconfigure="true"/>
+    <service id="App\Service\Ai\OllamaClientService" class="App\Service\Ai\OllamaClientService" autowire="true" autoconfigure="true">
+      <argument type="service" id=".debug.http_client"/>
+      <argument type="service" id="monolog.logger"/>
+    </service>
+    <service id="App\Service\Ai\TournamentAiAssistantService" class="App\Service\Ai\TournamentAiAssistantService" autowire="true" autoconfigure="true">
+      <argument type="service" id="App\Service\Ai\OllamaClientService"/>
+    </service>
     <service id="App\Service\Captain\CaptainTeamContextProvider" class="App\Service\Captain\CaptainTeamContextProvider" autowire="true" autoconfigure="true">
       <argument type="service" id="App\Repository\TeamRepository"/>
     </service>
@@ -1405,7 +1422,7 @@
     </service>
     <service id="argument_resolver.service" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\ServiceValueResolver">
       <tag priority="-50" name="Symfony\Component\HttpKernel\Controller\ArgumentResolver\ServiceValueResolver">controller.argument_value_resolver</tag>
-      <argument type="service" id=".service_locator.R3K3sgP"/>
+      <argument type="service" id=".service_locator.q.Rq63O"/>
     </service>
     <service id="argument_resolver.default" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\DefaultValueResolver">
       <tag priority="-100" name="Symfony\Component\HttpKernel\Controller\ArgumentResolver\DefaultValueResolver">controller.argument_value_resolver</tag>
@@ -4397,7 +4414,7 @@
     </service>
     <service id="argument_resolver.not_tagged_controller" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\NotTaggedControllerValueResolver">
       <tag name="controller.argument_value_resolver" priority="-200"/>
-      <argument type="service" id=".service_locator.R3K3sgP"/>
+      <argument type="service" id=".service_locator.q.Rq63O"/>
     </service>
     <service id="debug.log_processor" class="Symfony\Bridge\Monolog\Processor\DebugProcessor">
       <tag name="kernel.reset" method="reset"/>
@@ -8443,6 +8460,9 @@
     <service id=".instanceof.Symfony\Contracts\Service\ServiceSubscriberInterface.0.App\Controller\Admin\AddUserController" class="App\Controller\Admin\AddUserController" autowire="true" abstract="true"/>
     <service id=".instanceof.Symfony\Bundle\FrameworkBundle\Controller\AbstractController.0.App\Controller\Admin\AddUserController" class="App\Controller\Admin\AddUserController" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\Controller\Admin\AddUserController" class="App\Controller\Admin\AddUserController" autowire="true" autoconfigure="true" abstract="true"/>
+    <service id=".instanceof.Symfony\Contracts\Service\ServiceSubscriberInterface.0.App\Controller\Admin\Api\OllamaAssistantController" class="App\Controller\Admin\Api\OllamaAssistantController" autowire="true" abstract="true"/>
+    <service id=".instanceof.Symfony\Bundle\FrameworkBundle\Controller\AbstractController.0.App\Controller\Admin\Api\OllamaAssistantController" class="App\Controller\Admin\Api\OllamaAssistantController" autowire="true" abstract="true"/>
+    <service id=".abstract.instanceof.App\Controller\Admin\Api\OllamaAssistantController" class="App\Controller\Admin\Api\OllamaAssistantController" autowire="true" autoconfigure="true" abstract="true"/>
     <service id=".instanceof.Symfony\Contracts\Service\ServiceSubscriberInterface.0.App\Controller\Admin\DashboardController" class="App\Controller\Admin\DashboardController" autowire="true" abstract="true"/>
     <service id=".instanceof.Symfony\Bundle\FrameworkBundle\Controller\AbstractController.0.App\Controller\Admin\DashboardController" class="App\Controller\Admin\DashboardController" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\Controller\Admin\DashboardController" class="App\Controller\Admin\DashboardController" autowire="true" autoconfigure="true" abstract="true"/>
@@ -9304,6 +9324,27 @@
         <argument key="loader" type="service_closure" id=".errored..service_locator.y4_Zrx..Symfony\Component\Config\Loader\LoaderInterface"/>
       </argument>
     </service>
+    <service id=".service_locator.P_cpcEL" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator"/>
+      <argument type="collection">
+        <argument key="assistant" type="service_closure" id="App\Service\Ai\TournamentAiAssistantService"/>
+      </argument>
+    </service>
+    <service id=".service_locator.94HrWv6" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator"/>
+      <argument type="collection">
+        <argument key="assistant" type="service_closure" id="App\Service\Ai\TournamentAiAssistantService"/>
+        <argument key="tournamentRequestRepository" type="service_closure" id="App\Repository\TournamentRequestRepository"/>
+      </argument>
+    </service>
+    <service id=".service_locator.WQ6K9Mv" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator"/>
+      <argument type="collection">
+        <argument key="assistant" type="service_closure" id="App\Service\Ai\TournamentAiAssistantService"/>
+        <argument key="matchTeamRepository" type="service_closure" id="App\Repository\MatchTeamRepository"/>
+        <argument key="tournamentMatchRepository" type="service_closure" id="App\Repository\TournamentMatchRepository"/>
+      </argument>
+    </service>
     <service id=".service_locator.yZ2gLXw" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
@@ -9404,6 +9445,15 @@
         <argument key="tournamentMatchRepository" type="service_closure" id="App\Repository\TournamentMatchRepository"/>
         <argument key="tournamentRepository" type="service_closure" id="App\Repository\TournamentRepository"/>
         <argument key="tournamentTeamRepository" type="service_closure" id="App\Repository\TournamentTeamRepository"/>
+      </argument>
+    </service>
+    <service id=".service_locator.8Ue5SC_" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator"/>
+      <argument type="collection">
+        <argument key="matchTeamRepository" type="service_closure" id="App\Repository\MatchTeamRepository"/>
+        <argument key="pdfImageResolver" type="service_closure" id="App\Service\Admin\PdfImageResolver"/>
+        <argument key="tableExportService" type="service_closure" id="App\Service\Admin\TableExportService"/>
+        <argument key="tournamentMatchRepository" type="service_closure" id="App\Repository\TournamentMatchRepository"/>
       </argument>
     </service>
     <service id=".service_locator..ztNZF7" class="Symfony\Component\DependencyInjection\ServiceLocator">
@@ -9594,9 +9644,10 @@
         <argument key="tournamentRequestRepository" type="service_closure" id="App\Repository\TournamentRequestRepository"/>
       </argument>
     </service>
-    <service id=".service_locator.oyB2adC" class="Symfony\Component\DependencyInjection\ServiceLocator">
+    <service id=".service_locator.jvo3gnu" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
+        <argument key="pdfImageResolver" type="service_closure" id="App\Service\Admin\PdfImageResolver"/>
         <argument key="tableExportService" type="service_closure" id="App\Service\Admin\TableExportService"/>
         <argument key="tournamentRequestRepository" type="service_closure" id="App\Repository\TournamentRequestRepository"/>
       </argument>
@@ -9619,9 +9670,10 @@
         <argument key="tournamentTeamRepository" type="service_closure" id="App\Repository\TournamentTeamRepository"/>
       </argument>
     </service>
-    <service id=".service_locator.ReQrth8" class="Symfony\Component\DependencyInjection\ServiceLocator">
+    <service id=".service_locator.SMqWB_L" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
+        <argument key="pdfImageResolver" type="service_closure" id="App\Service\Admin\PdfImageResolver"/>
         <argument key="tableExportService" type="service_closure" id="App\Service\Admin\TableExportService"/>
         <argument key="tournamentMatchRepository" type="service_closure" id="App\Repository\TournamentMatchRepository"/>
         <argument key="tournamentRepository" type="service_closure" id="App\Repository\TournamentRepository"/>
@@ -10097,11 +10149,19 @@
         <argument key="tournamentTeamRepository" type="service_closure" id="App\Repository\TournamentTeamRepository"/>
       </argument>
     </service>
-    <service id=".service_locator.noj6eVD" class="Symfony\Component\DependencyInjection\ServiceLocator">
+    <service id=".service_locator.ISch2.e" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
         <argument key="entityManager" type="service_closure" id="doctrine.orm.default_entity_manager"/>
+        <argument key="httpClient" type="service_closure" id=".debug.http_client"/>
         <argument key="kernel" type="service_closure" id="kernel"/>
+      </argument>
+    </service>
+    <service id=".service_locator.oyB2adC" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator"/>
+      <argument type="collection">
+        <argument key="tableExportService" type="service_closure" id="App\Service\Admin\TableExportService"/>
+        <argument key="tournamentRequestRepository" type="service_closure" id="App\Repository\TournamentRequestRepository"/>
       </argument>
     </service>
     <service id=".service_locator.gjvUWEB" class="Symfony\Component\DependencyInjection\ServiceLocator">
@@ -10166,6 +10226,13 @@
         <argument key="friendRequestRepository" type="service_closure" id="App\Repository\FriendRequestRepository"/>
         <argument key="friendshipRepository" type="service_closure" id="App\Repository\FriendshipRepository"/>
         <argument key="userRepository" type="service_closure" id="App\Repository\UserRepository"/>
+      </argument>
+    </service>
+    <service id=".service_locator.noj6eVD" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator"/>
+      <argument type="collection">
+        <argument key="entityManager" type="service_closure" id="doctrine.orm.default_entity_manager"/>
+        <argument key="kernel" type="service_closure" id="kernel"/>
       </argument>
     </service>
     <service id=".service_locator.pP.FdsX" class="Symfony\Component\DependencyInjection\ServiceLocator">
@@ -10258,9 +10325,12 @@
         <argument key="userRepository" type="service_closure" id="App\Repository\UserRepository"/>
       </argument>
     </service>
-    <service id=".service_locator.R3K3sgP" class="Symfony\Component\DependencyInjection\ServiceLocator">
+    <service id=".service_locator.q.Rq63O" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
+        <argument key="App\Controller\Admin\Api\OllamaAssistantController::analyzeMatch" type="service_closure" id=".service_locator.WQ6K9Mv"/>
+        <argument key="App\Controller\Admin\Api\OllamaAssistantController::analyzeTournamentRequest" type="service_closure" id=".service_locator.94HrWv6"/>
+        <argument key="App\Controller\Admin\Api\OllamaAssistantController::health" type="service_closure" id=".service_locator.P_cpcEL"/>
         <argument key="App\Controller\Admin\Page\CartsController::delete" type="service_closure" id=".service_locator.LapGI0r"/>
         <argument key="App\Controller\Admin\Page\CartsController::export" type="service_closure" id=".service_locator.yU57Ysi"/>
         <argument key="App\Controller\Admin\Page\CartsController::index" type="service_closure" id=".service_locator.yZ2gLXw"/>
@@ -10275,6 +10345,7 @@
         <argument key="App\Controller\Admin\Page\GamesController::index" type="service_closure" id=".service_locator.l1urZm."/>
         <argument key="App\Controller\Admin\Page\MatchDetailController::index" type="service_closure" id=".service_locator.iBRXVNX"/>
         <argument key="App\Controller\Admin\Page\MatchesController::delete" type="service_closure" id=".service_locator..ztNZF7"/>
+        <argument key="App\Controller\Admin\Page\MatchesController::export" type="service_closure" id=".service_locator.8Ue5SC_"/>
         <argument key="App\Controller\Admin\Page\MatchesController::index" type="service_closure" id=".service_locator.cZM68KF"/>
         <argument key="App\Controller\Admin\Page\MessagesController::delete" type="service_closure" id=".service_locator.wBojMgb"/>
         <argument key="App\Controller\Admin\Page\MessagesController::export" type="service_closure" id=".service_locator.g_s2Y49"/>
@@ -10299,11 +10370,11 @@
         <argument key="App\Controller\Admin\Page\TournamentDetailController::index" type="service_closure" id=".service_locator.qcwg1Z5"/>
         <argument key="App\Controller\Admin\Page\TournamentFormController::index" type="service_closure" id=".service_locator.H4d9z1J"/>
         <argument key="App\Controller\Admin\Page\TournamentRequestDetailController::index" type="service_closure" id=".service_locator.lWtJrP."/>
-        <argument key="App\Controller\Admin\Page\TournamentRequestsController::export" type="service_closure" id=".service_locator.oyB2adC"/>
+        <argument key="App\Controller\Admin\Page\TournamentRequestsController::export" type="service_closure" id=".service_locator.jvo3gnu"/>
         <argument key="App\Controller\Admin\Page\TournamentRequestsController::index" type="service_closure" id=".service_locator.Ekhw6GB"/>
         <argument key="App\Controller\Admin\Page\TournamentRequestsController::review" type="service_closure" id=".service_locator.SJtf5Ns"/>
         <argument key="App\Controller\Admin\Page\TournamentsController::delete" type="service_closure" id=".service_locator.7Lxf0it"/>
-        <argument key="App\Controller\Admin\Page\TournamentsController::export" type="service_closure" id=".service_locator.ReQrth8"/>
+        <argument key="App\Controller\Admin\Page\TournamentsController::export" type="service_closure" id=".service_locator.SMqWB_L"/>
         <argument key="App\Controller\Admin\Page\TournamentsController::index" type="service_closure" id=".service_locator.LMjdLda"/>
         <argument key="App\Controller\Admin\Page\UserCreateController::index" type="service_closure" id=".service_locator.ESgEUJd"/>
         <argument key="App\Controller\Admin\Page\UserDetailController::index" type="service_closure" id=".service_locator.TdT8Eo7"/>
@@ -10373,7 +10444,7 @@
         <argument key="App\Controller\Front\Page\OrganizerMatchesController::index" type="service_closure" id=".service_locator.1zkV4xr"/>
         <argument key="App\Controller\Front\Page\OrganizerRegistrationsController::index" type="service_closure" id=".service_locator..1e.4DY"/>
         <argument key="App\Controller\Front\Page\OrganizerRegistrationsController::updateStatus" type="service_closure" id=".service_locator.b7EK_.O"/>
-        <argument key="App\Controller\Front\Page\OrganizerRequestCreateController::index" type="service_closure" id=".service_locator.noj6eVD"/>
+        <argument key="App\Controller\Front\Page\OrganizerRequestCreateController::index" type="service_closure" id=".service_locator.ISch2.e"/>
         <argument key="App\Controller\Front\Page\OrganizerRequestDetailController::index" type="service_closure" id=".service_locator.lWtJrP."/>
         <argument key="App\Controller\Front\Page\OrganizerRequestsController::export" type="service_closure" id=".service_locator.oyB2adC"/>
         <argument key="App\Controller\Front\Page\OrganizerRequestsController::index" type="service_closure" id=".service_locator.Ekhw6GB"/>
@@ -10407,6 +10478,9 @@
         <argument key="App\Kernel::registerContainerConfiguration" type="service_closure" id=".service_locator.y4_Zrx."/>
         <argument key="kernel::loadRoutes" type="service_closure" id=".service_locator.y4_Zrx."/>
         <argument key="kernel::registerContainerConfiguration" type="service_closure" id=".service_locator.y4_Zrx."/>
+        <argument key="App\Controller\Admin\Api\OllamaAssistantController:analyzeMatch" type="service_closure" id=".service_locator.WQ6K9Mv"/>
+        <argument key="App\Controller\Admin\Api\OllamaAssistantController:analyzeTournamentRequest" type="service_closure" id=".service_locator.94HrWv6"/>
+        <argument key="App\Controller\Admin\Api\OllamaAssistantController:health" type="service_closure" id=".service_locator.P_cpcEL"/>
         <argument key="App\Controller\Admin\Page\CartsController:delete" type="service_closure" id=".service_locator.LapGI0r"/>
         <argument key="App\Controller\Admin\Page\CartsController:export" type="service_closure" id=".service_locator.yU57Ysi"/>
         <argument key="App\Controller\Admin\Page\CartsController:index" type="service_closure" id=".service_locator.yZ2gLXw"/>
@@ -10421,6 +10495,7 @@
         <argument key="App\Controller\Admin\Page\GamesController:index" type="service_closure" id=".service_locator.l1urZm."/>
         <argument key="App\Controller\Admin\Page\MatchDetailController:index" type="service_closure" id=".service_locator.iBRXVNX"/>
         <argument key="App\Controller\Admin\Page\MatchesController:delete" type="service_closure" id=".service_locator..ztNZF7"/>
+        <argument key="App\Controller\Admin\Page\MatchesController:export" type="service_closure" id=".service_locator.8Ue5SC_"/>
         <argument key="App\Controller\Admin\Page\MatchesController:index" type="service_closure" id=".service_locator.cZM68KF"/>
         <argument key="App\Controller\Admin\Page\MessagesController:delete" type="service_closure" id=".service_locator.wBojMgb"/>
         <argument key="App\Controller\Admin\Page\MessagesController:export" type="service_closure" id=".service_locator.g_s2Y49"/>
@@ -10445,11 +10520,11 @@
         <argument key="App\Controller\Admin\Page\TournamentDetailController:index" type="service_closure" id=".service_locator.qcwg1Z5"/>
         <argument key="App\Controller\Admin\Page\TournamentFormController:index" type="service_closure" id=".service_locator.H4d9z1J"/>
         <argument key="App\Controller\Admin\Page\TournamentRequestDetailController:index" type="service_closure" id=".service_locator.lWtJrP."/>
-        <argument key="App\Controller\Admin\Page\TournamentRequestsController:export" type="service_closure" id=".service_locator.oyB2adC"/>
+        <argument key="App\Controller\Admin\Page\TournamentRequestsController:export" type="service_closure" id=".service_locator.jvo3gnu"/>
         <argument key="App\Controller\Admin\Page\TournamentRequestsController:index" type="service_closure" id=".service_locator.Ekhw6GB"/>
         <argument key="App\Controller\Admin\Page\TournamentRequestsController:review" type="service_closure" id=".service_locator.SJtf5Ns"/>
         <argument key="App\Controller\Admin\Page\TournamentsController:delete" type="service_closure" id=".service_locator.7Lxf0it"/>
-        <argument key="App\Controller\Admin\Page\TournamentsController:export" type="service_closure" id=".service_locator.ReQrth8"/>
+        <argument key="App\Controller\Admin\Page\TournamentsController:export" type="service_closure" id=".service_locator.SMqWB_L"/>
         <argument key="App\Controller\Admin\Page\TournamentsController:index" type="service_closure" id=".service_locator.LMjdLda"/>
         <argument key="App\Controller\Admin\Page\UserCreateController:index" type="service_closure" id=".service_locator.ESgEUJd"/>
         <argument key="App\Controller\Admin\Page\UserDetailController:index" type="service_closure" id=".service_locator.TdT8Eo7"/>
@@ -10519,7 +10594,7 @@
         <argument key="App\Controller\Front\Page\OrganizerMatchesController:index" type="service_closure" id=".service_locator.1zkV4xr"/>
         <argument key="App\Controller\Front\Page\OrganizerRegistrationsController:index" type="service_closure" id=".service_locator..1e.4DY"/>
         <argument key="App\Controller\Front\Page\OrganizerRegistrationsController:updateStatus" type="service_closure" id=".service_locator.b7EK_.O"/>
-        <argument key="App\Controller\Front\Page\OrganizerRequestCreateController:index" type="service_closure" id=".service_locator.noj6eVD"/>
+        <argument key="App\Controller\Front\Page\OrganizerRequestCreateController:index" type="service_closure" id=".service_locator.ISch2.e"/>
         <argument key="App\Controller\Front\Page\OrganizerRequestDetailController:index" type="service_closure" id=".service_locator.lWtJrP."/>
         <argument key="App\Controller\Front\Page\OrganizerRequestsController:export" type="service_closure" id=".service_locator.oyB2adC"/>
         <argument key="App\Controller\Front\Page\OrganizerRequestsController:index" type="service_closure" id=".service_locator.Ekhw6GB"/>
@@ -11305,6 +11380,12 @@
     <service id=".service_locator.O2p6Lk7.App\Controller\Admin\AddUserController" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator_context" id="App\Controller\Admin\AddUserController"/>
       <argument>App\Controller\Admin\AddUserController</argument>
+      <argument type="service" id="service_container"/>
+      <factory service=".service_locator.O2p6Lk7" method="withContext"/>
+    </service>
+    <service id=".service_locator.O2p6Lk7.App\Controller\Admin\Api\OllamaAssistantController" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator_context" id="App\Controller\Admin\Api\OllamaAssistantController"/>
+      <argument>App\Controller\Admin\Api\OllamaAssistantController</argument>
       <argument type="service" id="service_container"/>
       <factory service=".service_locator.O2p6Lk7" method="withContext"/>
     </service>
@@ -12113,6 +12194,7 @@
         <argument type="collection">
           <argument>App\Kernel</argument>
           <argument>App\Controller\Admin\AddUserController</argument>
+          <argument>App\Controller\Admin\Api\OllamaAssistantController</argument>
           <argument>App\Controller\Admin\DashboardController</argument>
           <argument>App\Controller\Admin\Page\CartsController</argument>
           <argument>App\Controller\Admin\Page\CategoriesController</argument>
@@ -13618,7 +13700,7 @@
     <service id="SymfonyCasts\Bundle\VerifyEmail\VerifyEmailHelperInterface" alias="symfonycasts.verify_email.helper"/>
     <service id="container.env_var_processors_locator" alias=".service_locator.w7.f4fT" public="true"/>
     <service id="twig.loader.filesystem" alias="twig.loader.native_filesystem"/>
-    <service id="argument_resolver.controller_locator" alias=".service_locator.R3K3sgP"/>
+    <service id="argument_resolver.controller_locator" alias=".service_locator.q.Rq63O"/>
     <service id="doctrine.id_generator_locator" alias=".service_locator.KLVvNIq"/>
     <service id="twig.loader" alias="twig.loader.native_filesystem"/>
     <service id=".Psr\Log\LoggerInterface $request.logger" alias="monolog.logger.request"/>
@@ -13656,6 +13738,8 @@
     <service id=".service_locator.80edgLI" alias="messenger.receiver_locator"/>
     <service id=".service_locator.h8Jkkd2" alias="messenger.retry_strategy_locator"/>
     <service id=".service_locator.bJ.4HC5" alias=".service_locator.w7.f4fT"/>
+    <service id=".service_locator.q1EkWy5" alias=".service_locator.94HrWv6"/>
+    <service id=".service_locator.PyR1O8v" alias=".service_locator.WQ6K9Mv"/>
     <service id=".service_locator.FmuFoAz" alias=".service_locator.yZ2gLXw"/>
     <service id=".service_locator.VkDj658" alias=".service_locator.yU57Ysi"/>
     <service id=".service_locator.a3kWv7D" alias=".service_locator.szuzdYg"/>
@@ -13663,6 +13747,7 @@
     <service id=".service_locator.icDODHQ" alias=".service_locator.uRQSkQq"/>
     <service id=".service_locator.7TupS79" alias=".service_locator.iBRXVNX"/>
     <service id=".service_locator.vql91xT" alias=".service_locator.cZM68KF"/>
+    <service id=".service_locator.kJrDOby" alias=".service_locator.8Ue5SC_"/>
     <service id=".service_locator.wiOAuM3" alias=".service_locator..ztNZF7"/>
     <service id=".service_locator.r.PNVZh" alias=".service_locator.wBojMgb"/>
     <service id=".service_locator.MSzJTOG" alias=".service_locator.PV6bWSq"/>
@@ -13682,10 +13767,10 @@
     <service id=".service_locator.O9ls3bs" alias=".service_locator.qcwg1Z5"/>
     <service id=".service_locator.4.L9SaA" alias=".service_locator.H4d9z1J"/>
     <service id=".service_locator.yYKGas8" alias=".service_locator.Ekhw6GB"/>
-    <service id=".service_locator.ZrVo8jJ" alias=".service_locator.oyB2adC"/>
+    <service id=".service_locator.a0IaOUs" alias=".service_locator.jvo3gnu"/>
     <service id=".service_locator.Ff3B_Vv" alias=".service_locator.SJtf5Ns"/>
     <service id=".service_locator.P.xqEsm" alias=".service_locator.K0wMvAJ"/>
-    <service id=".service_locator.5K5I7xc" alias=".service_locator.ReQrth8"/>
+    <service id=".service_locator.nJjeD1s" alias=".service_locator.SMqWB_L"/>
     <service id=".service_locator.k5uSXkw" alias=".service_locator.7Lxf0it"/>
     <service id=".service_locator.X_88STp" alias=".service_locator.TdT8Eo7"/>
     <service id=".service_locator.yZn_IzL" alias=".service_locator.KVWvkFB"/>
@@ -13731,6 +13816,8 @@
     <service id=".service_locator.kthcAZp" alias=".service_locator.uQreGtu"/>
     <service id=".service_locator.QOs20P4" alias=".service_locator.1zkV4xr"/>
     <service id=".service_locator.0Dj6KIm" alias=".service_locator.b7EK_.O"/>
+    <service id=".service_locator.r13tXPh" alias=".service_locator.ISch2.e"/>
+    <service id=".service_locator.ZrVo8jJ" alias=".service_locator.oyB2adC"/>
     <service id=".service_locator.0_6kFp1" alias=".service_locator.gjvUWEB"/>
     <service id=".service_locator.7ncARZb" alias=".service_locator.H35YPnS"/>
     <service id=".service_locator.qrNhk2c" alias=".service_locator.ESgEUJd"/>
@@ -13747,7 +13834,7 @@
     <service id=".service_locator.eaZs.9e" alias=".service_locator.edjg.f6"/>
     <service id=".service_locator.AVfjW7W" alias=".service_locator.VBibqjr"/>
     <service id=".service_locator.NIZDy73" alias=".service_locator.66ORwCM"/>
-    <service id=".service_locator.T5iJuHb" alias=".service_locator.R3K3sgP"/>
+    <service id=".service_locator.ieVO_gQ" alias=".service_locator.q.Rq63O"/>
     <service id=".service_locator.BFrsqsn" alias=".service_locator.F9PKc.7"/>
     <service id=".service_locator.9M81fJ0" alias=".service_locator.YBKZsNJ"/>
     <service id=".service_locator.XtmiKbi" alias=".service_locator.MfxSDRP"/>
@@ -13773,6 +13860,9 @@
     <service id="doctrine.orm.default_metadata_driver" alias=".doctrine.orm.default_metadata_driver"/>
     <service id="security.event_dispatcher.main" alias="debug.security.event_dispatcher.main"/>
     <service id=".service_locator.gFlme_s" alias=".service_locator.y4_Zrx."/>
+    <service id=".service_locator.H13TIqk" alias=".service_locator.P_cpcEL"/>
+    <service id=".service_locator.xJPuDIt" alias=".service_locator.94HrWv6"/>
+    <service id=".service_locator.YjGxY5F" alias=".service_locator.WQ6K9Mv"/>
     <service id=".service_locator.10Ae4qI" alias=".service_locator.yZ2gLXw"/>
     <service id=".service_locator.HTr8__J" alias=".service_locator.LapGI0r"/>
     <service id=".service_locator.lIlKCYI" alias=".service_locator.yU57Ysi"/>
@@ -13786,6 +13876,7 @@
     <service id=".service_locator.ePkIDv3" alias=".service_locator.DiLZhQQ"/>
     <service id=".service_locator.WV6Pr_l" alias=".service_locator.iBRXVNX"/>
     <service id=".service_locator..wldRm_" alias=".service_locator.cZM68KF"/>
+    <service id=".service_locator.CwdIU19" alias=".service_locator.8Ue5SC_"/>
     <service id=".service_locator.UvyY4WW" alias=".service_locator..ztNZF7"/>
     <service id=".service_locator.2Xapu2H" alias=".service_locator.wBojMgb"/>
     <service id=".service_locator.okTsyzJ" alias=".service_locator.g_s2Y49"/>
@@ -13809,10 +13900,10 @@
     <service id=".service_locator.vYaGWY9" alias=".service_locator.H4d9z1J"/>
     <service id=".service_locator.cytwT8y" alias=".service_locator.lWtJrP."/>
     <service id=".service_locator.d93gRUx" alias=".service_locator.Ekhw6GB"/>
-    <service id=".service_locator.lVavqxu" alias=".service_locator.oyB2adC"/>
+    <service id=".service_locator.i9EFCtu" alias=".service_locator.jvo3gnu"/>
     <service id=".service_locator.ZF9aGDi" alias=".service_locator.SJtf5Ns"/>
     <service id=".service_locator.vnxAnBQ" alias=".service_locator.K0wMvAJ"/>
-    <service id=".service_locator.dHexqFC" alias=".service_locator.ReQrth8"/>
+    <service id=".service_locator.2HrZkBj" alias=".service_locator.SMqWB_L"/>
     <service id=".service_locator.daPDtFY" alias=".service_locator.7Lxf0it"/>
     <service id=".service_locator.8xdNxWf" alias=".service_locator.TdT8Eo7"/>
     <service id=".service_locator..g6EE34" alias=".service_locator.KVWvkFB"/>
@@ -13870,7 +13961,8 @@
     <service id=".service_locator.rb0VDPJ" alias=".service_locator.1zkV4xr"/>
     <service id=".service_locator.uNT6Fkj" alias=".service_locator..1e.4DY"/>
     <service id=".service_locator.f4_Zwuy" alias=".service_locator.b7EK_.O"/>
-    <service id=".service_locator.sy03bFM" alias=".service_locator.noj6eVD"/>
+    <service id=".service_locator.lLJwF7V" alias=".service_locator.ISch2.e"/>
+    <service id=".service_locator.lVavqxu" alias=".service_locator.oyB2adC"/>
     <service id=".service_locator.b8KxbOM" alias=".service_locator.gjvUWEB"/>
     <service id=".service_locator.G9x2Ztl" alias=".service_locator.H35YPnS"/>
     <service id=".service_locator.GEFQPA3" alias=".service_locator.ESgEUJd"/>
@@ -13879,6 +13971,7 @@
     <service id=".service_locator.SaSeU_d" alias=".service_locator.vy5rD9G"/>
     <service id=".service_locator.v25Jr2_" alias=".service_locator.0SWUNmX"/>
     <service id=".service_locator.HehzfP1" alias=".service_locator.hmHP_XA"/>
+    <service id=".service_locator.sy03bFM" alias=".service_locator.noj6eVD"/>
     <service id=".service_locator.YMsoH.2" alias=".service_locator.pP.FdsX"/>
     <service id=".service_locator.piXFGe_" alias=".service_locator.bMHRIMl"/>
     <service id=".service_locator.cyE_RqK" alias=".service_locator.TKO6aFh"/>

@@ -8,6 +8,30 @@
       <h2>Gestion matchs</h2>
       <div class="pageSub">CRUD complet + recherche/tri backend.</div>
     </div>
+    <div class="formActions">
+      <a class="btn btnGhost" href="{{ path('admin_matches_export', {
+        format: 'pdf',
+        q: filters.q|default(''),
+        tournament: filters.tournament|default(''),
+        status: filters.status|default(''),
+        game: filters.game|default(''),
+        date_from: filters.date_from|default(''),
+        date_to: filters.date_to|default(''),
+        team: filters.team|default(''),
+        sort: filters.sort|default('latest')
+      }) }}">Exporter PDF</a>
+      <a class="btn btnGhost" href="{{ path('admin_matches_export', {
+        format: 'excel',
+        q: filters.q|default(''),
+        tournament: filters.tournament|default(''),
+        status: filters.status|default(''),
+        game: filters.game|default(''),
+        date_from: filters.date_from|default(''),
+        date_to: filters.date_to|default(''),
+        team: filters.team|default(''),
+        sort: filters.sort|default('latest')
+      }) }}">Exporter Excel</a>
+    </div>
   </div>
 
   {% for label, messages in app.flashes %}

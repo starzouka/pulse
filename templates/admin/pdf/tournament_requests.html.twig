@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    @page { margin: 18px; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: DejaVu Sans, sans-serif; font-size: 10px; color: #0f172a; background: #eef2f8; }
+    .reportHeader { margin-bottom: 12px; padding: 12px 14px; border: 1px solid #d9e2ef; border-top: 4px solid #ff9d2e; background: #ffffff; }
+    .brand { display: inline-block; font-size: 9px; font-weight: 700; letter-spacing: 1px; color: #ff9d2e; margin-bottom: 4px; }
+    h1 { margin: 0; font-size: 18px; color: #0b1220; }
+    .metaRow { margin-top: 6px; font-size: 9px; color: #475569; }
+    .metaRow span { display: inline-block; margin-right: 12px; }
+    table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    thead { display: table-header-group; }
+    th, td { border: 1px solid #d9e2ef; padding: 6px; text-align: left; vertical-align: top; word-wrap: break-word; }
+    th { background: #1f2937; color: #f8fafc; font-size: 9px; }
+    tbody tr:nth-child(even) td { background: #f8fafc; }
+    .photoCell { width: 120px; }
+    .photoThumb { width: 110px; height: 62px; object-fit: cover; border: 1px solid #d9e2ef; }
+    .badge { display: inline-block; padding: 2px 6px; font-size: 9px; font-weight: 700; border-radius: 999px; border: 1px solid #d9e2ef; background: #f8fafc; color: #0f172a; }
+    .status-pending { background: #fef3c7; color: #92400e; border-color: #fde68a; }
+    .status-accepted { background: #e6f8ee; color: #065f46; border-color: #a7f3d0; }
+    .status-refused { background: #fee2e2; color: #991b1b; border-color: #fecaca; }
+    .muted { color: #64748b; font-style: italic; text-align: center; }
+    .titleCell strong { display: block; margin-bottom: 3px; }
+    .titleMeta { color: #64748b; font-size: 9px; }
+  </style>
+</head>
+<body>
+  <section class="reportHeader">
+    <div class="brand">PULSE ADMIN EXPORT</div>
+    <h1>{{ title }}</h1>
+    <div class="metaRow">
+      <span>Lignes: {{ requestRows|length }}</span>
+      <span>Genere le: {{ generatedAt|date('Y-m-d H:i') }}</span>
+    </div>
+  </section>
+
+  <table>
+    <thead>
+      <tr>
+        <th class="photoCell">Photo</th>
+        <th>ID</th>
+        <th>Titre</th>
+        <th>Organisateur</th>
+        <th>Jeu</th>
+        <th>Dates</th>
+        <th>Status</th>
+        <th>Prize pool</th>
+        <th>Cree le</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in requestRows %}
+        {% set requestItem = row.request %}
+        {% set requestId = requestItem.requestId ?? 0 %}
+        {% set photoUrl = row.photoSrc %}
+        {% set status = requestItem.status|default('PENDING') %}
+        <tr>
+          <td class="photoCell">
+            {% if photoUrl %}
+              <img class="photoThumb" src="{{ photoUrl }}" alt="demande #{{ requestId }}">
+            {% else %}
+              -
+            {% endif %}
+          </td>
+          <td>#{{ requestId }}</td>
+          <td class="titleCell">
+            <strong>{{ requestItem.title|default('-') }}</strong>
+            <div class="titleMeta">{{ requestItem.format|default('-') }}</div>
+          </td>
+          <td>{{ requestItem.organizerUserId ? requestItem.organizerUserId.username : '-' }}</td>
+          <td>{{ requestItem.gameId ? requestItem.gameId.name : '-' }}</td>
+          <td>
+            {{ requestItem.startDate ? requestItem.startDate|date('d/m/Y') : '-' }}
+            ->
+            {{ requestItem.endDate ? requestItem.endDate|date('d/m/Y') : '-' }}
+          </td>
+          <td>
+            <span class="badge status-{{ status|lower }}">{{ status }}</span>
+          </td>
+          <td>{{ requestItem.prizePool|number_format(2, '.', ' ') }} DT</td>
+          <td>{{ requestItem.createdAt ? requestItem.createdAt|date('Y-m-d H:i') : '-' }}</td>
+        </tr>
+      {% else %}
+        <tr>
+          <td class="muted" colspan="9">Aucune demande disponible.</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>
