@@ -38,10 +38,29 @@ final class CartPdfService
         $request = $this->requestStack->getCurrentRequest();
         $baseUrl = $request ? $request->getSchemeAndHttpHost() : 'http://127.0.0.1:8000';
 
+        // inline admin stylesheet when available
+        $projectDir = dirname(__DIR__, 3);
+        $cssPath = $projectDir . '/public/assets/template_bo/css/styles.css';
+        $inlineCss = is_readable($cssPath) ? file_get_contents($cssPath) : '';
+
+        // build items per cart
+        $cartsData = [];
+        foreach ($carts as $cart) {
+            $cartId = $cart->getCartId();
+            if (is_int($cartId) && $cartId > 0) {
+                $items = $this->cartItemRepository->findByCart($cart);
+                $cartsData[] = [
+                    'cart' => $cart,
+                    'items' => $items,
+                    'itemsCount' => count($items)
+                ];
+            }
+        }
+
         $html = $this->twig->render('admin/pdf/carts_site_style.html.twig', [
-            'carts' => $carts,
-            'itemsByCartId' => $itemsByCartId,
+            'cartsData' => $cartsData,
             'base_url' => $baseUrl,
+            'inline_css' => $inlineCss,
         ]);
 
         $dompdf->loadHtml($html);

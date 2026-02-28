@@ -1,0 +1,19 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Statistiques produits{% endblock %}
+
+{% block body %}
+<h1>Statistiques produits</h1>
+<div id="products-chart" style="height:400px;"></div>
+
+{# Placeholder: controller should provide `chartData` JSON #}
+<script>
+    (function(){
+        const data = {{ chartData|raw ?? 'null' }};
+        if (!data) return;
+        // integration: render chart with Google Charts or Chart.js
+        console.log('Produit stats data', data);
+    })();
+</script>
+
+{% endblock %}

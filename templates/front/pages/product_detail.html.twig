@@ -1,0 +1,30 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ product.name ?? 'Produit' }}{% endblock %}
+
+{% block body %}
+<div class="product-detail">
+    <h1>{{ product.name }}</h1>
+    <p>{{ product.description|raw }}</p>
+    <p>Prix: {{ product.price }} {{ product.currency ?? '' }}</p>
+
+    {# Product images if available #}
+    <div class="product-images">
+        {% for image in product.images ?? [] %}
+            <img src="{{ image.publicPath ?? '#' }}" alt="{{ product.name }}" />
+        {% endfor %}
+    </div>
+
+    {# Rating partial #}
+    {% include 'front/partials/_product_rating.html.twig' with { product: product } %}
+
+    {# Product stats partial #}
+    {% include 'front/partials/_product_stats.html.twig' with { product: product } %}
+
+    <a class="btn" href="{{ path('front_cart_add', { id: product.productId }) }}">Ajouter au panier</a>
+</div>
+
+{# Include AI assistant widget #}
+{% include 'shared/_ai_assistant.html.twig' %}
+
+{% endblock %}

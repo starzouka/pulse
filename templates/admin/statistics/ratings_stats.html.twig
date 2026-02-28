@@ -1,0 +1,17 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Distribution des notes{% endblock %}
+
+{% block body %}
+<h1>Distribution des notes</h1>
+<div id="ratings-chart" style="height:320px;"></div>
+
+<script>
+    (function(){
+        const data = {{ ratingsData|raw ?? 'null' }};
+        if (!data) return;
+        console.log('Ratings distribution', data);
+    })();
+</script>
+
+{% endblock %}

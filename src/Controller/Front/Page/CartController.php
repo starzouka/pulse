@@ -125,7 +125,7 @@ final class CartController extends AbstractController
         ]);
     }
 
-    #[Route('/pages/cart/add/{id}', name: 'front_cart_add', requirements: ['id' => '\d+'], methods: ['POST'])]
+    #[Route('/pages/cart/add/{id}', name: 'front_cart_add', requirements: ['id' => '\\d+'], methods: ['POST'])]
     public function add(
         int $id,
         Request $request,
@@ -179,7 +179,7 @@ final class CartController extends AbstractController
         return $this->redirectToRoute('front_cart');
     }
 
-    #[Route('/pages/cart/items/{id}/quantity', name: 'front_cart_item_update', requirements: ['id' => '\d+'], methods: ['POST'])]
+    #[Route('/pages/cart/items/{id}/quantity', name: 'front_cart_item_update', requirements: ['id' => '\\d+'], methods: ['POST'])]
     public function updateQuantity(
         int $id,
         Request $request,
@@ -230,7 +230,7 @@ final class CartController extends AbstractController
         return $this->redirectToRoute('front_cart');
     }
 
-    #[Route('/pages/cart/items/{id}/remove', name: 'front_cart_item_remove', requirements: ['id' => '\d+'], methods: ['POST'])]
+    #[Route('/pages/cart/items/{id}/remove', name: 'front_cart_item_remove', requirements: ['id' => '\\d+'], methods: ['POST'])]
     public function remove(
         int $id,
         Request $request,

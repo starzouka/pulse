@@ -27,12 +27,12 @@ class Order
     private string $orderNumber;
     
     #[ORM\OneToOne(targetEntity: Cart::class)]
-    #[ORM\JoinColumn(name: 'cart_id', referencedColumnName: 'cart_id', nullable: false, onDelete: 'CASCADE', unique: true)]
+    #[ORM\JoinColumn(name: 'cart_id', referencedColumnName: 'cart_id', nullable: false, onDelete: 'RESTRICT', unique: true)]
     #[Assert\NotNull(message: 'Le panier est obligatoire.')]
     private Cart $cartId;
     
     #[ORM\ManyToOne(targetEntity: User::class)]
-    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'user_id', nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'user_id', nullable: false, onDelete: 'RESTRICT')]
     #[Assert\NotNull(message: "L'utilisateur est obligatoire.")]
     private User $userId;
     

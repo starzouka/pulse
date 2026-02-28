@@ -15,7 +15,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class OrderDetailController extends AbstractController
 {
-    #[Route('/pages/order-detail/{id}', name: 'front_order_detail', requirements: ['id' => '\d+'], defaults: ['id' => null], methods: ['GET'])]
+    #[Route('/pages/order-detail/{id}', name: 'front_order_detail', requirements: ['id' => '\\d+'], defaults: ['id' => null], methods: ['GET'])]
     public function index(
         ?int $id,
         Request $request,

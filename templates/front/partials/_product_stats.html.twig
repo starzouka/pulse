@@ -1,0 +1,5 @@
+{# Minimal product stats: average rating + count #}
+<div class="product-stats">
+    <p>Note moyenne: {{ product.averageRating is defined ? product.averageRating : (product.getAverageRating() is defined ? product.getAverageRating() : '-') }}</p>
+    <p>Nombre d'avis: {{ product.ratingCount is defined ? product.ratingCount : (product.getRatingCount() is defined ? product.getRatingCount() : 0) }}</p>
+</div>

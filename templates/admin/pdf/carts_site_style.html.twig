@@ -141,7 +141,9 @@
       </div>
     </div>
 
-    {% for cart in carts %}
+    {% for data in cartsData %}
+      {% set cart = data.cart %}
+      {% set items = data.items %}
       <div class="cart-block">
         <div class="cart-title">
           <span>Panier #{{ cart.cartId }}</span>
@@ -174,7 +176,6 @@
             </tr>
           </thead>
           <tbody>
-            {% set items = itemsByCartId[cart.cartId] ?? [] %}
             {% set subtotal = 0 %}
             {% for item in items %}
               {% set product = item.getProductId() %}
