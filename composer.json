@@ -76,6 +76,32 @@
         "symfony/polyfill-php81": "*"
     },
     "scripts": {
+        "test:unit": "php vendor/bin/phpunit -c phpunit.dist.xml --testdox",
+        "test:static:user": "php vendor/bin/phpstan analyse --configuration=phpstan.neon --no-progress --error-format=table src/Entity/User.php tests/Unit/Entity/UserTest.php",
+        "test:static:team-voter": "php vendor/bin/phpstan analyse --configuration=phpstan.neon --no-progress --error-format=table src/Security/Voter/TeamVoter.php tests/Unit/Security/TeamVoterTest.php",
+        "test:static:cart-manager": "php vendor/bin/phpstan analyse --configuration=phpstan.neon --no-progress --error-format=table src/Service/Shop/CartManager.php tests/Unit/Service/Shop/CartManagerTest.php",
+        "test:static:feed-assembler": "php vendor/bin/phpstan analyse --configuration=phpstan.neon --no-progress --error-format=table src/Service/Post/FeedPostAssembler.php",
+        "test:static:profile-provider": "php vendor/bin/phpstan analyse --configuration=phpstan.neon --no-progress --error-format=table src/Service/Profile/ProfilePageDataProvider.php",
+        "test:static:post-image-uploader": "php vendor/bin/phpstan analyse --configuration=phpstan.neon --no-progress --error-format=table src/Service/Post/PostImageUploader.php",
+        "test:static:all": [
+            "@test:static:user",
+            "@test:static:team-voter",
+            "@test:static:cart-manager",
+            "@test:static:feed-assembler",
+            "@test:static:profile-provider",
+            "@test:static:post-image-uploader"
+        ],
+        "doctrine:validate": [
+            "php bin/console doctrine:mapping:info --no-ansi",
+            "php bin/console doctrine:schema:validate --no-ansi"
+        ],
+        "doctrine:doctor:config": "php bin/console debug:config doctrine_doctor --no-ansi",
+        "test:quality": [
+            "@test:unit",
+            "@test:static:all",
+            "@doctrine:validate",
+            "@doctrine:doctor:config"
+        ],
         "auto-scripts": {
             "cache:clear": "symfony-cmd",
             "assets:install %PUBLIC_DIR%": "symfony-cmd",
@@ -98,12 +124,15 @@
         }
     },
     "require-dev": {
+        "ahmed-bhs/doctrine-doctor": "1.0.5",
+        "phpstan/phpstan": "1.12",
         "phpunit/phpunit": "^11.5",
         "symfony/browser-kit": "6.4.*",
         "symfony/css-selector": "6.4.*",
         "symfony/debug-bundle": "6.4.*",
         "symfony/maker-bundle": "^1.0",
         "symfony/stopwatch": "6.4.*",
-        "symfony/web-profiler-bundle": "6.4.*"
+        "symfony/web-profiler-bundle": "6.4.*",
+        "webmozart/assert": "1.12"
     }
 }

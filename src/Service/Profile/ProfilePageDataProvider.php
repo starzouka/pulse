@@ -28,6 +28,17 @@ final class ProfilePageDataProvider
     }
 
     /**
+     * @param array{
+     *   posts_q?: string,
+     *   posts_visibility?: string,
+     *   posts_sort?: string,
+     *   friends_q?: string,
+     *   friends_sort?: string,
+     *   teams_q?: string,
+     *   teams_region?: string,
+     *   teams_sort?: string
+     * } $filters
+     *
      * @return array{
      *   is_own_profile: bool,
      *   friend_status: string,
@@ -157,7 +168,7 @@ final class ProfilePageDataProvider
             } else {
                 $pendingRequest = $this->friendRequestRepository->findPendingBetweenUsers($viewer, $profileUser);
                 if ($pendingRequest !== null && $pendingRequest->getFromUserId() instanceof User) {
-                    $friendStatus = $pendingRequest->getFromUserId()?->getUserId() === $viewer->getUserId()
+                    $friendStatus = $pendingRequest->getFromUserId()->getUserId() === $viewer->getUserId()
                         ? 'request_sent'
                         : 'request_received';
                 } else {

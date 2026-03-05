@@ -21,6 +21,13 @@ final class FeedPostAssembler
     }
 
     /**
+     * @param array{
+     *   q?: string,
+     *   visibility?: string,
+     *   sort?: string,
+     *   author?: User|null
+     * } $filters
+     *
      * @return list<array{
      *   post:\App\Entity\Post,
      *   images:list<\App\Entity\Image>,
